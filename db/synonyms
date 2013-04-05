@@ -1,0 +1,3612 @@
+ERYTHROSE-4P,threose 4-phosphate
+ERYTHROSE-4P,D-erythrose-4-P
+ERYTHROSE-4P,erythrose-4P
+ERYTHROSE-4P,erythrose-4-P
+ERYTHROSE-4P,erythrose-4-phosphate
+ERYTHROSE-4P,D-erythrose 4-phosphate
+CPD-207,phenylacetyl-CoA
+CPD-207,phenylacetate-CoA
+3-P-HYDROXYPYRUVATE,3-phosphohydroxypyruvate
+3-P-HYDROXYPYRUVATE,3-P-hydroxypyruvate
+3-P-HYDROXYPYRUVATE,3-phosphohydroxy-pyr
+3-P-HYDROXYPYRUVATE,3-p-OH-pyr
+3-P-HYDROXYPYRUVATE,phosphohydroxypyruate
+3-P-HYDROXYPYRUVATE,3-phospho-hydroxypyruvate
+3-P-HYDROXYPYRUVATE,phosphohydroxypyruvate
+3-P-HYDROXYPYRUVATE,3-phosphonooxypyruvate
+3-P-HYDROXYPYRUVATE,3-p-hydroxy-pyr
+3-P-HYDROXYPYRUVATE,3-p-OH-pyruvate
+CPLX-6998,CPLX-6998
+HS03886-MONOMER,L-glutamine amidohydrolase
+HS03886-MONOMER,K-glutaminase
+HS03886-MONOMER,mitochondrial glutaminase precursor (kidney isoform)
+CPLX-6781,pyrroline-5-carboxylate reductase 1
+HS14757-MONOMER,"Delta-1-pyrroline-5-carboxylate dehydrogenase, mitochondrial"
+HS14757-MONOMER,Aldehyde dehydrogenase family 4 member A1
+HS14757-MONOMER,P5C dehydrogenase
+R145-RXN,R145-RXN
+LEU-DEG2-PWY,leucine degradation I
+CPLX66-62,oxoisovalerate dehydrogenase
+HS00753-MONOMER,BCAT(c)
+HS00753-MONOMER,"Branched-chain-amino-acid aminotransferase, cytosolic"
+HS00753-MONOMER,Protein ECA39
+HS09565,NOS2B
+HS01002,TS11
+HS01002,ASNS
+PWY-5326,sulfite oxidation IV
+PWY-5329,L-cysteine degradation III
+ENSG00000157851-MONOMER,Collapsin response mediator protein 5
+ENSG00000157851-MONOMER,DRP-5
+ENSG00000157851-MONOMER,Dihydropyrimidinase-related protein 5
+ENSG00000157851-MONOMER,CRMP-5
+ENSG00000157851-MONOMER,CRAM
+ENSG00000157851-MONOMER,ULIP6 protein
+ENSG00000157851-MONOMER,CRMP3-associated molecule
+HS17587-MONOMER,EC_5.4.2.4 EC_3.1.3.13 PHOSPHOGLYCERATE MUTASE ISOZYME PGAM BPG DEPENDENT PGAM
+HS17587-MONOMER,phosphoglycerate mutase
+HS16251-MONOMER,EC_5.4.2.4 EC_3.1.3.13 PHOSPHOGLYCERATE MUTASE ISOZYME PGAM BPG DEPENDENT PGAM
+HS16251-MONOMER,phosphoglycerate mutase
+PWY-5084,2-oxoglutarate dehydrogenase complex
+PWY-5084,2-ketoglutarate dehydrogenase complex
+PWY-5084,2-oxoglutarate decarboxylation to succinyl-CoA
+HS01798-MONOMER,amine oxidase (flavin containing) A
+HS01798-MONOMER,MAO-A
+HS01798-MONOMER,human
+HS01798-MONOMER,monoamine oxidase
+HS01798-MONOMER,monoamine oxidase A
+HS01798-MONOMER,man
+HS05535,ACLY
+HS05535,ATPCL
+HS05535,CLATP
+HOMO-CYS,homocysteine
+HOMO-CYS,homo-cys
+HOMO-CYS,L-homocysteine
+RXN-8629,dihydrolipoyl dehydrogenase
+RXN-11662,RXN-11662
+HS16727,HS16727
+HS08749-MONOMER,3-hydroxyanthranilic acid oxygenase
+HS08749-MONOMER,3-hydroxyanthranilate dioxygenase
+HS08749-MONOMER,HAD
+HS08749-MONOMER,"3-hydroxyanthranilate 3,4-dioxygenase"
+HS08749-MONOMER,3-hydroxyanthranilate oxygenase
+HS08749-MONOMER,3-hydroxyanthranilic acid dioxygenase
+HS08749-MONOMER,3-hydroxyanthranilate oxidase
+HS08749-MONOMER,3-HAO
+HS09344,CKBB
+HS09344,CKB
+CPLX-6802,glutamate dehydrogenase 2
+HS07223,GCST
+HS07223,AMT
+HS14068-MONOMER,succinate dehydrogenase (ubiquinone) flavoprotein subunit mitochondrial precursor
+HS14068-MONOMER,FP FLAVOPROTEIN SUBUNIT OF COMPLEX II
+RXN-11102,RXN-11102
+HS06949-MONOMER,6-phosphogluconate dehydrogenase
+HS06949-MONOMER,"6-phosphogluconate dehydrogenase, decarboxylating"
+HS06949-MONOMER,phosphogluconate dehydrogenase
+PEPDEPHOS-RXN,Phosphoenolpyruvate kinase
+PEPDEPHOS-RXN,Phosphoenol transphosphorylase
+PEPDEPHOS-RXN,pyruvate phosphorylation
+PEPDEPHOS-RXN,phosphoenolpyruvate dephosphorylation
+HS04324,DLST
+HS04324,DLTS
+HS08293,KIAA0828
+HS08293,AHCYL2
+CPLX66-19,enolase
+ADENOSYL-HOMO-CYS,adenosylhomo-cys
+ADENOSYL-HOMO-CYS,SAH
+ADENOSYL-HOMO-CYS,2-S-adenosyl-L-homocysteine
+ADENOSYL-HOMO-CYS,AdoHcy
+ADENOSYL-HOMO-CYS,histamine N(tau)-methyltransferase
+ADENOSYL-HOMO-CYS,S-adenosyl-homocysteine
+ADENOSYL-HOMO-CYS,histamine Nτ-methyltransferase
+ADENOSYL-HOMO-CYS,adenosyl-homo-cys
+ADENOSYL-HOMO-CYS,S-adenosylhomocysteine
+ADENOSYL-HOMO-CYS,S-adenosyl-L-homocysteine
+ADENOSYL-HOMO-CYS,adenosylhomocysteine
+4-FUMARYL-ACETOACETATE,4-fumaryl-acetoacetate
+CPLX66-11,isocitrate dehydrogenase (NAD)
+GLU6PDEHYDROG-RXN,G6PD
+HS04328,ALDH6A1
+HS04328,MMSDH
+RXN-10872,3-methoxy 4-hydroxyphenylpyruvate reductase
+HS05327,PIG2
+HS05327,GAMT
+VAL,L-valine
+VAL,valine
+VAL,val
+VAL,V
+TRYPTAMINE,3-(2-aminoethyl)indole
+TRYPTAMINE,tryptamine
+HS11196-MONOMER,PHOSPHOGLYCERATE MUTASE ISOZYME B
+HS11196-MONOMER,"Phosphoglycerate mutase A, nonmuscle form"
+HS11196-MONOMER,phosphoglycerate mutase 1 (brain)
+HS11196-MONOMER,BPG-DEPENDENT PGAM 1
+HS11196-MONOMER,PGAM-B
+HS11196-MONOMER,phosphoglycerate mutase 1
+HS11196-MONOMER,EC_3.1.3.13
+HS11196-MONOMER,EC_5.4.2.4
+AMINO-OXOBUT,2-amino-3-ketobutyrate
+AMINO-OXOBUT,L-2-amino-3-oxobutanoate
+AMINO-OXOBUT,2-amino-3-oxobutanoate
+AMINO-OXOBUT,2-amino-acetoacetate
+AMINO-OXOBUT,α-amino-β-ketobutyrate
+AMINO-OXOBUT,2-amino-3-oxobutyrate
+RXN-7909,RXN-7909
+RXN-10870,L-dopa O-methyltransferase
+HS06975-MONOMER,Dihydrouracil dehydrogenase
+HS06975-MONOMER,DPD
+HS06975-MONOMER,DHPDHase
+HS06975-MONOMER,Dihydropyrimidine dehydrogenase [NADP+]
+HS06975-MONOMER,Dihydrothymine dehydrogenase
+RXN-10871,3-O-methyl-dopa transaminase
+HS15808-MONOMER,S ADENOSYL L HOMOCYSTEINE HYDROLASE ADOHCYASE
+HS15808-MONOMER,adenosylhomocysteinase
+HYDROXYPRODEG-PWY,4-hydroxyproline degradation I
+HYDROXYPRODEG-PWY,4-hydroxyproline degradation
+CPD-7682,Δ1-piperideine-6-carboxylate
+CPD-7682,"(S)-2,3,4,5-tetrahydropiperidine-2-carboxylate"
+CPD-7682,"1,6-didehydropiperidine-2-carboxylate"
+CPD-7682,1-piperideine-6-carboxylate
+CPD-7682,Δ6-piperideine-2-carboxylate
+CPD-7682,"2,3,4,5-tetrahydropyridine-2-carboxylate"
+CPLX66-215,fructose-bisphosphate aldolase B
+HS10491,BPGM
+HS01647,NOS1
+HS01647,NOS
+CPLX66-210,triosephosphate isomerase
+CITRULLINASE-RXN,CITRULLINASE-RXN
+CPLX-6581,"nitric-oxide synthase, brain"
+CPLX-6581,nNOS
+CPLX-6581,neural NOS
+TIGLYLCOA-HYDROXY-RXN,Unsaturated acyl-CoA hydratase
+TIGLYLCOA-HYDROXY-RXN,Enoyl hydrase
+TIGLYLCOA-HYDROXY-RXN,Tiglyl-CoA hydratase
+10-FORMYL-THF,N10-formyl-H4F
+10-FORMYL-THF,10-formyl-THF
+10-FORMYL-THF,N10-formyl-THF
+10-FORMYL-THF,10-formyl-H4PteGlu1
+10-FORMYL-THF,N10-formyl-tetrahydrofolate
+10-FORMYL-THF,10-formyl-tetrahydrofolate
+GLUTAMINESYN-RXN,Glutamine synthetase
+GLUTAMINESYN-RXN,GS
+GLUTAMINESYN-RXN,glutamate ammonia ligase
+HS02592,PYCRL
+HS09454,LDHL2
+HS09454,LDHAL6A
+WATER,water
+WATER,H2O
+WATER,H20
+WATER,hydrogen oxide
+HS16267,HS16267
+CPLX-6622,non-hepatic arginase
+CPLX-6622,arginase type 2
+CPLX-6622,kidney-type arginase
+CPLX-6622,"arginase-2, mitochondrial"
+2-AMINOADIPATE-AMINOTRANSFERASE-RXN,2-AMINOADIPATE-AMINOTRANSFERASE-RXN
+CPD-9973,an [eIF5A-precursor]-deoxyhypusine
+CPD-9973,a protein deoxyhypusine
+CPD-9973,an eIF5A deoxyhypusine
+CPD-9973,a protein N6-(4-aminobutyl)-L-lysine
+HS14068,HS14068
+MAL,L-mal
+MAL,(S)-malate
+MAL,malic acid
+MAL,malate
+MAL,(S)-malic acid
+MAL,L-malic acid
+MAL,L-apple acid
+MAL,L-malate
+MAL,hydroxybutanedioic acid
+MAL,mal
+MAL,hydroxysuccinic acid
+HS03886,G-8884
+HS03886,GLS
+HS03886,GLS1
+HS03886,KIAA0838
+L-DIHYDROXY-PHENYLALANINE,L-dihydroxy-phenylalanine
+L-DIHYDROXY-PHENYLALANINE,"3,4-dihydroxy-L-phenylalanine"
+L-DIHYDROXY-PHENYLALANINE,3-hydroxytyrosine
+L-DIHYDROXY-PHENYLALANINE,DOPA
+L-DIHYDROXY-PHENYLALANINE,levodopa
+L-DIHYDROXY-PHENYLALANINE,dihydroxyphenylalanine
+L-DIHYDROXY-PHENYLALANINE,L-dopa
+HS03883,HIBYL-COA-H
+HS03883,HIBCH
+4-OXOGLUTARAMATE,4-oxoglutaramate
+HS09149-MONOMER,Constitutive NOS
+HS09149-MONOMER,NOS type III
+HS09149-MONOMER,"Nitric oxide synthase, endothelial"
+HS09149-MONOMER,Endothelial NOS
+HS09149-MONOMER,eNOS
+HS09149-MONOMER,NOSIII
+HS09149-MONOMER,cNOS
+HS09149-MONOMER,EC-NOS
+CPLX-6886,GABA aminotransferase
+CPLX-6886,GABA transaminase
+CPLX-6661,arginine-succinate lyase
+CPLX-6661,arginosuccinase
+FORMYL-ISOGLUTAMINE,formyl-isoglutamine
+HS09121,PGAMM
+HS09121,PGAM2
+HS11132-MONOMER,dihydroxyacetone transferase
+HS11132-MONOMER,transaldolase 1
+HS11132-MONOMER,Transaldolase
+HS11132-MONOMER,glycerone transferase
+HS07460,DPYS
+HS07460,DHP
+HS07460,DHPase
+ARGSUCCINSYN-RXN,Argininosuccinate synthetase
+ARGSUCCINSYN-RXN,Arginine succinate synthetase
+ARGSUCCINSYN-RXN,citrulline--aspartate ligase
+ARGSUCCINSYN-RXN,argininosuccinate synthetase
+ARGSUCCINSYN-RXN,Citrulline--aspartate ligase
+HS08968-MONOMER,Transketolase
+HS08968-MONOMER,TK
+CPLX-7760,B-B
+CPLX-7760,BB
+CPLX-7760,B-CK
+CPLX-7760,CK-BB
+CPLX-7760,brain creatine kinase
+CPLX-7760,creatine kinase B chain
+CPLX-7760,BB-CK
+CPLX-7760,creatine kinase BB isoform
+PWY-4921,protein citrullination
+PWY-6158,creatine-phosphate biosynthesis
+HS09453,LDH3
+HS09453,LDHX
+HS09453,LDHC
+MALONATE-S-ALD,3-oxopropanoate
+MALONATE-S-ALD,malonic semialdehyde
+MALONATE-S-ALD,malonate semialdehyde
+MALONATE-S-ALD,malonate-S-ald
+CPLX-6662,ornithine transcarbamylase
+CPLX-6662,carbamylphosphate-ornithine transcarbamylase
+CPLX-6662,OTC
+CPLX-6662,citrulline phosphorylase
+HS09586,GPD1
+ARGININE-SYN4-PWY,arginine biosynthesis IV
+ARGININE-SYN4-PWY,arginine biosynthesis 4
+4-TRIMETHYLAMMONIOBUTANAL,trimethylaminobutyraldehyde
+4-TRIMETHYLAMMONIOBUTANAL,"1-butanaminium, N,N,N-trimethyl-4-oxo-"
+4-TRIMETHYLAMMONIOBUTANAL,"N,N,N-trimethyl-4-oxobutan-1-aminium"
+4-TRIMETHYLAMMONIOBUTANAL,gamma-trimethylaminobutyraldehyde
+4-TRIMETHYLAMMONIOBUTANAL,trimethyl-(4-oxobutyl)ammonium
+4-TRIMETHYLAMMONIOBUTANAL,4-trimethylammoniobutanal
+HS00415,CPS1
+HS02540-MONOMER,Melanocyte-specific transporter protein
+HS02540-MONOMER,P protein
+HS02540-MONOMER,Pink-eyed dilution protein homolog
+3-carboxy-3-dimethylammonio-propyl-L-his,2-[3-carboxy-3-(dimethylammonio)propyl]-L-histidine in eEF-2
+3-carboxy-3-dimethylammonio-propyl-L-his,2-[3-carboxy-3-(dimethylammonio)propyl]-L-histidine
+HS13980-MONOMER,Probable saccharopine dehydrogenase
+PHENYL-PYRUVATE,2-keto-phenyl-pyruvate
+PHENYL-PYRUVATE,2-oxo-3-phenylpropanoate
+PHENYL-PYRUVATE,keto-phenylpyruvate
+PHENYL-PYRUVATE,α-ketohydrocinnamic acid
+PHENYL-PYRUVATE,3-phenyl-2-oxopropanoate
+GABATRANSAM-RXN,GABA aminotransferase
+GABATRANSAM-RXN,Gamma-amino-N-butyrate transaminase
+GABATRANSAM-RXN,GABA transaminase
+GABATRANSAM-RXN,Beta-alanine--oxoglutarate aminotransferase
+HS01434,E1B
+HS01434,BCKDHB
+HSCN,thiocyanic acid
+HSCN,thiocyanate
+HSCN,hydrogen thiocyanate
+SUCC-S-ALD,succinic semialdehyde
+SUCC-S-ALD,succinate semialdehyde
+SUCC-S-ALD,succ-S-ald
+SUCC-S-ALD,succinyl semialdehyde
+HS08293-MONOMER,S-adenosyl-L-homocysteine hydrolase 3
+HS08293-MONOMER,Putative adenosylhomocysteinase 3
+HS08293-MONOMER,S-adenosylhomocysteine hydrolase-like protein 2
+HS08293-MONOMER,AdoHcyase 3
+PHENYLALANINE-DECARBOXYLASE-RXN,L-phenylalanine decarboxylase
+HS17086,HS17086
+HS14922-MONOMER,arginine deiminase type
+HS14922-MONOMER,PEPTIDYLARGININE DEIMINASE
+HS04324-MONOMER,dihydrolipoamide S-succinyltransferase
+HS04324-MONOMER,"2-oxoglutarate dehydrogenase complex, dihydrolipoamide succinyltransferase component"
+HS04324-MONOMER,human
+HS04324-MONOMER,"2-oxoglutarate dehydrogenase complex, E2 component"
+HS04324-MONOMER,man
+RXN0-308,cysteine desulfurase
+HS15413,ASPG
+HS09727-MONOMER,PDHE1-B
+HS09727-MONOMER,pyruvate dehydrogenase E1 component β subunit
+HS00752-MONOMER,"3-ketoacyl-CoA thiolase, peroxisomal"
+HS00752-MONOMER,acetyl-CoA acyltransferase
+HS00752-MONOMER,peroxisomal 3-oxoacyl-CoA thiolase
+HS00752-MONOMER,peroxisomal 3-ketoacyl-CoA thiolase monomer
+HS00752-MONOMER,β-ketothiolase
+HS17663-MONOMER,SELENOPHOSPHATE SYNTHETASE SELENIUM DONOR
+HS17663-MONOMER,selenide water dikinase
+ENSG00000038427-MONOMER,Glial hyaluronate-binding protein
+ENSG00000038427-MONOMER,Versican core protein
+ENSG00000038427-MONOMER,PG-M
+ENSG00000038427-MONOMER,Large fibroblast proteoglycan
+ENSG00000038427-MONOMER,GHAP
+ENSG00000038427-MONOMER,Chondroitin sulfate proteoglycan core protein 2
+HS01466-MONOMER,Histidine ammonia-lyase
+HS01466-MONOMER,Histidase
+HS09360-MONOMER,Pterin carbinolamine dehydratase
+HS09360-MONOMER,Phenylalanine hydroxylase-stimulating protein
+HS09360-MONOMER,DCoH
+HS09360-MONOMER,Pterin-4-alpha-carbinolamine dehydratase
+HS09360-MONOMER,Dimerization cofactor of HNF1
+HS09360-MONOMER,PHS
+HS09360-MONOMER,Dimerization cofactor of hepatocyte nuclear factor 1-alpha
+HS09360-MONOMER,4-alpha-hydroxy-tetrahydropterin dehydratase
+HS09360-MONOMER,PCD
+3-METHYL-CROTONYL-COA,3-methylbut-2-enoyl-CoA
+3-METHYL-CROTONYL-COA,β-methylcrotonoyl-CoA
+3-METHYL-CROTONYL-COA,3-methylcrotonyl-CoA
+HS07366-MONOMER,mitochondrial malate dehydrogenase
+HS07366-MONOMER,"malate dehydrogenase 2, NAD (mitochondrial)"
+HS07366-MONOMER,human
+HS07366-MONOMER,mitochondrial malate dehydrogenase precursor
+HS07366-MONOMER,man
+THREO-DS-ISO-CITRATE,isocitric acid
+THREO-DS-ISO-CITRATE,"(1R, 2S)-1-hydroxypropane-1,2,3-tricarboxylate"
+THREO-DS-ISO-CITRATE,D-threo-isocitric acid
+THREO-DS-ISO-CITRATE,isocitrate
+THREO-DS-ISO-CITRATE,D-isocitrate
+THREO-DS-ISO-CITRATE,I-CIT
+THREO-DS-ISO-CITRATE,D-threo-isocitrate
+THREO-DS-ISO-CITRATE,threo-Ds-isocitrate
+HS01388,ARG2
+ACETONE,2-propanone
+ACETONE,dimethylketone
+ACETONE,acetone
+ACETONE,propanone
+G66-33956-MONOMER,APAF1-interacting protein
+G66-33956-MONOMER,MTNB_HUMAN
+G66-33956-MONOMER,MTRu-1-P dehydratase
+G66-33956-MONOMER,Probable methylthioribulose-1-phosphate dehydratase
+HS00894,PFKF
+HS00894,PFKP
+ACETYL-COA-ACETYLTRANSFER-RXN,Acetoacetyl-CoA thiolase
+HS13980,SCCPDH
+HS13980,CGI-49
+ALLYSINE,(S)-2-amino-6-oxohexanoate
+ALLYSINE,α-aminoadipate 6-semialdehyde
+ALLYSINE,2-aminoadipate semialdehyde
+ALLYSINE,L-2-aminoadipate 6-semialdehyde
+ALLYSINE,2-aminoadipate-6-semialdehyde
+ALLYSINE,allysine
+ALLYSINE,L-allysine
+ALLYSINE,(S)-2-aminoadipate 6-semialdehyde
+ALLYSINE,2-aminoadipate 6-semialdehyde
+HS03243,SEPSECS
+HS03243,TRNP48
+RXN-11667,(S)-3-hydroxybutanoyl-CoA dehydrogenase
+HS08389,PADI5
+HS08389,PADI4
+HS08389,PDI5
+CPLX-7890,AADC
+CPLX-7890,aromatic L-amino acid decarboxylase
+CPLX-7890,L-DOPA decarboxylase
+CPLX-7890,human
+CPLX-7890,DDC
+CPLX-7890,tryptophan decarboxylase
+CPLX-7890,man
+HS06761-MONOMER,L-tyrosine:2-oxoglutarate aminotransferase
+HS06761-MONOMER,TAT
+HS06761-MONOMER,Tyrosine aminotransferase
+HS10034,ASL
+LCYSDEG-PWY,L-cysteine degradation II
+LCYSDEG-PWY,L-cysteine degradation
+LCYSDEG-PWY,L-cysteine catabolism
+HCN,cyanide
+HCN,hydrocyanic acid
+HCN,hydrogen cyanide
+CPD-5881,"6R)-6-(L-erythro-1,2-dihydroxypropyl)-5,6,7,8-tetrahydro-4α-hydroxypterin"
+CPD-5881,4α-hydroxy-tetrahydropterin
+CPD-5881,4α-hydroxy-tetrahydrobiopterin
+CPD-5881,"4α-hydroxy-5,6,7,8-tetrahydrobiopterin"
+HS04399,ACAT2
+HS04399,ACTL
+UROCANATE-HYDRATASE-RXN,Urocanase
+UROCANATE-HYDRATASE-RXN,Imidazolonepropionate hydrolase
+HS11429,SEPHS2
+HS11429,SPS2
+HS16965,HS16965
+RXN-10815,2-oxo-3-phenylpropanoate dioxygenase
+FRUCTOSE-16-DIPHOSPHATE,"fructose-1,6-bisphosphate"
+FRUCTOSE-16-DIPHOSPHATE,FBP
+FRUCTOSE-16-DIPHOSPHATE,"fructose 1,6-bisphosphate"
+FRUCTOSE-16-DIPHOSPHATE,"β-D-fructose-1,6-diphosphate"
+FRUCTOSE-16-DIPHOSPHATE,"fructose-1,6-diphosphate"
+FRUCTOSE-16-DIPHOSPHATE,"D-fructose-1,6-diphosphate"
+FRUCTOSE-16-DIPHOSPHATE,"fructose-1,6-biphosphate"
+FRUCTOSE-16-DIPHOSPHATE,"D-fructose-1,6-bisphosphate"
+2.5.1.46-RXN,[eIF-5A]-deoxyhypusine synthase
+2.5.1.46-RXN,(4-aminobutyl)lysine synthase
+2.5.1.46-RXN,Spermidine dehydrogenase
+RXN-1401,tryptamine oxidase
+HS16608,HS16608
+RXN-10816,phenylpyruvate reductase
+EIF5A-HYPUSINE,an eIF5A-hypusine
+XYLULOSE-5-PHOSPHATE,xylulose-phosphate
+XYLULOSE-5-PHOSPHATE,xylulose 5-phosphate
+XYLULOSE-5-PHOSPHATE,D-xylulose 5-phosphate
+XYLULOSE-5-PHOSPHATE,D-xylulose-5-P
+XYLULOSE-5-PHOSPHATE,xylulose-P
+RXN-7790,RXN-7790
+CPLX-6801,glutamate dehydrogenase 1
+PWY-6755,S-methyl-5-thio-α-D-ribose 1-phosphate degradation
+RXN-10817,phenylethylamine oxidase
+D-6-P-GLUCONO-DELTA-LACTONE,6-phosphogluconolactone
+D-6-P-GLUCONO-DELTA-LACTONE,D-6-phospho-glucono-δ-lactone
+D-6-P-GLUCONO-DELTA-LACTONE,"D-glucono-1,5-lactone-6-phosphate"
+D-6-P-GLUCONO-DELTA-LACTONE,D-glucono-δ-lactone-6-phosphate
+D-6-P-GLUCONO-DELTA-LACTONE,D-6-phosphoglucono-δ-lactone
+D-6-P-GLUCONO-DELTA-LACTONE,"6-phospho D-glucono-1,5-lactone"
+D-6-P-GLUCONO-DELTA-LACTONE,D-6-P-glucono-δ-lactone
+HS04148,HSPC143
+HS04148,NPD015
+HS04148,CGI-30
+HS04148,DPH5
+HS04148,AD-018
+HOMOGENTISATE,homogentisate
+HOMOGENTISATE,"2,5-dihydroxyphenylacetate"
+PWY-5690,Szent-Gyorgyi-Krebs cycle
+PWY-5690,TCA cycle II (eukaryotic)
+PWY-5690,Krebs cycle
+PWY-5690,citric acid cycle
+PWY-5690,TCA cycle -- aerobic respiration
+PWY-5690,tricarboxylic acid cycle
+HS00244,AASS
+HS00244,LORSDH
+HS00244,LKRSDH
+HS00244,LKR/SDH
+HS11958-MONOMER,phosphoglycerate dehydrogenase like 1
+HS14346-MONOMER,Transketolase-like protein 2
+HS14346-MONOMER,TK
+HS14346-MONOMER,hypothetical protein DKFZp434L1717
+RXN-8173,RXN-8173
+HS00966,MAOB
+CPLX66-20,enolase
+GLN,2-aminoglutaramic acid
+GLN,gln
+GLN,L-glutamine
+GLN,glumin
+GLN,glutamic acid 5-amide
+GLN,Q
+GLN,glum
+GLN,glutamine
+GLN,proglumide
+PEPSYNTH-RXN,Phosphoenolpyruvate synthase
+SULFATE,SO4--
+SULFATE,H2SO4
+SULFATE,sulfate
+SULFATE,SO42-
+SULFATE,sulfuric acid
+SULFATE,sulphate
+SULFATE,SO4-2
+PWY-5046,2-oxoisovalerate decarboxylation to isobutanoyl-CoA
+PWY-5046,2-oxo acid dehydrogenase complex
+PWY-5046,branched-chain α-keto acid dehydrogenase complex
+GLY,aminoacetic acid
+GLY,gly
+GLY,G
+GLY,glycine
+ENSG00000092964-MONOMER,CRMP-2
+ENSG00000092964-MONOMER,Dihydropyrimidinase-related protein 2
+ENSG00000092964-MONOMER,N2A3
+ENSG00000092964-MONOMER,DRP-2
+ENSG00000092964-MONOMER,Collapsin response mediator protein 2
+HS09149,eNOS
+HS09149,NOS3
+HS09149,ECNOS
+1.1.1.178-RXN,2-methyl-3-hydroxybutyryl-CoA dehydrogenase
+GLUTDEG-PWY,glutamate degradation II
+GLUTDEG-PWY,aspartate degradation
+GLUTDEG-PWY,glutamate - aspartate pathway
+SPONTPRO-RXN,SPONTPRO-RXN
+HS08461,CBS
+HS08461,HIP4
+GLT,glutacid
+GLT,L-glutamic acid
+GLT,L-Glutamate
+GLT,α-aminoglutaric acid
+GLT,glutamate
+GLT,glt
+GLT,glut
+GLT,glutaminic acid
+GLT,glu
+GLT,L-glu
+GLT,L-glutamate
+GLT,E
+GLT,"1-amino-propane-1,3-dicarboxylic acid"
+GLT,2-aminopentanedioic acid
+HS01071-MONOMER,Mitochondrial ribonuclease P protein 2
+HS01071-MONOMER,3-hydroxy-2-methylbutyryl-CoA dehydrogenase
+HS01071-MONOMER,Mitochondrial RNase P protein 2
+HS01071-MONOMER,3-hydroxyacyl-CoA dehydrogenase type-2
+HS01071-MONOMER,Type II HADH
+HS01071-MONOMER,17-beta-hydroxysteroid dehydrogenase 10
+HS01071-MONOMER,3-hydroxyacyl-CoA dehydrogenase type II
+HS01071-MONOMER,Short-chain type dehydrogenase/reductase XH98G2
+HS01071-MONOMER,Endoplasmic reticulum-associated amyloid beta-peptide-binding protein
+HS17447-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS17447-MONOMER,argininosuccinate synthase
+HS16595-MONOMER,C1 tetrahydrofolate synthase cytoplasmic C1 THF synthase
+GUANIDOACETIC_ACID,guanidinoacetic acid
+GUANIDOACETIC_ACID,guanidinoacetate
+GUANIDOACETIC_ACID,glycocyamine
+GUANIDOACETIC_ACID,N-amidinoglycine
+HS05318-MONOMER,Deoxyhypusine dioxygenase
+HS05318-MONOMER,HEAT-like repeat-containing protein 1
+HS05318-MONOMER,Deoxyhypusine hydroxylase
+HS05318-MONOMER,hDOHH
+HS05318-MONOMER,Deoxyhypusine monooxygenase
+HS05204-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS05204-MONOMER,argininosuccinate synthase
+HS04858,GOT2
+HS02631,SARS2
+HS02631,FLJ20450
+HS03728-MONOMER,"Homogentisate 1,2-dioxygenase"
+HS03728-MONOMER,Homogentisate oxygenase
+HS03728-MONOMER,Homogentisicase
+HS03728-MONOMER,Homogentisic acid oxidase
+RXN-10819,RXN-10819
+HS17086-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17086-MONOMER,GAPDH
+HS16547,HS16547
+METHYLCROTONYL-COA-CARBOXYLASE-RXN,Beta-methylcrotonyl-CoA carboxylase
+RXN-12752,NAD(P)H-hydrate epimerase
+HS17587,HS17587
+HS00060-MONOMER,L-3-phosphoserine phosphatase homolog
+HS00060-MONOMER,phosphoserine phosphatase-like
+HS00060-MONOMER,L-3-phosphoserine-phosphatase homolog
+HS04361,GOT1
+HS06627,SUOX
+HS17583,HS17583
+PYRROLINECARBREDUCT-RXN,P5CR
+CPLX-7047,branched-chain α-keto acid dehydrogenase E1 component
+CPLX-7047,human
+CPLX-7047,man
+HISTIDINE-AMMONIA-LYASE-RXN,Histidinase
+HISTIDINE-AMMONIA-LYASE-RXN,histidine ammonia-lyase
+HISTIDINE-AMMONIA-LYASE-RXN,Histidase
+HISTIDINE-AMMONIA-LYASE-RXN,Histidine alpha-deaminase
+MEPROPCOA-FAD-RXN,isobutyryl-CoA dehydrogenase
+MEPROPCOA-FAD-RXN,Branched-chain acyl-CoA dehydrogenase
+HS07715-MONOMER,MAT 1
+HS07715-MONOMER,AdoMet synthetase 1
+HS07715-MONOMER,Methionine adenosyltransferase I/III
+HS07715-MONOMER,MAT-I/III
+HS07715-MONOMER,Methionine adenosyltransferase 1
+HS07715-MONOMER,S-adenosylmethionine synthetase isoform type-1
+CPLX-7769,MtCK
+CPLX-7769,uMtCK
+CPLX-7769,mitochondrial creatine kinase
+CPLX-7769,Mi-CK
+CPLX-7769,ubiquitous mitochondrial creatine kinase octamer
+CPLX-7769,uMi-CK
+CPLX-7769,ubiquitous mitochondrial creatine kinase
+2-OXOBUTANOATE,α-oxobutyric acid
+2-OXOBUTANOATE,2-oxo-butyrate
+2-OXOBUTANOATE,α-ketobutyrate
+2-OXOBUTANOATE,2-ketobutyrate
+2-OXOBUTANOATE,2-oxobutanoate
+2-OXOBUTANOATE,2-ketobutyric acid
+2-OXOBUTANOATE,α-ketobutyric acid
+2-OXOBUTANOATE,2-keto-butyrate
+2-OXOBUTANOATE,2-oxobutyrate
+2-OXOBUTANOATE,2-oxobutyric acid
+2-OXOBUTANOATE,a-ketobutyric acid
+PWY-6938,NADH repair
+HS06848,PYCR1
+HS06848,PP222
+HS06848,P5CR
+HS06848,PYCR
+HS06848,P5C
+CPLX-7048,branched-chain α-keto acid dehydrogenase complex E2 component
+CPLX-7048,dihydrolipoamide branched chain transacylase
+CPLX-7048,human
+CPLX-7048,man
+HS10286-MONOMER,Phosphoglycerate mutase 1
+HS10286-MONOMER,BPG-dependent PGAM 1
+HS10286-MONOMER,PGAM-B
+HS10286-MONOMER,Phosphoglycerate mutase isozyme B
+Ubiquinols,a dihydroubiquinone
+Ubiquinols,an ubiquinol
+Ubiquinols,a reduced ubiquinone
+Ubiquinols,a QH2
+2OXOGLUTDECARB-RXN,2-oxoglutarate decarboxylation
+2OXOGLUTDECARB-RXN,Oxoglutarate decarboxylase
+2OXOGLUTDECARB-RXN,Alpha-ketoglutaric dehydrogenase
+HS00205-MONOMER,HEP-NOS
+HS00205-MONOMER,iNOS
+HS00205-MONOMER,"Nitric oxide synthase, inducible"
+HS00205-MONOMER,Hepatocyte NOS
+HS00205-MONOMER,Inducible NO synthase
+HS00205-MONOMER,Inducible NOS
+HS00205-MONOMER,NOS type II
+HS01447,OXCT
+HS01447,SCOT
+HS01447,OXCT1
+HS04050,CTH
+HS04050,MGC9471
+ARGSUCCINLYA-RXN,arginosuccinase
+ARGSUCCINLYA-RXN,Arginosuccinase
+ARGSUCCINLYA-RXN,arginine-succinate lyase
+GLYOHMETRANS-RXN,Threonine aldolase
+GLYOHMETRANS-RXN,Serine aldolase
+GLYOHMETRANS-RXN,Serine hydroxymethyltransferase
+GLYOHMETRANS-RXN,Serine hydroxymethylase
+HS02793,HSD35
+HS02793,GAPDH2
+HS02793,HSD-35
+HS02793,GAPDHS
+HS02793,GAPDS
+HS02793,GAPD2
+HS07832-MONOMER,Phosphofructokinase 1
+HS07832-MONOMER,PFK-A
+HS07832-MONOMER,Phosphofructokinase-M
+HS07832-MONOMER,Phosphofructo-1-kinase isozyme A
+HS07832-MONOMER,Phosphohexokinase
+HS07832-MONOMER,"6-phosphofructokinase, muscle type"
+CIS-ACONITATE,"(Z)-prop-1-ene-1,2,3-tricarboxylate"
+CIS-ACONITATE,cis-aconitate
+CIS-ACONITATE,cis-aconitic acid
+GLUTKIN-RXN,glutamate-5 kinase
+GLUTKIN-RXN,GK
+GLUTKIN-RXN,Gamma-glutamyl kinase
+3PGAREARR-RXN,Phosphoglycerate phosphomutase
+3PGAREARR-RXN,Phosphoglyceromutase
+HS09890-MONOMER,Glutamate oxaloacetate transaminase 1-like protein 1
+HS09890-MONOMER,Transaminase A-like protein 1
+HS09890-MONOMER,"Putative aspartate aminotransferase, cytoplasmic 2"
+HS04597,ACO1
+HS04597,IREB1
+HS17059-MONOMER,Glycine decarboxylase
+HS17059-MONOMER,"Glycine dehydrogenase [decarboxylating], mitochondrial"
+HS17059-MONOMER,Glycine cleavage system P-protein
+HS09189-MONOMER,FBPase 1
+HS09189-MONOMER,"Fructose-1,6-bisphosphatase 1"
+HS09189-MONOMER,"D-fructose-1,6-bisphosphate 1-phosphohydrolase 1"
+CPLX-6582,"nitric oxide synthase, inducible"
+CPLX-6582,NOS2A
+CPLX-6582,iNOS
+CPD-11495,"acetic acid, (o-hydroxyphenyl)-"
+CPD-11495,"benzeneacetic acid, 2-hydroxy-"
+CPD-11495,2-hydroxyphenylacetic acid
+CPD-11495,2-hydroxyphenylacetate
+CPD-11495,o-hydroxyphenylacetate
+CPD-11495,2-hydroxybenzeneacetic acid
+CPD-11495,o-hydroxy phenylacetic acid
+CPD-11495,o-hydroxyphenylacetic acid
+DIHYDROXY-ACETONE-PHOSPHATE,di-OH-acetone-P
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxyacetone-phosphate
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxyacetone 3-phosphate
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxy-acetone-phosphate
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxyacetone-P
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxyacetone phosphate
+DIHYDROXY-ACETONE-PHOSPHATE,glycerone-phosphate
+DIHYDROXY-ACETONE-PHOSPHATE,DHAP
+DIHYDROXY-ACETONE-PHOSPHATE,dihydroxy-acetone phosphate
+HS10374-MONOMER,PAH
+HS10374-MONOMER,Phe-4-monooxygenase
+HS10374-MONOMER,Phenylalanine-4-hydroxylase
+HS16751,HS16751
+CPD-653,(S)-NADHX
+CPD-653,"(6S)-6-β-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide"
+HS04148-MONOMER,Diphthamide biosynthesis methyltransferase
+HS04148-MONOMER,Diphthine synthase
+CPLX-6746,pyrroline-5-carboxylate dehydrogenase
+CPLX-6747,ornithine--oxo-acid aminotransferase
+CPLX-6747,ornithine--oxo-acid transaminase
+RXN0-1134,Pyruvate dehydrogenase
+RXN0-1134,Pyruvic dehydrogenase
+RXN0-1134,Pyruvate decarboxylase
+HS09809,XPVKONA
+HS09809,DCAL
+HS09809,AHCYL1
+HS07914,RPI
+HS07914,RPIA
+OXYGEN-MOLECULE,oxygen molecule
+OXYGEN-MOLECULE,oxygen
+METHACRYLYL-COA,2-methylprop-2-enoyl-CoA
+METHACRYLYL-COA,methacrylyl-coenzyme A
+METHACRYLYL-COA,methacrylyl-CoA
+METHACRYLYL-COA,methylacrylyl-CoA
+HS11585,DHTKD1
+HS11585,KIAA1630
+HS05370-MONOMER,6PGL
+HS05370-MONOMER,6-phosphogluconolactonase
+HS05215,GAD67
+HS05215,GAD
+HS05215,GAD1
+HS02536,FAH
+HYDROXYMETHYLGLUTARYL-COA-LYASE-RXN,HMG-CoA lyase
+HYDROXYMETHYLGLUTARYL-COA-LYASE-RXN,3-hydroxy-3-methylglutarate-CoA lyase
+HS09890,GOT1L1
+HS09453-MONOMER,LDH-X
+HS09453-MONOMER,Cancer/testis antigen 32
+HS09453-MONOMER,L-lactate dehydrogenase C chain
+HS09453-MONOMER,LDH-C
+HS09453-MONOMER,CT32
+HS09453-MONOMER,LDH testis subunit
+ARGINASE-RXN,Canavanase
+ARGINASE-RXN,Arginine amidinase
+DIPHTINE,diphthine
+DIPHTINE,diphthine in eEF-2
+DPG,"glycerate 1,3-bisphosphate"
+DPG,3-phospho-D-glyceroyl-phosphate
+DPG,phosphoglyceroyl-P
+DPG,"1,3-bisphospho-D-glycerate"
+DPG,3-phosphoglyceroyl-P
+DPG,3-phosphoglyceroyl-phosphate
+DPG,DPG
+DPG,P-glyceroyl-P
+DPG,13-DPG
+DPG,3-P-glyceroyl-P
+VALDEG-PWY,valine degradation I
+HS17767-MONOMER,C1 tetrahydrofolate synthase cytoplasmic C1 THF synthase
+HS07328-MONOMER,Probable 3-hydroxymethyl-3-methylglutaryl-CoA lyase 2
+HS07328-MONOMER,3-hydroxymethyl-3-methylglutaryl-CoA lyase-like protein 1
+2-AMINO-3-3-OXOPROP-2-ENYL-BUT-2-ENEDI,2-amino-3-carboxymuconate-6-semialdehyde
+2-AMINO-3-3-OXOPROP-2-ENYL-BUT-2-ENEDI,aminocarboxymuconate semialdehyde
+2-AMINO-3-3-OXOPROP-2-ENYL-BUT-2-ENEDI,2-amino-3-carboxymuconate semialdehyde
+2-AMINO-3-3-OXOPROP-2-ENYL-BUT-2-ENEDI,2-amino-3-(3-oxoprop-1-en-1-yl)-but-2-enedioate
+PWY66-368,ketolysis
+PWY66-368,ketone body metabolism
+PWY66-368,ketone body degradation
+HS00622-MONOMER,GLYCINE CLEAVAGE SYSTEM P- PROTEIN
+HS00622-MONOMER,"glycine dehydrogenase (decarboxylating; glycine decarboxylase, glycine cleavage system protein P)"
+HS00622-MONOMER,"glycine dehydrogenase (decarboxylating), mitochondrial precursor"
+HS00622-MONOMER,GLYCINE DECARBOXYLASE
+PWY-5130,2-oxobutyrate degradation
+PWY-5130,2-oxobutyrate catabolism
+PWY-5130,2-oxobutanoate degradation I
+HS16802,FLJ40154
+HS00060,PSPHL
+HS00060,CO9
+HS01447-MONOMER,Somatic-type succinyl CoA:3-oxoacid CoA-transferase
+HS01447-MONOMER,3-oxoacid-CoA transferase 1
+HS01447-MONOMER,Scot-S
+HS01447-MONOMER,"succinyl-CoA:3-ketoacid-coenzyme A transferase 1, mitochondrial"
+HIS,his
+HIS,H
+HIS,L-histidine
+HIS,(S)-α-amino-1H-imidazole-4-propanoic acid
+HIS,α-amino-4-imidazoleproprionic acid
+HIS,histidine
+HIS,glyoxaline-5-alanine
+HS02114,MAAI
+HS02114,GSTZ1
+3-HYDROXY-L-KYNURENINE,3-hydroxy-kynurenine
+3-HYDROXY-L-KYNURENINE,L-3-hydroxykynurenine
+3-HYDROXY-L-KYNURENINE,3-hydroxy-L-kynurenine
+PHOSPHO-ENOL-PYRUVATE,PEP
+PHOSPHO-ENOL-PYRUVATE,P-enol-pyr
+PHOSPHO-ENOL-PYRUVATE,phosphoenolpyruvate
+PHOSPHO-ENOL-PYRUVATE,P-enol-pyruvate
+HS06642-MONOMER,Cysteine sulfinic acid decarboxylase
+HS06642-MONOMER,Sulfinoalanine decarboxylase
+HS06642-MONOMER,Cysteine-sulfinate decarboxylase
+CPLX66-269,pyruvate dehydrogenase E1 component (somatic)
+CPD-8999,"5-(methylsulfanyl)-2,3-dioxopentyl phosphate"
+CPD-8999,"2,3-diketo-5-methylthio-1-phosphopentane"
+CPD-8999,"5-(methylthio)-2,3-dioxopentyl phosphate"
+CPD-8999,"5-methylthio-1-(phosphonooxy)pentane-2,3-dione"
+CPD-8999,DKM-1-P
+CPD-8999,"2,3-diketo-5-methylthiopentyl-1-phosphate"
+CPD-8999,"1-phospho-2,3-diketo-5-methylthiopentane"
+CPD-8999,"1-phosphoryloxy-2,3-diketo-5-methylthiopentane"
+PHENYLALANINE-4-MONOOXYGENASE-RXN,Phenylalanine 4-hydroxylase
+PHENYLALANINE-4-MONOOXYGENASE-RXN,Phenylalaninase
+PHENYLALANINE-4-MONOOXYGENASE-RXN,PAH
+HS02832,OGDH
+HS02832,E1k
+HS07223-MONOMER,GCVT
+HS07223-MONOMER,"Aminomethyltransferase, mitochondrial"
+HS07223-MONOMER,Glycine cleavage system T protein
+RXN-11373,diphthamide synthase
+RXN-11370,RXN-11370
+RXN-11371,RXN-11371
+CPD-11715,"glycine, N-(phenylacetyl)-"
+CPD-11715,phenacetylglycine
+CPD-11715,phenaceturic acid
+CPD-11715,N-phenacetylglycine
+CPD-11715,N-(phenylacetyl)glycine
+CPD-11715,phenylacetylglycine
+CPD-11715,N-phenylacetylglycine
+HS08926,MTHFD2L
+3-HYDROXY-3-METHYL-GLUTARYL-COA,hydroxymethylglutaryl-CoA
+3-HYDROXY-3-METHYL-GLUTARYL-COA,(S)-3-hydroxy-3-methylglutaryl-CoA
+3-HYDROXY-3-METHYL-GLUTARYL-COA,HMG-CoA
+3-HYDROXY-3-METHYL-GLUTARYL-COA,3-hydroxy-3-methylglutaryl-coenzyme A
+3-HYDROXY-3-METHYL-GLUTARYL-COA,3-Hydroxy-3-methylglutaryl-CoA
+3-HYDROXY-3-METHYL-GLUTARYL-COA,3-hydroxy-3-methyl-glutaryl-CoA
+HS06001-MONOMER,L-glutaminase
+HS06001-MONOMER,L-glutamine amidohydrolase
+HS06001-MONOMER,GLS
+HS06001-MONOMER,"Glutaminase liver isoform, mitochondrial"
+GLUDEG-I-PWY,GABA shunt
+GLUDEG-I-PWY,glutamate degradation III (via 4-aminobutyrate)
+HS03200,ALDOC
+HS03200,ALDC
+HS00531-MONOMER,MAT II beta
+HS00531-MONOMER,DTDP-4-keto-6-deoxy-D-glucose 4-reductase
+HS00531-MONOMER,BETA REGULATORY SUBUNIT OF METHIONINE ADENOSYLTRANSFERASE
+HS00531-MONOMER,Methionine adenosyltransferase II beta
+HS00531-MONOMER,Methionine adenosyltransferase 2 beta subunit
+HS00531-MONOMER,DTDP-4-KETO-6-DEOXY-D-GLUCOSE 4-REDUCTASE
+HS00531-MONOMER,Methionine adenosyltransferase 2 subunit beta
+S-ADENMETSYN-RXN,BETA REGULATORY SUBUNIT OF METHIONINE ADENOSYLTRANSFERASE
+S-ADENMETSYN-RXN,DTDP-4-KETO-6-DEOXY-D-GLUCOSE 4-REDUCTASE
+S-ADENMETSYN-RXN,S-adenosylmethionine synthetase
+S-ADENMETSYN-RXN,Adomet synthetase
+5-METHYL-THF,N5-methyl-THF
+5-METHYL-THF,methyl-tetrahydrofolate
+5-METHYL-THF,"5-methyl-5,6,7,8-tetrahydropteroyl-L-glutamic acid"
+5-METHYL-THF,methyl-THF
+5-METHYL-THF,N5-methyltetrahydropteroyl mono-L-glutamate
+5-METHYL-THF,N5-methyltetrahydropteroylmonoglutamate
+5-METHYL-THF,"5-methyl-5,6,7,8-tetrahydrofolate"
+5-METHYL-THF,5-methyl-THF
+5-METHYL-THF,5-methyl-tetrahydrofolate
+5-METHYL-THF,methyl-H4F
+5-METHYL-THF,n5-methyltetrahydrofolate
+THR,thre
+THR,thr
+THR,T
+THR,L-thr
+THR,L-threonine
+THR,threonine
+THR,2-amino-3-hydroxybutyric acid
+HS06066,GLNS
+HS06066,GLUL
+G66-31585,PADI6
+METHYLMALONYL-COA-MUT-RXN,METHYLMALONYL-COA-MUT-RXN
+HS14346,TKTL2
+HS17316-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS17316-MONOMER,argininosuccinate synthase
+HS09610-MONOMER,Glutamate pyruvate transaminase 1
+HS09610-MONOMER,GPT 1
+HS09610-MONOMER,Glutamic--alanine transaminase 1
+HS09610-MONOMER,Glutamic--pyruvic transaminase 1
+HS09610-MONOMER,alanine transaminase
+HS09610-MONOMER,glutamate pyruvate transaminase
+HS09610-MONOMER,ALT1
+HS09610-MONOMER,Alanine aminotransferase 1
+HS00361-MONOMER,malate dehydrogenase subunit
+HS00361-MONOMER,human
+HS00361-MONOMER,man
+HYDROGEN-PEROXIDE,H2O2
+HYDROGEN-PEROXIDE,hydrogen peroxide
+HYDROGEN-PEROXIDE,perhydrol
+HYDROGEN-PEROXIDE,hydroperoxide
+RXN-7593,RXN-7593
+HS16547-MONOMER,L-lactate dehydrogenase chain
+HS16547-MONOMER,LDH
+RXN-821,proline oxidase
+HS00525,UNQ6390/PRO21135
+HS00525,MRI1
+PWY-6118,glycerol-3-phosphate shuttle
+PWY-6118,glycerol-3-P shuttle
+PWY-6118,G3P shuttle
+HS17122,HS17122
+2-3-CARBOXY-3-METHYLAMMONIOPROPYL-L-,2-[3-carboxy-3-(methylammonio)propyl]-L-histidine
+2-3-CARBOXY-3-METHYLAMMONIOPROPYL-L-,[3-[[4-(2-amino-2-carboxy-ethyl)-1H-imidazol-2-yl]]-1-carboxy- propyl]-methyl-ammonium
+2-3-CARBOXY-3-METHYLAMMONIOPROPYL-L-,2-[3-carboxy-3-(methylammonio)propyl]-L-histidine in eEF-2
+GLUTDECARBOX-RXN,GLUTDECARBOX-RXN
+HS17383,HS17383
+HS08467,G6PD1
+HS08467,G6PD
+6PFRUCTPHOS-RXN,Phosphohexokinase
+6PFRUCTPHOS-RXN,Phosphofructokinase I
+6PFRUCTPHOS-RXN,fructose-6-phosphate phosphorylation
+2.7.9.3-RXN,Selenium donor protein
+2.7.9.3-RXN,Selenophosphate synthase
+2.7.9.3-RXN,Selenophosphate synthetase
+CPLX66-42,human
+CPLX66-42,2-ketoglutarate dehydrogenase
+CPLX66-42,α-ketoglutarate dehydrogenase
+CPLX66-42,2-ketoglutarate dehydrogenase complex
+CPLX66-42,man
+HS07715,MAT1A
+HS07715,AMS1
+HS07715,MATA1
+BRANCHED-CHAINAMINOTRANSFERVAL-RXN,Transaminase B
+BRANCHED-CHAINAMINOTRANSFERVAL-RXN,Valine transaminase
+METHYLACYLYLCOA-HYDROXY-RXN,Unsaturated acyl-CoA hydratase
+METHYLACYLYLCOA-HYDROXY-RXN,Methylacrylyl-CoA hydratase
+METHYLACYLYLCOA-HYDROXY-RXN,Enoyl hydrase
+HS03728,HGO
+HS03728,HGD
+4.3.1.17-RXN,L-serine deaminase
+4.3.1.17-RXN,Serine deaminase
+4.3.1.17-RXN,L-serine hydro-lyase (deaminating)
+4.3.1.17-RXN,L-hydroxyaminoacid dehydratase
+4.3.1.17-RXN,L-serine dehydratase
+HS03685,AGT2
+HS03685,AGXT2
+ENSG00000113657-MONOMER,Collapsin response mediator protein 4
+ENSG00000113657-MONOMER,CRMP-4
+ENSG00000113657-MONOMER,Dihydropyrimidinase-related protein 3
+ENSG00000113657-MONOMER,Unc-33-like phosphoprotein
+ENSG00000113657-MONOMER,DRP-3
+ENSG00000113657-MONOMER,ULIP protein
+CPD0-2472,(R)-NADHX
+CPD0-2472,"(6R)-6-β-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide"
+CPD-12175,(S)-3-hydroxy-isobutyrate
+CPD-12175,(S)-3-hydroxy-2-methylpropanoate
+CPD-12175,(S)-3-OH-iso-but
+CPD-12175,(S)-3-hydroxy-isobutanoate
+CPD-12175,(S)-3-Hydroxyisobutyric acid
+CPD-12175,(S)-3-OH-isobutyrate
+HS07771-MONOMER,TDO
+HS07771-MONOMER,TRPO
+HS07771-MONOMER,"Tryptophan 2,3-dioxygenase"
+HS07771-MONOMER,TO
+HS07771-MONOMER,Tryptophan pyrrolase
+HS07771-MONOMER,Tryptophan oxygenase
+HS07771-MONOMER,Tryptophanase
+HS07771-MONOMER,"Tryptamin 2,3-dioxygenase"
+CPLX-7055,4-hydroxyphenylpyruvate dioxygenase
+CPD-11830,3-methoxy-4-hydroxyphenylpyruvate
+CPD-11830,vanilpyruvate
+CPD-11830,vanilpyruvic acid
+CPD-11830,4-hydroxy-3-methoxyphenylpyruvic acid
+HS14628,HS14628
+ENSG00000167985-MONOMER,"Succinate dehydrogenase subunit 5, mitochondrial"
+ENSG00000167985-MONOMER,hSDH5
+G66-33941-MONOMER,Alpha-AASA dehydrogenase
+G66-33941-MONOMER,P6c dehydrogenase
+G66-33941-MONOMER,Alpha-aminoadipic semialdehyde dehydrogenase
+G66-33941-MONOMER,Antiquitin-1
+G66-33941-MONOMER,Delta1-piperideine-6-carboxylate dehydrogenase
+G66-33941-MONOMER,Betaine aldehyde dehydrogenase
+G66-33941-MONOMER,Aldehyde dehydrogenase family 7 member A1
+G66-33941-MONOMER,AL7A1_HUMAN
+HS10525,AGXT
+HS10525,AGT1
+HS10525,SPAT
+HS01530,SELD
+HS01530,SEPHS1
+HS01530,SPS
+HS01530,SPS1
+METHYL-MALONYL-COA,(R)-methylmalonyl-CoA
+METHYL-MALONYL-COA,CH3-malonyl-CoA
+METHYL-MALONYL-COA,methyl-malonyl-coenzyme A
+METHYL-MALONYL-COA,methylmalonyl-CoA
+METHYL-MALONYL-COA,L-methylmalonyl-CoA
+CPD-444,5-methylthioribose-1-phosphate
+CPD-444,1-phospho-5-S-methylthioribose
+CPD-444,1-phosphomethylthioribose
+CPD-444,5-methylthio-D-ribose-1-phosphate
+CPD-444,S-methyl-5-thio-α-D-ribose 1-phosphate
+CPD-444,1-PMTR
+CPD-444,S5-methyl-5-thio-D-ribose-1-phosphate
+CPD-444,1-phospho-5-S-methylthio-α-D-ribofuranoside
+CPD-444,5-MTR-1-P
+CPD-444,S-methyl-5-thio-D-ribose 1-phosphate
+PWY-5084-RXN,2-oxoglutarate decarboxylation to succinyl-CoA (reaction)
+HYDANTOIN-5-PROPIONATE,hydantoin-5-propionate
+HYDANTOIN-5-PROPIONATE,hydantoin propionate
+CPLX-6887,glutamate decarboxylase 1
+ADENOSINE,adenine-D-ribose
+ADENOSINE,adenosine
+CPLX-6889,glutamate decarboxylase 2
+SUC,suc
+SUC,succinic acid
+SUC,succ
+SUC,butanedioic acid
+SUC,ethylenesuccinic acid
+SUC,succinate
+GAP,glyceraldehyde-P
+GAP,triose phosphate
+GAP,D-glyceraldehyde-3-P
+GAP,gap
+GAP,D-glyceraldehyde 3-phosphate
+GAP,glyceraldehyde-phosphate
+GAP,3-phosphoglyceraldehyde
+GAP,(2R)-2-hydroxy-3-(phosphonooxy)-propanal
+GAP,glyceraldehyde 3-phosphate
+GAP,glyceraldehyde-3-P
+HS16751-MONOMER,EC_5.4.2.4 EC_3.1.3.13 PHOSPHOGLYCERATE MUTASE ISOZYME PGAM BPG DEPENDENT PGAM
+HS16751-MONOMER,phosphoglycerate mutase
+HS09189,FBP
+HS09189,FBP1
+UROCANATE,trans-urocanate
+UROCANATE,urocanate
+UROCANATE,urocanic acid
+HS17032,HS17032
+HS01069-MONOMER,SHMT
+HS01069-MONOMER,serine hydroxymethyltransferase 1 (soluble) isoform 1
+HS01069-MONOMER,serine hydroxymethyltransferase 1 (soluble)
+HS01069-MONOMER,SERINE METHYLASE
+HS01069-MONOMER,GLYCINE HYDROXYMETHYLTRANSFERASE
+HS01069-MONOMER,"serine hydroxymethyltransferase, cytosolic"
+HS01069-MONOMER,cytoplasmic serine hydroxymethyltransferase
+HS05327-MONOMER,guanidinoacetate N-methyltransferase isoform a
+HS05327-MONOMER,Guanidinoacetate N-methyltransferase
+HS03018-MONOMER,1.2.4.-
+HS03018-MONOMER,"2-oxoglutarate dehydrogenase E1 component-like, mitochondrial"
+HS03018-MONOMER,Alpha-ketoglutarate dehydrogenase-like
+CPLX66-211,mitochondrial hydroxymethylglutaryl-CoA lyase
+D-4-HYDROXY-2-KETO-GLUTARATE,D-4-hydroxy-2-ketoglutarate
+D-4-HYDROXY-2-KETO-GLUTARATE,4-hydroxy-2-oxoglutarate
+D-4-HYDROXY-2-KETO-GLUTARATE,D-4-hydroxy-2-keto-glutarate
+D-4-HYDROXY-2-KETO-GLUTARATE,2-oxo-4-hydroxyglutarate
+D-4-HYDROXY-2-KETO-GLUTARATE,2-keto-4-hydroxyglutarate
+D-4-HYDROXY-2-KETO-GLUTARATE,4-hydroxy-2-ketoglutarate
+RXN-11374,RXN-11374
+METHENYLTHFCYCLOHYDRO-RXN,METHENYLTHFCYCLOHYDRO-RXN
+PWY-4984,Krebs ornithine cycle
+PWY-4984,Krebs-Henseleit cycle
+PWY-4984,urea cycle
+GLYCLEAV-PWY,gcv system
+GLYCLEAV-PWY,glycine cleavage complex
+GLYCLEAV-PWY,glycine decarboxylase complex
+GLYCLEAV-PWY,glycine cleavage system
+GLYCLEAV-PWY,glycine cleavage
+PWY-4981,proline biosynthesis II (from arginine)
+HS05425-MONOMER,Argininosuccinate synthase
+HS05425-MONOMER,Citrulline--aspartate ligase
+HS02832-MONOMER,2-oxoglutarate dehydrogenase E1 component
+HS02832-MONOMER,human
+HS02832-MONOMER,man
+HS17316,HS17316
+HS00213,TKTL1
+HS00213,TKR
+HS00213,TKT2
+HS04202,HUSSY-17
+HS04202,RPE
+CPLX66-212,mitochondrial D-β-hydroxybutyrate dehydrogenase
+CPLX66-212,D-β-hydroxybutyrate dehydrogenase
+HS17313,HS17313
+HS09344-MONOMER,B-CK
+HS09344-MONOMER,Creatine kinase B-type
+HS09344-MONOMER,Creatine kinase B chain
+HS17447,HS17447
+HS16074,HS16074
+F16BDEPHOS-RXN,Hexosediphosphatase
+F16BDEPHOS-RXN,"Fructose-1,6-bisphosphatase"
+F16BDEPHOS-RXN,"fructose 1,6 bisphosphate dephosphorylation"
+CPLX-7867,2-oxoglutarate dehydrogenase complex E1 dimer
+CPLX-7867,human
+CPLX-7867,man
+6PGLUCONOLACT-RXN,6PGL
+HS02693,PHI
+HS02693,GPI
+HS02693,SA-36
+HS02693,GNPI
+HS02693,PGI
+HS02693,NLK
+HS02693,AMF
+CPLX-7863,mitochondrial  citrate synthase
+CPLX-7863,human
+CPLX-7863,man
+PYRROLINE-HYDROXY-CARBOXYLATE,"(3R,5S)-1-pyrroline-3-hydroxy-5-carboxylate"
+PYRROLINE-HYDROXY-CARBOXYLATE,pyrroline-hydroxy-carboxylate
+PYRROLINE-HYDROXY-CARBOXYLATE,L-1pyrroline-3-hydroxy-5-carboxylate
+PYRROLINE-HYDROXY-CARBOXYLATE,L-Δ1-pyrroline 3-hydroxy-5-carboxylate
+3-HYDROXY-ANTHRANILATE,3-hydroxyanthranilic acid
+3-HYDROXY-ANTHRANILATE,2-amino-3-hydroxybenzoate
+3-HYDROXY-ANTHRANILATE,3-hydroxyanthranilate
+CPLX-7868,mitochondrial dihydrolipoyl dehydrogenase
+CPLX-7868,E3 component of branched chain keto acid dehydrogenase complex
+CPLX-7868,E3 component of 2-oxo-glutarate complex
+CPLX-7868,human
+CPLX-7868,E3 component of pyruvate dehydrogenase complex
+CPLX-7868,glycine cleavage system L protein
+CPLX-7868,dihydrolipoyl dehydrogenase (E3) dimer
+CPLX-7868,man
+CPLX-7869,human
+CPLX-7869,"2-oxoglutarate dehydrogenase complex, (E2) inner core"
+CPLX-7869,man
+LEU,L-leucine
+LEU,(2S)-α-leucine
+LEU,L
+LEU,2-amino-4-methylvaleric acid
+LEU,leucine
+LEU,leu
+LEU,(2S)-α-2-amino-4-methylvaleric acid
+PWY-6334,L-dopa degradation
+PWY-6334,dihydroxy-L-phenylalanine degradation
+HS17738-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17738-MONOMER,GAPDH
+HS00832,OAT
+HS00832,HOGA
+TYROSINE-AMINOTRANSFERASE-RXN,Tyrosine transaminase
+1.14.11.1-RXN,Gamma-BBH
+1.14.11.1-RXN,Gamma-butyrobetaine hydroxylase
+HS00622,NKH
+HS00622,GLDC
+HS00622,GCE
+HS00622,HYGN1
+HS00622,GCSP
+ASPARAGHYD-RXN,L-asparagine amidohydrolase
+ASPARAGHYD-RXN,L-asparaginase
+MALATE-DEH-RXN,Malic dehydrogenase
+MALATE-DEH-RXN,malate dehydrogenation
+HS01061-MONOMER,Fatty aldehyde dehydrogenase
+HS01061-MONOMER,Aldehyde dehydrogenase family 3 member A2
+HS01061-MONOMER,Aldehyde dehydrogenase 10
+HS01061-MONOMER,Microsomal aldehyde dehydrogenase
+HS07746-MONOMER,HDHPR
+HS07746-MONOMER,Dihydropteridine reductase
+HS07746-MONOMER,Quinoid dihydropteridine reductase
+HS09847,MAT2A
+HS09847,AMS2
+HS09847,MATA2
+HS06890,MSUD1
+HS06890,MSUD
+HS06890,BCKDHA
+HS14455,ACMSD
+PWY-5905,hypusine biosynthesis
+HS01002-MONOMER,Glutamine-dependent asparagine synthetase
+HS01002-MONOMER,Cell cycle control protein TS11
+HS01002-MONOMER,Asparagine synthetase [glutamine-hydrolyzing]
+ENSG00000142046-MONOMER,BRANCHED-CHAIN ALPHA-KETO ACID DEHYDROGENASE E1 COMPONENT ALPHA CHAIN
+ENSG00000142046-MONOMER,"2-OXOISOVALERATE DEHYDROGENASE ALPHA SUBUNIT, MITOCHONDRIAL PRECURSOR"
+ENSG00000142046-MONOMER,"branched chain keto acid dehydrogenase E1, alpha polypeptide (maple syrup urine disease)"
+ENSG00000142046-MONOMER,"Branched chain keto acid dehydrogenase E1, alpha polypeptide"
+ENSG00000142046-MONOMER,BCKDH E1-ALPHA
+CYSTAGLY-RXN,Cystathioninase
+CYSTAGLY-RXN,Gamma-cystathionase
+CYSTAGLY-RXN,Cysteine desulfhydrase
+CYSTAGLY-RXN,Cystathionase
+CYSTAGLY-RXN,Homoserine dehydratase
+CYSTAGLY-RXN,Homoserine deaminase
+CYSTAGLY-RXN,Cystine desulfhydrase
+S-ADENOSYLMETHIONINE,S-adenosyl-methionine
+S-ADENOSYLMETHIONINE,SAM
+S-ADENOSYLMETHIONINE,S-adenosyl-L-methionine
+S-ADENOSYLMETHIONINE,S-adenosylmethionine
+S-ADENOSYLMETHIONINE,AdoMet
+S-ADENOSYLMETHIONINE,adenosylmethionine
+S-ADENOSYLMETHIONINE,2-S-adenosyl-L-methionine
+Protein-L-Arginines,protein-L-arginine
+Protein-L-Arginines,a [protein]-L-arginine
+GCVP-RXN,Glycine decarboxylase
+GCVP-RXN,Glycine cleavage system P-protein
+HS15413-MONOMER,Platelet-activating factor acetylhydrolase
+HS15413-MONOMER,L-asparagine amidohydrolase
+HS15413-MONOMER,PAF acetylhydrolase
+HS14922,HS14922
+CPLX-7834,man
+CPLX-7834,human
+CPLX-7834,mitochondrial acetyl-CoA acetyltransferase
+ASPARTASE-RXN,Aspartase
+ASPARTASE-RXN,Fumaric aminase
+ASPARTASE-RXN,BA215B13.2 (FRAGMENT)
+5-METHYLTHIOADENOSINE,methylthioadenosine
+5-METHYLTHIOADENOSINE,5'-S-methyl-5'-thioadenosine
+5-METHYLTHIOADENOSINE,S-methyl-5'-thioadenosine
+5-METHYLTHIOADENOSINE,S-methyl-adenosine
+5-METHYLTHIOADENOSINE,5'-methylthioadenosine
+5-METHYLTHIOADENOSINE,MTA
+HS05132,ECHS1
+HS05132,SCEH
+HS01085,CRMP1
+HS01085,DPYSL1
+CPLX-8377,glyceraldehyde-3-phosphate dehydrogenase
+CPLX-8377,GAPDH
+TYR,Y
+TYR,L-tyrosine
+TYR,tyr
+TYR,tyrosine
+HS04094-MONOMER,Protein-arginine deiminase type-2
+HS04094-MONOMER,Peptidylarginine deiminase II
+HS04094-MONOMER,Protein-arginine deiminase type II
+HS04094-MONOMER,PAD-H19
+BETA-UREIDOPROPIONASE-RXN,BETA-UREIDOPROPIONASE-RXN
+ENSG00000161132-MONOMER,PROLINE DEHYDROGENASE
+ENSG00000161132-MONOMER,Putative proline dehydrogenase-like protein
+HS15058-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS15058-MONOMER,GAPDH
+HS06066-MONOMER,Glutamine synthetase
+HS06066-MONOMER,Glutamate--ammonia ligase
+HS06066-MONOMER,GS
+GLYCOLYSIS,Embden-Meyerhof-Parnas pathway
+GLYCOLYSIS,glycolysis I
+GLYCOLYSIS,EMP pathway
+GLYCOLYSIS,glycolysis (plastidic)
+GLYCOLYSIS,Embden-Meyerhof pathway
+GLYCOLYSIS,glucose degradation
+PWY-5172,acetyl-CoA biosynthesis III (from citrate)
+HS05318,HLRC1
+HS05318,DOHH
+PWY-5177,glutaryl-CoA degradation
+RXN-7908,4a-hydroxytetrahydrobiopterin dehydratase
+RXN-7908,4α-hydroxy-tetrahydropterin dehydratase
+HS10828-MONOMER,"Short/branched chain specific acyl-CoA dehydrogenase, mitochondrial"
+HS10828-MONOMER,1.3.99.-
+HS10828-MONOMER,SBCAD
+HS10828-MONOMER,2-methylbutyryl-coenzyme A dehydrogenase
+HS10828-MONOMER,2-methylbutyryl-CoA dehydrogenase
+HS10828-MONOMER,2-methyl branched chain acyl-CoA dehydrogenase
+HS10828-MONOMER,2-MEBCAD
+ACETYL-COA,acetyl-S-CoA
+ACETYL-COA,acetylcoenzyme-A
+ACETYL-COA,ac-CoA
+ACETYL-COA,ac-S-CoA
+ACETYL-COA,acetyl coenzyme-A
+ACETYL-COA,acetyl-CoA
+HS11159,PGAMA
+HS11159,PGAM1
+FUM,fumarate
+FUM,fumaric acid
+FUM,fum
+CITRULBIO-PWY,citrulline biosynthesis
+CPLX-6621,arginase type 1
+CPLX-6621,liver-type arginase
+HS05375,QRSL1
+HS05375,FLJ12189
+HS05375,DKFZP564C1278
+HS05375,FLJ13447
+HS06945-MONOMER,Protein-arginine deiminase type-1
+HS06945-MONOMER,Protein-arginine deiminase type I
+HS06945-MONOMER,Peptidylarginine deiminase I
+PWY0-1021,alanine biosynthesis III
+LCYSDESULF-RXN,LCYSDESULF-RXN
+CREATINE,methylglycocyamine
+CREATINE,methylguanidinoacetic acid
+CREATINE,N-methyl-N-guanylglycine
+CREATINE,N-amidinosarcosine
+CREATINE,creatine
+HS08648,ASRGL1
+HS08648,CRASH
+HS08648,ALP
+3-HYDROXY-N6N6N6-TRIMETHYL-L-LYSINE,(5-amino-5-carboxy-4-hydroxy-pentyl)-trimethyl-ammonium
+3-HYDROXY-N6N6N6-TRIMETHYL-L-LYSINE,"3-hydroxy-N6,N6,N6-trimethyl-L-lysin-N6-ium"
+3-HYDROXY-N6N6N6-TRIMETHYL-L-LYSINE,"3-hydroxy-N6,N6,N6-trimethyl-L-lysine"
+HS07908,CARKD
+HS10828,SBCAD
+HS10828,ACADSB
+HS05555,CKMT2
+HS05555,SMTCK
+HS06432,BCATE2
+HS06432,DBT
+HS17626-MONOMER,TIM
+HS17626-MONOMER,triosephosphate isomerase
+HS06436,HADHB
+HS06436,MSTP029
+CPLX-7723,human
+CPLX-7723,cytoplasmic glycerol-3-phosphate dehydrogenase (NAD+)
+CPLX-7723,man
+CPLX66-18,propionyl-CoA carboxylase
+MALATE-ASPARTATE-SHUTTLE-PWY,aspartate degradation II
+MALATE-ASPARTATE-SHUTTLE-PWY,malate/aspartate shuttle pathway
+HS17649-MONOMER,bifunctional methylenetetrahydrofolate dehydrogenase/cyclohydrolase mitochondrial precursor
+CPLX-7724,mGPDH
+CPLX-7724,mitochondrial glycerol-3-phosphate dehydrogenase
+CPLX-7724,human
+CPLX-7724,man
+HYDROXYPRODEHYDROG-RXN,hydroxyproline oxidase
+CPD-2961,6-phospho D-gluconate
+CPD-2961,6-p gluconate
+CPD-2961,6-phosphogluconic acid
+CPD-2961,6-phospho gluconate
+PYRUVDEHYD-PWY,pyruvate decarboxylation to acetyl CoA
+PYRUVDEHYD-PWY,pyruvate dehydrogenase complex
+PYRUVDEHYD-PWY,acetyl-CoA biosynthesis I (pyruvate dehydrogenase complex)
+GLYCGREAT-PWY,glycine degradation II
+GLYCGREAT-PWY,glycine degradation (creatine biosynthesis)
+GLYCGREAT-PWY,glycine degradation
+CITSYN-RXN,citrate synthesis
+CITSYN-RXN,Citrate condensing enzyme
+CITSYN-RXN,Oxaloacetate transacetase
+CITSYN-RXN,Condensing enzyme
+CITSYN-RXN,Citrogenase
+HS02273,AHCY
+HS02273,SAHH
+HS01776-MONOMER,3-PGDH
+HS01776-MONOMER,D-3-phosphoglycerate dehydrogenase
+ASPARAGINE-BIOSYNTHESIS,asparagine biosynthesis I
+4-AMINO-BUTYRATE,4-aminobutyric acid
+4-AMINO-BUTYRATE,4-aminobutanoate
+4-AMINO-BUTYRATE,4-NH2-but
+4-AMINO-BUTYRATE,γ-amino-n-butyric acid
+4-AMINO-BUTYRATE,γ-aminobutyrate
+4-AMINO-BUTYRATE,4-NH3-but
+4-AMINO-BUTYRATE,4-amino-n-butyric acid
+4-AMINO-BUTYRATE,g-amino-n-butyric acid
+4-AMINO-BUTYRATE,gamma-amino-N-butyrate
+4-AMINO-BUTYRATE,GABA
+PHENYLALANINE-DEG1-PWY,phenylalanine degradation I (aerobic)
+HS01810,DHPS
+HS01810,DS
+AROMATIC-L-AMINO-ACID-DECARBOXYLASE-RXN,DOPA decarboxylase
+AROMATIC-L-AMINO-ACID-DECARBOXYLASE-RXN,Hydroxytryptophan decarboxylase
+AROMATIC-L-AMINO-ACID-DECARBOXYLASE-RXN,tryptophan decarboxylase
+AROMATIC-L-AMINO-ACID-DECARBOXYLASE-RXN,Tryptophan decarboxylase
+CPD-1063,1-phosphomethylthioribulose
+CPD-1063,methylthioribulose-1-phosphate
+CPD-1063,5-methylthio-5-deoxy-D-ribulose-1-phosphate
+CPD-1063,5-methylthioribulose-1-phosphate
+CPD-1063,1-phospho-5-S-methylthioribulose
+CPD-1063,1PMT-ribulose
+CPD-1063,MTRu-1-P
+HS09157-MONOMER,Alpha-AASA dehydrogenase
+HS09157-MONOMER,P6c dehydrogenase
+HS09157-MONOMER,Alpha-aminoadipic semialdehyde dehydrogenase
+HS09157-MONOMER,Antiquitin-1
+HS09157-MONOMER,Delta1-piperideine-6-carboxylate dehydrogenease
+HS09157-MONOMER,Aldehyde dehydrogenase family 7 member A1
+HS17676,HS17676
+HS04076-MONOMER,5-methyltetrahydrofolate--homocysteine methyltransferase
+HS04076-MONOMER,5-methyltetrahydrofolate-homocysteine methyltransferase
+HS04076-MONOMER,human
+HS04076-MONOMER,5-methyltetrahydrofolate-homocysteine methyltransferase 1
+HS04076-MONOMER,"methionine synthase, vitamin-B12 dependent"
+HS04076-MONOMER,man
+HS07742-MONOMER,1.3.99.-
+HS07742-MONOMER,Activator-recruited cofactor 42 kDa component
+HS07742-MONOMER,Acyl-CoA dehydrogenase family member 8
+HS07742-MONOMER,"Isobutyryl-CoA dehydrogenase, mitochondrial"
+HS07742-MONOMER,ACAD-8
+HS07742-MONOMER,ARC42
+HS00018,GLUDP1
+HS00018,GLUD2
+HS08089-MONOMER,Epsilon-trimethyllysine 2-oxoglutarate dioxygenase
+HS08089-MONOMER,TML dioxygenase
+HS08089-MONOMER,"Trimethyllysine dioxygenase, mitochondrial"
+HS08089-MONOMER,TML-alpha-ketoglutarate dioxygenase
+HS08089-MONOMER,TML hydroxylase
+HS08089-MONOMER,TMLD
+HS02359-MONOMER,Cell migration-inducing gene 10 protein
+HS02359-MONOMER,PRP 2
+HS02359-MONOMER,Primer recognition protein 2
+HS02359-MONOMER,Phosphoglycerate kinase 1
+ACETOACETATE-DECARBOXYLASE-RXN,ACETOACETATE-DECARBOXYLASE-RXN
+HS06992,ALDH4
+HS06992,ALDH7
+HS06992,ALDH9A1
+HS06992,ALDH9
+AMMONIA,ammonia
+AMMONIA,NH3
+HS07755,ULIP4
+HS07755,DPYSL4
+HS07755,CRMP3
+HS09121-MONOMER,Phosphoglycerate mutase isozyme M
+HS09121-MONOMER,Phosphoglycerate mutase 2
+HS09121-MONOMER,PGAM-M
+HS09121-MONOMER,BPG-dependent PGAM 2
+HS09121-MONOMER,Muscle-specific phosphoglycerate mutase
+HS02592-MONOMER,Pyrroline-5-carboxylate reductase-like protein
+HS02592-MONOMER,P5CR 3
+HS02592-MONOMER,P5C reductase 3
+HS02592-MONOMER,Pyrroline-5-carboxylate reductase 3
+UREA,carmol
+UREA,basodexan
+UREA,urea
+UREA,bromisovalum
+UREA,carbamide
+HS15845,HS15845
+HS17583-MONOMER,S ADENOSYL L HOMOCYSTEINE HYDROLASE ADOHCYASE
+HS17583-MONOMER,adenosylhomocysteinase
+ALANINE-DEG3-PWY,alanine degradation III
+G66-33844-MONOMER,AFMID_HUMAN
+G66-33844-MONOMER,KF
+G66-33844-MONOMER,Kynurenine formamidase
+G66-33844-MONOMER,Probable arylformamidase
+TRANS-3-METHYL-GLUTACONYL-COA,3-methylglutaconyl-CoA
+TRANS-3-METHYL-GLUTACONYL-COA,(E)-3-methylglutaconyl-1-CoA
+TRANS-3-METHYL-GLUTACONYL-COA,trans-3-methylglutaconyl-CoA
+HS01069,CSHMT
+HS01069,MGC15229
+HS01069,SHMT1
+HS01069,MGC24556
+HYPOTAURINE-DEHYDROGENASE-RXN,HYPOTAURINE-DEHYDROGENASE-RXN
+GLYSYN-PWY,glycine biosynthesis I
+RXN0-1132,dihydrolipoyl dehydrogenase
+G66-31585-MONOMER,Peptidylarginine deiminase VI
+G66-31585-MONOMER,PADI6_HUMAN
+G66-31585-MONOMER,Protein-arginine deiminase type-6
+G66-31585-MONOMER,Protein-arginine deiminase type VI
+ATP,adenosine-5'-triphosphate
+ATP,adenylpyrophosphate
+ATP,AMP-deaminase
+ATP,adenosine-triphosphate
+ATP,ATP
+PGLUCISOM-RXN,Hexose monophosphate isomerase
+PGLUCISOM-RXN,Phosphohexomutase
+PGLUCISOM-RXN,Phosphosaccharomutase
+PGLUCISOM-RXN,Phosphohexose isomerase
+PGLUCISOM-RXN,glucose-6-phosphate isomerase
+PGLUCISOM-RXN,Phosphohexoisomerase
+PGLUCISOM-RXN,Oxoisomerase
+PGLUCISOM-RXN,Phosphoglucose isomerase
+PGLUCISOM-RXN,Hexosephosphate isomerase
+PGLUCISOM-RXN,Phosphoglucoisomerase
+R83-RXN,R83-RXN
+HS17649,HS17649
+RXN-9896,RXN-9896
+GLYCINE-SYN2-PWY,glycine biosynthesis II
+HS17032-MONOMER,bifunctional methylenetetrahydrofolate dehydrogenase/cyclohydrolase mitochondrial precursor
+N-FORMIMINO-L-GLUTAMATE,N-formimino-L-glutamate
+N-FORMIMINO-L-GLUTAMATE,formiminoglutamate
+N-FORMIMINO-L-GLUTAMATE,N-formimino-glutamate
+N-FORMIMINO-L-GLUTAMATE,N-formimidoyl-L-glutamate
+N-FORMIMINO-L-GLUTAMATE,formimino-glu
+N-FORMIMINO-L-GLUTAMATE,α-formamidinoglutarate
+SER,L-ser
+SER,L-serine
+SER,S
+SER,ser
+SER,serine
+RXN-7592,RXN-7592
+2KETO-3METHYLVALERATE-RXN,(S)-3-methyl-2-oxopentanoate dehydrogenase (acylating)
+3-SULFINYL-PYRUVATE-SPON-RXN,3-SULFINYL-PYRUVATE-SPON-RXN
+HS04094,PDI2
+HS04094,PADI2
+HS04094,KIAA0994
+CPLX-33,monoamine oxidase B
+HS11405-MONOMER,SELENOPHOSPHATE SYNTHETASE 2
+HS11405-MONOMER,SELENIUM DONOR PROTEIN 2
+HS11405-MONOMER,selenophosphate synthase
+HS11405-MONOMER,"selenide,water dikinase 2"
+HS06432-MONOMER,"Lipoamide acyltransferase component of branched-chain alpha-keto acid dehydrogenase complex, mitochondrial"
+HS06432-MONOMER,E2
+HS06432-MONOMER,BCKAD E2 subunit
+HS06432-MONOMER,Dihydrolipoamide branched chain transacylase
+HS06432-MONOMER,Dihydrolipoyllysine-residue (2-methylpropanoyl)transferase
+4-HYDROXY-L-PROLINE,trans-4-hydroxyproline
+4-HYDROXY-L-PROLINE,trans-4-hydroxy-L-proline
+4-HYDROXY-L-PROLINE,trans-oxyproline
+4-HYDROXY-L-PROLINE,trans-hydroxy-L-proline
+4-HYDROXY-L-PROLINE,trans-L-4-hydroxy-proline
+4-HYDROXY-L-PROLINE,trans-L-4-hydroxyproline
+1.1.1.8-RXN,NAD-dependent glycerol-3-phosphate dehydrogenase
+1.1.1.8-RXN,NAD-dependent glycerol phosphate dehydrogenase
+1.1.1.8-RXN,Glycerophosphate dehydrogenase (NAD)
+ASN,(S)-asparagine
+ASN,L-β-asparagine
+ASN,altheine
+ASN,aspartic acid β-amide
+ASN,α-aminosuccinamic acid
+ASN,asparagine
+ASN,(-)-asparagine
+ASN,L-asparatamine
+ASN,"L-2,4-diamino-4-oxobutanoic acid"
+ASN,L-asparagine
+ASN,"(S)-2,4-diamino-4-oxobutanoic acid"
+ASN,agedoite
+ASN,asn
+ASN,N
+ASN,"2-aminosuccinamic acid, L-"
+ASN,asparagine acid
+ASN,"butanoic acid, 2,4-diamino-4-oxo-, (S)-"
+ASN,"2,4-diamino-4-oxobutanoic acid, (S)-"
+HS01304,NFS1
+HS01304,HUSSY-08
+HS01304,NIFS
+G66-33844,AFMID
+AMINO-CARBOXYMUCONATE-SEMIALDEHYDE-RXN,picolinic acid carboxylase
+AMINO-CARBOXYMUCONATE-SEMIALDEHYDE-RXN,α-amino β-carboxymuconate ε-semialdehyde decarboxylase
+AMINO-CARBOXYMUCONATE-SEMIALDEHYDE-RXN,aminocarboxymuconate-semialdehyde decarboxylase
+AMINO-CARBOXYMUCONATE-SEMIALDEHYDE-RXN,picolinic carboxylase
+HS00244-MONOMER,LOR
+HS00244-MONOMER,LKR
+HS00244-MONOMER,Saccharopine dehydrogenase
+HS00244-MONOMER,SDH
+HS00244-MONOMER,LKR/SDH
+HS16031,ADI1
+HS16031,MTCBP1
+HS16031,HMFT1638
+HS05696-MONOMER,Betaine--homocysteine S-methyltransferase 2
+CPD-313,"propane-1,3-diamine"
+CPD-313,trimethylenediamine
+CPD-313,"1,3-diaminopropane"
+CPD-313,"1,3-DAP"
+CPD-313,"1,3-propanediamine"
+HS11429-MONOMER,"Selenide, water dikinase 2"
+HS11429-MONOMER,Selenophosphate synthetase 2
+HS11429-MONOMER,Selenium donor protein 2
+HS03200-MONOMER,Brain-type aldolase
+HS03200-MONOMER,Fructose-bisphosphate aldolase C
+HS07273,BHMT
+HS03025,MIPP
+HS03025,MINPP1
+HS03025,UNQ900/PRO1917
+HS11971-MONOMER,succinate dehydrogenase flavoprotein subunit
+SUCCCOASYN-RXN,succinyl CoA synthesis
+SUCCCOASYN-RXN,Succinate thiokinase
+SUCCCOASYN-RXN,Succinyl-CoA synthetase (ADP-forming)
+HS04133,AKR1A1
+HS04133,ALR
+HS04133,ALDR1
+1.5.1.9-RXN,1.5.1.9-RXN
+2.3.1.168-RXN,dihydrolipoamide branched chain transacylase
+HS09900-MONOMER,DJ834A16.1 (FRAGMENT)
+HS09900-MONOMER,SIMILAR TO PGAM
+3-KETOBUTYRATE,3-oxobutyric acid
+3-KETOBUTYRATE,oxobutyrate
+3-KETOBUTYRATE,acetoacetic acid
+3-KETOBUTYRATE,β-ketobutyric acid
+3-KETOBUTYRATE,3-oxobutanoic acid
+3-KETOBUTYRATE,diacetic acid
+3-KETOBUTYRATE,3-oxobutanate
+3-KETOBUTYRATE,acetoacetate
+3-KETOBUTYRATE,3-ketobutyrate
+ASNSYNB-RXN,Asparagine synthetase (glutamine-hydrolysing)
+HS08089,TMLH
+HS08089,TMLHE
+ALANINE--GLYOXYLATE-AMINOTRANSFERASE-RXN,ALANINE--GLYOXYLATE-AMINOTRANSFERASE-RXN
+HS03025-MONOMER,"Inositol (1,3,4,5)-tetrakisphosphate 3-phosphatase"
+HS03025-MONOMER,man
+HS03025-MONOMER,human
+HS03025-MONOMER,multiple inositol polyphosphate phosphatase 1
+HS00966-MONOMER,MAO-B
+HS00966-MONOMER,Amine oxidase [flavin-containing] B
+HS00966-MONOMER,Monoamine oxidase type B
+HS07370,PSP
+HS07370,PSPH
+HS05177,MPST
+HS05177,TST2
+HS06616-MONOMER,Serine dehydratase 2
+HS06616-MONOMER,4.3.1.-
+HS06616-MONOMER,Serine dehydratase-like
+SUC-COA,succinyl-S-CoA
+SUC-COA,succinyl-S-coenzyme-A
+SUC-COA,succ-CoA
+SUC-COA,suc-co-A
+SUC-COA,succinylcoenzyme-A
+SUC-COA,suc-coa
+SUC-COA,succ-coenzyme-A
+SUC-COA,succinyl-CoA
+SUC-COA,succ-S-coenzyme-A
+SUC-COA,succinyl-coenzyme A
+SUC-COA,succ-S-CoA
+CARBAMOYL-P,carbamoyl-phosphate
+CARBAMOYL-P,carbamoyl-P
+CARBAMOYL-P,carbamyl-phosphate
+2.1.1.5-RXN,2.1.1.5-RXN
+HS04417-MONOMER,Aspartase
+HS04417-MONOMER,Fumaric aminase
+HS04417-MONOMER,BA215B13.2 (FRAGMENT)
+HS04417-MONOMER,SIMILAR TO FH (FUMARATE HYDRATASE)
+HS04417-MONOMER,BA215B13.2 (fragment)
+LYSINE-DEG1-PWY,lysine degradation II
+LYSINE-DEG1-PWY,lysine degradation I
+HS06611,AMDHD1
+HS06611,HMFT1272
+NITRIC-OXIDE,nitric oxide
+NITRIC-OXIDE,nitrogen monoxide
+NITRIC-OXIDE,nitrogen protoxide
+NITRIC-OXIDE,NO
+HS09332-MONOMER,Glutamate pyruvate transaminase 2
+HS09332-MONOMER,GPT 2
+HS09332-MONOMER,Glutamic--alanine transaminase 2
+HS09332-MONOMER,Glutamic--pyruvic transaminase 2
+HS09332-MONOMER,glutamate pyruvate transaminase
+HS09332-MONOMER,alanine transaminase
+HS09332-MONOMER,Alanine aminotransferase 2
+HS09332-MONOMER,ALT2
+HS06616,SDSL
+CPLX-7771,MtCK
+CPLX-7771,mitochondrial creatine kinase
+CPLX-7771,MI-CK
+CPLX-7771,sMI-CK
+CPLX-7771,MiCK
+CPLX-7771,sarcomeric mitochondrial creatine kinase octamer
+CPLX-7771,sarcomeric mitochondrial creatine kinase
+CPLX-7771,sMtCK
+R15-RXN,R15-RXN
+HS11114,CSHMT
+HS11114,MGC15229
+HS11114,SHMT1
+HS11114,MGC24556
+ISOVALERYL-COA,iso-valeryl-CoA
+ISOVALERYL-COA,3-methylbutanoyl-CoA
+ISOVALERYL-COA,isovaleryl-CoA
+ISOVALERYL-COA,isovaleryl-coenzyme A
+ISOVALERYL-COA,3-methylbutyryl-CoA
+HS06975,DPD
+HS06975,DHP
+HS06975,DPYD
+HS10376-MONOMER,L-arginine:glycine amidinotransferase
+HS10376-MONOMER,"Glycine amidinotransferase, mitochondrial"
+HS10376-MONOMER,AT
+HS10376-MONOMER,Transamidinase
+HS00906,PK2
+HS00906,PK3
+HS00906,PKM2
+HS00906,PKM
+HS16973,HS16973
+HS00614,GDH
+HS00614,H6PD
+HS00752,G-11315
+HS00752,ACAA1
+HS00752,PTHIO
+HS00752,ACAA
+HS00753,ECA39
+HS00753,BCT1
+HS00753,BCAT1
+TAURINE,taufon
+TAURINE,2-aminoethanesulfonate
+TAURINE,taurine
+TAURINE,ethylaminesulphonic acid
+TAURINE,tauphon
+TAURINE,2-aminoethanesulfonic acid
+TAURINE,aminoetylsulphonic acid
+HS07088,PKLR
+HS07088,PK1
+HS07088,PKL
+F16ALDOLASE-RXN,Aldolase
+F16ALDOLASE-RXN,"Fructose-1,6-bisphosphate triosephosphate-lyase"
+HS16608-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS16608-MONOMER,argininosuccinate synthase
+CYS,Cys
+CYS,C
+CYS,carbocysteine
+CYS,cysteine
+CYS,kynurenine 2-oxoglutarate transaminase
+CYS,kynurenine-oxoglutarate transaminase
+CYS,L-cysteine
+CYS,L-kynurenine aminotransferase
+PROPIONYL-COA-CARBOXY-RXN,PCCase
+HS09360,PCBD
+HS09360,DCOH
+HS09360,PCBD1
+1.5.1.8-RXN,1.5.1.8-RXN
+HS03720,ECHD
+HS03720,EHHADH
+GLNSYN-PWY,glutamine - glutamate pathway
+GLNSYN-PWY,glutamine biosynthesis I
+ATP-CITRATE-PRO-S--LYASE-RXN,Citrate cleavage enzyme
+HS02477-MONOMER,(S)-3-amino-2-methylpropionate transaminase
+HS02477-MONOMER,GABA-T
+HS02477-MONOMER,GABA aminotransferase
+HS02477-MONOMER,GABA-AT
+HS02477-MONOMER,GABA transaminase
+HS02477-MONOMER,"4-aminobutyrate aminotransferase, mitochondrial"
+HS02477-MONOMER,Gamma-amino-N-butyrate transaminase
+HS02477-MONOMER,L-AIBAT
+RXN-10715,indole acetaldehyde dehydrogenase
+GLUTARYL-COA,glutaryl-CoA
+GLUTARYL-COA,glutaryl-coenzyme A
+HS07322-MONOMER,Methylmalonyl-CoA isomerase
+HS07322-MONOMER,MCM
+HS07322-MONOMER,"Methylmalonyl-CoA mutase, mitochondrial"
+2-KETO-3-METHYL-VALERATE,(S)-2-oxo-3-methylpentanoate
+2-KETO-3-METHYL-VALERATE,α-keto-methylvalerate
+2-KETO-3-METHYL-VALERATE,2-oxo-3-methylpentanoate
+2-KETO-3-METHYL-VALERATE,(3S)-3-methyl-2-oxopentanoate
+2-KETO-3-METHYL-VALERATE,(S)-3-methyl-2-oxovalerate
+2-KETO-3-METHYL-VALERATE,2-keto-isoleucine
+2-KETO-3-METHYL-VALERATE,(S)-3-methyl-2-oxopentanoate
+2-KETO-3-METHYL-VALERATE,2-oxo-3-methylvalerate
+2-KETO-3-METHYL-VALERATE,3-methyl-2-oxopentanoate
+2-KETO-3-METHYL-VALERATE,2-keto-3-methyl-valerate
+2-KETO-3-METHYL-VALERATE,α-keto-β-methyl-valerate
+CARBAMATE-KINASE-RXN,CARBAMATE-KINASE-RXN
+GLYCINE-AMIDINOTRANSFERASE-RXN,L-arginine:glycine amidinotransferase
+ADENOSYLHOMOCYSTEINASE-RXN,S-adenosyl-L-homocysteine hydrolase
+HS07490,AUH
+GAMMA-BUTYROBETAINE,3-carboxypropyl-trimethyl-ammonium
+GAMMA-BUTYROBETAINE,γ-butyrobetaine
+GAMMA-BUTYROBETAINE,4-trimethylammoniobutanoate
+HS16708-MONOMER,TIM
+HS16708-MONOMER,triosephosphate isomerase
+HS00049-MONOMER,SHMT
+HS00049-MONOMER,serine hydroxymethyltransferase
+HS00049-MONOMER,Serine methylase
+HS00049-MONOMER,Glycine hydroxymethyltransferase
+HS11585-MONOMER,"Probable 2-oxoglutarate dehydrogenase E1 component DHKTD1, mitochondrial"
+HS11585-MONOMER,Dehydrogenase E1 and transketolase domain-containing protein 1
+RXN-7594,RXN-7594
+HS03452-MONOMER,LDH-B
+HS03452-MONOMER,LDH heart subunit
+HS03452-MONOMER,LDH-H
+HS03452-MONOMER,Renal carcinoma antigen NY-REN-46
+HS03452-MONOMER,L-lactate dehydrogenase B chain
+HS03444,ENO2
+HS03444,NSE
+ETR-Quinones,an electron-transfer-related quinone
+ASPAMINOTRANS-RXN,Glutamic--oxaloacetic transaminase
+ASPAMINOTRANS-RXN,glutamate-aspartate transaminase
+ASPAMINOTRANS-RXN,aspartate transaminase
+ASPAMINOTRANS-RXN,Glutamic--aspartic transaminase
+ASPAMINOTRANS-RXN,glutamic-oxaloacetic transaminase
+ASPAMINOTRANS-RXN,Transaminase A
+GLUTARYL-COA-DEHYDROG-RXN,glutaryl-CoA dehydrogenase
+HS02138,MTHFC
+HS02138,MTHFD
+HS02138,MTHFD1
+HS11159-MONOMER,PHOSPHOGLYCERATE MUTASE ISOZYME B
+HS11159-MONOMER,"Phosphoglycerate mutase A, nonmuscle form"
+HS11159-MONOMER,phosphoglycerate mutase 1 (brain)
+HS11159-MONOMER,BPG-DEPENDENT PGAM 1
+HS11159-MONOMER,PGAM-B
+HS11159-MONOMER,phosphoglycerate mutase 1
+HS11159-MONOMER,EC_3.1.3.13
+HS11159-MONOMER,EC_5.4.2.4
+GLUTAMATE-FORMIMINOTRANSFERASE-RXN,GLUTAMATE FORMIMINOTRANSFERASE
+GLUTAMATE-FORMIMINOTRANSFERASE-RXN,Glutamate formyltransferase
+GLUTAMATE-FORMIMINOTRANSFERASE-RXN,GLUTAMATE FORMYLTRANSFERASE
+CPD-12173,(S)-3-hydroxy-isobutanoyl-CoA
+CPD-12173,(S)-3-hydroxy-2-methylpropanoyl-CoA
+CPD-12173,(S)-3-hydroxy-isobutyryl-coenzyme A
+CPD-12173,(S)-3-hydroxy-isobutyryl-CoA
+CPD-12173,(S)-β-hydroxy-isobutyryl-CoA
+CPD-12173,(S)-3-Hydroxy-2-methylpropionyl-CoA
+4OH2OXOGLUTARALDOL-RXN,KHG-aldolase
+CPLX66-271,pyruvate dehydrogenase complex E2 component
+BETAINE,lycine
+BETAINE,glycine betaine
+BETAINE,acidin-pepsin
+BETAINE,betaine
+BETAINE,oxyneurine
+BETAINE,trimethylammonioacetate
+BETAINE,"N,N,N-trimethylglycine"
+4.2.1.93-RXN,ATP-dependent H4NAD(P)+OH dehydratase
+4.2.1.93-RXN,"(6S)-β-6-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine-dinucleotide hydro-lyase(ATP-hydrolysing)"
+4.2.1.93-RXN,"(6S)-6-β-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine-dinucleotide hydro-lyase (ATP-hydrolysing"
+4.2.1.93-RXN,NADH-forming)
+4.2.1.93-RXN,reduced nicotinamide adenine dinucleotide hydrate dehydratase
+HS03550-MONOMER,"Succinate-semialdehyde dehydrogenase, mitochondrial"
+HS03550-MONOMER,Aldehyde dehydrogenase family 5 member A1
+HS03550-MONOMER,NAD(+)-dependent succinic semialdehyde dehydrogenase
+HS14628-MONOMER,aspartate aminotransferase
+HS14628-MONOMER,TRANSAMINASE A GLUTAMATE OXALOACETATE TRANSAMINASE
+2-PG,2-P-D-glycerate
+2-PG,2-phospho-D-glyceric acid
+2-PG,2-phospho-(D)-glycerate
+2-PG,D-2-phosphoglycerate
+2-PG,2-phospho-D-glycerate
+2-PG,2-phospho-(R)-glycerate
+2-PG,D-Glycerate 2-phosphate
+MALEYLACETOACETATE-ISOMERASE-RXN,Maleylacetone isomerase
+ILEUDEG-PWY,isoleucine degradation I
+CYSTATHIONINE-BETA-SYNTHASE-RXN,Serine sulfhydrase
+CYSTATHIONINE-BETA-SYNTHASE-RXN,Beta-thionase
+CYSTATHIONINE-BETA-SYNTHASE-RXN,Methylcysteine synthase
+HS06881-MONOMER,Phosphofructokinase 1
+HS06881-MONOMER,Phosphohexokinase
+HS06881-MONOMER,"6-phosphofructokinase, liver type"
+HS06881-MONOMER,Phosphofructo-1-kinase isozyme B
+HS06881-MONOMER,PFK-B
+HS02640-MONOMER,M-CK
+HS02640-MONOMER,Creatine kinase M chain
+HS02640-MONOMER,Creatine kinase M-type
+2K-ADIPATE,2-ketoadipate
+2K-ADIPATE,2-oxoadipate
+2K-ADIPATE,2-keto-adipate
+2K-ADIPATE,α-ketoadipate
+2K-ADIPATE,2-oxohexanedionic acid
+HS05952,SDH
+HS05952,SDS
+HS00056,P5CD
+HS00056,ALDH4
+HS00056,P5CDh
+HS00056,P5CDhS
+HS00056,P5CDhL
+HS00056,ALDH4A1
+BRANCHED-CHAINAMINOTRANSFERILEU-RXN,Isoleucine transaminase
+BRANCHED-CHAINAMINOTRANSFERILEU-RXN,Transaminase B
+HS05425,ASS
+HS05425,ASS1
+BIOPTERIN,L-erythro-dihydrobiopterin
+BIOPTERIN,"7,8-di-H-biopterin"
+BIOPTERIN,P-quinonoid-dihydrobiopterin
+BIOPTERIN,"7,8-dihydrobiopterin"
+BIOPTERIN,q-BH2
+BIOPTERIN,dihydrobiopterin
+HS05299,CDO1
+HS02631-MONOMER,seryl-tRNA synthetase 2
+HS02631-MONOMER,SERINE--TRNA LIGASE
+HS02631-MONOMER,SERRSMT
+HS02631-MONOMER,likely ortholog of mouse seryl-aminoacyl-tRNA synthetase 2
+HS02631-MONOMER,"seryl-tRNA synthetase, mitochondrial precursor"
+RXN-7605,RXN-7605
+HS17054-MONOMER,peroxisomal bifunctional enzyme PBE PBFE
+HS08413-MONOMER,Imidazolonepropionate hydrolase
+HS08413-MONOMER,Urocanase
+HS08413-MONOMER,Probable urocanate hydratase
+HS17733-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17733-MONOMER,GAPDH
+SUCCINATE-SEMIALDEHYDE-DEHYDROGENASE-RXN,SUCCINATE-SEMIALDEHYDE-DEHYDROGENASE-RXN
+HS06992-MONOMER,Aldehyde dehydrogenase family 9 member A1
+HS06992-MONOMER,R-aminobutyraldehyde dehydrogenase
+HS06992-MONOMER,Gamma-aminobutyraldehyde dehydrogenase
+HS06992-MONOMER,TMABADH
+HS06992-MONOMER,Aldehyde dehydrogenase E3 isozyme
+HS06992-MONOMER,"aldehyde dehydrogenase, E3 isozyme"
+RIBOSE-5P,ribose-5-P
+RIBOSE-5P,D-ribose 5-phosphate
+RIBOSE-5P,ribose-5-phosphoric acid
+RIBOSE-5P,α-D-ribose-5-phosphate
+RIBOSE-5P,D-ribose 5'-phosphate
+RIBOSE-5P,D-ribose-5-phosphoric acid
+RIBOSE-5P,ribose-5P
+RIBOSE-5P,D-ribose-5-P
+GCVMULTI-RXN,GCVMULTI-RXN
+HS15845-MONOMER,peroxisomal bifunctional enzyme PBE PBFE
+L-GLUTAMATE-5-P,L-glutamyl-5-phosphate
+L-GLUTAMATE-5-P,L-γ-glutamyl-5-P
+L-GLUTAMATE-5-P,L-γ-glutamyl-5-phosphate
+L-GLUTAMATE-5-P,L-glutamate-5-phosphate
+CPD-11496,vanilalanine
+CPD-11496,L-3-methoxy-4-hydroxyphenylalanine
+CPD-11496,L-3-methoxytyrosine
+CPD-11496,3-O-methyldopa
+CPD-11496,3-methoxy-L-tyrosine
+CPD-11496,L-4-hydroxy-3-methoxyphenylalanine
+CPD-11496,3-methoxytyrosine
+CPD-11496,L-3-O-methyl-DOPA
+CPD-11496,3-methoxydopa
+G66-33956,APIP
+G66-33956,CGI-29
+ARGININE-DEIMINASE-RXN,Arginine dihydrolase
+ACONITATEHYDR-RXN,ACONITATEHYDR-RXN
+CPD-11831,"α,4-dihydroxy-3-methoxybenzenepropanoic acid"
+CPD-11831,vanillactic acid
+CPD-11831,3-methoxy-4-hydroxyphenyllactic acid
+CPD-11831,3-methoxy-4-hydroxyphenyllactate
+CPD-11831,vanillactate
+CPD-11831,vanillylactic acid
+HS15871-MONOMER,S ADENOSYL L HOMOCYSTEINE HYDROLASE ADOHCYASE
+HS15871-MONOMER,adenosylhomocysteinase
+6.3.5.7-RXN,glutamyl-tRNAGln amidotransferase
+6.3.5.7-RXN,Glu-tRNA(Gln) amidotransferase
+RXN-7587,RXN-7587
+HS17391,HS17391
+CPLX66-9,succinate dehydrogenase
+CPLX66-9,SQR
+CPLX66-9,complex II
+CPLX66-9,human
+CPLX66-9,succinate-coenzyme Q reductase
+CPLX66-9,succinate dehydrogenase complex
+CPLX66-9,man
+ASPARAGINE-DEG1-PWY,asparagine degradation I
+ASPARAGINE-DEG1-PWY,asparagine degradation 1
+HS01388-MONOMER,Non-hepatic arginase
+HS01388-MONOMER,Arginase II
+HS01388-MONOMER,"Arginase-2, mitochondrial"
+HS01388-MONOMER,Kidney-type arginase
+3-HYDROXYISOBUTYRYL-COA-HYDROLASE-RXN,3-hydroxyisobutyryl-CoA hydrolase
+HS17626,HS17626
+HYDROXYPYRROLINEDEH-RXN,pyrroline-hydroxy-carboxylate dehydrogenase
+HS00531,TGR
+HS00531,Nbla02999
+HS00531,UNQ2435/PRO4995
+HS00531,MSTP045
+HS00531,MAT2B
+DIPHTINE--AMMONIA-LIGASE-RXN,DIPHTINE--AMMONIA-LIGASE-RXN
+HS00535,CSPG2
+HS00535,VCAN
+INDOLE_ACETALDEHYDE,(indol-3-yl)acetaldehyde
+INDOLE_ACETALDEHYDE,2-(indol-3-yl)acetaldehyde
+INDOLE_ACETALDEHYDE,indole-3-acetaldehyde
+INDOLE_ACETALDEHYDE,indole acetaldehyde
+CPLX-7970,CPLX-7970
+HS10427-MONOMER,L-lactate dehydrogenase A-like 6B
+HS10427-MONOMER,lactate dehydrogenase A -like
+CITRULLINE-DEG-PWY,citrulline degradation
+HS10646,ENO2
+HS10646,NSE
+1.13.11.6-RXN,3-hydroxyanthranilate oxygenase
+1.13.11.6-RXN,3-hydroxyanthranilate dioxygenase
+1.13.11.6-RXN,3-hydroxyanthranilic acid dioxygenase
+1.13.11.6-RXN,3-hydroxyanthranilic acid oxygenase
+1.13.11.6-RXN,3-hydroxyanthranilate oxidase
+RIB5PISOM-RXN,Ribose phosphate isomerase
+RIB5PISOM-RXN,D-ribose-5-phosphate ketol-isomerase
+RIB5PISOM-RXN,Ribose 5-phosphate isomerase
+RIB5PISOM-RXN,Phosphopentoseisomerase
+RIB5PISOM-RXN,Phosphoriboisomerase
+PHENDEHYD-RXN,PHENDEHYD-RXN
+PWY-6482,diphthamide biosynthesis
+2.6.1.22-RXN,L-3-aminoisobutyrate aminotransferase
+SERSYN-PWY,serine biosynthesis
+HS04133-MONOMER,Alcohol dehydrogenase [NADP+]
+HS04133-MONOMER,Aldehyde reductase
+HS04133-MONOMER,Aldo-keto reductase family 1 member A1
+HS17767,HS17767
+ARGASEDEG-PWY,arginine degradation I (arginase pathway)
+ARGASEDEG-PWY,arginase degradative pathway
+ARGASEDEG-PWY,glutamate biosynthesis
+3-SULFINYL-PYRUVATE,β-sulfinylpyruvate
+3-SULFINYL-PYRUVATE,3-sulphinyl-pyruvate
+3-SULFINYL-PYRUVATE,3-sulfinyl-pyruvate
+HS03685-MONOMER,AGT 2
+HS03685-MONOMER,Beta-alanine-pyruvate aminotransferase
+HS03685-MONOMER,(R)-3-amino-2-methylpropionate--pyruvate transaminase
+HS03685-MONOMER,D-AIBAT
+HS03685-MONOMER,"Alanine--glyoxylate aminotransferase 2, mitochondrial"
+HS03685-MONOMER,Beta-ALAAT II
+FADH2,flavin adenine dinucleotide reduced
+FADH2,FADH2
+FADH2,"1,5-dihydro-FAD"
+HS17405,PSTK
+HS17405,C10orf89
+HS10491-MONOMER,BPGM
+HS10491-MONOMER,Bisphosphoglycerate mutase
+HS10491-MONOMER,BPG-dependent PGAM
+HS10491-MONOMER,"2,3-bisphosphoglycerate synthase"
+HS10491-MONOMER,"2,3-bisphosphoglycerate mutase, erythrocyte"
+HS05132-MONOMER,Short chain enoyl-CoA hydratase
+HS05132-MONOMER,Enoyl-CoA hydratase 1
+HS05132-MONOMER,"Enoyl-CoA hydratase, mitochondrial"
+HS05132-MONOMER,SCEH
+HS05132-MONOMER,Crotonase
+HS05132-MONOMER,"ENOYL-COA HYDRATASE, MITOCHONDRIAL PRECURSOR"
+RXN0-2301,RXN0-2301
+GLC-6-P,β-D-glucose-6-P
+GLC-6-P,β-D-glucose 6-phosphate
+GLC-6-P,glucose-6-P
+GLC-6-P,glucose-6-phosphate
+GLC-6-P,D-glucose-6-P
+GLC-6-P,D-glucose-6-phosphate
+GLUTACONYL-COA,glutaconyl-coenzyme A
+GLUTACONYL-COA,pent-2-enoyl-CoA
+GLUTACONYL-COA,(2E)-4-carboxybut-2-enoyl-CoA
+GLUTACONYL-COA,glutaconyl-1-CoA
+GLUTACONYL-COA,(E)-glutaconyl-CoA
+THF,tetrahydrofolic acid
+THF,H4F
+THF,tetra-H-folate
+THF,tetrahydrofolate
+THF,tetrahydropteroyl mono-L-glutamate
+THF,H4PteGlu
+THF,th-folate
+THF,FH4
+THF,folate-H4
+THF,vitamin B9
+THF,tetrahydropteroylglutamate
+THF,THF
+THF,(6S)-tetrahydrofolate
+THF,tetrahydrafolate
+THF,"5,6,7,8-tetrahydrofolate"
+THF,H4PteGlu1
+THF,"5,6,7,8-tetrahydrofolic acid"
+HS00516-MONOMER,Ornithine transcarbamylase
+HS00516-MONOMER,"Ornithine carbamoyltransferase, mitochondrial"
+HS00516-MONOMER,OTCase
+ALANINE-SYN2-PWY,alanine biosynthesis II
+HS17122-MONOMER,glycerol 3 phosphate dehydrogenase mitochondrial precursor
+HS17122-MONOMER,GPD M GPDH M
+HS04231,ARG1
+CPD-468,L-aminoadipic acid
+CPD-468,L-2-amino-hexanedioic acid
+CPD-468,L-α-aminoadipate
+CPD-468,L-2-aminoadipate
+CPD-468,L-aminoadipate
+CPD-468,L-2-aminoadipic acid
+CPD-468,L-2-aminohexanedioate
+CPD-468,L-α-aminoadipic acid
+PHENYLETHYLAMINE,phenylethylamine
+PHENYLETHYLAMINE,2-phenylethylamine
+PHENYLETHYLAMINE,β-phenylethylamine
+HS01481,HADH
+HS01481,HADHA
+GLUTSEMIALDEHYDROG-RXN,GLUTAMYL-GAMMA-SEMIALDEHYDE DEHYDROGENASE
+GLUTSEMIALDEHYDROG-RXN,Gamma-glutamylphosphate reductase
+GLUTSEMIALDEHYDROG-RXN,GLUTAMATE-5-SEMIALDEHYDE DEHYDROGENASE
+GLUTSEMIALDEHYDROG-RXN,Beta-glutamylphosphate reductase
+GLUTSEMIALDEHYDROG-RXN,Glutamyl-gamma-semialdehyde dehydrogenase
+GLUTSEMIALDEHYDROG-RXN,GPR
+RXNI-2,acetoacetate CoA-transferase
+PHE,F
+PHE,2S-α-phenylalanine
+PHE,endophenyl
+PHE,phe
+PHE,phenylalanine
+PHE,L-phenylalanine
+HS02793-MONOMER,Spermatogenic glyceraldehyde-3-phosphate dehydrogenase
+HS02793-MONOMER,GAPDH-2
+HS02793-MONOMER,"Glyceraldehyde-3-phosphate dehydrogenase, testis-specific"
+HS02793-MONOMER,Spermatogenic cell-specific glyceraldehyde 3-phosphate dehydrogenase 2
+3-MERCAPTO-PYRUVATE,β-thiopyruvate
+3-MERCAPTO-PYRUVATE,3-mercaptopyruvic acid
+3-MERCAPTO-PYRUVATE,mercaptopyruvate
+3-MERCAPTO-PYRUVATE,3-mercaptopyruvate
+3-MERCAPTO-PYRUVATE,β-mercaptopyruvate
+GLYOX,glyox
+GLYOX,glyoxalate
+GLYOX,glyoxylate
+GLYOX,glyoxylic acid
+GUANIDINOACETATE-N-METHYLTRANSFERASE-RXN,GUANIDINOACETATE-N-METHYLTRANSFERASE-RXN
+HS17248,HS17248
+HS07370-MONOMER,L-3-phosphoserine phosphatase
+HS07370-MONOMER,PSP
+HS07370-MONOMER,PSPASE
+HS07370-MONOMER,phosphoserine phosphatase
+HS07370-MONOMER,O-PHOSPHOSERINE PHOSPHOHYDROLASE
+PHOSGLYPHOS-RXN,phosphoglycerate phosphorylation
+HS02769,GCDH
+HS00832-MONOMER,"Ornithine aminotransferase, renal form"
+HS00832-MONOMER,Ornithine--oxo-acid aminotransferase
+METHIONINE-DEG1-PWY,methionine degradation I (to homocysteine)
+HS02138-MONOMER,C1-THF synthase
+HS02138-MONOMER,Formyltetrahydrofolate synthetase
+CPLX-7322,man
+CPLX-7322,human
+CPLX-7322,cytosolic malate dehydrogenase
+6.3.4.16-RXN,Carbamoyl-phosphate synthetase (ammonia)
+6.3.4.16-RXN,Carbamoyl-phosphate synthetase I
+6.3.4.16-RXN,Carbon-dioxide--ammonia ligase
+6.3.4.16-RXN,CPS I
+HS02761,BCATM
+HS02761,ECA40
+HS02761,BCAT2
+HS02761,BCT2
+CPD-671,n5-formiminotetrahydrofolate
+CPD-671,5-formimino-THF
+CPD-671,n5-formimino-THF
+CPD-671,5-formiminotetrahydrofolate
+HS01061,ALDH3A2
+HS01061,FALDH
+HS01061,ALDH10
+HS07273-MONOMER,betaine-homocysteine methyltransferase
+HS07273-MONOMER,Betaine--homocysteine S-methyltransferase 1
+OXIDATIVEPENT-PWY,pentose phosphate pathway (oxidative branch)
+HS11405,SPS2
+PROTON,H+
+PROTON,hydrogen ion
+PROTON,proton
+PROTON,H
+HS04050-MONOMER,Gamma-cystathionase
+HS04050-MONOMER,Cystathionine gamma-lyase
+ISOBUTYRYL-COA,2-methylpropanoyl-CoA
+ISOBUTYRYL-COA,isobutyryl-CoA
+ISOBUTYRYL-COA,isobutyryl-coenzyme A
+ISOBUTYRYL-COA,2-methylpropionyl-CoA
+ISOBUTYRYL-COA,S-(2-methylpropanoyl)-CoA
+ISOBUTYRYL-COA,isobutanoyl-CoA
+HS04858-MONOMER,Glutamate oxaloacetate transaminase 2
+HS04858-MONOMER,Transaminase A
+HS04858-MONOMER,"Aspartate aminotransferase, mitochondrial"
+HS04858-MONOMER,FABPpm
+HS04858-MONOMER,Fatty acid-binding protein
+HS04858-MONOMER,mAspAT
+HS04858-MONOMER,FABP-1
+SPERMIDINE,spermidine
+SPERMIDINE,"N-(3-aminopropyl)butane-1,4-diamine"
+HS16965-MONOMER,L-lactate dehydrogenase chain
+HS16965-MONOMER,LDH
+CPLX-6888,NAD-dependent succinate semialdehyde dehydrogenase
+GCVT-RXN,Tetrahydrofolate aminomethyltransferase
+GCVT-RXN,Glycine-cleavage system T-protein
+PROPIONMET-PWY,methylmalonyl pathway
+Pi,orthophosphate
+Pi,CDP-diacylglycerol--inositol 3-phosphatidyltransferase
+Pi,K-glutaminase
+Pi,HPO42-
+Pi,phosphate-inorganic
+Pi,HPO4-2
+Pi,PO43-
+Pi,phosphate
+Pi,inorganic phosphate
+Pi,Pi
+Pi,L-glutamine amidohydrolase
+4.3.1.4-RXN,FORMIMINOTETRAHYDROFOLATE CYCLODEAMINASE
+CYSTEINE-DIOXYGENASE-RXN,CYSTEINE-DIOXYGENASE-RXN
+HS08467-MONOMER,G6PD
+HS08467-MONOMER,Glucose-6-phosphate 1-dehydrogenase
+HS07490-MONOMER,AU-specific RNA-binding enoyl-CoA hydratase
+HS07490-MONOMER,AU-binding protein/enoyl-CoA hydratase
+HS07490-MONOMER,"Methylglutaconyl-CoA hydratase, mitochondrial"
+HS06881,PFKL
+HS09084,TFT
+HS09084,T
+HS,H2S
+HS,sulfide
+HS,hydrogen sulfide
+FRUCTOSE-6P,D-fructofuranose 6-phosphate
+FRUCTOSE-6P,fructose-6-P
+FRUCTOSE-6P,A-D-fructose-6-P
+FRUCTOSE-6P,β-D-fructofuranose 6-phosphate
+FRUCTOSE-6P,fructose-6P
+FRUCTOSE-6P,fructose-6-phosphate
+FRUCTOSE-6P,D-fructose-6-P
+FRUCTOSE-6P,fru-6-P
+FRUCTOSE-6P,fruc6p
+FRUCTOSE-6P,D-fructose 6-phosphate
+FRUCTOSE-6P,D-fructose-6-phosphate
+FRUCTOSE-6P,F6P
+ENSG00000153481-MONOMER,ATP-dependent NAD(P)H-hydrate dehydratase
+ENSG00000153481-MONOMER,carbohydrate kinase domain-containing protein
+HS05462-MONOMER,"Fructose-1,6-bisphosphatase isozyme 2"
+HS05462-MONOMER,"D-fructose-1,6-bisphosphate 1-phosphohydrolase 2"
+HS05462-MONOMER,FBPase 2
+SACCHAROPINE,saccharopine
+SACCHAROPINE,ε-N-(L-glutar-2-yl)-L-lysine
+SACCHAROPINE,L-saccharopine
+SACCHAROPINE,"N6-(L-1,3-dicarboxypropyl)-L-lysine"
+HOMOCYSDEGR-PWY,cysteine biosynthesis II
+HOMOCYSDEGR-PWY,homocysteine degradation
+HOMOCYSDEGR-PWY,cysteine biosynthesis/homocysteine degradation
+HS17115-MONOMER,glutamine synthetase
+HS17115-MONOMER,GLUTAMATE AMMONIA LIGASE
+HS11114-MONOMER,SHMT
+HS11114-MONOMER,"Serine hydroxymethyltransferase, cytosolic"
+HS11114-MONOMER,Serine methylase
+HS11114-MONOMER,Glycine hydroxymethyltransferase
+CIT,citric acid
+CIT,citr
+CIT,"2-hydroxy-1,2,3-propanetricarboxylic acid"
+CIT,citrate
+CIT,cit
+TRYPTOPHAN-23-DIOXYGENASE-RXN,Tryptophan peroxidase
+TRYPTOPHAN-23-DIOXYGENASE-RXN,Tryptophanase
+TRYPTOPHAN-23-DIOXYGENASE-RXN,Tryptophan pyrrolase
+TRYPTOPHAN-23-DIOXYGENASE-RXN,"Tryptamin 2,3-dioxygenase"
+TRYPTOPHAN-23-DIOXYGENASE-RXN,Tryptophan oxygenase
+HS10646-MONOMER,neuron specific gamma enolase
+HS10646-MONOMER,neurone-specific enolase
+HS10646-MONOMER,"enolase-2, gamma, neuronal"
+HS10646-MONOMER,2-phospho-D-glycerate hydrolyase
+HS10646-MONOMER,gamma enolase
+HS10646-MONOMER,NSE
+HS10646-MONOMER,ENOLASE 2
+HS10646-MONOMER,"enolase 2, (gamma, neuronal)"
+HS10646-MONOMER,2-PHOSPHO-D-GLYCERATE HYDRO-LYASE
+HS10646-MONOMER,NEURAL ENOLASE
+RIBULOSE-5P,ribulose-5P
+RIBULOSE-5P,D-ribulose 5-phosphate
+RIBULOSE-5P,D-ribulose-5-P
+RIBULOSE-5P,ribulose-5-P
+HS03018,OGDHL
+HS03018,KIAA1290
+HS17569,HS17569
+PSERTRANSAM-RXN,PSERTRANSAM-RXN
+HS03444-MONOMER,NSE
+HS03444-MONOMER,Enolase 2
+HS03444-MONOMER,Gamma-enolase
+HS03444-MONOMER,2-phospho-D-glycerate hydro-lyase
+HS03444-MONOMER,Neuron-specific enolase
+HS03444-MONOMER,Neural enolase
+GLUTACONYL-COA-DECARBOXYLASE-RXN,GLUTACONYL-COA-DECARBOXYLASE-RXN
+HS07460-MONOMER,Hydantoinase
+HS07460-MONOMER,DHPase
+HS07460-MONOMER,Dihydropyrimidinase
+HS07460-MONOMER,Dihydropyrimidine amidohydrolase
+HS07460-MONOMER,DHP
+RXN-9952,RXN-9952
+HS10034-MONOMER,argininosuccinate lyase
+HS10034-MONOMER,ARGINOSUCCINASE
+HS10034-MONOMER,ASAL
+HS01466,HIS
+HS01466,HAL
+HS00614-MONOMER,Hexose-6-phosphate dehydrogenase
+HS00614-MONOMER,HEXOSE-6-PHOSPHATE DEHYDROGENASE
+HS00614-MONOMER,6PGL
+HS00614-MONOMER,GDH/6PGL endoplasmic bifunctional protein precursor
+ENSG00000120437-MONOMER,human
+ENSG00000120437-MONOMER,acetoacetyl-CoA thiolase
+ENSG00000120437-MONOMER,acetyl-coenzyme A acetyltransferas
+ENSG00000120437-MONOMER,acetyl-CoA acetyltransferase
+ENSG00000120437-MONOMER,man
+HS00481,SARS
+HS00481,SERS
+PWY-5766,glutamate degradation X
+SULFITE-OXIDASE-RXN,SULFITE-OXIDASE-RXN
+HS03883-MONOMER,HIB-CoA hydrolase
+HS03883-MONOMER,3-hydroxyisobutyryl-coenzyme A hydrolase
+HS03883-MONOMER,"3-hydroxyisobutyryl-CoA hydrolase, mitochondrial"
+HS03883-MONOMER,HIBYL-CoA-H
+2-KETO-ISOVALERATE,α-keto-isovalerate
+2-KETO-ISOVALERATE,2-keto-isovalerate
+2-KETO-ISOVALERATE,α-ketoisopentanoic acid
+2-KETO-ISOVALERATE,2-oxoisovalerate
+2-KETO-ISOVALERATE,α-keto-valine
+2-KETO-ISOVALERATE,α-keto-isovaleric acid
+2-KETO-ISOVALERATE,2-oxoisopentanoate
+2-KETO-ISOVALERATE,2-ketovaline
+2-KETO-ISOVALERATE,2-keto-3-methylbutyric acid
+2-KETO-ISOVALERATE,α-oxoisovalerate
+2-KETO-ISOVALERATE,3-methyl-2-oxobutanoate
+2-KETO-ISOVALERATE,2-oxo-3-methylbutanoate
+2-KETO-ISOVALERATE,α-ketovaline
+HS10286,CDABP0006
+HS10286,PGAMA
+HS10286,PGAM1
+4-MALEYL-ACETOACETATE,4-maleyl-acetoacetate
+LYS,lysine
+LYS,L-lys
+LYS,L-lysine
+LYS,lys
+LYS,K
+LYS,"2,6-diaminohexanoic acid"
+LYS,lysine acid
+HS02077-MONOMER,aconitase 2
+HS02077-MONOMER,mitochondrial aconitate hydratase
+HS02077-MONOMER,mitochondrial aconitase 2
+HS02077-MONOMER,human
+HS02077-MONOMER,citrate hydro-lyase
+HS02077-MONOMER,man
+HS13124,MCEE
+HS02114-MONOMER,MAAI
+HS02114-MONOMER,Maleylacetoacetate isomerase
+HS02114-MONOMER,GSTZ1-1
+HS02114-MONOMER,Glutathione S-transferase zeta 1
+NITRIC-OXIDE-SYNTHASE-RXN,Endothelium-derived relaxation factor-forming enzyme
+NITRIC-OXIDE-SYNTHASE-RXN,Nitric-oxide synthetase
+NITRIC-OXIDE-SYNTHASE-RXN,Endothelium-derived relaxing factor synthase
+2-3-CARBOXY-3-AMINOPROPYL-L-HISTIDINE,2-amino-4-[[4-(2-amino-2-carboxy-ethyl)-1H-imidazol-2-yl]] butanoic acid
+2-3-CARBOXY-3-AMINOPROPYL-L-HISTIDINE,2-(3-carboxy-3-aminopropyl)-L-histidine in eEF-2
+2-3-CARBOXY-3-AMINOPROPYL-L-HISTIDINE,diphthine intermediate in eEF-2
+2-3-CARBOXY-3-AMINOPROPYL-L-HISTIDINE,2-(3-carboxy-3-aminopropyl)-L-histidine
+HS05233-MONOMER,IVD
+HS05233-MONOMER,"Isovaleryl-CoA dehydrogenase, mitochondrial"
+HS07832,PFKM
+HS07832,PFKX
+HS05462,FBP2
+HS10427,LDHL
+HS10427,LDHAL6B
+HS10427,LDHAL6
+ENSG00000083123-MONOMER,BCKDH E1-beta
+ENSG00000083123-MONOMER,"2-oxoisovalerate dehydrogenase subunit beta, mitochondrial"
+ENSG00000083123-MONOMER,Branched-chain alpha-keto acid dehydrogenase E1 component beta chain
+PRO,pro
+PRO,P
+PRO,prol
+PRO,L-proline
+PRO,2-pyrrolidinecarboxylic acid
+PRO,proline
+NADH,nicotinamide adenine dinucleotide reduced
+NADH,NADH2
+NADH,NADH
+NADH,dihydrodiphosphopyridine nucleotide
+NADH,DPNH
+NADH,NAD-reduced
+NADH,diphosphopyridine nucleotide reduced
+NADH,NADH+H+
+NADH,dihydronicotinamide adenine dinucleotide
+HS16595,HS16595
+HS01798,MAOA
+HS00730,ALDH18A1
+HS00730,P5CS
+HS00730,GSAS
+HS00730,PYCS
+GLYSYN-ALA-PWY,glycine biosynthesis III
+GLYSYN-ALA-PWY,SGD
+PHENYLACETATE,2-phenylacetate
+PHENYLACETATE,phenylacetic acid
+PHENYLACETATE,phenylacetate
+PHENYLACETATE,benzeneacetic acid
+CARBON-DIOXIDE,carbonic acid gas
+CARBON-DIOXIDE,carbon dioxide
+CARBON-DIOXIDE,CO2
+CARBON-DIOXIDE,carbonic anhydride
+HS03707,DRP3
+HS03707,ULIP
+HS03707,DPYSL3
+HS03707,CRMP4
+PROPIONYL-COA,propionyl-CoA
+PROPIONYL-COA,n-propionyl-CoA
+PROPIONYL-COA,propanoyl-CoA
+PROPIONYL-COA,propionyl-coenzyme A
+HS00732,PET112L
+HS00732,HSPC199
+HS00732,PET112
+HYDROXYMETHYLGLUTARYL-COA-SYNTHASE-RXN,3-hydroxy-3-methylglutaryl Coenzyme A synthase
+HYDROXYMETHYLGLUTARYL-COA-SYNTHASE-RXN,3-hydroxy-3-methylglutaryl CoA synthase
+HYDROXYMETHYLGLUTARYL-COA-SYNTHASE-RXN,HMG-CoA synthase
+NADP,NADP-ox
+NADP,NADP
+NADP,TPN
+NADP,coenzyme II
+NADP,nicotinamide adenine dinucleotide phosphate
+NADP,TPN+
+NADP,NADP(+)
+NADP,NADP+
+NADP,NADP-oxidized
+NADP,triphosphopyridine nucleotide
+NADP,TPN-ox
+NADP,nicotinamide adenine dinucleotide-P
+FUMARYLACETOACETASE-RXN,Beta-diketonase
+FUMARYLACETOACETASE-RXN,Fumarylacetoacetate hydrolase
+KYNURENINE-3-MONOOXYGENASE-RXN,kynurenine hydroxylase
+KYNURENINE-3-MONOOXYGENASE-RXN,Kynurenine 3-hydroxylase
+KYNURENINE-3-MONOOXYGENASE-RXN,kynurenine 3-hydroxylase
+SEPO3,selenophosphate
+SEPO3,SePO3
+HS00730-MONOMER,Glutamyl-gamma-semialdehyde dehydrogenase
+HS00730-MONOMER,glutamate-5 kinase
+HS00730-MONOMER,GLUTAMATE-5-SEMIALDEHYDE DEHYDROGENASE
+HS00730-MONOMER,GLUTAMYL-GAMMA-SEMIALDEHYDE DEHYDROGENASE
+HS00730-MONOMER,Gamma-glutamyl kinase
+HS00730-MONOMER,P5CS
+HS00730-MONOMER,Gamma-glutamyl phosphate reductase
+HS00730-MONOMER,Aldehyde dehydrogenase family 18 member A1
+HS00730-MONOMER,Glutamate-5-semialdehyde dehydrogenase
+HS00730-MONOMER,GK
+HS00730-MONOMER,GPR
+HS00213-MONOMER,Transketolase-like protein 1
+HS00213-MONOMER,TK 2
+HS00213-MONOMER,Transketolase-related protein
+HS00213-MONOMER,Transketolase 2
+METHYLMALONYL-COA-EPIM-RXN,Methylmalonyl-CoA racemase
+CPD-1097,phenylacetylglutamine
+CPD-1097,phenylacetyl-L-glutamine
+CPD-1097,α-N-phenylacetyl-L-glutamine
+CPD-1097,N2-phenylacetyl-L-glutamine
+ASPARTATESYN-PWY,aspartate biosynthesis
+ASPARTATESYN-PWY,aspartate biosynthesis and degradation
+RXN-10877,homovanillate synthase
+HS17663,HS17663
+HS17109,HS17109
+THREODEHYD-RXN,THREODEHYD-RXN
+HS07088-MONOMER,Red cell/liver pyruvate kinase
+HS07088-MONOMER,R-type/L-type pyruvate kinase
+HS07088-MONOMER,Pyruvate kinase isozymes R/L
+HS07088-MONOMER,Pyruvate kinase 1
+2-HYDROXY-3-KETO-5-METHYLTHIO-1-PHOSPHOP,2-hydroxy-5-(methylthio)-3-oxopent-1-enyl phosphate
+2-HYDROXY-3-KETO-5-METHYLTHIO-1-PHOSPHOP,1-phosphoryloxyl-2-hydroxy-3-keto-5-methylthiopentene
+2-HYDROXY-3-KETO-5-METHYLTHIO-1-PHOSPHOP,2-hydroxy-3-keto-5-methylthio-1-phosphopentene
+HOMOCYSMETB12-RXN,5-methyltetrahydrofolate--homocysteine methyltransferase
+HOMOCYSMETB12-RXN,Tetrahydropteroylglutamate methyltransferase
+HOMOCYSMETB12-RXN,Methionine synthase
+2KETO-4METHYL-PENTANOATE-DEHYDROG-RXN,4-methyl-2-oxopentanoate dehydrogenase (acylating)
+HS06848-MONOMER,P5CR 1
+HS06848-MONOMER,"Pyrroline-5-carboxylate reductase 1, mitochondrial"
+HS06848-MONOMER,P5C reductase 1
+BETA-ALA-DEGRADATION-I-PWY,β-alanine degradation I
+HS07742,ACAD8
+HS07742,ARC42
+HS07742,IBD
+2PGADEHYDRAT-RXN,Enolase
+2PGADEHYDRAT-RXN,2-phosphoglycerate dehydration
+HS07746,QDPR
+HS07746,DHPR
+HS00361,MDHA
+HS00361,MDH1
+HS17405-MONOMER,L-seryl-tRNA(Sec) kinase
+HS17405-MONOMER,O-phosphoseryl-tRNA(Sec) kinase
+HS17405-MONOMER,2.7.1.n3
+L-LACTATE,L-lactate
+L-LACTATE,(S)-lactate
+L-LACTATE,L(+)-lactate
+CPD-14736,kynurenine
+CPD-14736,L-kynurenine
+R82-RXN,R82-RXN
+HS08461-MONOMER,Serine sulfhydrase
+HS08461-MONOMER,Beta-thionase
+HS08461-MONOMER,Cystathionine beta-synthase
+HS16802-MONOMER,hypothetical protein FLJ40154
+HS16802-MONOMER,condensing enzyme
+PYRUVATE,BTS
+PYRUVATE,α-ketopropionic acid
+PYRUVATE,pyruvate
+PYRUVATE,2-oxopropanoic acid
+PYRUVATE,alpha-ketopropionic acid
+PYRUVATE,2-oxo-propionic acid
+PYRUVATE,2-oxopropanoate
+PYRUVATE,acetylformic acid
+PYRUVATE,pyroracemic acid
+PYRUVATE,pyruvic acid
+HS06208,GAD65
+HS06208,GAD2
+L-CITRULLINE,γureidonorvaline
+L-CITRULLINE,N5-(Aminocarbonyl)-L-ornithine
+L-CITRULLINE,α-amino-γ-ureidovaleric acid
+L-CITRULLINE,L-citrulline
+L-CITRULLINE,Nγ-carbamylornithine
+NADPH,NADP(H)
+NADPH,dihydronicotinamide adenine dinucleotide phosphate
+NADPH,NADP-red
+NADPH,NADP-reduced
+NADPH,dihydronicotinamide adenine dinucleotide-P
+NADPH,TPNH
+NADPH,NADPH2
+NADPH,dihydrotriphosphopyridine nucleotide
+NADPH,Nicotinamide adenine dinucleotide phosphate - reduced
+NADPH,NADPH
+NADPH,dihydronicotinamide adenine dinucleotide phosphate reduced
+NADPH,dihydrotriphosphopyridine nucleotide reduced
+NADPH,NADPH+H+
+ADENOSYLHOMOCYSCAT-PWY,methionine salvage II (mammalia)
+ADENOSYLHOMOCYSCAT-PWY,S-adenosylhomocysteine degradation
+ADENOSYLHOMOCYSCAT-PWY,S-adenosylhomocysteine catabolism
+HS17391-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17391-MONOMER,GAPDH
+HS13433,PCBD2
+HS13433,DCOHM
+HS13433,DCOH2
+HS08246,ULIP6
+HS08246,DPYSL5
+HS08246,CRMP5
+CREATINE-P,P-creatine
+CREATINE-P,creatine-phosphate
+CREATINE-P,N-phosphocreatine
+CREATINE-P,neo-ton
+CREATINE-P,creatine-P
+CREATINE-P,phosphorylcreatine
+CREATINE-P,phosphocreatine
+3-P-SERINE,3-phospho-L-serine
+3-P-SERINE,P-serine
+3-P-SERINE,3-phosphoserine
+3-P-SERINE,serine-3-phosphate
+3-P-SERINE,seryl phosphate
+3-P-SERINE,phosphorylserine
+3-P-SERINE,P-ser
+3-P-SERINE,3-phospho-serine
+3-P-SERINE,serine-3-p
+3-P-SERINE,serine phosphate
+3-P-SERINE,phosphoserine
+3-P-SERINE,3-P-serine
+3-P-SERINE,O-phospho-L-serine
+GAPOXNPHOSPHN-RXN,glyceraldehyde 3-phosphate oxidation
+GAPOXNPHOSPHN-RXN,Triosephosphate dehydrogenase
+GAPOXNPHOSPHN-RXN,GAPDH
+GAPOXNPHOSPHN-RXN,NAD-dependent glyceraldehyde-3-phosphate dehydrogenase
+HS07109-MONOMER,pyrroline 5-carboxylate reductase isoform
+HS10525-MONOMER,AGT
+HS10525-MONOMER,Alanine--glyoxylate aminotransferase
+HS10525-MONOMER,Serine--pyruvate aminotransferase
+HS10525-MONOMER,SPT
+ARYLFORMAMIDASE-RXN,Formylkynureninase
+ARYLFORMAMIDASE-RXN,Formylase
+ARYLFORMAMIDASE-RXN,Kynurenine formamidase
+HS03952-MONOMER,L-kynurenine hydrolase
+HS03952-MONOMER,Kynureninase
+HS06627-MONOMER,"Sulfite oxidase, mitochondrial"
+HS06627-MONOMER,sulfite oxidase
+HS06949,PGD
+HS06949,PGDH
+HS09727,PDHB
+HS09727,PHE1B
+HS11971,HSSUCCDH
+HS04082,KMO
+HS01647-MONOMER,Constitutive NOS
+HS01647-MONOMER,N-NOS
+HS01647-MONOMER,Neuronal NOS
+HS01647-MONOMER,"Nitric oxide synthase, brain"
+HS01647-MONOMER,bNOS
+HS01647-MONOMER,NC-NOS
+HS01647-MONOMER,nNOS
+HS01647-MONOMER,NOS type I
+L-LACTATE-DEHYDROGENASE-RXN,L-lactic acid dehydrogenase
+L-LACTATE-DEHYDROGENASE-RXN,L-lactic dehydrogenase
+1.2.1.25-RXN,1.2.1.25-RXN
+2-AMINO-MUCONATE,2-aminomuconic acid
+2-AMINO-MUCONATE,2-aminomuconate
+FUMHYDR-RXN,Fumarase
+FUMHYDR-RXN,fumarate hydration
+FUMHYDR-RXN,malate dehydration
+HS15808,HS15808
+3-SULFINOALANINE-AMINOTRANSFERASE-RXN,3-SULFINOALANINE-AMINOTRANSFERASE-RXN
+PWY-3982,uracil degradation II (reductive)
+PWY-3982,β-alanine biosynthesis
+HS09454-MONOMER,hypothetical protein MGC23940
+HS09454-MONOMER,LDH
+HS09454-MONOMER,L-lactate dehydrogenase A-like 6A
+CPLX-7169,CPLX-7169
+TYRFUMCAT-PWY,tyrosine fumarate catabolism
+TYRFUMCAT-PWY,tyrosine degradation I
+OXALACETIC_ACID,oxaloacetic acid
+OXALACETIC_ACID,oxalacetic acid
+OXALACETIC_ACID,keto-oxaloacetate
+OXALACETIC_ACID,oxalacetate
+OXALACETIC_ACID,oxaloacetate
+HS05696,FLJ20001
+HS05696,BHMT2
+HS04597-MONOMER,cytoplasmic aconitate hydratase
+HS04597-MONOMER,iron-responsive element-binding protein 1
+HS04597-MONOMER,ferritin repressor protein
+HS04597-MONOMER,aconitase 1
+HS04597-MONOMER,"aconitase 1, soluble"
+HS04597-MONOMER,IRP1
+HS04597-MONOMER,iron regulatory protein 1
+HS04597-MONOMER,human
+HS04597-MONOMER,IRE-BP 1
+HS04597-MONOMER,citrate hydro-lyase
+HS04597-MONOMER,man
+HS07366,M-MDH
+HS07366,MOR1
+HS07366,MDH2
+HS07366,MDH
+HS07366,MGC:3559
+PYRROLINECARBDEHYDROG-RXN,pyrroline-5-carboxylate dehydrogenase
+PYRROLINECARBDEHYDROG-RXN,1-pyrroline-5-carboxylate dehydrogenase
+HS08479-MONOMER,GLUTAMATE FORMIMINOTRANSFERASE
+HS08479-MONOMER,FTCD
+HS08479-MONOMER,LCHC1
+HS08479-MONOMER,Formiminotetrahydrofolate cyclodeaminase
+HS08479-MONOMER,GLUTAMATE FORMYLTRANSFERASE
+HS08479-MONOMER,Formiminotransferase-cyclodeaminase
+HS08479-MONOMER,Glutamate formiminotransferase
+HS08479-MONOMER,Glutamate formyltransferase
+HS08479-MONOMER,Formimidoyltetrahydrofolate cyclodeaminase
+HS08479-MONOMER,FORMIMINOTETRAHYDROFOLATE CYCLODEAMINASE
+1.3.1.2-RXN,Dihydrouracil dehydrogenase (NADP+)
+1.3.1.2-RXN,Dihydrothymine dehydrogenase
+L-ORNITHINE,"2, 5-diaminopentanoic acid"
+L-ORNITHINE,"2, 5-diaminopentanoate"
+L-ORNITHINE,"α,δ-diaminovaleric acid"
+L-ORNITHINE,Ornithine
+L-ORNITHINE,L-ornithine
+L-ORNITHINE,"2, 5-diaminovaleric acid"
+GLUTAMIN-RXN,L-glutamine amidohydrolase
+GLUTAMIN-RXN,K-glutaminase
+2TRANSKETO-RXN,Glycoaldehyde transferase
+2TRANSKETO-RXN,D-Fructose 6-phosphate:D-glyceraldehyde-3-phosphate glycolaldehyde transferase
+HS16031-MONOMER,"1,2-dihydroxy-3-keto-5-methylthiopentene dioxygenase"
+HS16031-MONOMER,Submergence-induced protein 2 homolog
+HS16031-MONOMER,MTCBP-1
+HS16031-MONOMER,SIPL
+HS16031-MONOMER,Membrane-type 1 matrix metalloproteinase cytoplasmic tail-binding protein 1
+HS16031-MONOMER,Aci-reductone dioxygenase
+HS16031-MONOMER,ARD
+HS16031-MONOMER,1.13.-.-
+CPLX-7861,human
+CPLX-7861,man
+G3P,3-P-D-glycerate
+G3P,3-phospho-(R)-glycerate
+G3P,D-glycerate 3-phosphate
+G3P,3-phosphoglycerate
+G3P,D-glycerate-3-P
+G3P,3-phospho-D-glycerate
+G3P,3-phospho-D-glyceric acid
+G3P,D-3-phosphoglycerate
+PWY-6307,"tryptophan degradation X (mammalian, via tryptamine)"
+CPLX-7862,(ADP-forming) succinyl-CoA ligase
+CPLX-7862,human
+CPLX-7862,man
+PROTEIN-ARGININE-DEIMINASE-RXN,PROTEIN-ARGININE-DEIMINASE-RXN
+1TRANSKETO-RXN,Glycoaldehyde transferase
+PPI,CDP-diacylglycerol--inositol 3-phosphatidyltransferase
+PPI,diphosphate
+PPI,pyrophosphate
+PPI,PPi
+PPI,PP
+HS02854-MONOMER,HIBADH
+HS02854-MONOMER,"3-hydroxyisobutyrate dehydrogenase, mitochondrial"
+HS06761,TAT
+THREONINE-DEG2-PWY,threonine degradation II
+THREONINE-DEG2-PWY,threonine dehydrogenase pathway
+THREONINE-DEG2-PWY,TDG pathway
+PWY-6134,tyrosine biosynthesis IV
+CPLX-7116,aminoadipic semialdehyde synthase
+CPLX-7116,lysine-ketoglutarate reductase
+CPLX-7116,lysine-oxoglutarate reductase
+HS08987-MONOMER,3-hydroxybutyrate dehydrogenase type 2
+HS08987-MONOMER,Dehydrogenase/reductase SDR family member 6
+HS08987-MONOMER,R-beta-hydroxybutyrate dehydrogenase
+HS08987-MONOMER,Oxidoreductase UCPA
+HS00906-MONOMER,CTHBP
+HS00906-MONOMER,Pyruvate kinase muscle isozyme
+HS00906-MONOMER,THBP1
+HS00906-MONOMER,Pyruvate kinase 2/3
+HS00906-MONOMER,Tumor M2-PK
+HS00906-MONOMER,Cytosolic thyroid hormone-binding protein
+HS00906-MONOMER,p58
+HS00906-MONOMER,Pyruvate kinase isozymes M1/M2
+HS00906-MONOMER,M2-PK
+HOMOGENTISATE-12-DIOXYGENASE-RXN,Homogentisate oxygenase
+HOMOGENTISATE-12-DIOXYGENASE-RXN,Homogentisicase
+HOMOGENTISATE-12-DIOXYGENASE-RXN,Homogentisic acid oxidase
+CPD-479,4-methylthio-2-oxobutyrate
+CPD-479,2-keto-4-methylthiobutanoate
+CPD-479,KMTB
+CPD-479,2-keto-4-methylthiobutyrate
+CPD-479,2-oxomethionine
+CPD-479,2-ketomethiobutyrate
+CPD-479,2-oxo-4-methylthiobutanoic acid
+CPD-479,2-oxo-4-methylthiobutanoate
+CPD-479,2-keto-4-methylthiobutyric acid
+CPD-479,4-methylthio-2-ketobutyrate
+CPD-479,α-keto-4-methylthiobutyrate
+CPD-479,α-keto-γ-methylthiobutyric acid
+CPD-479,α-keto-γ-methylthiobutyrate
+CPD-479,2-keto-methyl-thio-butyrate
+CPD-479,4-methylthio-2-ketobutanoate
+CPD-479,4-methylthio-2-oxobutanoate
+CPD-479,α-ketomethiobutyric acid
+CPD-479,α-ketomethiobutyrate
+FAD,kynurenine hydroxylase
+FAD,flavitan
+FAD,DLD
+FAD,kynurenine 3-hydroxylase
+FAD,proline oxidase
+FAD,flavin adenine dinucleotide oxidized
+FAD,FAD
+FAD,xanthine oxidoreductase
+FAD,flavin adenine dinucleotide
+FAD,XO
+N6N6N6-TRIMETHYL-L-LYSINE,N(epsilon)-trimethyllysine
+N6N6N6-TRIMETHYL-L-LYSINE,epsilon-trimethyl-L-lysine
+N6N6N6-TRIMETHYL-L-LYSINE,ε-N-trimethyl-L-lysine
+N6N6N6-TRIMETHYL-L-LYSINE,"N6,N6,N6-trimethyl-L-lysine"
+N6N6N6-TRIMETHYL-L-LYSINE,"(S)-5-amino-5-carboxy-N,N,N-trimethyl-1-pentanaminium"
+N6N6N6-TRIMETHYL-L-LYSINE,"N6,N6,N6-trimethyl-L-lysin-N6-ium"
+N6N6N6-TRIMETHYL-L-LYSINE,trimethyllysine
+N6N6N6-TRIMETHYL-L-LYSINE,epsilon-N-trimethyl-L-lysine
+N6N6N6-TRIMETHYL-L-LYSINE,ε-trimethyl-lysine
+N6N6N6-TRIMETHYL-L-LYSINE,N6-trimethyllysine
+N6N6N6-TRIMETHYL-L-LYSINE,N-trimethyllysine
+N6N6N6-TRIMETHYL-L-LYSINE,(5-amino-5-carboxylato-pentyl)-trimethyl-ammonium
+N6N6N6-TRIMETHYL-L-LYSINE,(S)-2-amino-6-(trimethylammonio)hexanoic acid
+N6N6N6-TRIMETHYL-L-LYSINE,epsilon-trimethyllysine
+L-ASPARTATE,L-aspartate
+L-ASPARTATE,asp
+L-ASPARTATE,D
+L-ASPARTATE,L-aspartic acid
+L-ASPARTATE,aspartate
+L-ASPARTATE,aspartic acid
+PROSYN-PWY,proline biosynthesis I
+CPD-1083,2-methylbut-2-enoyl-CoA
+CPD-1083,methylcrotonyl-CoA
+CPD-1083,tigloyl-CoA
+CPD-1083,2-methyl-crotonyl-CoA
+CPD-1083,(E)-2-methylbut-2-enoyl-CoA
+CPD-1083,tiglyl-CoA
+CPD-1083,trans-2-methylbut-2-enoyl-CoA
+CPD-1083,(E)-2-methylcrotonoyl-CoA
+HS16251,HS16251
+R147-RXN,R147-RXN
+HS15303-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS15303-MONOMER,argininosuccinate synthase
+BRANCHED-CHAINAMINOTRANSFERLEU-RXN,Transaminase B
+L-ARGININO-SUCCINATE,L-arginino-succinate
+L-ARGININO-SUCCINATE,N-(L-arginino)-succinate
+L-ARGININO-SUCCINATE,arginino-succinate
+PWY-5331,taurine biosynthesis
+PWY-5331,L-cysteine degradation IV
+SO3,SO3
+SO3,sulfite
+SO3,SO3-2
+HS10215-MONOMER,"Phosphoglycerate kinase, testis specific"
+HS10215-MONOMER,Phosphoglycerate kinase 2
+PWY-6318,"phenylalanine degradation IV (mammalian, via side chain)"
+HS08648-MONOMER,L-asparagine amidohydrolase
+HS08648-MONOMER,Asparaginase-like protein 1
+HS08648-MONOMER,L-asparaginase
+TRIMETHYLLYSINE-DIOXYGENASE-RXN,TML-alpha-ketoglutarate dioxygenase
+TRIMETHYLLYSINE-DIOXYGENASE-RXN,"Trimethyllysine,2-oxoglutarate dioxygenase"
+HS01791,COMT
+HS09809-MONOMER,S-adenosyl-L-homocysteine hydrolase 2
+HS09809-MONOMER,S-adenosylhomocysteine hydrolase-like protein 1
+HS09809-MONOMER,Putative adenosylhomocysteinase 2
+HS09809-MONOMER,AdoHcyase 2
+HS09809-MONOMER,DC-expressed AHCY-like molecule
+HS09084-MONOMER,T protein
+HS09084-MONOMER,Brachyury protein
+PWY-5481,pyruvate fermentation to lactate
+HS10376,GATM
+HS10376,AGAT
+CPLX-6641,argininosuccinate synthetase
+CPLX-6641,citrulline--aspartate ligase
+L-ALPHA-ALANINE,A
+L-ALPHA-ALANINE,alanine
+L-ALPHA-ALANINE,L-α-alanine
+L-ALPHA-ALANINE,L-alanine
+L-ALPHA-ALANINE,ala
+DI-H-URACIL,dihydrouracil
+DI-H-URACIL,DI-H-uracil
+DI-H-URACIL,"5,6-dihydrouracil"
+HS06001,GA
+HS06001,GLS2
+GLUTAMATE-SYN2-PWY,glutamate biosynthesis II
+CPLX-6761,L-glutamine amidohydrolase
+CPLX-6761,K-glutaminase
+CPLX-6761,"glutaminase, kidney isoform"
+CPLX-6761,human
+CPLX-6761,man
+MONOMER-12921,human
+MONOMER-12921,man
+HS05952-MONOMER,L-serine deaminase
+HS05952-MONOMER,L-serine dehydratase
+L-GLUTAMATE_GAMMA-SEMIALDEHYDE,glutamate-semialdehyde
+L-GLUTAMATE_GAMMA-SEMIALDEHYDE,L-glutamate γ-semialdehyde
+L-GLUTAMATE_GAMMA-SEMIALDEHYDE,L-glutamate-5-semialdehyde
+L-GLUTAMATE_GAMMA-SEMIALDEHYDE,glutamic γ-semialdehyde
+HS00525-MONOMER,Methylthioribose-1-phosphate isomerase
+HS00525-MONOMER,M1Pi
+HS00525-MONOMER,S-methyl-5-thioribose-1-phosphate isomerase
+HS00525-MONOMER,MTR-1-P isomerase
+HS00525-MONOMER,Translation initiation factor eIF-2B subunit alpha/beta/delta-like protein
+HS02640,CKM
+HS02640,CKMM
+ARG,2-amino-5-guanidinovaleric acid
+ARG,L-arginine
+ARG,R
+ARG,arginine
+ARG,arg
+eEF-2-Histidines,a L-histidine in translation elongation factor 2
+eEF-2-Histidines,an L-histidine in eEF-2
+HS11196,PGAMA
+HS11196,PGAM1
+HS00732-MONOMER,"Probable glutamyl-tRNA(Gln) amidotransferase subunit B, mitochondrial"
+HS00732-MONOMER,Glu-ADT subunit B
+HS00732-MONOMER,6.3.5.-
+HS00732-MONOMER,Cytochrome oxidase assembly factor PET112 homolog
+FORMATE,formate
+FORMATE,formic acid
+HS16727-MONOMER,bifunctional methylenetetrahydrofolate dehydrogenase/cyclohydrolase mitochondrial precursor
+HS03243-MONOMER,O-phosphoseryl-tRNA(Sec) selenium transferase
+HS03243-MONOMER,Sec synthase
+HS03243-MONOMER,SLA-p35
+HS03243-MONOMER,Liver-pancreas antigen
+HS03243-MONOMER,SLA
+HS03243-MONOMER,Selenocysteine synthase
+HS03243-MONOMER,UGA suppressor tRNA-associated protein
+HS03243-MONOMER,Sep-tRNA:Sec-tRNA synthase
+HS03243-MONOMER,SepSecS
+HS03243-MONOMER,LP
+HS03243-MONOMER,2.9.1.n1
+HS03243-MONOMER,tRNA(Ser/Sec)-associated antigenic protein
+HS03243-MONOMER,Selenocysteinyl-tRNA(Sec) synthase
+HS03243-MONOMER,SLA/LP autoantigen
+HS03243-MONOMER,Soluble liver antigen
+NAD,NAD+
+NAD,DPN+
+NAD,nicotinamide adenine dinucleotide
+NAD,diphosphopyridine nucleotide
+NAD,diphosphopyridine nucleotide oxidized
+NAD,NAD-oxidized
+NAD,nicotinamide adenine dinucleotide oxidized
+NAD,coenzyme I
+NAD,NAD
+NAD,UDP-GlcNAc C4 epimerase
+NAD,DPN-ox
+NAD,β-nicotinamide adenine dinucleotide
+NAD,UDP-N-acetylglucosamine C4-epimerase
+NAD,DPN
+NAD,beta-nicotinamide adenine dinucleotide
+NAD,NAD-ox
+PHENYLACETALDEHYDE,phenylethanal
+PHENYLACETALDEHYDE,phenylacetaldehyde
+PHENYLACETALDEHYDE,α-tolualdehyde
+PHENYLACETALDEHYDE,PAA
+PHENYLACETALDEHYDE,2-phenylacetaldehyde
+PHENYLACETALDEHYDE,hyacinthin
+ACONITATEDEHYDR-RXN,Aconitase
+ACONITATEDEHYDR-RXN,Citrate hydro-lyase
+HS03452,LDHB
+HS08389-MONOMER,HL-60 PAD
+HS08389-MONOMER,Protein-arginine deiminase type IV
+HS08389-MONOMER,Peptidylarginine deiminase IV
+HS08389-MONOMER,Protein-arginine deiminase type-4
+2-METHYL-BUTYRYL-COA,α-methylbutyryl-CoA
+2-METHYL-BUTYRYL-COA,2-methylbutanoyl-CoA
+2-METHYL-BUTYRYL-COA,S-2-methyl-butyryl-CoA
+2-METHYL-BUTYRYL-COA,2-methylbutyryl-CoA
+2-METHYL-BUTYRYL-COA,α-methylbutanoyl-CoA
+ILE,I
+ILE,L-isoleucine
+ILE,ile
+ILE,iso-leucine
+METHYLGLUTACONYL-COA-HYDRATASE-RXN,METHYLGLUTACONYL-COA-HYDRATASE-RXN
+HS06944-MONOMER,Protein-arginine deiminase type III
+HS06944-MONOMER,Protein-arginine deiminase type-3
+HS06944-MONOMER,Peptidylarginine deiminase III
+Ubiquinones,Q
+Ubiquinones,an ubiquinone
+Ubiquinones,coenzyme-Qn
+Ubiquinones,ubiquinone
+PWY-5652,2-amino-3-carboxymuconate semialdehyde degradation to glutaryl-CoA
+PWY-5651,tryptophan degradation to 2-amino-3-carboxymuconate semialdehyde
+TRANSALDOL-RXN,Glycerone transferase
+TRANSALDOL-RXN,Dihydroxyacetone transferase
+CPLX-7384,glutamate ammonia ligase
+CPLX-7384,GS
+CPLX-7384,"glutamine synthetase, type II"
+HS05215-MONOMER,Glutamate decarboxylase 1
+HS05215-MONOMER,67 kDa glutamic acid decarboxylase
+HS05215-MONOMER,Glutamate decarboxylase 67 kDa isoform
+HS05215-MONOMER,GAD-67
+HS01791-MONOMER,man
+HS01791-MONOMER,MB-COMT
+HS01791-MONOMER,human
+HS01791-MONOMER,"catechol O-methyltransferase, membrane-bound form"
+L-ERYTHRO-4-HYDROXY-GLUTAMATE,L-erythro-4-hydroxy-glutamate
+L-ERYTHRO-4-HYDROXY-GLUTAMATE,4-Hydroxy-L-glutamic acid
+L-ERYTHRO-4-HYDROXY-GLUTAMATE,erythro-4-hydroxyglutamate
+L-ERYTHRO-4-HYDROXY-GLUTAMATE,4-Hydroxy-L-glutamate
+HS00049,SHMT
+HS00049,GLYA
+HS00049,SHMT2
+DEOXYHYPUSINE-MONOOXYGENASE-RXN,Deoxyhypusine hydroxylase
+PWY-6405,Rapoport-Luebering glycolytic shunt
+2-METHYL-ACETO-ACETYL-COA,2-methyl-3-acetoacetyl-CoA
+2-METHYL-ACETO-ACETYL-COA,2-methylacetoacetyl-CoA
+2-METHYL-ACETO-ACETYL-COA,2-methylacetoacetyl coenzyme A
+URACIL,uracil
+Methylated-methyl-acceptors,a methylated methyl donor
+Methylated-methyl-acceptors,a methylated methyl acceptor
+HS07242-MONOMER,Enolase-phosphatase E1
+HS07242-MONOMER,MASA homolog
+HS07242-MONOMER,"2,3-diketo-5-methylthio-1-phosphopentane phosphatase"
+CYSTEINE-DEG-PWY,L-cysteine degradation I
+CYSTEINE-DEG-PWY,cysteine degradation I
+HCO3,bicarbonate
+HCO3,carbonate
+HCO3,HCO3
+HCO3,HCO3-
+HCO3,CO32-
+HCO3,CO3-2
+HS05946,PSAT1
+HS05946,PSA
+HS06945,PADI1
+HS06945,PDI1
+HS06944,PDI3
+HS06944,PADI3
+5-10-METHENYL-THF,methenyl-THF
+5-10-METHENYL-THF,"5,10-methenyl-THF"
+5-10-METHENYL-THF,"5,10-methenyltetrahydrofolate"
+5-10-METHENYL-THF,n5-n10-CH-THF
+5-10-METHENYL-THF,methenyl-H4F
+5-10-METHENYL-THF,anhydroleucovorin
+5-10-METHENYL-THF,CH-THF
+5-10-METHENYL-THF,n5-n10-methenyltetrahydrofolate
+5-10-METHENYL-THF,methenyl-tetrahydrofolate
+CPLX-7068,4a-hydroxytetrahydrobiopterin dehydratase
+CPLX-7068,4α-hydroxy-tetrahydropterin dehydratase
+CPLX-7068,phenylalanine hydroxylase-stimulating protein
+HISHP-PWY,histidine degradation VI
+RXN-11213,RXN-11213
+4-HYDROXYPHENYLPYRUVATE-DIOXYGENASE-RXN,4-hydroxyphenylpyruvate hydroxylase
+4-HYDROXYPHENYLPYRUVATE-DIOXYGENASE-RXN,p-hydroxyphenylpyruvate oxidase
+4-HYDROXYPHENYLPYRUVATE-DIOXYGENASE-RXN,p-Hydroxyphenylpyruvate dioxygenase
+HS10374,PAH
+HS10374,PKU1
+HS10374,PKU
+CPLX-7067,phenylalanine 4-monooxygenase
+CPLX-7067,phenylalanine-4-hydroxylase
+HS14757,ALDH4
+HS14757,ALDH4A1
+HS14757,P5CDH
+CPLX-7061,fumarylacetoacetase
+HS02854,HIBADH
+HS02854,MGC40361
+ETR-Quinols,an electron-transfer-related quinol
+INDOLE_ACETATE_AUXIN,indoleacetic acid
+INDOLE_ACETATE_AUXIN,indole-3-acetic acid
+INDOLE_ACETATE_AUXIN,indoleacetate
+INDOLE_ACETATE_AUXIN,IAA
+INDOLE_ACETATE_AUXIN,indole-3-acetate
+INDOLE_ACETATE_AUXIN,kynurenine 2-oxoglutarate transaminase
+INDOLE_ACETATE_AUXIN,L-kynurenine aminotransferase
+INDOLE_ACETATE_AUXIN,kynurenine-oxoglutarate transaminase
+INDOLE_ACETATE_AUXIN,auxin
+HS12378,HS12378
+BISPHOSPHOGLYCERATE-MUTASE-RXN,Diphosphoglycerate mutase
+BISPHOSPHOGLYCERATE-MUTASE-RXN,Diphosphoglyceromutase
+BISPHOSPHOGLYCERATE-MUTASE-RXN,Bisphosphoglycerate synthase
+BISPHOSPHOGLYCERATE-MUTASE-RXN,Glycerate phosphomutase
+BISPHOSPHOGLYCERATE-MUTASE-RXN,"2,3-bisphosphoglycerate synthase"
+PWY-4983,nitric oxide biosynthesis II
+PWY-4983,citrulline-nitric oxide cycle
+PWY-4983,citrulline-NO cycle
+G66-33941,ATQ1
+G66-33941,ALDH7A1
+HS07548,GLUD
+HS07548,GLUD1
+AKBLIG-RXN,AKBLIG-RXN
+HS02359,MIG10
+HS02359,OK/SW-cl.110
+HS02359,PGKA
+HS02359,PGK1
+HS07548-MONOMER,"Glutamate dehydrogenase 1, mitochondrial"
+HS07548-MONOMER,GDH
+ENSG00000163382-MONOMER,apolipoprotein A-I-binding protein
+ENSG00000163382-MONOMER,AI-BP
+ENSG00000163382-MONOMER,YjeF N-terminal domain-containing protein 1
+ENSG00000163382-MONOMER,NADHX epimerase
+HS04076,MTR
+2-Oxo-carboxylates,a 2-oxo carboxylate
+2-Oxo-carboxylates,a 2-ketocarboxylate
+2-Oxo-carboxylates,an α keto acid
+2-Oxo-carboxylates,a keto acid
+2-Oxo-carboxylates,2-oxo acid
+2-Oxo-carboxylates,a 2-oxo acid
+CPD-85,"1,2-dihydroxy-3-keto-5-methylthiopentene anion"
+CPD-85,acireductone
+CPD-85,"1,2-dihydroxy-3-keto-5-methylthiopentane"
+CPD-85,"1,2-dihydroxy-5-(methylthio)pent-1-en-3-one"
+CPD-85,"1,2-dihydroxy-3-keto-5-methylthiopentene"
+ENSG00000151640-MONOMER,Collapsin response mediator protein 3
+ENSG00000151640-MONOMER,DRP-4
+ENSG00000151640-MONOMER,ULIP4 protein
+ENSG00000151640-MONOMER,Dihydropyrimidinase-related protein 4
+ENSG00000151640-MONOMER,CRMP-3
+ENSG00000151640-MONOMER,UNC33-like phosphoprotein 4
+HS16708,HS16708
+HS15058,HS15058
+HS00858-MONOMER,Methenyltetrahydrofolate cyclohydrolase
+HS01958,PRODH
+HS01958,POX2
+HS01958,PIG6
+HS01953,UPB1
+HS01953,BUP1
+IMIDAZOLONEPROPIONASE-RXN,UNKNOWN
+IMIDAZOLONEPROPIONASE-RXN,Imidazolone-5-propionate hydrolase
+RXN0-5260,RXN0-5260
+BISPHOSPHOGLYCERATE-PHOSPHATASE-RXN,BISPHOSPHOGLYCERATE-PHOSPHATASE-RXN
+3-HYDROXYISOBUTYRATE-DEHYDROGENASE-RXN,3-HYDROXYISOBUTYRATE-DEHYDROGENASE-RXN
+HS09332,AAT2
+HS09332,ALT2
+HS09332,GPT2
+CO-A,coenzyme A
+CO-A,co-A-SH
+CO-A,HS-CoA
+CO-A,co-enzyme-A
+CO-A,CoA
+CO-A,co-A
+HS05858-MONOMER,LDH muscle subunit
+HS05858-MONOMER,L-lactate dehydrogenase A chain
+HS05858-MONOMER,Cell proliferation-inducing gene 19 protein
+HS05858-MONOMER,Renal carcinoma antigen NY-REN-59
+HS05858-MONOMER,LDH-M
+HS05858-MONOMER,LDH-A
+HS02273-MONOMER,AdoHcyase
+HS02273-MONOMER,Adenosylhomocysteinase
+HS02273-MONOMER,S-adenosyl-L-homocysteine hydrolase
+HS17383-MONOMER,L-lactate dehydrogenase chain
+HS17383-MONOMER,LDH
+HS08987,DHRS6
+HS08987,UNQ6308/PRO20933
+HS08987,BDH2
+RXN-7719,dihydrolipoyl dehydrogenase
+HS08968,TKT
+HS08968,TKT1
+HS17569-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17569-MONOMER,GAPDH
+3-HYDROXY-KYNURENINASE-RXN,3-HYDROXY-KYNURENINASE-RXN
+ARG-PRO-PWY,proline biosynthesis from arginine
+ARG-PRO-PWY,arginine degradation VI (arginase 2 pathway)
+4-HYDROXYGLUTAMATE-AMINOTRANSFERASE-RXN,4-HYDROXYGLUTAMATE-AMINOTRANSFERASE-RXN
+RXN-7716,dihydrolipoyl dehydrogenase
+CPD-466,L-3-amino-isobutanoate
+CPD-466,(S)-3-amino-isobutyric acid
+CPD-466,(S)-3-amino-2-methylpropanoate
+HS01953-MONOMER,BUP-1
+HS01953-MONOMER,Beta-alanine synthase
+HS01953-MONOMER,Beta-ureidopropionase
+HS01953-MONOMER,N-carbamoyl-beta-alanine amidohydrolase
+HS07328,HMGCLL1
+CREATINE-KINASE-RXN,CREATINE-KINASE-RXN
+NAD-P-OR-NOP,NAD(P)
+NAD-P-OR-NOP,NAD(P)+
+2-METHYLACYL-COA-DEHYDROGENASE-RXN,2-METHYLACYL-COA-DEHYDROGENASE-RXN
+HS07322,MUT
+HS07322,MCM
+B-ALANINE,3-ammoniopropanoate
+B-ALANINE,β-alanine
+B-ALANINE,3-azaniumylpropanoate
+RIBULP3EPIM-RXN,D-ribulose-5-phosphate epimerase
+RIBULP3EPIM-RXN,D-ribulose phosphate-3-epimerase
+RIBULP3EPIM-RXN,Erythrose-4-phosphate epimerase
+RIBULP3EPIM-RXN,Xylulose phosphate 3-epimerase
+RIBULP3EPIM-RXN,D-xylulose-5-phosphate 3-epimerase
+RIBULP3EPIM-RXN,RIBULOSE 5-PHOSPHATE 3-EPIMERASE
+RIBULP3EPIM-RXN,D-ribulose-5-phosphate 3-epimerase
+RIBULP3EPIM-RXN,pentose phosphate epimerase
+RIBULP3EPIM-RXN,Pentose-5-phosphate 3-epimerase
+HS00056-MONOMER,aldehyde dehydrogenase 4
+HS00056-MONOMER,mitochondrial delta-1-pyrroline 5-carboxylate dehydrogenase
+HS00056-MONOMER,"aldehyde dehydrogenase 4 family, member A1"
+HS00056-MONOMER,P5C dehydrogenase
+HS00056-MONOMER,aldehyde dehydrogenase 4A1 precursor
+IMIDHYD-RXN,IMIDHYD-RXN
+HS01810-MONOMER,DHS
+HS01810-MONOMER,Deoxyhypusine synthase
+HS12378-MONOMER,argininosuccinate lyase
+DIMETHYL-GLYCINE,"N,N-dimethylglycine"
+DIMETHYL-GLYCINE,dimethylglycine
+HS06642,CSD
+HS06642,CSAD
+MERCAPYSTRANS-RXN,MERCAPYSTRANS-RXN
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,pyrroline 5-carboxylate
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,L-Δ1-pyrroline-5-carboxylate
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,δ-1-pyrroline-5-carboxylic acid
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,1-pyrroline-5-carboxylate
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,L-1-pyrroline-5-carboxylate
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,(S)-1-pyrroline-5-carboxylate
+L-DELTA1-PYRROLINE_5-CARBOXYLATE,δ-1-pyrroline-5-carboxylate
+NADH-P-OR-NOP,NAD(P)H
+HS09610,GPT
+HS09610,AAT1
+HS09610,GPT1
+RXN-8162,RXN-8162
+HS11958,PHGDHL1
+HS11958,FLJ30548
+CPLX-6585,nitric-oxide synthase III
+CPLX-6585,eNOS
+CPLX-6585,"nitric-oxide synthase, endothelial"
+CPLX-6585,NOS3
+HS15619,C11orf79
+HS15619,SDH5
+HS15619,PGL2
+HS05535-MONOMER,ATP-citrate (pro-S-)-lyase
+HS05535-MONOMER,ATP-citrate synthase
+HS05535-MONOMER,Citrate cleavage enzyme
+HS08413,UROC1
+HS16267-MONOMER,phosphoglycerate kinase
+EIF5A-LYSINE,an eIF5A lysine
+EIF5A-LYSINE,an eIF5A-L-lysine
+EIF5A-LYSINE,an [eIF5A-precursor]-lysine
+AMP,5'-AMP
+AMP,adenosine-phosphate
+AMP,5'-adenosine monophosphate
+AMP,adenosine 5'-monophosphate
+AMP,5'-adenylic acid
+AMP,glucosamine-6-phosphate synthase
+AMP,glutamine-fructose-6-phosphate transaminase (isomerizing)
+AMP,adenylic acid
+AMP,adenosine-monophosphate
+AMP,adenosine-5'-phosphate
+AMP,adenylate
+AMP,adenosine 5'-phosphate
+AMP,GFAT
+AMP,AMP
+Demethylated-methyl-acceptors,a demethylated methyl donor
+Demethylated-methyl-acceptors,a demethylated methyl acceptor
+D-SEDOHEPTULOSE-7-P,sedo-heptulose-7-phosphate
+D-SEDOHEPTULOSE-7-P,heptulose 7-phosphate
+D-SEDOHEPTULOSE-7-P,sedoheptulose-7-P
+D-SEDOHEPTULOSE-7-P,D-sedoheptulose 7-phosphate
+D-SEDOHEPTULOSE-7-P,D-Sedoheptulose-7-P
+HS15871,HS15871
+HS05555-MONOMER,Basic-type mitochondrial creatine kinase
+HS05555-MONOMER,Mib-CK
+HS05555-MONOMER,Sarcomeric mitochondrial creatine kinase
+HS05555-MONOMER,"Creatine kinase S-type, mitochondrial"
+HS05555-MONOMER,S-MtCK
+HS04417,HS04417
+23-DIPHOSPHOGLYCERATE,D-Greenwald ester
+23-DIPHOSPHOGLYCERATE,"2,3-bisphosphoglycerate"
+23-DIPHOSPHOGLYCERATE,"2,3-diphospho-D-glycerate"
+23-DIPHOSPHOGLYCERATE,"2,3-diphosphoglycerate"
+23-DIPHOSPHOGLYCERATE,"2,3-P2-D-glycerate"
+23-DIPHOSPHOGLYCERATE,DPG
+23-DIPHOSPHOGLYCERATE,"2,3-bisphospho-D-glycerate"
+23-DIPHOSPHOGLYCERATE,"2,3-bisPGA"
+HS17248-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17248-MONOMER,GAPDH
+HS01071,MRPP2
+HS01071,HSD17B10
+HS01071,ERAB
+HS01071,XH98G2
+HS01071,SCHAD
+HS01071,HADH2
+ISOGLUTAMINE,L-isoglutamine
+GLUTAMATE-DEHYDROGENASE-NADP+-RXN,Glutamic dehydrogenase
+GLUTAMATE-DEHYDROGENASE-NADP+-RXN,glutamate dehydrogenase 2
+GLUTAMATE-DEHYDROGENASE-NADP+-RXN,glutamate dehydrogenase pseudogene 1
+RXN-10814,L-phenylalanine aminotransferase
+2-AMINOMUCONATE_SEMIALDEHYDE,2-aminomuconic semialdehyde
+2-AMINOMUCONATE_SEMIALDEHYDE,2-aminomuconate semialdehyde
+2-AMINOMUCONATE_SEMIALDEHYDE,2-aminomuconic 6-semialdehyde
+2-AMINOMUCONATE_SEMIALDEHYDE,2-aminomuconate 6-semialdehyde
+HS13905,HS13905
+Donor-H2,a reduced acceptor
+Donor-H2,reduced electron acceptor
+Donor-H2,a reduced electron acceptor
+Donor-H2,a donor
+Donor-H2,A(H2)
+Donor-H2,donor
+Donor-H2,reduced acceptor
+CPLX66-17,methylcrotonyl-CoA carboxylase
+3-HYDROXYBUTYRATE-DEHYDROGENASE-RXN,D-beta-hydroxybutyrate dehydrogenase
+3-HYDROXYBUTYRATE-DEHYDROGENASE-RXN,D-β-hydroxybutyrate dehydrogenase
+PWY-5921,L-glutamine biosynthesis II (tRNA-dependent)
+PWY-5921,glutaminyl-tRNAgln biosynthesis via transamidation
+TRP,indoleacetic acid-5-hydroxylase
+TRP,2-amino-3-indolylpropanic acid
+TRP,L-tryptophan
+TRP,trofan
+TRP,tryptophan hydroxylase
+TRP,kynurenine 2-oxoglutarate transaminase
+TRP,tryptacin
+TRP,L-kynurenine aminotransferase
+TRP,W
+TRP,tryptophan
+TRP,trp
+TRP,kynurenine-oxoglutarate transaminase
+TRP,"L-tryptophan,tetrahydrobiopterin:oxygen oxidoreductase (5-hydroxylating)"
+TRP,tryptophan 5-monooxygenase
+6PGLUCONDEHYDROG-RXN,Phosphogluconic acid dehydrogenase
+6PGLUCONDEHYDROG-RXN,6PGD
+6PGLUCONDEHYDROG-RXN,6-phosphogluconic carboxylase
+6PGLUCONDEHYDROG-RXN,"phosphogluconate dehydrogenase [NAD(P)+-dependent, decarboxylating]"
+6PGLUCONDEHYDROG-RXN,6-phosphogluconic dehydrogenase
+HS13756,HS13756
+HS01530-MONOMER,"Selenide, water dikinase 1"
+HS01530-MONOMER,Selenium donor protein 1
+HS01530-MONOMER,Selenophosphate synthetase 1
+HS00018-MONOMER,GDH
+HS00018-MONOMER,"Glutamate dehydrogenase 2, mitochondrial"
+HS00018-MONOMER,glutamate dehydrogenase pseudogene 1
+PWY66-367,ketogenesis
+PWY66-367,acetoacetate biosynthesis
+PWY66-367,ketone body synthesis
+1.2.1.32-RXN,1.2.1.32-RXN
+PROLINE-MULTI,PROLINE-MULTI
+HS17676-MONOMER,L-lactate dehydrogenase chain
+HS17676-MONOMER,LDH
+CPLX-6930,histidine ammonia-lyase
+CPLX-6933,CPLX-6933
+CPLX-6934,CPLX-6934
+HS04361-MONOMER,Glutamate oxaloacetate transaminase 1
+HS04361-MONOMER,glutamate-aspartate transaminase
+HS04361-MONOMER,aspartate transaminase
+HS04361-MONOMER,glutamic-oxaloacetic transaminase
+HS04361-MONOMER,Transaminase A
+HS04361-MONOMER,"Aspartate aminotransferase, cytoplasmic"
+SE-2,selenide ion
+SE-2,selenide
+SE-2,Se-2
+HS05246,BBH
+HS05246,BBOX
+HS05246,BBOX1
+CPD-341,tryptophol
+CPD-341,indole-3-ethanol
+CPD-341,(indol-3-yl)ethanol
+HS02693-MONOMER,Neuroleukin
+HS02693-MONOMER,GPI
+HS02693-MONOMER,SA-36
+HS02693-MONOMER,Phosphohexose isomerase
+HS02693-MONOMER,Autocrine motility factor
+HS02693-MONOMER,PHI
+HS02693-MONOMER,AMF
+HS02693-MONOMER,Sperm antigen 36
+HS02693-MONOMER,Phosphoglucose isomerase
+HS02693-MONOMER,Glucose-6-phosphate isomerase
+HS02693-MONOMER,NLK
+HS02693-MONOMER,PGI
+DIHYDROPYRIMIDINASE-RXN,Hydantoinase
+2-KETO-ADIPATE-DEHYDROG-RXN,2-KETO-ADIPATE-DEHYDROG-RXN
+HS09900,HS09900
+L-CYSTATHIONINE,L-cystathionine
+L-CYSTATHIONINE,cystathionine
+ENSG00000072832-MONOMER,Dihydropyrimidinase-related protein 1
+ENSG00000072832-MONOMER,CRMP-1
+ENSG00000072832-MONOMER,Collapsin response mediator protein 1
+ENSG00000072832-MONOMER,DRP-1
+HS04231-MONOMER,Type I arginase
+HS04231-MONOMER,Arginase-1
+HS04231-MONOMER,Liver-type arginase
+HYPOTAURINE,hypotaurine
+CPLX-7759,MM
+CPLX-7759,M-M
+CPLX-7759,creatine kinase muscle type
+CPLX-7759,creatine kinase M chain
+CPLX-7759,creatine kinase MM isoform
+CPLX-7759,M-CK
+CPLX-7759,muscle creatine kinase
+CPLX-7051,tyrosine transaminase
+CPLX-7050,branched-chain α-keto acid dehydrogenase complex
+CPLX-7050,human
+CPLX-7050,man
+SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN,succinate dehydrogenase
+SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN,Succinic dehydrogenase
+SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN,succinate-coenzyme Q reductase
+HS03550,ALDH5A1
+HS03550,SSADH
+HS09157,ATQ1
+HS09157,ALDH7A1
+HS05370,6PGL
+HS05370,PGLS
+CPLX-7059,homogentisate dioxygenase
+2K-4CH3-PENTANOATE,2-keto-4-methyl-pentanoate
+2K-4CH3-PENTANOATE,4-methyl-2-oxopentanoate
+2K-4CH3-PENTANOATE,2-ketoisocaproate
+2K-4CH3-PENTANOATE,α-ketoisocaproate
+2K-4CH3-PENTANOATE,2-oxo-4-methylpentanoate
+2K-4CH3-PENTANOATE,2-oxoisocaproate
+2K-4CH3-PENTANOATE,α-oxoisocaproate
+HS07914-MONOMER,Phosphoriboisomerase
+HS07914-MONOMER,Ribose-5-phosphate isomerase
+CPLX-7835,cytosolic acetyl-CoA acetyltransferase
+CPLX-7835,human
+CPLX-7835,man
+HS01958-MONOMER,Proline oxidase
+HS01958-MONOMER,p53-induced gene 6 protein
+HS01958-MONOMER,proline oxidase
+HS01958-MONOMER,"Proline dehydrogenase, mitochondrial"
+HS01958-MONOMER,Proline oxidase 2
+HS07242,ENOPH1
+HS07242,MASA
+HS07242,MSTP145
+HS05375-MONOMER,Glutaminyl-tRNA synthase-like protein 1
+HS05375-MONOMER,Glutamyl-tRNA(Gln) amidotransferase subunit A homolog
+HS05375-MONOMER,6.3.5.-
+HS11132,TAL
+HS11132,TALDOR
+HS11132,TALDO
+HS11132,TALDO1
+HS08749,HAO
+HS08749,HAAO
+HS08749,3-HAO
+HS01776,PHGDH
+HS01776,PGDH3
+HS05233,IVD
+CPLX-7838,3-hydroxy-3-methylglutaryl Coenzyme A synthase
+CPLX-7838,HMG-CoA synthase
+CPLX-7838,3-hydroxy-3-methylglutaryl CoA synthase
+CPLX-7838,human
+CPLX-7838,man
+2-METHYL-3-HYDROXY-BUTYRYL-COA,2-methyl-3-hydroxybutyryl-CoA
+2-METHYL-3-HYDROXY-BUTYRYL-COA,3-hydroxy-2-methylbutyryl-CoA
+2-METHYL-3-HYDROXY-BUTYRYL-COA,(S)-3-hydroxy-2-methylbutyryl-CoA
+2-METHYL-3-HYDROXY-BUTYRYL-COA,"(2S,3S)-3-hydroxy-2-methylbutyryl-CoA"
+2-METHYL-3-HYDROXY-BUTYRYL-COA,"(2S,3S)-3-hydroxy-2-methylbutanoyl-CoA"
+METHYLENE-THF,"N5,N10-methylenetetrahydrofolate"
+METHYLENE-THF,"5,10-methylenetetrahydropteroyl mono-L-glutamate"
+METHYLENE-THF,"5,10-methylene-THF"
+METHYLENE-THF,"5,10-methylenetetrahydrofolate"
+CPLX66-270,pyruvate dehydrogenase E1 component (testis)
+RXN-10717,indole acetaldehyde reductase
+HS02477,GABAT
+HS02477,ABAT
+HS02536-MONOMER,Beta-diketonase
+HS02536-MONOMER,Fumarylacetoacetase
+HS02536-MONOMER,FAA
+HS02536-MONOMER,Fumarylacetoacetate hydrolase
+ISOCITRATE-DEHYDROGENASE-NAD+-RXN,Beta-ketoglutaric-isocitric carboxylase
+ISOCITRATE-DEHYDROGENASE-NAD+-RXN,Isocitric dehydrogenase
+HS07109,P5CR2
+PWY-6281,selenocysteine biosynthesis II (archaea and eukaryotes)
+CPLX-7069,CPLX-7069
+HS03952,KYNU
+RXN-2902,RXN-2902
+HS01481-MONOMER,78 kDa gastrin-binding protein
+HS01481-MONOMER,Long chain 3-hydroxyacyl-CoA dehydrogenase
+HS01481-MONOMER,TP-alpha
+RXN-2901,RXN-2901
+HS00415-MONOMER,"Carbamoyl-phosphate synthase [ammonia], mitochondrial"
+HS00415-MONOMER,CPSase I
+HS00415-MONOMER,Carbamoyl-phosphate synthetase I
+CROTONYL-COA,2-butenoyl-CoA
+CROTONYL-COA,but-2-enoyl-CoA
+CROTONYL-COA,crotonyl-S-CoA
+CROTONYL-COA,crotonoyl-CoA
+CROTONYL-COA,trans-butyr-2-enoyl-CoA
+CROTONYL-COA,crotonyl-CoA
+CROTONYL-COA,(E)-but-2-enoyl-CoA
+CROTONYL-COA,crotonyl-coenzyme A
+CROTONYL-COA,trans-but-2-enoyl-CoA
+TETRA-H-BIOPTERIN,"5,6,7,8-tetrahydrobiopterin"
+TETRA-H-BIOPTERIN,tyrosine 3-monooxygenase
+TETRA-H-BIOPTERIN,indoleacetic acid-5-hydroxylase
+TETRA-H-BIOPTERIN,tryptophan 5-monooxygenase
+TETRA-H-BIOPTERIN,phenylalanine hydroxylase cofactor
+TETRA-H-BIOPTERIN,tryptophan hydroxylase
+TETRA-H-BIOPTERIN,"5,6,7,8-tetra-H-biopterin"
+TETRA-H-BIOPTERIN,TH
+TETRA-H-BIOPTERIN,tetra-H-biopterin
+TETRA-H-BIOPTERIN,tetra-hydro-biopterin
+TETRA-H-BIOPTERIN,"L-tryptophan,tetrahydrobiopterin:oxygen oxidoreductase (5-hydroxylating)"
+TETRA-H-BIOPTERIN,tetrahydrobiopterin
+N-FORMYLKYNURENINE,N-formylkynurenine
+N-FORMYLKYNURENINE,N-Formyl-L-kynurenine
+HS17313-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS17313-MONOMER,GAPDH
+HS02077,ACO2
+2OXOGLUTARATEDEH-RXN,2-oxoglutarate dehydrogenation
+2OXOGLUTARATEDEH-RXN,α-ketoglutarate oxidative decarboxylation
+2OXOGLUTARATEDEH-RXN,2-oxoglutarate dehydrogenase complex
+2OXOGLUTARATEDEH-RXN,α-ketoglutarate dehydrogenase
+2OXOGLUTARATEDEH-RXN,2-ketoglutarate dehydrogenase
+HS17109-MONOMER,EC_5.4.2.4 EC_3.1.3.13 PHOSPHOGLYCERATE MUTASE ISOZYME PGAM BPG DEPENDENT PGAM
+HS17109-MONOMER,phosphoglycerate mutase
+HS02540,P
+HS02540,D15S12
+HS02540,OCA2
+Amino-Acids-20,proteinogenic amino acid
+Amino-Acids-20,protein-building amino acid
+Amino-Acids-20,a standard α amino acid
+Amino-Acids-20,amino acid
+Amino-Acids-20,L-amino acid
+Amino-Acids-20,protein-building  amino acid
+DIPHTHAMIDE,2'-[3-carboxamido-3-(trimethylammonio)propyl]-L-histidine
+DIPHTHAMIDE,{3-[4-(2-amino-2-carboxy-ethyl)-1H-imidazol-2-YL]-1-carbomyl-propyl}-trimethyl-ammonium
+DIPHTHAMIDE,peptide diphthamide
+DIPHTHAMIDE,2-[(3R)-3-carbamoyl-3-(trimethylammonio)propyl]-L-histidyl
+DIPHTHAMIDE,diphthamide in eEF-2
+HS05204,HS05204
+ADP,adenosine-5'-diphosphate
+ADP,adenosine pyrophosphate
+ADP,adenosine-diphosphate
+ADP,ADP
+ADP,adenosine 5'-pyrophosphate
+ADP,adenosine-5-diphosphate
+HS10215,PGKB
+HS10215,PGK2
+HS05246-MONOMER,Gamma-BBH
+HS05246-MONOMER,Gamma-butyrobetaine dioxygenase
+HS05246-MONOMER,"Gamma-butyrobetaine,2-oxoglutarate dioxygenase"
+HS05246-MONOMER,Gamma-butyrobetaine hydroxylase
+HS05836-MONOMER,mitochondrial hydroxymethylglutaryl-CoA synthase
+HS05836-MONOMER,3-hydroxy-3-methylglutaryl-Coenzyme A synthase 2 (mitochondrial)
+HS05836-MONOMER,3-hydroxy-3-methylglutaryl Coenzyme A synthase
+HS05836-MONOMER,3-hydroxy-3-methylglutaryl-Coenzyme A synthase 2
+HS05836-MONOMER,3-hydroxy-3-methylglutaryl CoA synthase
+HS05836-MONOMER,human
+HS05836-MONOMER,HMG-CoA synthase
+HS05836-MONOMER,man
+2-KETOGLUTARATE,α-oxoglutarate
+2-KETOGLUTARATE,ketoglutarate
+2-KETOGLUTARATE,2-oxoglutaric acid
+2-KETOGLUTARATE,α-ketoglutaric acid
+2-KETOGLUTARATE,2-ketoglutarate
+2-KETOGLUTARATE,2-oxopentanedionate
+2-KETOGLUTARATE,2-oxoglutarate
+2-KETOGLUTARATE,2-oxopentanedionic acid
+2-KETOGLUTARATE,α-ketoglutarate
+2-KETOGLUTARATE,a-ketoglutaric acid
+2-KETOGLUTARATE,2-ketoglutaric acid
+RXN0-5114,RXN0-5114
+HS15303,HS15303
+CYSTEINE-AMINOTRANSFERASE-RXN,CYSTEINE-AMINOTRANSFERASE-RXN
+HS02769-MONOMER,"Glutaryl-CoA dehydrogenase, mitochondrial"
+HS02769-MONOMER,GCD
+HS09586-MONOMER,GPD-C
+HS09586-MONOMER,GPDH-C
+HS09586-MONOMER,cytoplasmic glycerol-3-phosphate dehydrogenase subunit
+HS09586-MONOMER,human
+HS09586-MONOMER,"Glycerol-3-phosphate dehydrogenase, soluble"
+HS09586-MONOMER,glycerol-3-phosphate dehydrogenase 1 (soluble)
+HS09586-MONOMER,man
+SERDEG-PWY,L-serine degradation
+CPD-7651,4-hydroxy-3-methoxyphenylacetic acid
+CPD-7651,3-methoxy-4-hydroxyphenylacetate
+CPD-7651,homovanillate
+CPD-7651,3-methoxy-4-hydroxyphenylacetic acid
+CPD-7651,homovanillic acid
+CPD-7651,vanillacetic acid
+CPD-7651,4-hydroxy-3-methoxybenzenacetic acid
+ORNITHINE-GLU-AMINOTRANSFORASE-RXN,Ornithine aminotransferase
+ORNITHINE-GLU-AMINOTRANSFORASE-RXN,Ornithine ketoacid aminotransferase
+ORNITHINE-GLU-AMINOTRANSFORASE-RXN,ornithine--oxo-acid aminotransferase
+ORNITHINE-GLU-AMINOTRANSFORASE-RXN,ornithine--oxo-acid transaminase
+ORNITHINE-GLU-AMINOTRANSFORASE-RXN,Ornithine--oxo-glutarate aminotransferase
+SULFINOALANINE-DECARBOXYLASE-RXN,Cysteine sulfinic acid decarboxylase
+SULFINOALANINE-DECARBOXYLASE-RXN,CSADCase
+SULFINOALANINE-DECARBOXYLASE-RXN,Cysteine-sulfinate decarboxylase
+HS16973-MONOMER,glyceraldehyde 3 phosphate dehydrogenase
+HS16973-MONOMER,GAPDH
+GLUTAMINDEG-PWY,glutamine - glutamate pathway I
+GLUTAMINDEG-PWY,glutamine degradation I
+GLUTAMINDEG-PWY,glutamine degradation IV
+HS04082-MONOMER,Kynurenine 3-monooxygenase
+HS04082-MONOMER,kynurenine hydroxylase
+HS04082-MONOMER,Kynurenine 3-hydroxylase
+HS04082-MONOMER,kynurenine 3-hydroxylase
+HS17115,HS17115
+CARNITINE,(S)-carnitine
+CARNITINE,L-carnitine
+CARNITINE,"3-carboxy-2-hydroxy-N,N,N-trimethyl-1-propanaminium"
+CARNITINE,vitamin B T
+CARNITINE,γ-Trimethyl-hydroxybutyrobetaine
+CARNITINE,bicarnesine
+CARNITINE,vitamin Bt
+CARNITINE,L-γ-trimethyl-β-hydroxybutyrobetaine
+CARNITINE,R-(-)-3-hydroxy-4-trimethylaminobutyrate
+CARNITINE,3-hydroxy-4-trimethylammoniobutanoate
+HS13756-MONOMER,CITRULLINE ASPARTATE LIGASE
+HS13756-MONOMER,argininosuccinate synthase
+HS00894-MONOMER,"6-phosphofructokinase, platelet type"
+HS00894-MONOMER,PFK-C
+HS00894-MONOMER,Phosphofructokinase 1
+HS00894-MONOMER,6-phosphofructokinase type C
+HS00894-MONOMER,Phosphofructo-1-kinase isozyme C
+HS00894-MONOMER,Phosphohexokinase
+HS13433-MONOMER,PHS 2
+HS13433-MONOMER,4-alpha-hydroxy-tetrahydropterin dehydratase 2
+HS13433-MONOMER,Pterin-4-alpha-carbinolamine dehydratase 2
+HS13433-MONOMER,Dimerization cofactor of hepatocyte nuclear factor 1 from muscle
+HS13433-MONOMER,HNF-1-alpha dimerization cofactor
+HS13433-MONOMER,DcoH-like protein DCoHm
+3-SULFINOALANINE,3-sulfino-L-alanine
+3-SULFINOALANINE,cysteine sulphinate
+3-SULFINOALANINE,cysteine sulfinate
+3-SULFINOALANINE,cysteine-sulfinate
+3-SULFINOALANINE,3-sulphino-L-alanine
+3-SULFINOALANINE,3-sulfinoalanine
+3-SULFINOALANINE,L-cysteine sulfinate
+3-SULFINOALANINE,L-cysteinesulfinic acid
+ORNCARBAMTRANSFER-RXN,OTC
+ORNCARBAMTRANSFER-RXN,carbamylphosphate-ornithine transcarbamylase
+ORNCARBAMTRANSFER-RXN,Ornithine transcarbamylase
+ORNCARBAMTRANSFER-RXN,Citrulline phosphorylase
+ORNCARBAMTRANSFER-RXN,OTCase
+ORNCARBAMTRANSFER-RXN,ornithine transcarbamylase
+ORNCARBAMTRANSFER-RXN,citrulline phosphorylase
+HS17059,GLDC
+HS17059,GCSP
+MET,met
+MET,L-methionine
+MET,M
+MET,methionine
+D-METHYL-MALONYL-COA,(2S)-methyl-malonyl-CoA
+D-METHYL-MALONYL-COA,CH3-malonyl-CoA
+D-METHYL-MALONYL-COA,methyl-malonyl-coenzyme A
+D-METHYL-MALONYL-COA,D-methylmalonyl-CoA
+D-METHYL-MALONYL-COA,(S)-methylmalonyl-CoA
+GLUTAMINE-N-PHENYLACETYLTRANSFERASE-RXN,GLUTAMINE-N-PHENYLACETYLTRANSFERASE-RXN
+HS07771,TDO2
+HS07771,TDO
+HS05836,HMGCS2
+Acceptor,A
+Acceptor,an oxidized donor
+Acceptor,oxidized electron acceptor
+Acceptor,oxidized donor
+Acceptor,an acceptor
+Acceptor,an oxidized electron acceptor
+HS17054,HS17054
+HS13905-MONOMER,glutamate decarboxylase kDa
+HS13905-MONOMER,GAD KDA GLUTAMIC ACID DECARBOXYLASE
+HS17738,HS17738
+PROUT-PWY,proline utilization
+PROUT-PWY,proline degradation
+HS17733,HS17733
+CPLX-6986,CPLX-6986
+HS16074-MONOMER,aspartate aminotransferase
+HS16074-MONOMER,TRANSAMINASE A GLUTAMATE OXALOACETATE TRANSAMINASE
+HS04202-MONOMER,Ribulose-5-phosphate-3-epimerase
+HS04202-MONOMER,Ribulose-phosphate 3-epimerase
+HS04202-MONOMER,RIBULOSE 5-PHOSPHATE 3-EPIMERASE
+HS08571,KIAA1653
+PROTEIN-L-CITRULLINE,a [protein]-L-citrulline
+3-UREIDO-PROPIONATE,N-carbamoyl-β-alanine
+3-UREIDO-PROPIONATE,β-ureidopropionic acid
+3-UREIDO-PROPIONATE,3-ureidopropionate
+3-UREIDO-PROPIONATE,3-ureidopropanoate
+HS05858,PIG19
+HS05858,LDHA
+P-HYDROXY-PHENYLPYRUVATE,3-(4-hydroxyphenyl)pyruvate
+P-HYDROXY-PHENYLPYRUVATE,hydroxyphenylpyruvate
+P-HYDROXY-PHENYLPYRUVATE,4-hydroxyphenylpyruvate
+P-HYDROXY-PHENYLPYRUVATE,p-hydroxyphenylpyruvic acid
+P-HYDROXY-PHENYLPYRUVATE,p-hydroxyphenylpyruvate
+1.2.1.47-RXN,1.2.1.47-RXN
+PYRUVDEHYD-PWY-RXN,pyruvate decarboxylation to acetyl CoA (reaction)
+HS08479,FTCD
+HS01980-MONOMER,AKB ligase
+HS01980-MONOMER,"2-amino-3-ketobutyrate coenzyme A ligase, mitochondrial"
+HS01980-MONOMER,Aminoacetone synthetase
+HS01980-MONOMER,Glycine acetyltransferase
+HS05946-MONOMER,PSAT
+HS05946-MONOMER,Phosphoserine aminotransferase
+HS05946-MONOMER,Phosphohydroxythreonine aminotransferase
+HS04328-MONOMER,"Methylmalonate-semialdehyde dehydrogenase [acylating], mitochondrial"
+HS04328-MONOMER,Malonate-semialdehyde dehydrogenase [acylating]
+HS04328-MONOMER,MMSDH
+HS04328-MONOMER,Aldehyde dehydrogenase family 6 member A1
+CH3-MALONATE-S-ALD,(S)-ch3-malonate-semialdehyde
+CH3-MALONATE-S-ALD,(S)-methylmalonate-semialdehyde
+CH3-MALONATE-S-ALD,(S)-2-methyl-3-oxopropanoate
+4-IMIDAZOLONE-5-PROPIONATE,"4,5-dihydro-4-oxo-5-imidazolepropanoate"
+4-IMIDAZOLONE-5-PROPIONATE,"(S)-3-(5-oxo-4,5-dihydro-3H-imidazol-4-yl)propanoate"
+4-IMIDAZOLONE-5-PROPIONATE,"3-(5-oxo-4,5-dihydro-3H-imidazol-4-yl)propanoate"
+4-IMIDAZOLONE-5-PROPIONATE,4-imidazolone-5-propanoate
+4-IMIDAZOLONE-5-PROPIONATE,imidazolonepropanoate
+4-IMIDAZOLONE-5-PROPIONATE,imidazolone propionic acid
+4-IMIDAZOLONE-5-PROPIONATE,4-imidazolone-5-propionate
+4-IMIDAZOLONE-5-PROPIONATE,imidazolone propionate
+4-IMIDAZOLONE-5-PROPIONATE,4-imidazolone-5-propionic acid
+HS14455-MONOMER,2-amino-3-carboxymuconate-6-semialdehyde decarboxylase
+HS14455-MONOMER,2-AMINO-3-CARBOXYMUCONATE-6-SEMIALDEHYDE DECARBOXYLASE
+HS14455-MONOMER,picolinic acid carboxylase
+HS14455-MONOMER,picolinic carboxylase
+HS14455-MONOMER,α-amino β-carboxymuconate ε-semialdehyde decarboxylase
+HS14455-MONOMER,aminocarboxymuconate-semialdehyde decarboxylase
+HS06436-MONOMER,Beta-ketothiolase
+HS06436-MONOMER,"trifunctional enzyme beta subunit, mitochondrial precursor"
+HS06436-MONOMER,Acetyl-CoA acyltransferase
+HS06436-MONOMER,BETA-KETOTHIOLASE
+HS06436-MONOMER,ACETYL-COA ACYLTRANSFERASE
+HS06436-MONOMER,TP-beta
+5.3.1.23-RXN,5-methylthio-5-deoxy-D-ribose-1-phosphate ketol-isomerase
+CPD-7999,phenyllactic acid
+CPD-7999,phenyllactate
+HS01980,GCAT
+HS01980,KBL
+1.2.4.4-RXN,Branched-chain alpha-keto acid dehydrogenase
+1.2.4.4-RXN,2-oxoisovalerate dehydrogenase
+1.2.4.4-RXN,Branched-chain alpha-keto acid decarboxylase
+METHYLACETOACETYLCOATHIOL-RXN,ACETYL-COA ACYLTRANSFERASE
+METHYLACETOACETYLCOATHIOL-RXN,3-ketoacyl-CoA thiolase
+METHYLACETOACETYLCOATHIOL-RXN,Beta-ketothiolase
+METHYLACETOACETYLCOATHIOL-RXN,2-methylacetoacetyl-CoA thiolase
+METHYLACETOACETYLCOATHIOL-RXN,BETA-KETOTHIOLASE
+HS00516,OCTD
+HS00516,OTC
+GLYCEROL-3P,L-G3P
+GLYCEROL-3P,L-glycerol 3-phosphate
+GLYCEROL-3P,D-glycerol-1-phosphate
+GLYCEROL-3P,α-glycerophosphoric acid
+GLYCEROL-3P,α-glycerophosphate
+GLYCEROL-3P,glycerol-3-phosphate
+GLYCEROL-3P,sn-glycerol-3-phosphate
+ACETOACETYL-COA,acetoacetyl-CoA
+ACETOACETYL-COA,3-acetoacetyl-CoA
+ACETOACETYL-COA,acetoacetyl-S-CoA
+HS08926-MONOMER,Methenyltetrahydrofolate cyclohydrolase
+HS08926-MONOMER,NADP-dependent methylenetetrahydrofolate dehydrogenase 2-like protein
+HS09847-MONOMER,MAT 2
+HS09847-MONOMER,AdoMet synthetase 2
+HS09847-MONOMER,Methionine adenosyltransferase 2
+HS09847-MONOMER,MAT-II
+HS09847-MONOMER,Methionine adenosyltransferase II
+HS09847-MONOMER,S-adenosylmethionine synthetase isoform type-2
+HS02761-MONOMER,"Branched-chain-amino-acid aminotransferase, mitochondrial"
+HS02761-MONOMER,PP18
+HS02761-MONOMER,Placental protein 18
+HS02761-MONOMER,BCAT(m)
+CPD-335,b-hydroxybutyric acid
+CPD-335,(R)-3-hydroxybutanoic acid
+CPD-335,(R)-3-hydroxybutanoate
+CPD-335,D-3-hydroxybutyrate
+CPD-335,β-hydroxybutyric acid
+CPD-335,(R)-3-hydroxybutyric acid
+CPD-335,D-β-hydroxybutyrate
+HS00858,NMDMC
+HS00858,MTHFD2
+PWY-5030,histidine degradation III
+2-AMINOMUCONATE-REDUCTASE-RXN,2-AMINOMUCONATE-REDUCTASE-RXN
+TRIOSEPISOMERIZATION-RXN,triose phosphate isomerization
+TRIOSEPISOMERIZATION-RXN,Phosphotriose isomerase
+TRIOSEPISOMERIZATION-RXN,Triose phosphoisomerase
+TRIOSEPISOMERIZATION-RXN,Triosephosphate mutase
+S-3-HYDROXYBUTANOYL-COA,(S)-3-hydroxybutanoyl-CoA
+S-3-HYDROXYBUTANOYL-COA,L-3-hydroxybutyryl-CoA
+CPLX-7761,MB-CK
+CPLX-7761,M-B
+CPLX-7761,creatine kinase MB isoform
+CPLX-7761,MB
+HS08839,AIBP
+HS08839,APOA1BP
+HS08839,YJEFN1
+HS13124-MONOMER,DL-methylmalonyl-CoA racemase
+HS13124-MONOMER,"Methylmalonyl-CoA epimerase, mitochondrial"
+HS01304-MONOMER,HUSSY-08
+HS01304-MONOMER,cysteine desulfurase
+HS01304-MONOMER,"cysteine desulfurase, mitochondrial"
+HS03720-MONOMER,PBE
+HS03720-MONOMER,PBFE
+HS03720-MONOMER,peroxisomal bifunctional enzyme
+HS06611-MONOMER,Amidohydrolase domain-containing protein 1
+HS06611-MONOMER,Imidazolone-5-propionate hydrolase
+HS06611-MONOMER,Probable imidazolonepropionase
+HS06611-MONOMER,UNKNOWN
+HS05299-MONOMER,CDO-I
+HS05299-MONOMER,CDO
+HS05299-MONOMER,Cysteine dioxygenase type 1
+HS05299-MONOMER,Cysteine dioxygenase type I
+CPLX66-81,mitochondrial aldehyde dehydrogenase
+CPLX66-81,ALDH-2
+CPLX66-81,ALDH class 2
+CPLX66-81,aldehyde dehydrogenase
+CPLX66-81,ALDHI
+CPLX66-81,human
+CPLX66-81,aldehyde dehydrogenase class 2
+CPLX66-81,"aldehyde dehydrogenase, mitochondrial"
+CPLX66-81,ALDH-E2
+CPLX66-81,man
+PGLYCDEHYDROG-RXN,D-3-phosphoglycerate dehydrogenase
+PGLYCDEHYDROG-RXN,PGDH
+HS09565-MONOMER,nitric-oxide synthase IIB
+HS09565-MONOMER,FRAGMENTS
+HS09565-MONOMER,NOSIIB
+HS09565-MONOMER,"NOS, TYPE II B"
+HS09565-MONOMER,nitric oxide synthase 2B
+PWY-6100,L-carnitine biosynthesis
+PWY-6100,(R)-carnitine biosynthesis
+HS00481-MONOMER,Serine--tRNA ligase
+HS00481-MONOMER,Seryl-tRNA(Ser/Sec) synthetase
+HS00481-MONOMER,"Seryl-tRNA synthetase, cytoplasmic"
+HS00481-MONOMER,SerRS
+HS00205,NOS2
+HS00205,NOS2A
+HS06208-MONOMER,GAD-65
+HS06208-MONOMER,Glutamate decarboxylase 65 kDa isoform
+HS06208-MONOMER,Glutamate decarboxylase 2
+HS06208-MONOMER,65 kDa glutamic acid decarboxylase
+CPLX66-214,Fructose-bisphosphate aldolase A
+HS01785,CRMP2
+HS01785,DPYSL2
+RXN-10821,RXN-10821
+NONOXIPENT-PWY,pentose phosphate pathway (non-oxidative branch)
+ALANINE-AMINOTRANSFERASE-RXN,Glutamic--pyruvic transaminase
+ALANINE-AMINOTRANSFERASE-RXN,alanine transaminase
+ALANINE-AMINOTRANSFERASE-RXN,Glutamic--alanine transaminase
+ALANINE-AMINOTRANSFERASE-RXN,glutamate pyruvate transaminase
+HS05177-MONOMER,3-mercaptopyruvate sulfurtransferase
+HS05177-MONOMER,MST
+CPLX-7060,maleylacetoacetate isomerase/glutathione transferase zeta
+CPLX-7060,glutathione transferase Zeta/maleylacetoacetate isomerase

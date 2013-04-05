@@ -1,0 +1,14 @@
+@extends("base.html")
+@require(object, current_pathways)
+
+
+@def actions():
+    <h3>Actions</h3>
+    <div class="buttons">
+    @if object.id not in current_pathways:
+        <a href="metapath://pathway/@object.id/add" class="button button_add">Add <img src="img/icon_addlink.gif"></a>
+    @else:
+        <a href="metapath://pathway/@object.id/remove" class="button button_remove">Remove <img src="img/icon_deletelink.gif"></a>
+    @end
+    </div>
+@end

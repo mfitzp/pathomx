@@ -1,0 +1,231 @@
+* {
+     color: WindowText
+}
+
+body {
+    font-family: sans-serif;
+    font-size: 100%;
+    color: #000;
+    padding: 0;
+    -webkit-user-select: none;
+} 
+
+#sidebar {
+    margin: 20px;
+    background-color:#f5f5f5;
+}
+
+#mainwindow {
+    margin: 20px;
+    background-color:#fff;
+}
+
+h1 { font-size: 130%; }
+h2 { font-size: 110%; }
+h3 { font-size: 100%; }
+h4 { font-size: 90%; }
+h5 { font-size: 80%; }
+h6 { font-size: 70%; }
+
+h1 {
+    margin:16px 0 0 0;
+    padding:0;
+}
+
+h5 {
+    margin-bottom:0.5em;
+}
+
+#sidebar h1 {
+    margin:0;
+}
+
+/*'#348ABD', '#7A68A6', '#A60628', '#467821', '#CF4457', '#188487', '#E24A33' */
+/*
+    1f78b4  33a02c  e31a1c  ff7f00  6a3d9a  ffff99
+    a6cee3  b2df8a  fb9a99  fdbf6f  cab2d6  b15928
+*/
+a {
+    text-decoration:none;
+    color:#1f78b4;
+    }
+
+ul {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 1em;
+    }
+
+ li {
+    vertical-align:absmiddle;
+    }
+    
+ p {
+    text-align:justify;
+ }  
+
+.button {
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font: 14px/100% sans-serif;
+    padding: .5em 1em .55em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.3);
+    -webkit-border-radius: .5em; 
+    -moz-border-radius: .5em;
+    border-radius: .5em;
+    color:ButtonText;
+    border:1px solid ButtonFace;
+    background:url('../img/nav-bg.gif');
+}
+.button:hover {
+    text-decoration: none;
+}
+.button:active {
+    background:url('../img/nav-bg-reverse.gif');
+}
+.synonyms {
+    font-size:0.9em;
+    color:GrayText;
+}
+
+.button img {
+    vertical-align:absmiddle;
+}
+
+.datasq {
+    display:inline-block;
+    background-color:none;
+    width:0.8em;
+    height:0.8em;
+    margin-right:0.2em;
+    margin-left:-1em; /* Adjust back to line up */
+    vertical-align:absmiddle;
+    text-align:center;
+}
+
+.rdbu9-1{ background-color: #b2182b; }
+.rdbu9-2{ background-color: #d6604d; }
+.rdbu9-3{ background-color: #f4a582; }
+.rdbu9-4{ background-color: #fddbc7; }
+.rdbu9-5{ background-color: #ccc; } /*#f7f7f7; } */
+.rdbu9-6{ background-color: #d1e5f0; }
+.rdbu9-7{ background-color: #92c5de; }
+.rdbu9-8{ background-color: #4393c3; }
+.rdbu9-9{ background-color: #2166ac; }
+
+.text-rdbu9-1{ color: #b2182b; }
+.text-rdbu9-2{ color: #d6604d; }
+.text-rdbu9-3{ color: #f4a582; }
+.text-rdbu9-4{ color: #fddbc7; }
+.text-rdbu9-5{ color: #ccc; } /*#f7f7f7; } */
+.text-rdbu9-6{ color: #d1e5f0; }
+.text-rdbu9-7{ color: #92c5de; }
+.text-rdbu9-8{ color: #4393c3; }
+.text-rdbu9-9{ color: #2166ac; }
+
+.scalebar .datasq {
+    margin-left:0;
+}
+
+.scalebar-inset {
+    position:fixed;
+    top:0; right:0;
+    border-radius:5px;
+    padding:2px 5px;
+    margin:5px;
+    background-color:#eee;
+    font-family:"Calibri", sans-serif;
+    z-index:100;
+}
+
+.scalebar td {
+    text-align:center;
+}
+
+.scalebar .scale-type {
+    font-style:italic;
+}
+
+.hilite {
+    background-color: #d1e5f0;
+    padding:1em;
+}
+
+
+.releases * {
+    vertical-align:top;
+    padding:0.5em;
+}
+
+.release_version {
+    font-weight:bold;
+}
+
+.release_date {
+    font-size:0.8em;
+    font-style:italic;
+    vertical-align:baseline;
+}
+
+code {
+    font-family:monospace;
+    vertical-align:baseline;
+    cursor:help;
+}
+
+.svg {
+    position:absolute;
+    top:0px; left:0px;
+    opacity:0;
+    visibility:0;
+}
+.svgno {
+    position:fixed;
+    top:0; left:0;
+    border-radius:5px;
+    padding:2px 5px;
+    margin:5px;
+    background-color:#eee;
+    font-family:"Calibri", sans-serif;
+}
+
+.pre-visible {
+    opacity: 0;
+}
+
+.visible {
+    z-index:10;
+    opacity: 1;
+    -webkit-transition: opacity 0.5s linear 0s;
+}
+.hidden {
+  z-index: 9;
+  opacity: 0;
+    -webkit-transition: opacity 0s linear 0.5s;
+}
+
+
+@font-face {
+    font-family: 'icomoon';
+    src:url('../fonts/icomoon.eot');
+    src:url('../fonts/icomoon.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/icomoon.woff') format('woff'),
+        url('../fonts/icomoon.ttf') format('truetype'),
+        url('../fonts/icomoon.svg#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Use the following CSS code if you want to use data attributes for inserting your icons */
+[data-icon]:before {
+    font-family: 'icomoon';
+    content: attr(data-icon);
+    speak: none;
+    font-weight: normal;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+            
