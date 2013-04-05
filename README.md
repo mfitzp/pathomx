@@ -13,7 +13,7 @@ function.
 
 # License
 
-MetaPath is available free for any use under a the GPLv3 license.
+MetaPath is available free for any use under the [GPLv3 license](http://www.gnu.org/licenses/gpl.html).
 
 > MetaPath is built on the [MetaCyc](http://metacyc.org) pathway database itself part of 
 the [BioCyc](http://biocyc.org) family. The supplied database is generated via the 
