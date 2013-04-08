@@ -41,7 +41,7 @@ setup(
             'metapath = metapath.metapath:main',
         ],
         'gui_scripts': [
-            'metapath-gui = metapath.metapath-gui:main',
+            'metapath-gui = metapath.metapath_gui:main',
         ]
     },
 
@@ -80,6 +80,6 @@ setup(
             ),
         ),
     ),
-    app=[ 'metapath-qt.py' ],
+    app=[ 'metapath_gui.py' ],
 
     )

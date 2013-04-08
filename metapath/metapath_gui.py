@@ -962,12 +962,16 @@ class MainWindow(QMainWindow):
         template = self.templateEngine.get_template(template)
         self.dataBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),"~") 
       
-# Create a Qt application
-app = QApplication(sys.argv)
-app.setOrganizationName("ables")
-app.setOrganizationDomain("abl.es")
-app.setApplicationName("MetaPath")
+def main():
+    # Create a Qt application
+    app = QApplication(sys.argv)
+    app.setOrganizationName("ables")
+    app.setOrganizationDomain("abl.es")
+    app.setApplicationName("MetaPath")
 
-window = MainWindow()
-# Enter Qt application main loop
-sys.exit(app.exec_())
+    window = MainWindow()
+    # Enter Qt application main loop
+    sys.exit(app.exec_())
+    
+if __name__ == "__main__":
+    main()
