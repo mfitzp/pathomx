@@ -32,7 +32,6 @@ setup(
     include_package_data = True,
     package_data = {
         '': ['*.txt', '*.rst', '*.md'],
-        'metapath': ['static/*', 'examples/*', 'db/*', 'identities/*', 'html/*','icons/*'],
     },
     exclude_package_data = { '': ['README.txt'] },
 
