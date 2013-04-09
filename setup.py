@@ -44,7 +44,7 @@ setup(
         ]
     },
 
-    install_requires = ['PySide>1.1.2','numpy>1.5.0'],
+#    install_requires = ['PySide>1.1.2','numpy>1.5.0'],
 
     keywords='bioinformatics metabolomics research analysis science',
     license='GPL',
@@ -62,14 +62,14 @@ setup(
     # py2app settings for building the .app file
     options=dict(
         py2app=dict(
-            iconfile='static/icon.icns',
+            iconfile='metapath/static/icon.icns',
             packages=['PySide','numpy'],
 #            includes=['xml.etree.ElementTree'],
             excludes=['matplotlib', 'scipy','_xmlplus'],
             #'_ssl', 'doctest', 'pdb', 'unittest', 'difflib', 'inspect',],
             site_packages=True,
             optimize=2,
-            resources=['static', 'examples', 'db', 'identities', 'html','icons'],
+            resources=['metapath/static', 'examples', 'metapath/db', 'metapath/identities', 'metapath/html','metapath/icons'],
             plist=dict(
                 CFBundleName               = "MetaPath",
                 CFBundleShortVersionString = "0.5.1",     # must be in X.X.X format
@@ -79,6 +79,6 @@ setup(
             ),
         ),
     ),
-    app=[ 'metapath_gui.py' ],
+    app=[ 'metapath/metapath_gui.py' ],
 
     )
