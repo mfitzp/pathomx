@@ -25,7 +25,7 @@ and government use.
  [metapath-github]: https://github.com/mfitzp/metapath/issues
  [metapath-github-issues]: https://github.com/mfitzp/metapath
  [metacyc]: http://metacyc.org
- [metapath-macapp]: http://downloads.martinfitzpatrick.name/MetaPath.dmg
+ [metapath-macapp]: http://download.martinfitzpatrick.name/MetaPath.dmg
  [metapath-pypi]: https://pypi.python.org/pypi/metapath 
  [graphviz]: http://www.graphviz.org/
  
