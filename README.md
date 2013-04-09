@@ -10,6 +10,8 @@ function.
 
 **Download** [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
+> MetaPath requires installation of [Graphviz][graphviz] for pathway drawing.
+
 # License
 
 MetaPath is available free for any use under the [GPLv3 license](http://www.gnu.org/licenses/gpl.html).
@@ -25,3 +27,5 @@ and government use.
  [metacyc]: http://metacyc.org
  [metapath-macapp]: http://downloads.martinfitzpatrick.name/MetaPath.app
  [metapath-pypi]: https://pypi.python.org/pypi/metapath 
+ [graphviz]: http://www.graphviz.org/
+ 
