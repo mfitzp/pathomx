@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys, re, math
 import csv
 import pydot
