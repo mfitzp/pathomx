@@ -12,11 +12,11 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 import py2app
 
-# Build the .app file
+
 setup(
 
     name='metapath',
-    version='0.5.0',
+    version='0.5.1',
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/metapath',
@@ -60,6 +60,7 @@ setup(
                'Intended Audience :: Education',
               ],
 
+    # py2app settings for building the .app file
     options=dict(
         py2app=dict(
             iconfile='static/icon.icns',
@@ -72,8 +73,8 @@ setup(
             resources=['static', 'examples', 'db', 'identities', 'html','icons'],
             plist=dict(
                 CFBundleName               = "MetaPath",
-                CFBundleShortVersionString = "0.5.0",     # must be in X.X.X format
-                CFBundleGetInfoString      = "MetaPath 0.5.0",
+                CFBundleShortVersionString = "0.5.1",     # must be in X.X.X format
+                CFBundleGetInfoString      = "MetaPath 0.5.1",
                 CFBundleExecutable         = "MetaPath",
                 CFBundleIdentifier         = "com.ables.metapath",
             ),
