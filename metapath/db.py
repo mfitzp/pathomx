@@ -152,7 +152,7 @@ class databaseManager():
 
         # Load synonym interface for conversion and data-interpreting
         self.load_synonyms()
-        #self.load_identities()
+        self.load_identities()
 
 
     # Handler to load all identity files in /identities

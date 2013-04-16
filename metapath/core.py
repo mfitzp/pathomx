@@ -240,6 +240,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
     if options.show_pathway_links:
         
         visible_reactions = [r for r,x1,x2,x3 in edges]
+        visible_nodes = [n for n,x1,x2 in nodes]
         
         pathway_annotate = set()
         pathway_annotate_dupcheck = set()
@@ -252,15 +253,16 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
                     pathway_node = ReactionIntermediate(**{'id': '%s' % p.id, 'name': p.name, 'type':'pathway'})
                     
                     for mt in r.mtins:
-                        if mt in nodepathway and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
-                            mp = nodepathway[mt][0]
+                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
+                            print mt
+                            mp = db.metabolites[mt.id].pathways[0]
                             pathway_annotate.add( (p, mp, pathway_node, mt, pathway_node, r.dir) )
                             pathway_annotate_dupcheck.add( (p, mt) )
                             break
                         
                     for mt in r.mtouts:
-                        if mt in nodepathway and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
-                            mp = nodepathway[mt][0]
+                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
+                            mp = db.metabolites[mt.id].pathways[0]
                             pathway_annotate.add( (p, mp, pathway_node, pathway_node, mt, r.dir) )
                             pathway_annotate_dupcheck.add( (p, mt) )
                             break
@@ -268,7 +270,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
     
         for p, mp, pathway_node, mtin, mtout, dir in list(pathway_annotate):
             itr +=1
-            nodepathway[mp].append(pathway_node)
+            #nodepathway[mp].append(pathway_node)
             inter_react = ReactionIntermediate(**{'id': "DUMMYPATHWAYLINK-%s" %  itr, 'type':'dummy', 'dir':dir, 'pathways':[mp]})            
             edges.append([inter_react, mtin, mtout, True])
 
@@ -306,7 +308,19 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
                 
             layout.objects[id] = xy
             clashcheck.append(xy)
+
+    # Arrange layout grouping (e.g. by pathway, compartment, etc.) 
+
+    for sgno,cluster in enumerate(clusters[cluster_key]):
+        clusterclu[cluster]=(sgno % 11) +1 if cluster != 'Non-compartmental' else '#ffffff'
+        
+        subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color="#eeeeee", colorscheme='paired12', fontcolor="#cccccc", labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
     
+        # Read node file of metabolites to show
+        # TODO: Filter this by the option specification
+        for n in clusternodes[ cluster_key ][cluster]:
+            subgraph.add_node(pydot.Node(n.id))
+        graph.add_subgraph(subgraph) 
     
     # Add nodes to map
     
@@ -371,19 +385,6 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             
         nodes_added.add(m)  
     
-    # Arrange layout grouping (e.g. by pathway, compartment, etc.) 
-
-    for sgno,cluster in enumerate(clusters[cluster_key]):
-        clusterclu[cluster]=(sgno % 11) +1 if cluster != 'Non-compartmental' else '#cccccc'
-        
-        subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color="#eeeeee", colorscheme='paired12', fontcolor="#cccccc", labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
-    
-        # Read node file of metabolites to show
-        # TODO: Filter this by the option specification
-        for n in clusternodes[ cluster_key ][cluster]:
-            subgraph.add_node(pydot.Node(n.id))
-        graph.add_subgraph(subgraph) 
-
     # Add graph edges to the map
     
     style = ' '

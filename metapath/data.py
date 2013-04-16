@@ -203,6 +203,7 @@ class dataManager():
                 transid = db.synrev[ m.lower() ].id
                 self.metabolites[ self.metabolites.index( m ) ] = transid
                 self.quantities[ transid ] = self.quantities.pop( m )
+        print self.metabolites
         
 ###### PRE-PROCESS
     def analyse(self, experiment):

@@ -522,7 +522,7 @@ class MainWindow(QMainWindow):
         self.dataBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
         self.dataBrowser_CurrentURL = None
         
-        self.dataDock = QDockWidget()
+        self.dataDock = QDockWidget('Database Viewer')
         self.dataDock.setMaximumWidth(300);
         self.dataDock.setWidget(self.dataBrowser)
         self.dataDock.setFeatures(QDockWidget.DockWidgetMovable)
@@ -835,7 +835,7 @@ class MainWindow(QMainWindow):
             'mining': bool( self.config.value('/Data/MiningActive') ),
             'mining_depth': int( self.config.value('/Data/MiningDepth') ),
             'mining_type': '%s%s' % ( self.config.value('/Data/MiningType'), 'r' if bool( self.config.value('/Data/MiningRelative') ) else ''),
-            'splines': True,
+            'splines': 'spline',
             'colorcode': bool( self.config.value('/Pathways/ShowColors') ),
             'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),
             'focus':False,
@@ -893,6 +893,8 @@ class MainWindow(QMainWindow):
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
         tps = self.generateGraph(filename=filename, format='svg', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
+
+        self.generateGraph(filename='/Users/mxf793/test.dot', format='dot', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
 
         if tps == None:
             svg_source = [ open(filename).read().decode('utf8') ]

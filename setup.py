@@ -16,7 +16,7 @@ import py2app
 setup(
 
     name='metapath',
-    version='0.5.1',
+    version='0.5.2',
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/metapath',
@@ -44,7 +44,7 @@ setup(
         ]
     },
 
-#    install_requires = ['PySide>1.1.2','numpy>1.5.0'],
+    install_requires = ['PySide>=1.1.2','numpy>=1.5.0'],
 
     keywords='bioinformatics metabolomics research analysis science',
     license='GPL',
@@ -72,8 +72,8 @@ setup(
             resources=['metapath/static', 'examples', 'metapath/db', 'metapath/identities', 'metapath/html','metapath/icons'],
             plist=dict(
                 CFBundleName               = "MetaPath",
-                CFBundleShortVersionString = "0.5.1",     # must be in X.X.X format
-                CFBundleGetInfoString      = "MetaPath 0.5.1",
+                CFBundleShortVersionString = "0.5.2",     # must be in X.X.X format
+                CFBundleGetInfoString      = "MetaPath 0.5.2",
                 CFBundleExecutable         = "MetaPath",
                 CFBundleIdentifier         = "com.ables.metapath",
             ),
