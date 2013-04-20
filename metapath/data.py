@@ -24,8 +24,9 @@ class dataManager():
         formats = { # Run specific loading function for different source data types
                 '.csv': self.load_csv,
                 '.peakml': self.load_peakml,
+                '': self.load_txt,
             }
-                
+            
         if fe in formats.keys():
             print "Loading..."
             # Set up defaults
@@ -55,10 +56,99 @@ class dataManager():
 
         else:
             print "Unsupported file format."
-            
+
+
+###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
+
+    def load_csv(self, filename):
+        print "Loading .csv..."
+        # Wrapper function to allow loading from alternative format CSV files
+        # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
+        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
+        hrow = reader.next() # Get top row
+        
+        if hrow[0].lower() == 'sample':
+            if hrow[1].lower() == 'class':
+                self.load_csv_R(filename)
+            else:
+                self.load_csv_C(filename)
+
+
+    def load_txt(self, filename):
+        print "Loading text file..."
+        # Wrapper function to allow loading from alternative format txt files
+        # Currently only supports Metabolights format files
+        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
+        hrow = reader.next() # Get top row
+        
+        if hrow[0].lower() == 'database_identifier': # M format metabolights
+            self.load_metabolights(filename)
+
+        if hrow[0].lower() == 'identifier': # A format metabolights
+            self.load_metabolights(filename, id_col=0, name_col=2, data_col=19)
+
+
+###### LOAD HANDLERS
+
+    def load_csv_C(self, filename): # Load from csv with experiments in COLUMNS, metabolites in ROWS
+        
+        # Read in data for the graphing metabolite, with associated value (generate mean)
+        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
+        
+        hrow = reader.next() # Discard top row (sample no's)
+        hrow = reader.next() # Get 2nd row
+        self.classes = hrow[1:]
+        self.metabolites = []
+        
+        for row in reader:
+            metabolite = row[0]
+            self.metabolites.append( row[0] )
+            self.quantities[ metabolite ] = defaultdict(list)
+
+            for n, c in enumerate(row[1:]):
+                if self.classes[n] != '.':
+                    try:
+                        c = float(c)
+                    except:
+                        c = 0
+                    self.quantities[metabolite][ self.classes[n] ].append( c )
+                    self.statistics['ymin'] = min( self.statistics['ymin'], c )
+                    self.statistics['ymax'] = max( self.statistics['ymax'], c )
+
+        self.statistics['excluded'] = self.classes.count('.')
+        self.classes = set( [c for c in self.classes if c != '.' ] )
+        
+                
+    def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
+       
+        # Read in data for the graphing metabolite, with associated value (generate mean)
+        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
+        
+        hrow = reader.next() # Get top row
+        self.metabolites = hrow[2:]
+
+        # Build quants table for metabolite classes
+        for metabolite in self.metabolites:
+            self.quantities[ metabolite ] = defaultdict(list)
+        
+        for row in reader:
+            if row[1] != '.': # Skip excluded classes # row[1] = Class
+                self.classes.add( row[1] )  
+                for metabolite in self.metabolites:
+                    metabolite_column = hrow.index( metabolite )   
+                    if row[ metabolite_column ]:
+                        self.quantities[metabolite][ row[1] ].append( float(row[ metabolite_column ]) )
+                        self.statistics['ymin'] = min( self.statistics['ymin'], float(row[ metabolite_column ]) )
+                        self.statistics['ymax'] = max( self.statistics['ymax'], float(row[ metabolite_column ]) )
+                    else:
+                        self.quantities[metabolite][ row[1] ].append( 0 )
+            else:
+                self.statistics['excluded'] += 1
+ 
         
     def load_peakml(self, filename):
-        
+        print "Loading PeakML..."
+
         def decode(s):
             s = base64.decodestring(s)
             # Each number stored as a 4-chr representation (ascii value, not character)
@@ -128,73 +218,40 @@ class dataManager():
                         self.quantities[ identity ][ classid ].extend( q )
 
 
-    def load_csv(self, filename):
-        # Wrapper function to allow loading from alternative format CSV files
-        # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
-        hrow = reader.next() # Get top row
-        
-        if hrow[0] == 'Sample':
-            if hrow[1] == 'Class':
-                self.load_csv_R(filename)
-            else:
-                self.load_csv_C(filename)
-
-
-    def load_csv_C(self, filename): # Load from csv with experiments in COLUMNS, metabolites in ROWS
+    def load_metabolights(self, filename, id_col=0, name_col=4, data_col=18): # Load from csv with experiments in COLUMNS, metabolites in ROWS
+        print "Loading Metabolights..."
         
         # Read in data for the graphing metabolite, with associated value (generate mean)
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
+        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
         
-        hrow = reader.next() # Discard top row (sample no's)
-        hrow = reader.next() # Get 2nd row
-        self.classes = hrow[1:]
+        hrow = reader.next() # Get top row
+        self.classes = hrow[data_col:]
         self.metabolites = []
-        
+        print self.classes
         for row in reader:
-            metabolite = row[0]
-            self.metabolites.append( row[0] )
-            self.quantities[ metabolite ] = defaultdict(list)
+            for m_col in [id_col,name_col]: # This is a bit fugly; we're pulling the data *twice* to account for IDs and names columns
+                                # an improvement would be to rewrite backend to allow synonyms to be supplied from the data
+                                # then implement multi-step translations
+                metabolite = row[m_col]
+                self.metabolites.append( row[m_col] )
+                self.quantities[ metabolite ] = defaultdict(list)
 
-            for n, c in enumerate(row[1:]):
-                if self.classes[n] != '.':
-                    try:
-                        c = float(c)
-                    except:
-                        c = 0
-                    self.quantities[metabolite][ self.classes[n] ].append( c )
-                    self.statistics['ymin'] = min( self.statistics['ymin'], c )
-                    self.statistics['ymax'] = max( self.statistics['ymax'], c )
+                for n, c in enumerate(row[data_col:]):
+                    if self.classes[n] != '.':
+                        try:
+                            c = float(c)
+                        except:
+                            c = 0
+                        self.quantities[metabolite][ self.classes[n] ].append( c )
+                        self.statistics['ymin'] = min( self.statistics['ymin'], c )
+                        self.statistics['ymax'] = max( self.statistics['ymax'], c )
 
         self.statistics['excluded'] = self.classes.count('.')
         self.classes = set( [c for c in self.classes if c != '.' ] )
-        
-                
-    def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
-       
-        # Read in data for the graphing metabolite, with associated value (generate mean)
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
-        
-        hrow = reader.next() # Get top row
-        self.metabolites = hrow[2:]
 
-        # Build quants table for metabolite classes
-        for metabolite in self.metabolites:
-            self.quantities[ metabolite ] = defaultdict(list)
-        
-        for row in reader:
-            if row[1] != '.': # Skip excluded classes # row[1] = Class
-                self.classes.add( row[1] )  
-                for metabolite in self.metabolites:
-                    metabolite_column = hrow.index( metabolite )   
-                    if row[ metabolite_column ]:
-                        self.quantities[metabolite][ row[1] ].append( float(row[ metabolite_column ]) )
-                        self.statistics['ymin'] = min( self.statistics['ymin'], float(row[ metabolite_column ]) )
-                        self.statistics['ymax'] = max( self.statistics['ymax'], float(row[ metabolite_column ]) )
-                    else:
-                        self.quantities[metabolite][ row[1] ].append( 0 )
-            else:
-                self.statistics['excluded'] += 1
+
+
+###### TRANSLATION to METACYC IDENTIFIERS
                         
     def translate(self, db):
         # Translate loaded data names to metabolite IDs using provided database for lookup
@@ -228,27 +285,32 @@ class dataManager():
             # a10 vs b10, a20 vs b20
         
         classes = control + test
-        
+        print '^(?P<pre>.*?)(?P<timecourse>%s)(?P<post>.*?)$' % timecourse 
         rx = re.compile('^(?P<pre>.*?)(?P<timecourse>%s)(?P<post>.*?)$' % timecourse )
         classes_glob, classes_time = defaultdict(list), defaultdict(list)
-    
+
+        tcx = re.compile('(?P<int>\d+)') # Extract out the numeric only component of the timecourse filter
+        
         for c in self.classes: 
-            print c
             m = rx.match(c)
             if m:
                 remainder_class = m.group('pre') + m.group('post')
                 if remainder_class in classes:
                     classes_glob[ remainder_class ].append( c )
-                    classes_time[ m.group('timecourse') ].append( c ) 
-                
+
+                    # Extract numeric component of the timecourse filtered data
+                    tc = m.group('timecourse')
+                    tpm = tcx.match(tc)
+                    classes_time[ tpm.group('int') ].append( c ) 
+
         # defaultdict(<type 'list'>, {'MPO': ['MPO56'], 'HSA': ['HSA56']}) defaultdict(<type 'list'>, {'56': ['HSA56', 'MPO56']})
         # Store the global analysis for this test; used for pathway mining etc.
-        self.analysis = self._analyse( classes_glob.items()[0][1], classes_glob.items()[1][1] )
-        
+        self.analysis = self._analyse( classes_glob.items()[0][1], classes_glob.items()[1][1] )        
         self.analysis_timecourse = dict()
         
         # Perform the individual timecourse analysis steps, storing in analysis_timecourse structure
         for tp,tpc in classes_time.items():
+            print tp, tpc
             self.analysis_timecourse[tp] = self._analyse( [ tpc[0] ], [ tpc[1] ] )    
     
     def _analyse(self, control, test):
@@ -318,7 +380,7 @@ class dataManager():
         
         # Generate scale
         # avglog = int( np.log2( (minima + maxima) / 2) )
-        self.scale = [n for n in range(-4, +5)]
+        self.scale = [n for n in range(-4, +5)] # Scale 9 big
         self.scale_type = 'log2'
             
         for metabolite in self.metabolites:
@@ -337,15 +399,18 @@ class dataManager():
                 cont_log = ( np.log2( analysis[metabolite]['control']['mean']) ) if analysis[metabolite]['control']['mean']>0 else minlog
                 test_log = ( np.log2( analysis[metabolite]['test']['mean']) ) if analysis[metabolite]['test']['mean']>0 else minlog
 
-                analysis[metabolite]['delta']['meanlog'] = test_log - cont_log            
+                analysis[metabolite]['delta']['meanlog'] = (test_log - cont_log)
     
                 # Calculate color using palette (rbu9) note red is 1 blue is 9 so need to reverse scale (-)
                 analysis[metabolite]['color'] = 5 -( analysis[metabolite]['delta']['meanlog'] )
                 analysis[metabolite]['color'] = int( max( min( analysis[metabolite]['color'], 9), 1) )
-                
+
                 # Ranking score for picking pathways; meanlog scaled to control giving rel log change
                 analysis[metabolite]['score'] = min( max( analysis[metabolite]['delta']['meanlog'],-4),+4) #/  ( np.log(analysis[metabolite]['control']['mean'])  / np.log(logN) )
-
+                
+                #analysis[metabolite]['color'] = int( max( min( 5-round( analysis[metabolite]['delta']['mean']*25 ), 9), 1) )
+                #analysis[metabolite]['score'] = analysis[metabolite]['delta']['mean']
+                
         return analysis
 
 

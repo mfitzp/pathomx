@@ -698,12 +698,13 @@ class MainWindow(QMainWindow):
             self.data.translate(self.db)
             self.setWindowTitle('MetaPath: %s' % self.data.filename)
             
-            self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
-            self.cb_control.clear()
-            self.cb_control.addItems( sorted(self.data.classes) )
-            self.cb_test.clear()
-            self.cb_test.addItems( sorted(self.data.classes) )
-            self.update_view_callback_enabled = True
+            # This is handled by onDefineExperiment
+            #self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
+            #self.cb_control.clear()
+            #self.cb_control.addItems( sorted(self.data.classes) )
+            #self.cb_test.clear()
+            #self.cb_test.addItems( sorted(self.data.classes) )
+            #self.update_view_callback_enabled = True
             
             self.onDefineExperiment()  # self.generateGraphView()
 
@@ -729,35 +730,38 @@ class MainWindow(QMainWindow):
         dialog = dialogDefineExperiment(parent=self)
         ok = dialog.exec_()
         if ok:
+            # Regenerate the graph view
+            self.experiment['control'] = dialog.cb_control.currentText()
+            self.experiment['test'] = dialog.cb_test.currentText()      
+        
             # Update toolbar to match any change caused by timecourse settings
             self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
             self.cb_control.clear()
-            self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
             self.cb_test.clear()
+
+            self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
             self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
-            self.update_view_callback_enabled = True    
             
             if dialog.le_timecourseRegExp.text() != '':
                 self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
             elif 'timecourse' in self.experiment:                
                 del(self.experiment['timecourse'])
         
-            # Regenerate the graph view
-            self.experiment['control'] = dialog.cb_control.currentText()
-            self.experiment['test'] = dialog.cb_test.currentText()      
-
             # Update the toolbar dropdown to match
             self.cb_control.setCurrentIndex( self.cb_control.findText( self.experiment['control'] ) )
             self.cb_test.setCurrentIndex( self.cb_test.findText( self.experiment['test'] ) )
                   
+            self.update_view_callback_enabled = True    
+
             self.generateGraphView(regenerate_analysis=True)
+
         
     def onModifyExperiment(self):
         """ Change control or test settings from toolbar interaction """
         # Cheat a bit, simply change both - only one will be incorrect
-        self.experiment['control'] = self.cb_control.currentText()
-        self.experiment['test'] = self.cb_test.currentText()
         if self.update_view_callback_enabled:
+            self.experiment['control'] = self.cb_control.currentText()
+            self.experiment['test'] = self.cb_test.currentText()
             self.generateGraphView(regenerate_analysis=True)
 
     def onMiningSettings(self):
@@ -893,8 +897,6 @@ class MainWindow(QMainWindow):
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
         tps = self.generateGraph(filename=filename, format='svg', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
-
-        self.generateGraph(filename='/Users/mxf793/test.dot', format='dot', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
 
         if tps == None:
             svg_source = [ open(filename).read().decode('utf8') ]

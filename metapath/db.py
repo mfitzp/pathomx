@@ -302,6 +302,7 @@ class databaseManager():
         # Store id and name in the synonym database
         self.index[id] = self.metabolites[id]
         self.add_synonym(id, attr['name'])
+        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in self.metabolites[id].databases.items()] )
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
@@ -320,7 +321,7 @@ class databaseManager():
         # Store id and name in the synonym database
         self.index[id] = self.genes[id]
         self.add_synonym(id, attr['name'])
-        self.add_synonyms(id, [key for db, key in self.genes[id].databases.items() if db in database_link_synonyms ] )
+        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in self.genes[id].databases.items()] )
         
         
     def add_synonym(self, id, synonym):
