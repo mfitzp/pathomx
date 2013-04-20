@@ -670,8 +670,7 @@ class MainWindow(QMainWindow):
 
         else:
             # It's an URL open in default browser
-            pass # wx.LaunchDefaultBrowser(url)
-
+            QDesktopServices.openUrl(url)
              
     def onBrowserLoadDone(self, ok):
         # Reload the sidebar on main window refresh: this is only bound to the main window so no need to check for action
