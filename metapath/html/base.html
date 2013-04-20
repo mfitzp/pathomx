@@ -21,7 +21,7 @@
     <div id="content">
     
     @if hasattr(object, 'pathways') and object.pathways:
-        <h2>Pathways <small>@str(len(object.pathways))</small></h2>
+        <h2>Pathways <small>(@str(len(object.pathways)))</small></h2>
         <ul>
             @for p in object.pathways:
                 <li>
@@ -39,7 +39,7 @@
     @end
     
     @if hasattr(object, 'reactions') and object.reactions:
-        <h2>Reactions <small>@str(len(object.reactions))</small></h2>
+        <h2>Reactions <small>(@str(len(object.reactions)))</small></h2>
         <ul>
             @for r in object.reactions:
                 <li><a href="metapath://reaction/@r.id/view">@r.name</a></li>
@@ -48,7 +48,7 @@
     @end
 
     @if hasattr(object, 'metabolites') and object.metabolites:
-        <h2>Metabolites <small>@str(len(object.metabolites))</small></h2>
+        <h2>Metabolites <small>(@str(len(object.metabolites)))</small></h2>
         <ul>
             @for m in object.metabolites:
                 <li>
@@ -64,7 +64,7 @@
     @end
     
     @if hasattr(object, 'secondary_metabolites') and object.secondary_metabolites:
-        <h2>2&deg; Metabolites <small>@str(len(object.secondary_metabolites))</small></h2>
+        <h2>2&deg; Metabolites <small>(@str(len(object.secondary_metabolites)))</small></h2>
         <ul>
             @for m in object.secondary_metabolites:
                 <li>
@@ -80,7 +80,7 @@
     @end
     
     @if hasattr(object, 'proteins') and object.proteins:
-        <h2>Proteins / Enzymes <small>@str(len(object.proteins))</small></h2>
+        <h2>Proteins / Enzymes <small>(@str(len(object.proteins)))</small></h2>
         <ul>
             @for p in object.proteins:
                 <li>
@@ -106,7 +106,7 @@
 
     
     @if hasattr(object, 'genes') and object.genes:
-        <h2>Genes <small>@str(len(object.genes))</small></h2>
+        <h2>Genes <small>(@str(len(object.genes)))</small></h2>
         <ul>
             @for g in object.genes:
                 <li>

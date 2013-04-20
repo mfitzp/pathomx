@@ -312,7 +312,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
     # Arrange layout grouping (e.g. by pathway, compartment, etc.) 
 
     for sgno,cluster in enumerate(clusters[cluster_key]):
-        clusterclu[cluster]=(sgno % 11) +1 if cluster != 'Non-compartmental' else '#ffffff'
+        clusterclu[cluster]=(sgno % 11) +1
         
         subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color="#eeeeee", colorscheme='paired12', fontcolor="#cccccc", labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
     
