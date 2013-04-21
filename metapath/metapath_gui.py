@@ -258,6 +258,9 @@ class dialogMiningSettings(genericDialog):
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
         self.xb_miningRelative.setChecked( bool(parent.config.value('/Data/MiningRelative') ) )
+
+        self.xb_miningShared = QCheckBox('Share metabolite scores between pathways') 
+        self.xb_miningShared.setChecked( bool(parent.config.value('/Data/MiningShared') ) )
                         
 
         self.sb_miningDepth = QSpinBox()
@@ -266,6 +269,7 @@ class dialogMiningSettings(genericDialog):
         
         self.layout.addWidget(self.cb_miningType)
         self.layout.addWidget(self.xb_miningRelative)
+        self.layout.addWidget(self.xb_miningShared)
         self.layout.addWidget(self.sb_miningDepth)
         
         # Stack it all up, with extra buttons
@@ -543,6 +547,9 @@ class MainWindow(QMainWindow):
         self.config.setValue('/Data/MiningDepth', 5)
         self.config.setValue('/Data/MiningType', 'c')
 
+        self.config.setValue('/Data/MiningRelative', False)
+        self.config.setValue('/Data/MiningShared', True)
+
         self.config.setValue('/View/ShowEnzymes', True)
         self.config.setValue('/View/Show2nd', True)
         self.config.setValue('/View/ShowAnalysis', True)
@@ -771,6 +778,7 @@ class MainWindow(QMainWindow):
             self.config.setValue('/Data/MiningDepth', dialog.sb_miningDepth.value() )
             self.config.setValue('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
             self.config.setValue('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
+            self.config.setValue('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
 
             # Update the toolbar dropdown to match
             self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
@@ -837,7 +845,9 @@ class MainWindow(QMainWindow):
             'show_secondary': bool( self.config.value('/View/Show2nd') ),
             'mining': bool( self.config.value('/Data/MiningActive') ),
             'mining_depth': int( self.config.value('/Data/MiningDepth') ),
-            'mining_type': '%s%s' % ( self.config.value('/Data/MiningType'), 'r' if bool( self.config.value('/Data/MiningRelative') ) else ''),
+            'mining_type': '%s%s%s' % ( self.config.value('/Data/MiningType'),
+                                        'r' if bool( self.config.value('/Data/MiningRelative') ) else '',
+                                        's' if bool( self.config.value('/Data/MiningShared') ) else '' ),
             'splines': 'spline',
             'colorcode': bool( self.config.value('/Pathways/ShowColors') ),
             'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),

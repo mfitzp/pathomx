@@ -439,7 +439,12 @@ class dataManager():
             elif m_id in db.genes.keys():
                 pathways = db.genes[ m_id ].pathways
             else:
-                continue # Skip out of the loop            
+                continue # Skip out of the loop        
+                
+            if "s" in mining_type:
+                # Share the change score between the associated pathways
+                # this prevents metabolites having undue influence
+                score = score / len(pathways)    
         
             for p in pathways:
                 mining_val = {
@@ -451,10 +456,12 @@ class dataManager():
                 pathway_scores[ p.id ] += mining_val[ mining_type[0] ]
                     
         # If we're pruning, then remove any pathways not in keep_pathways
-        if mining_type.endswith("r"):
+        if "r" in mining_type:
             print "Scaling pathway scores to pathway sizes..."
             for p,v in pathway_scores.items():
                 pathway_scores[p] = float(v) / len( db.pathways[p].reactions )
+
+
     
         pathway_scorest = pathway_scores.items() # Switch it to a dict so we can sort
         pathway_scorest = [(p,v) for p,v in pathway_scorest if v>0] # Remove any scores of 0
