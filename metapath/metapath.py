@@ -99,15 +99,15 @@ def main():
     if options.file and options.control and options.test:
     # Currently we're only supporting control vs. test mapping, would be nice to do single datasets;
     # would need some alternative processing (e.g. comparing to a zero control set)
-        data = data.dataManager(options.file)
+        datao = data.dataManager(options.file)
     
         # Translate using data identities
-        data.translate(dbo)
+        datao.translate(dbo)
         classes = dict()
         classes['control'] = list()
         classes['test'] = list()
 
-        for label in data.classes:
+        for label in datao.classes:
     
             match = re.search(options.control, label)
             if match:
@@ -119,15 +119,15 @@ def main():
 
         print "Filter matching classes gave control '%s' and test '%s'" % (', '.join(classes['control']), ', '.join( classes['test']) )
     
-        data.analyse(classes['control'], classes['test'])
+        datao.analyse(classes['control'], classes['test'])
     
     else:
-        data = None
+        datao = None
 
 
     # Add mining pathways
-    if data and options.mining:
-        suggested_pathways = data.suggest( db, mining_type=options.mining_type, mining_depth=options.mining_depth)
+    if datao and options.mining:
+        suggested_pathways = datao.suggest( db, mining_type=options.mining_type, mining_depth=options.mining_depth)
         pathways += suggested_pathways
 
     if options.hide_pathways:
@@ -140,10 +140,10 @@ def main():
 
 
     # PROCESS THE GRAPH
-    if data:
-        graph = core.generator( pathways, options, db, analysis=data.analysis) #, layout=self.layout) 
+    if datao:
+        graph = core.generator( pathways, options, dbo, analysis=datao.analysis) #, layout=self.layout) 
     else:
-        graph = core.generator( pathways, options, db) #, layout=self.layout) 
+        graph = core.generator( pathways, options, dbo) #, layout=self.layout) 
     
 
     # Extract file root from the edge file name
