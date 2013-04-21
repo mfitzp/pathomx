@@ -11,6 +11,8 @@ import operator
 # MetaPath classes and handlers
 import utils, db, data, core
 
+from db import databaseManager
+
 #import HTMLParser
 #pars = HTMLParser.HTMLParser()
 
@@ -41,9 +43,6 @@ def main():
     parser.add_option("-2", "--show-secondary", action="store_true", dest="show_secondary", default=False,
                       help="show secondary metabolites on edges")
 
-    #parser.add_option("--statistic", dest="statistic", default=None,
-    #                  help="show significant changes only: one of trel, tind")
-
     parser.add_option("-m", "--mining", action="store_true", dest="mining", default=False,
                       help="prune pathways")
 
@@ -51,7 +50,7 @@ def main():
                       help="prune pathways to this depth")
 
     parser.add_option("--mt", dest="mining_type", default='c',
-                      help="prune pathways by relative (m)etabolite numbers (c)hange metabolite concentration (u)p (d)own; append r (e.g (ar)) to scale relative to the number of metabolites in a given pathway")
+                      help="prune pathways by relative (m)etabolite numbers (c)hange metabolite concentration (u)p (d)own; append r (e.g (ar)) to scale relative to the number of metabolites in a given pathway; s to share metabolite score between pathways")
 
     parser.add_option("-o", "--output", dest="output", default='png',
                       help="output format for the generated graph, defaults to png")
@@ -81,9 +80,9 @@ def main():
     (options, args) = parser.parse_args()
 
     # Load metabolite, reactions, pathways into database
-    db = db.databaseManager()
+    dbo = db.databaseManager()
 
-    all_pathways = [p.name for k,p in db.pathways.items()]
+    all_pathways = [p.name for k,p in dbo.pathways.items()]
 
     if not options.pathways:
         print "Specify pathways to generate from: %s" % ', '.join( all_pathways )
@@ -94,7 +93,7 @@ def main():
         pathways = filter(lambda x:pathway_re.match(x), all_pathways)
         print "Generating for pathways: %s" % ', '.join(pathways)
         # Convert to id's (match -gui)
-        pathways = [ p for k,p in db.pathways.items() if p.name in pathways ]
+        pathways = [ p for k,p in dbo.pathways.items() if p.name in pathways ]
 
     # Load an process datafile
     if options.file and options.control and options.test:
@@ -103,7 +102,7 @@ def main():
         data = data.dataManager(options.file)
     
         # Translate using data identities
-        data.translate(db)
+        data.translate(dbo)
         classes = dict()
         classes['control'] = list()
         classes['test'] = list()
@@ -136,7 +135,7 @@ def main():
         hide_pathways = filter(lambda x:hide_pathways_re.match(x), all_pathways)
         print "Removing pathways: %s" % ', '.join(hide_pathways)
         # Convert to id's (match -gui)
-        hide_pathways = [ p for k,p in db.pathways.items() if p.name in hide_pathways ]
+        hide_pathways = [ p for k,p in dbo.pathways.items() if p.name in hide_pathways ]
         pathways = [p for p in pathways if p.id not in hide_pathways]
 
 
