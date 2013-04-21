@@ -61,6 +61,10 @@ def main():
     parser.add_option("--colorcode", action="store_true", dest="colorcode", default=False,
                       help="color code reaction sets")
 
+    parser.add_option("--cluster", dest='cluster_by', default = 'pathway', 
+                      help="cluster type (pathway|compartment)")
+
+
     parser.add_option("--network-analysis", action="store_true", dest="show_network_analysis", default=False,
                       help="show metabolite connections network analysis highlights")
                   
