@@ -426,6 +426,7 @@ class dataManager():
         # + requested pathways, - excluded pathways
         
         pathway_scores = defaultdict( int )
+        print "Mining using '%s'" % mining_type
         
         for m_id in self.analysis:
             
@@ -442,6 +443,7 @@ class dataManager():
                 continue # Skip out of the loop        
                 
             if "s" in mining_type:
+                print "!"
                 # Share the change score between the associated pathways
                 # this prevents metabolites having undue influence
                 score = score / len(pathways)    

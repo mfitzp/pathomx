@@ -56,13 +56,14 @@ def get_pathway_color( analysis, m ):
 def get_reaction_color( analysis, r ):
     # For reactions, we need gene and protein data (where it exists)
     colors = []
-    for p in r.proteins:
-        if p.id in analysis:
-            colors.append( rdbu9[ analysis[p.id]['color'] ] )
+    if hasattr(r, 'proteins'): # Dummy ReactionIntermediates will not; til that's fixed!
+        for p in r.proteins:
+            if p.id in analysis:
+                colors.append( rdbu9[ analysis[p.id]['color'] ] )
                         
-        for g in p.genes:
-            if g.id in analysis:
-                colors.append( rdbu9[ analysis[g.id]['color'] ] )
+            for g in p.genes:
+                if g.id in analysis:
+                    colors.append( rdbu9[ analysis[g.id]['color'] ] )
     
     if colors == []:
         colors = [ rdbu9[5] ] # Mid-grey      
