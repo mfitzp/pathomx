@@ -373,7 +373,7 @@ class MainWindow(QMainWindow):
 
         load_layoutAction = QAction(QIcon.fromTheme("application-exit", QIcon( os.path.join( utils.scriptdir,'icons','exit.png') )), '&Load predefined layout\u2026', self)
         load_layoutAction.setStatusTip('Load a pre-defined layout map file e.g KGML')
-        load_layoutAction.triggered.connect(self.close)
+        load_layoutAction.triggered.connect(self.onLoadLayoutFile)
         pathwayMenu.addAction(load_layoutAction)
 
         # PATHWAYS Menu
@@ -714,22 +714,17 @@ class MainWindow(QMainWindow):
             
             self.onDefineExperiment()  # self.generateGraphView()
 
-        
+
     def onLoadLayoutFile(self):
-        """ Open a map (layout) file"""
-        self.dirname = ''
-        dlg = wx.FileDialog(self, "Open layout file", self.dirname, "", "*.*", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            filename = dlg.GetFilename()
-            dirname = dlg.GetDirectory()
-            fn = os.path.join(dirname, filename)
-            self.layout = layout.layoutManager(fn)
+        """ Open a layout file e.g. in KGML format"""
+        # e.g. www.genome.jp/kegg-bin/download?entry=hsa00010&format=kgml
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open layout file (KEGG, etc.)', '')
+        if filename:
+            self.layout = layout.layoutManager(filename)
             # Re-translate the datafile
             self.layout.translate(self.db)
             # Regenerate the graph view
             self.generateGraphView()            
-                    
-        dlg.Destroy()
         
     def onDefineExperiment(self):
         """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
