@@ -1,3 +1,10 @@
 @extends("base.html")
-@require(object, current_pathways)
+@require(htmlbase, object, current_pathways)
     
+@def figure():
+    <div id="figure">
+    @if object.image:
+        <img src="file://@object.image">
+    @end
+    </div>
+@end

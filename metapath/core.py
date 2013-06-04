@@ -1,5 +1,6 @@
 import os, sys, re, math
 import pydot
+import networkx as nx
 import numpy as np
 import copy
 
@@ -275,16 +276,21 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             inter_react = ReactionIntermediate(**{'id': "DUMMYPATHWAYLINK-%s" %  itr, 'type':'dummy', 'dir':dir, 'pathways':[mp]})            
             edges.append([inter_react, mtin, mtout, True])
 
-            if analysis and options.mining:
+            if analysis: # and options.mining:
                 # Not actually used for color, this is a ranking value (bud-sized on pathway link)
-                fillcolor = max(1, 11-analysis['mining_ranked_remaining_pathways'].index( p.id ) ) if p.id in analysis['mining_ranked_remaining_pathways'] else 1
+                p_metabolite_scores = [ analysis[m.id]['color'] for m in p.metabolites if m.id in analysis] 
+                if p_metabolite_scores:
+                    fillcolor = sum( p_metabolite_scores ) / len( p_metabolite_scores )
+                else:
+                    fillcolor = None
+                # fillcolor = max(1, 11-analysis['mining_ranked_remaining_pathways'].index( p.id ) ) if p.id in analysis['mining_ranked_remaining_pathways'] else 1
             else:
-                fillcolor = 1
+                fillcolor = None
                 
             nodes.append([pathway_node, fillcolor, True])
 
     # Generate the analysis graph from datasets
-    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", overlap='false', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5) #, mode='major', model='subset') 
+    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", overlap='ipsep', labelfloat='false', outputMode='edgesfirst', packMode='clust', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, mode='ipsep', model='mds') 
     subgraphs = list()
     clusterclu = dict()
     
@@ -333,11 +339,12 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         
         label = ' '
         color = 'black'
-        shape = 'box'
+        shape = 'rect'
         fontcolor = 'black'
         colorscheme = 'rdbu9'
         url = METABOLITE_URL
         width, height = 0.75, 0.5
+          
                     
         if visible:
             style = 'filled'
@@ -354,13 +361,16 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         elif m.type=='pathway':
             shape='point'
             label = '%s' % m.name
-            width, height = float(fillcolor)/24, float(fillcolor)/24
-            color, fillcolor = '#cccccc', '#cccccc'            
+            size = len(db.pathways[ m.id ].metabolites )
+            width, height = size/24., size/24.
+            if fillcolor is None:
+                fillcolor = '#cccccc'          
+            color = fillcolor
             border=0
             url=PATHWAY_URL
 
         else:
-            label = m.name
+            label = label="%s" % m.name # {%s |{ | | } } "
             if fillcolor == False:
                 if analysis: # Showing data
                     fillcolor = '#ffffff'
@@ -377,13 +387,27 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             else:
                 border = 0  
             
+        if options.show_molecular and hasattr(m,'image'):
+            label = ' '
+            if analysis and isinstance(fillcolor, int):
+                image = m.imagecolor % int(fillcolor)
+            else:
+                image = m.image
+            style = 'solid'
+            shape = 'none'
+        else:
+            image = False
+            
         if layout and m.id in layout.objects.keys():
                 pos = '%s,%s!' % layout.objects[m.id]
                 # Fugly duplication, but appears to be no way to set a 'none' position
                 graph.add_node(pydot.Node(m.id, width=width, height=height, style=style, shape=shape, color=color, penwidth=border, fontname='Calibri', colorscheme=colorscheme, fontcolor=fontcolor, fillcolor=fillcolor, label=label, labeltooltip=label, URL=url % m.id, pos=pos)) # http://metacyc.org/META/substring-search?object=%s                
         else:
-            graph.add_node(pydot.Node(m.id, width=width, height=height, style=style, shape=shape, color=color, penwidth=border, fontname='Calibri', colorscheme=colorscheme, fontcolor=fontcolor, fillcolor=fillcolor, label=label, labeltooltip=label, URL=url % m.id)) # http://metacyc.org/META/substring-search?object=%s
-            
+            if image:
+                graph.add_node(pydot.Node(m.id, width=width, height=height, image=image, style=style, shape=shape, color=color, penwidth=border, fontname='Calibri', colorscheme=colorscheme, fontcolor=fontcolor, fillcolor=fillcolor, label=label, labeltooltip=label, URL=url % m.id)) # http://metacyc.org/META/substring-search?object=%s
+            else:
+                graph.add_node(pydot.Node(m.id, width=width, height=height, style=style, shape=shape, color=color, penwidth=border, fontname='Calibri', colorscheme=colorscheme, fontcolor=fontcolor, fillcolor=fillcolor, label=label, labeltooltip=label, URL=url % m.id)) # http://metacyc.org/META/substring-search?object=%s
+
         nodes_added.add(m)  
     
     # Add graph edges to the map
@@ -395,13 +419,16 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         arrowtail = 'empty'
         color = '#888888'
         url = REACTION_URL
+        length = 2
    
         # End of any edge touching a DUMMY-RXN is left blank
         if dest.type == 'dummy':
             arrowhead = 'none'
+            length = 1.3
 
         if origin.type == 'dummy':
             arrowtail = 'none'
+            length = 1.3
 
         if visible:
             style = ' '
@@ -438,7 +465,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             if options.show_secondary and (hasattr(r,'smtins')): #If there's an in there's an out
                 if len(r.smtins + r.smtouts) > 0:
                     # Process to add colors if metabolite in db
-                    smtins, smtouts = [], []
+                    smtins, smtouts = [], []                
                     for sm in r.smtins:
                         if analysis and sm.id in analysis:
                             smtins.append('<font color="/rdbu9/%s">%s</font>' % (analysis[ sm.id ]['color'], sm) ) # We found it by one of the names
@@ -458,8 +485,17 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         #else:
         #    width = 1
             
-        e = pydot.Edge(origin.id, dest.id, len=1, penwidth=1, dir=r.dir, label=u'<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
+        e = pydot.Edge(origin.id, dest.id, len=length, penwidth=1, dir=r.dir, label=u'<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
         graph.add_edge(e)
 
+    #import matplotlib.pyplot as plt
+
+    #plt.figure()   
+    #G = nx.from_pydot(graph)
+    #nx.draw(G,pos=nx.spring_layout(G))
+    #nx.draw_spring(G, iterations=500, weight=-1)
+    #nx.draw_graphviz(G,prog='neato')
+    #plt.savefig("/Users/mxf793/test-networkx-plot.png")
+    #plt.clf()
 
     return graph

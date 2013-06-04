@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 # Import PySide classes
 from PySide.QtGui import *
 from PySide.QtCore import *
 from PySide.QtWebKit import *
+from PySide.QtNetwork import *
 
 import os, sys, re, math, codecs, locale
 
@@ -371,7 +373,7 @@ class MainWindow(QMainWindow):
 
         pathwayMenu.addSeparator()
 
-        load_layoutAction = QAction(QIcon.fromTheme("application-exit", QIcon( os.path.join( utils.scriptdir,'icons','exit.png') )), '&Load predefined layout\u2026', self)
+        load_layoutAction = QAction('&Load predefined layout\u2026', self)
         load_layoutAction.setStatusTip('Load a pre-defined layout map file e.g KGML')
         load_layoutAction.triggered.connect(self.onLoadLayoutFile)
         pathwayMenu.addAction(load_layoutAction)
@@ -412,6 +414,36 @@ class MainWindow(QMainWindow):
         # VIEW MENU 
         viewMenu = menubar.addMenu('&View')
         
+        showenzymesAction = QAction('Show proteins/enzymes', self)
+        showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
+        showenzymesAction.setCheckable( True )
+        showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
+        showenzymesAction.toggled.connect(self.onShowEnzymesToggle)
+        viewMenu.addAction(showenzymesAction)
+        
+        show2ndAction = QAction('Show 2° metabolites', self)
+        show2ndAction.setStatusTip('Show 2° metabolites on reaction paths')
+        show2ndAction.setCheckable( True )
+        show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
+        show2ndAction.toggled.connect(self.onShow2ndToggle)
+        viewMenu.addAction(show2ndAction)
+
+        showmolecularAction = QAction('Show molecular structures', self)
+        showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
+        showmolecularAction.setCheckable( True )
+        showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
+        showmolecularAction.toggled.connect(self.onShowMolecularToggle)
+        viewMenu.addAction(showmolecularAction)
+
+        showanalysisAction = QAction('Show network analysis', self)
+        showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
+        showanalysisAction.setCheckable( True )
+        showanalysisAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
+        showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
+        viewMenu.addAction(showanalysisAction)
+
+        viewMenu.addSeparator()
+        
         refreshAction = QAction(QIcon.fromTheme("view-refresh", QIcon( os.path.join( utils.scriptdir,'icons', 'view-refresh.png') )), u'&Refresh', self)
         refreshAction.setShortcut('Ctrl+R')
         refreshAction.setStatusTip('Refresh metabolic pathway map')
@@ -429,6 +461,8 @@ class MainWindow(QMainWindow):
         zoomoutAction.setStatusTip('Zoom out')
         zoomoutAction.triggered.connect(self.onZoomOut)
         viewMenu.addAction(zoomoutAction)
+        
+        
 
         # DATABASE MENU
         
@@ -501,22 +535,24 @@ class MainWindow(QMainWindow):
         self.experimentToolbar.addWidget(self.sb_miningDepth)
 
         #self.vboxlayout.addWidget(self.mainBrowser)
+        QNetworkProxyFactory.setUseSystemConfiguration( True )
 
+        #QWebSettings.globalSettings().setAttribute( QWebSettings.PluginsEnabled, True)
+        #QWebSettings.globalSettings().setAttribute( QWebSettings.LocalContentCanAccessRemoteUrls, True)
+        #QWebSettings.globalSettings().setAttribute( QWebSettings.LocalContentCanAccessFileUrls, True)
         self.mainBrowser = QWebViewScrollFix()
         self.setCentralWidget(self.mainBrowser)
-    
+
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
         self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
         self.mainBrowser.page().setContentEditable(False)
         self.mainBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        #self.Bind(wx.html2.EVT_WEB_VIEW_NAVIGATING, self.OnBrowserNav, self.mainBrowser )
         self.mainBrowser.linkClicked.connect( self.onBrowserNav )
         self.mainBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
 
         self.dataBrowser = QWebView()
-        #self.Bind(wx.html2.EVT_WEB_VIEW_NAVIGATING, self.OnBrowserNav, self.dataBrowser )
         # Display a sponsors
         template = self.templateEngine.get_template('sponsors.html')
         self.dataBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
@@ -552,6 +588,7 @@ class MainWindow(QMainWindow):
 
         self.config.setValue('/View/ShowEnzymes', True)
         self.config.setValue('/View/Show2nd', True)
+        self.config.setValue('/View/ShowMolecular', True)
         self.config.setValue('/View/ShowAnalysis', True)
         self.config.setValue('/View/ClusterBy', 'pathway')
         
@@ -571,6 +608,22 @@ class MainWindow(QMainWindow):
 
     def onPathwayMiningToggle(self, checked):
         self.config.setValue( '/Data/MiningActive', checked)
+        self.generateGraphView()
+
+    def onShowEnzymesToggle(self, checked):
+        self.config.setValue( '/View/ShowEnzymes', checked)
+        self.generateGraphView()
+
+    def onShow2ndToggle(self, checked):
+        self.config.setValue( '/View/Show2nd', checked)
+        self.generateGraphView()
+
+    def onShowMolecularToggle(self, checked):
+        self.config.setValue( '/View/ShowMolecular', checked)
+        self.generateGraphView()
+
+    def onShowAnalysisToggle(self, checked):
+        self.config.setValue( '/View/ShowAnalysis', checked)
         self.generateGraphView()
     
     # UI Events           
@@ -838,6 +891,9 @@ class MainWindow(QMainWindow):
             'cluster_by': self.config.value('/View/ClusterBy'),
             'show_enzymes': bool( self.config.value('/View/ShowEnzymes') ), #self.config.ReadBool('/View/ShowEnzymes'),
             'show_secondary': bool( self.config.value('/View/Show2nd') ),
+            'show_molecular': bool( self.config.value('/View/ShowMolecular') ),
+            'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),
+
             'mining': bool( self.config.value('/Data/MiningActive') ),
             'mining_depth': int( self.config.value('/Data/MiningDepth') ),
             'mining_type': '%s%s%s' % ( self.config.value('/Data/MiningType'),
@@ -845,7 +901,6 @@ class MainWindow(QMainWindow):
                                         's' if bool( self.config.value('/Data/MiningShared') ) else '' ),
             'splines': 'spline',
             'colorcode': bool( self.config.value('/Pathways/ShowColors') ),
-            'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),
             'focus':False,
             'show_pathway_links': bool( self.config.value('/Pathways/ShowLinks') ),
             # Always except when saving the file
@@ -900,6 +955,7 @@ class MainWindow(QMainWindow):
 
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
+
         tps = self.generateGraph(filename=filename, format='svg', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
 
         if tps == None:
@@ -911,6 +967,9 @@ class MainWindow(QMainWindow):
                 open( os.path.join( QDir.tempPath(), filename % tp) ).read().decode('utf8')
                 for tp in tps
                 ]
+                
+        # Add file:// refs to image links (Graphviz bug?)
+        svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
 
         scale = ''
         if self.data:

@@ -9,8 +9,9 @@ from collections import defaultdict
 
 import utils
 
+# Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
-    'UCSC', 'ENSEMBL', 
+    'UCSC', 'ENSEMBL', 'HMDB', 'CAS',
 ]
 
 # Global MetaPath db object class to simplify object display, synonym referencing, etc. 
@@ -176,6 +177,7 @@ class databaseManager():
                 self.add_synonym(id, name)
 
     def load_metabolites(self):
+        import urllib
         reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/metabolites'),'rU'), delimiter=',', dialect='excel')
         for id, name, type, db_unification in reader:
             self.add_metabolite(id, {
@@ -237,6 +239,11 @@ class databaseManager():
                 key, val = dblink.split(":", 1)
                 dbs[key] = val 
         return dbs
+        
+    def add_db_synonyms(self, id, databases):
+        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in databases.items()] )
+        self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db == database_link_synonyms] )
+
                 
     def add_reaction(self, id, attr):
         self.reactions[id] = Reaction(**dict(
@@ -302,7 +309,12 @@ class databaseManager():
         # Store id and name in the synonym database
         self.index[id] = self.metabolites[id]
         self.add_synonym(id, attr['name'])
-        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in self.metabolites[id].databases.items()] )
+        self.add_db_synonyms(id, self.metabolites[id].databases )
+        
+        # Check if we have a compound image for this metabolite
+        if 'LIGAND-CPD' in self.metabolites[id].databases.keys():
+            self.metabolites[id].image = os.path.join(utils.scriptdir,'db','figures','%s.png' % self.metabolites[id].databases['LIGAND-CPD'])
+            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'db','figures','%d','%s.png' % self.metabolites[id].databases['LIGAND-CPD'])
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
@@ -312,6 +324,7 @@ class databaseManager():
         # Store id and name in the synonym database
         self.index[id] = self.proteins[id]
         self.add_synonym(id, attr['name'])
+        self.add_db_synonyms(id, self.proteins[id].databases )
 
     def add_gene(self, id, attr):
         self.genes[id] = Gene(**dict(
@@ -321,8 +334,7 @@ class databaseManager():
         # Store id and name in the synonym database
         self.index[id] = self.genes[id]
         self.add_synonym(id, attr['name'])
-        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in self.genes[id].databases.items()] )
-        
+        self.add_db_synonyms(id, self.genes[id].databases )        
         
     def add_synonym(self, id, synonym):
         self.synfwd[id].add( synonym ) # ID -> Synonyms

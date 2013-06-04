@@ -432,6 +432,16 @@ class dataManager():
             
             score = self.analysis[ m_id ]['score']
             
+            # 1' neighbours; 2' neighbours etc. add score
+            # Get a list of methods in connected reactions, add their score % to this metabolite
+            # if m_id in db.metabolites.keys():
+            #    n_metabolites = [r.metabolites for r in db.metabolites[ m_id ].reactions ]
+            #     print n_metabolites
+            #     n_metabolites = [m for ml in n_metabolites for m in ml if n_m.id in self.analysis and m.id != m_id ]
+            #     for n_m in n_metabolites:
+            #         score += self.analysis[ n_m.id ]['score'] * 0.5
+
+            
             # Iterate the metabolite's pathways
             if m_id in db.metabolites.keys():
                 pathways = db.metabolites[ m_id ].pathways

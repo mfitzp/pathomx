@@ -104,7 +104,7 @@ setup(
         ]
     },
 
-    #install_requires = ['PySide>=1.1.1','numpy>=1.5.0'],
+    install_requires = ['PySide>=1.1.1','numpy>=1.5.0'],
 
     keywords='bioinformatics metabolomics research analysis science',
     license='GPL',

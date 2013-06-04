@@ -308,7 +308,12 @@ def download_reaction_data( reactions_get ):
             
         # Extract database unification links and store to db
         metabolite['databases'] = get_db_unification( xml.iterfind('Compound/dblink') )
-
+    
+        # Check if has a KEGG identifier, if so get the KEGG figure
+        if 'LIGAND-CPD' in metabolite['databases']:
+            kegg_id = metabolite['databases']['LIGAND-CPD']
+            urllib.urlretrieve ('http://www.kegg.jp/Fig/compound_small/%s.gif' % kegg_id, "./db/figures/%s.gif" % kegg_id)
+            
         mdb.add_metabolite(metabolite_id, metabolite)
     
     print "Writing metabolites..."

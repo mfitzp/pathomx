@@ -17,8 +17,10 @@
     @if hasattr(object, 'synonym_str') and object.synonyms:
         <span class="synonyms">@object.synonym_str()</span>
     @end
-
-    <div id="content">
+        
+    @def figure():
+    @end
+    @figure()
     
     @if hasattr(object, 'pathways') and object.pathways:
         <h2>Pathways <small>(@str(len(object.pathways)))</small></h2>
