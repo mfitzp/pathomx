@@ -242,7 +242,7 @@ class databaseManager():
         
     def add_db_synonyms(self, id, databases):
         self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in databases.items()] )
-        self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db == database_link_synonyms] )
+        self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db in database_link_synonyms] )
 
                 
     def add_reaction(self, id, attr):

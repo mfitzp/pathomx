@@ -290,7 +290,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             nodes.append([pathway_node, fillcolor, True])
 
     # Generate the analysis graph from datasets
-    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", overlap='ipsep', labelfloat='false', outputMode='edgesfirst', packMode='clust', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, mode='ipsep', model='mds') 
+    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgesfirst', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc") #, model='mds') #, overlap='ipsep', mode='ipsep', model='mds') 
     subgraphs = list()
     clusterclu = dict()
     
@@ -320,7 +320,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
 
     for sgno,cluster in enumerate(clusters[cluster_key]):
         clusterclu[cluster]=(sgno % 11) +1
-        
+
         subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color="#eeeeee", colorscheme='paired12', fontcolor="#cccccc", labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
     
         # Read node file of metabolites to show
