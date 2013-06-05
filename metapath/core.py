@@ -334,6 +334,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         else:
             bcolor = 'transparent'
             bgcolor = 'transparent'
+            style ='solid'
 
         subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color=bcolor, bgcolor=bgcolor, style=style, fontcolor=bcolor, labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
         # Read node file of metabolites to show
