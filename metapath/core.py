@@ -83,7 +83,9 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
     intno = 0
     
     # Pathway colour list
-    colors = ['black','blue','green','red','orange','purple','yellow','pink']
+    colors = [          'black',    'blue',     'green',    'red',      'orange',   'purple',   'yellow',   'pink'] # sat 100
+    colorslight = [     '#aaaaaa',  '#ccccff',  '#b3ffb3',  '#ffb3b3',  '#ffedcc',  '#ffb3fe',  '#ffffcc',  '#ffccf5'] # sat 20
+    colorslighter = [   '#cccccc',  '#f2f2ff',  '#f2fff2',  '#fff2f2',  '#fffbf2',  '#fff2ff',  '#fffff2',  '#fff2fc'] # sat 5
     
     prunekey = PRUNE_IDENTICAL if (options.show_enzymes or options.show_secondary) else PRUNE_ALL
             
@@ -290,7 +292,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             nodes.append([pathway_node, fillcolor, True])
 
     # Generate the analysis graph from datasets
-    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgesfirst', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc") #, model='mds') #, overlap='ipsep', mode='ipsep', model='mds') 
+    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgeslast', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc") #, model='mds') #, overlap='ipsep', mode='ipsep', model='mds') 
     subgraphs = list()
     clusterclu = dict()
     
@@ -317,17 +319,29 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             clashcheck.append(xy)
 
     # Arrange layout grouping (e.g. by pathway, compartment, etc.) 
-
     for sgno,cluster in enumerate(clusters[cluster_key]):
-        clusterclu[cluster]=(sgno % 11) +1
+        clusterclu[cluster]=(sgno % 7) +1
+        
+        if options.highlightregions:
+            if options.cluster_by == 'compartment':
+                bcolor=colorslight[ clusterclu[cluster] ]
+                bgcolor=colorslighter[ clusterclu[cluster] ]
+                style='rounded'
+            else:
+                bcolor = '#eeeeee'
+                bgcolor = 'transparent'
+                style='solid'
+        else:
+            bcolor = 'transparent'
+            bgcolor = 'transparent'
 
-        subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color="#eeeeee", colorscheme='paired12', fontcolor="#cccccc", labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
-    
+        subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color=bcolor, bgcolor=bgcolor, style=style, fontcolor=bcolor, labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
         # Read node file of metabolites to show
         # TODO: Filter this by the option specification
         for n in clusternodes[ cluster_key ][cluster]:
             subgraph.add_node(pydot.Node(n.id))
         graph.add_subgraph(subgraph) 
+
     
     # Add nodes to map
     
@@ -438,7 +452,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         if analysis:
             color = get_reaction_color( analysis, r )
             colorscheme = 'rdbu9'
-        elif options.colorcode:
+        elif options.highlightpathways:
             #color=1+( ] % 11) # Length of colorscheme -1 
             r_clusterclu = list( set(edgecluster[ cluster_key ][r]) & set(clusterclu) )
             color = '"%s"' % ':'.join( sorted([ str(clusterclu[c]) for c in r_clusterclu] ) )

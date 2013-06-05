@@ -312,7 +312,7 @@ def download_reaction_data( reactions_get ):
         # Check if has a KEGG identifier, if so get the KEGG figure
         if 'LIGAND-CPD' in metabolite['databases']:
             kegg_id = metabolite['databases']['LIGAND-CPD']
-            urllib.urlretrieve ('http://www.kegg.jp/Fig/compound_small/%s.gif' % kegg_id, "./db/figures/%s.gif" % kegg_id)
+            urllib.urlretrieve ('http://www.kegg.jp/Fig/compound_small/%s.gif' % kegg_id, "./db/figures/originals/%s.gif" % metabolite_id)
             
         mdb.add_metabolite(metabolite_id, metabolite)
     

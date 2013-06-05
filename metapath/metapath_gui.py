@@ -355,8 +355,6 @@ class MainWindow(QMainWindow):
         show_pathwaysAction.triggered.connect(self.onPathwaysShow)
         pathwayMenu.addAction(show_pathwaysAction)
         
-        pathwayMenu.addSeparator()
-
         show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
         show_pathway_linksAction.setCheckable( True )
@@ -364,13 +362,6 @@ class MainWindow(QMainWindow):
         show_pathway_linksAction.toggled.connect(self.onPathwayLinksToggle)
         pathwayMenu.addAction(show_pathway_linksAction)
         
-        pathway_colorsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight Reaction Pathways', self)
-        pathway_colorsAction.setStatusTip('Highlight pathway reactions by color')
-        pathway_colorsAction.setCheckable( True )
-        pathway_colorsAction.setChecked( bool( self.config.value('/Pathways/ShowColors' ) ) )
-        pathway_colorsAction.toggled.connect(self.onPathwayColorsToggle)
-        pathwayMenu.addAction(pathway_colorsAction)
-
         pathwayMenu.addSeparator()
 
         load_layoutAction = QAction('&Load predefined layout\u2026', self)
@@ -441,6 +432,22 @@ class MainWindow(QMainWindow):
         showanalysisAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
         showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
         viewMenu.addAction(showanalysisAction)
+
+        viewMenu.addSeparator()
+        
+        highlightcolorsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight Reaction Pathways', self)
+        highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
+        highlightcolorsAction.setCheckable( True )
+        highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
+        highlightcolorsAction.toggled.connect(self.onHighlightPathwaysToggle)
+        viewMenu.addAction(highlightcolorsAction)
+
+        highlightregionAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight pathway/compartment regions', self)
+        highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
+        highlightregionAction.setCheckable( True )
+        highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
+        highlightregionAction.toggled.connect(self.onHighlightRegionsToggle)
+        viewMenu.addAction(highlightregionAction)
 
         viewMenu.addSeparator()
         
@@ -575,8 +582,6 @@ class MainWindow(QMainWindow):
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
         self.config.setValue('/Pathways/Show', '') 
-        # self.config.WriteBool('/Pathways/ShowAll', False)
-        self.config.setValue('/Pathways/ShowColors', True)
         self.config.setValue('/Pathways/ShowLinks', False)
 
         self.config.setValue('/Data/MiningActive', False)
@@ -590,6 +595,10 @@ class MainWindow(QMainWindow):
         self.config.setValue('/View/Show2nd', True)
         self.config.setValue('/View/ShowMolecular', True)
         self.config.setValue('/View/ShowAnalysis', True)
+
+        self.config.setValue('/View/HighlightPathways', True)
+        self.config.setValue('/View/HighlightRegions', True)
+
         self.config.setValue('/View/ClusterBy', 'pathway')
         
         self.config.setValue('/MetaPath/Is_Setup', True)
@@ -598,10 +607,6 @@ class MainWindow(QMainWindow):
 
 
     # Simple menu toggles
-    def onPathwayColorsToggle(self, checked):
-        self.config.setValue( '/Pathways/ShowColors', checked)
-        self.generateGraphView()
-
     def onPathwayLinksToggle(self, checked):
         self.config.setValue( '/Pathways/ShowLinks', checked)
         self.generateGraphView()
@@ -624,6 +629,14 @@ class MainWindow(QMainWindow):
 
     def onShowAnalysisToggle(self, checked):
         self.config.setValue( '/View/ShowAnalysis', checked)
+        self.generateGraphView()
+        
+    def onHighlightPathwaysToggle(self, checked):
+        self.config.setValue( '/View/HighlightPathways', checked)
+        self.generateGraphView()
+
+    def onHighlightRegionsToggle(self, checked):
+        self.config.setValue( '/View/HighlightRegions', checked)
         self.generateGraphView()
     
     # UI Events           
@@ -894,13 +907,15 @@ class MainWindow(QMainWindow):
             'show_molecular': bool( self.config.value('/View/ShowMolecular') ),
             'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),
 
+            'highlightpathways': bool( self.config.value('/View/HighlightPathways') ),
+            'highlightregions': bool( self.config.value('/View/HighlightRegions') ),
+
             'mining': bool( self.config.value('/Data/MiningActive') ),
             'mining_depth': int( self.config.value('/Data/MiningDepth') ),
             'mining_type': '%s%s%s' % ( self.config.value('/Data/MiningType'),
                                         'r' if bool( self.config.value('/Data/MiningRelative') ) else '',
                                         's' if bool( self.config.value('/Data/MiningShared') ) else '' ),
             'splines': 'spline',
-            'colorcode': bool( self.config.value('/Pathways/ShowColors') ),
             'focus':False,
             'show_pathway_links': bool( self.config.value('/Pathways/ShowLinks') ),
             # Always except when saving the file
@@ -1032,8 +1047,8 @@ class MainWindow(QMainWindow):
 def main():
     # Create a Qt application
     app = QApplication(sys.argv)
-    app.setOrganizationName("ables")
-    app.setOrganizationDomain("abl.es")
+    app.setOrganizationName("Martin Fitzpatrick")
+    app.setOrganizationDomain("martinfitzpatrick.name")
     app.setApplicationName("MetaPath")
 
     window = MainWindow()

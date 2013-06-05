@@ -313,8 +313,8 @@ class databaseManager():
         
         # Check if we have a compound image for this metabolite
         if 'LIGAND-CPD' in self.metabolites[id].databases.keys():
-            self.metabolites[id].image = os.path.join(utils.scriptdir,'db','figures','%s.png' % self.metabolites[id].databases['LIGAND-CPD'])
-            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'db','figures','%d','%s.png' % self.metabolites[id].databases['LIGAND-CPD'])
+            self.metabolites[id].image = os.path.join(utils.scriptdir,'db','figures','%s.png' % id)
+            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'db','figures','%d','%s.png' % id)
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
