@@ -80,6 +80,7 @@ setup(
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/metapath',
+    download_url='https://github.com/mfitzp/metapath/zipball/master'
     description='Metabolic pathway visualisation and analysis.',
     long_description='MetaPath is a tool for the analysis of metabolic pathway and \
         associated visualisation of experimental data. Built on the MetaCyc database it \
