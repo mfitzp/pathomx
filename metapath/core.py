@@ -83,9 +83,10 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
     intno = 0
     
     # Pathway colour list
-    colors = [          'black',    'blue',     'green',    'red',      'orange',   'purple',   'yellow',   'pink'] # sat 100
-    colorslight = [     '#aaaaaa',  '#ccccff',  '#b3ffb3',  '#ffb3b3',  '#ffedcc',  '#ffb3fe',  '#ffffcc',  '#ffccf5'] # sat 20
-    colorslighter = [   '#cccccc',  '#f2f2ff',  '#f2fff2',  '#fff2f2',  '#fffbf2',  '#fff2ff',  '#fffff2',  '#fff2fc'] # sat 5
+    #                   black       blue        green       red         orange      purple      yellow      pink                   
+    colors = [          '#000000',  '#1f78b4',  '#33a02c',  '#e31a1c',  '#ff7f00',  '#392c85',  '#ffff00',  '#ff4398'] # sat 100
+    colorslight = [     '#aaaaaa',  '#ccccff',  '#b3ffb3',  '#ffb3b3',  '#ffedcc',  '#ffb3fe',  '#ffffcc',  '#ffcce3'] # sat 20
+    colorslighter = [   '#cccccc',  '#f2f2ff',  '#f2fff2',  '#fff2f2',  '#fffbf2',  '#fff2ff',  '#fffff2',  '#fff2f8'] # sat 5
     
     prunekey = PRUNE_IDENTICAL if (options.show_enzymes or options.show_secondary) else PRUNE_ALL
             
@@ -456,7 +457,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         elif options.highlightpathways:
             #color=1+( ] % 11) # Length of colorscheme -1 
             r_clusterclu = list( set(edgecluster[ cluster_key ][r]) & set(clusterclu) )
-            color = '"%s"' % ':'.join( sorted([ str(clusterclu[c]) for c in r_clusterclu] ) )
+            color = '"%s"' % ':'.join( [ colors[n] for n in sorted([ clusterclu[c] for c in r_clusterclu] ) ] )
             colorscheme = 'paired12'
             
         if r.type == 'dummy':

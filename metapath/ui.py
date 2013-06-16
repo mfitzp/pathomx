@@ -333,6 +333,12 @@ class MainWindowUI(QMainWindow):
         #QWebSettings.globalSettings().setAttribute( QWebSettings.LocalContentCanAccessFileUrls, True)
         self.mainBrowser = QWebViewScrollFix()
         self.setCentralWidget(self.mainBrowser)
+        
+        #self.mainBrowser = QWebViewScrollFix()
+        #self.tabs = QTabWidget()
+        #self.tabs.addTab( self.mainBrowser, 'Pathways' )
+        #self.setCentralWidget(self.tabs)
+
 
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
@@ -343,22 +349,40 @@ class MainWindowUI(QMainWindow):
         self.mainBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
 
-        self.dataBrowser = QWebView()
+        self.dbBrowser = QWebView()
         # Display a sponsors
         template = self.templateEngine.get_template('sponsors.html')
-        self.dataBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
-        self.dataBrowser.page().setContentEditable(False)
-        self.dataBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.dataBrowser.linkClicked.connect( self.onBrowserNav )
-        self.dataBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
-        self.dataBrowser_CurrentURL = None
+        self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
+        self.dbBrowser.page().setContentEditable(False)
+        self.dbBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.dbBrowser.linkClicked.connect( self.onBrowserNav )
+        self.dbBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
+        self.dbBrowser_CurrentURL = None
         
         self.dataDock = QDockWidget('Database Viewer')
         self.dataDock.setMaximumWidth(300);
-        self.dataDock.setWidget(self.dataBrowser)
+        self.dataDock.setWidget(self.dbBrowser)
         self.dataDock.setFeatures(QDockWidget.DockWidgetMovable)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
         
+        # Additional tabs; data analysis, data summary, identification, etc.
+
+        # Data vis: visualisation of loaded dataset (spectra, etc.); peak picking; data->metabolite conversion
+        # Identification: table view for each datatype, identifier -> metabolite link (mostly automatic, but allow tweaks); or simply show (combine with above/below?)
+        
+        # Data summary: global view overall dataset; characteristics information
+        
+        # Data analysis: graphs, plots
+        
+        self.analysisBrowser = QWebView()
+        # Display default no-data view; instructions for loading data etc.
+        #template = self.templateEngine.get_template('data.html')
+        #self.analysisBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
+        #self.analysisBrowser.page().setContentEditable(False)
+        #self.analysisBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        #self.analysisBrowser.linkClicked.connect( self.onBrowserNav )
+        #self.analysisBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
+
         
 
     # Simple menu toggles

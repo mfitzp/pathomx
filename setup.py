@@ -12,7 +12,7 @@ distribute_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
-version_string = '0.5.5'
+version_string = '0.6.0'
 
 
 # Defaults for py2app / cx_Freeze
@@ -80,7 +80,6 @@ setup(
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/metapath',
-    download_url='http://github.com/mfitzp/metapath',
     description='Metabolic pathway visualisation and analysis.',
     long_description='MetaPath is a tool for the analysis of metabolic pathway and \
         associated visualisation of experimental data. Built on the MetaCyc database it \

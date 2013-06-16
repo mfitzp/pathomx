@@ -338,37 +338,37 @@ class MainWindow(ui.MainWindowUI):
             if action == 'view':
                 if type == 'pathway':
                     pathway = self.db.pathways[id]
-                    self.generateDataBrowserView(template='pathway.html', data={
+                    self.generatedbBrowserView(template='pathway.html', data={
                         'title': pathway.name,
                         'object': pathway,
                         })
                 elif type == 'reaction':
                     reaction = self.db.reactions[id]
-                    self.generateDataBrowserView(template='reaction.html', data={
+                    self.generatedbBrowserView(template='reaction.html', data={
                         'title': reaction.name,
                         'object': reaction,
                         })
                 elif type == 'metabolite':
                     metabolite = self.db.metabolites[id]
-                    self.generateDataBrowserView(template='metabolite.html', data={
+                    self.generatedbBrowserView(template='metabolite.html', data={
                         'title': metabolite.name,
                         'object': metabolite,
                         })
                 elif type == 'protein':
                     protein = self.db.proteins[id]
-                    self.generateDataBrowserView(template='protein.html', data={
+                    self.generatedbBrowserView(template='protein.html', data={
                         'title': protein.name,
                         'object': protein,
                         })
                 elif type == 'gene':
                     gene = self.db.genes[id]
-                    self.generateDataBrowserView(template='gene.html', data={
+                    self.generatedbBrowserView(template='gene.html', data={
                         'title': gene.name,
                         'object': gene,
                         })
                         
                 # Store URL so we can reload the sidebar later
-                self.dataBrowser_CurrentURL = url
+                self.dbBrowser_CurrentURL = url
 
         else:
             # It's an URL open in default browser
@@ -376,8 +376,8 @@ class MainWindow(ui.MainWindowUI):
              
     def onBrowserLoadDone(self, ok):
         # Reload the sidebar on main window refresh: this is only bound to the main window so no need to check for action
-        if isinstance(self.dataBrowser_CurrentURL, QUrl): # We've got an url, reload
-            self.onBrowserNav(self.dataBrowser_CurrentURL)
+        if isinstance(self.dbBrowser_CurrentURL, QUrl): # We've got an url, reload
+            self.onBrowserNav(self.dbBrowser_CurrentURL)
 
     def onLoadIdentities(self):
         """ Open a data file"""
@@ -659,7 +659,7 @@ class MainWindow(ui.MainWindowUI):
         
         self.mainBrowser.setHtml(html_source) #,"~") 
         
-    def generateDataBrowserView(self, template='base.html', data={'title':'', 'object':{}, 'data':{} }):
+    def generatedbBrowserView(self, template='base.html', data={'title':'', 'object':{}, 'data':{} }):
         
         metadata = {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
@@ -671,7 +671,7 @@ class MainWindow(ui.MainWindowUI):
         }
             
         template = self.templateEngine.get_template(template)
-        self.dataBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),"~") 
+        self.dbBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),"~") 
       
 def main():
     # Create a Qt application
