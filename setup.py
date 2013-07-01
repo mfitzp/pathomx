@@ -12,7 +12,7 @@ distribute_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
-version_string = '0.6.0'
+version_string = '0.7.0'
 
 
 # Defaults for py2app / cx_Freeze
@@ -113,7 +113,7 @@ setup(
     },
 
     install_requires = [
-#            'PySide>=1.1.1',
+            'PySide>=1.1.1',
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>0.1.0',

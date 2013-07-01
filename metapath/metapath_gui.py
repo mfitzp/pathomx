@@ -913,9 +913,6 @@ class MainWindow(ui.MainWindowUI):
             
             #self.tabs.addTab( analysisv.browser, 'Genes' )
             #self.tabs.addTab( analysisv.browser, 'Proteins' )
-
-            #self.tabs.addTab( analysisv.browser, 'Phosphorylation' )
-            #self.tabs.addTab( analysisv.browser, 'Oxidative Balance' )
             
     
             
