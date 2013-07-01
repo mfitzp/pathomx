@@ -8,11 +8,10 @@ from PySide.QtCore import *
 from PySide.QtWebKit import *
 from PySide.QtNetwork import *
 
-import os
+import os, urllib, urllib2
 
 # MetaPath classes
 import utils
-
 
 
 # Generic configuration dialog handling class
@@ -47,47 +46,95 @@ class genericDialog(QDialog):
                     control.Deselect(idx)
         except:
             pass
+            
+
+class remoteQueryDialog(genericDialog):
+
+    def parse(self, data):
+        # Parse incoming data and return a dict mapping the displayed values to the internal value
+        l = data.split('\n')
+        return dict( zip( l, l ) )
+
+    def do_query(self):
+        f = urllib2.urlopen(self.query_target % urllib.quote( self.textbox.text() ) )
+        query_result = f.read()
+        f.close()
+        
+        self.data = self.parse( query_result ) 
+        self.select.clear()
+        self.select.addItems( self.data.keys() )
+
+    def __init__(self, parent, query_target=None, **kwargs):
+        super(remoteQueryDialog, self).__init__(parent, **kwargs)        
+
+        self.textbox = QLineEdit()
+        querybutton = QPushButton('↺')
+        querybutton.clicked.connect( self.do_query )
+
+        queryboxh = QHBoxLayout()
+        queryboxh.addWidget( self.textbox )        
+        queryboxh.addWidget( querybutton )        
+        
+        self.data = {}
+        self.select = QListWidget()
+        self.query_target = query_target
+        
+        self.layout.addLayout( queryboxh )
+        self.layout.addWidget( self.select )
+        
+        self.dialogFinalise()
 
 
 class QWebViewScrollFix(QWebView):
 
-    def __init__(self, **kwargs):
+    def __init__(self, onNavEvent=None, **kwargs):
         super(QWebViewScrollFix, self).__init__(**kwargs)        
 
-        self.wheelBugTimer = QTimer()
-        self.wheelBugTimer.start(50)
-        self.wheelBugTimer.timeout.connect(self.wheelTrigger);
+        self.resetTimer()
          
         self.wheelBugDirAccumulator = dict()
         self.wheelBugDirAccumulator[ Qt.Orientation.Horizontal ] = 0
         self.wheelBugDirAccumulator[ Qt.Orientation.Vertical ] = 0
+        
+        self.wheelBugLatest = None
+        
+        # Override links for internal link cleverness
+        self.page().setContentEditable(False)
+        self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.linkClicked.connect( onNavEvent )
+        self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
 
-        self.wheelBugLatest = dict()
+    def resetTimer(self):
+        self.wheelBugTimer = QTimer.singleShot(25, self.wheelTrigger)
 
     def wheelEvent(self, e):
 
+        if self.wheelBugTimer is None:
+            self.resetTimer()
+
         self.wheelBugDirAccumulator[ e.orientation() ] += e.delta()
-        self.wheelBugLatest[ e.orientation() ] = {
+        self.wheelBugLatest = {
                 'pos': e.pos(),
                 'buttons': e.buttons(),
                 'modifiers': e.modifiers(),
             }
-        
+
         if e.buttons() or e.modifiers():
             self.wheelTrigger()
             
-        if abs( self.wheelBugDirAccumulator[ e.orientation() ] ) > 1000:
-            self.wheelTrigger()
-
         e.setAccepted(True)
         return
 
     def wheelTrigger(self):
 
-        for o, e in self.wheelBugLatest.items():
-            event = QWheelEvent( e['pos'], self.wheelBugDirAccumulator[ o ] , e['buttons'], e['modifiers'], o )
-            QWebView.wheelEvent(self, event)
-            self.wheelBugDirAccumulator[ o ] = 0
+        # class PySide.QtGui.QWheelEvent(pos, globalPos, delta, buttons, modifiers[, orient=Qt.Vertical])
+        # class PySide.QtGui.QWheelEvent(pos, delta, buttons, modifiers[, orient=Qt.Vertical])
+        if self.wheelBugLatest:
+
+            for o,d in self.wheelBugDirAccumulator.items():
+               event = QWheelEvent( self.wheelBugLatest['pos'], d, self.wheelBugLatest['buttons'], self.wheelBugLatest['modifiers'], o )
+               QWebView.wheelEvent(self, event)
+               self.wheelBugDirAccumulator[ o ] = 0
 
 
 #We ran into the same issue. We worked around the problem by overriding QWebView::wheelEvent, and doing the following:
@@ -100,6 +147,7 @@ class MainWindowUI(QMainWindow):
     def __init__(self):
 
         super(MainWindowUI, self).__init__()
+
 
         menubar = self.menuBar()
 
@@ -152,6 +200,19 @@ class MainWindowUI(QMainWindow):
         load_layoutAction.setStatusTip('Load a pre-defined layout map file e.g KGML')
         load_layoutAction.triggered.connect(self.onLoadLayoutFile)
         pathwayMenu.addAction(load_layoutAction)
+
+        pathwayMenu.addSeparator()
+
+        load_gpml_pathwayAction = QAction('&Load GPML pathway\u2026', self)
+        load_gpml_pathwayAction.setStatusTip('Load a GPML pathway file')
+        load_gpml_pathwayAction.triggered.connect(self.onLoadGPMLPathway)
+        pathwayMenu.addAction(load_gpml_pathwayAction)
+
+        load_gpml_wikipathwaysAction = QAction('&Load GPML pathway via WikiPathways\u2026', self)
+        load_gpml_wikipathwaysAction.setStatusTip('Load a GPML pathway from WikiPathways service')
+        load_gpml_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
+        pathwayMenu.addAction(load_gpml_wikipathwaysAction)
+
 
         # PATHWAYS Menu
         
@@ -331,8 +392,21 @@ class MainWindowUI(QMainWindow):
         #QWebSettings.globalSettings().setAttribute( QWebSettings.PluginsEnabled, True)
         #QWebSettings.globalSettings().setAttribute( QWebSettings.LocalContentCanAccessRemoteUrls, True)
         #QWebSettings.globalSettings().setAttribute( QWebSettings.LocalContentCanAccessFileUrls, True)
-        self.mainBrowser = QWebViewScrollFix()
-        self.setCentralWidget(self.mainBrowser)
+
+        QWebSettings.setMaximumPagesInCache( 0 )
+        QWebSettings.setObjectCacheCapacities(0, 0, 0)
+        QWebSettings.clearMemoryCaches()
+        
+        self.mainBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+
+
+        self.tabs = QTabWidget()
+        self.tabs.setTabsClosable(True)
+        self.tabs.setDocumentMode(True)
+        self.tabs.addTab(self.mainBrowser, 'MetaCyc Explorer')
+        self.setCentralWidget(self.tabs)
+        
+        self.tabs.tabBar().setTabButton(0, self.tabs.tabBar().ButtonPosition(), None)
         
         #self.mainBrowser = QWebViewScrollFix()
         #self.tabs = QTabWidget()
@@ -343,20 +417,12 @@ class MainWindowUI(QMainWindow):
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
         self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
-        self.mainBrowser.page().setContentEditable(False)
-        self.mainBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.mainBrowser.linkClicked.connect( self.onBrowserNav )
-        self.mainBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
 
-        self.dbBrowser = QWebView()
+        self.dbBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
         # Display a sponsors
         template = self.templateEngine.get_template('sponsors.html')
         self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
-        self.dbBrowser.page().setContentEditable(False)
-        self.dbBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.dbBrowser.linkClicked.connect( self.onBrowserNav )
-        self.dbBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
         self.dbBrowser_CurrentURL = None
         
         self.dataDock = QDockWidget('Database Viewer')
@@ -374,7 +440,7 @@ class MainWindowUI(QMainWindow):
         
         # Data analysis: graphs, plots
         
-        self.analysisBrowser = QWebView()
+        # self.analysisBrowser = QWebView()
         # Display default no-data view; instructions for loading data etc.
         #template = self.templateEngine.get_template('data.html')
         #self.analysisBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 

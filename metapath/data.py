@@ -13,7 +13,7 @@ import xml.etree.cElementTree as et
 
 
 class dataManager():
-
+    # Data handler offering API for access to loaded data sets via different interfaces
     # metabolites, reactions, pathways = dict()
     def __init__(self,filename):
         self.load_datafile(filename)
@@ -53,10 +53,29 @@ class dataManager():
             self.analysis = None
             self.analysis_timecourse = None
             self.analysis_suggested_pathways = None
-
+            
         else:
             print "Unsupported file format."
 
+    def get_log2(self, m, c):
+        try:
+            ns = self.quantities[m][c]
+            ns = [n if n != 0 else self.statistics['minima'] for n in ns ]
+                    
+        except:
+            ns = self.statistics['minima']
+
+        return np.log2( np.mean( ns ) )
+
+    def get_log10(self, m, c):
+        try:
+            ns = self.quantities[m][c]
+            ns = [n if n != 0 else self.statistics['minima'] for n in ns ]
+                    
+        except:
+            ns = self.statitics['minima']
+
+        return np.log10( np.mean( ns ) )
 
 ###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
 
@@ -351,6 +370,8 @@ class dataManager():
 
                 analysis[metabolite][k]['mean'] = np.mean( analysis[metabolite][k]['data'] )
                 analysis[metabolite][k]['stddev'] = np.std( analysis[metabolite][k]['data'] )
+                analysis[metabolite][k]['log2'] = np.log2( analysis[metabolite][k]['mean'] )
+                analysis[metabolite][k]['log10'] = np.log10( analysis[metabolite][k]['mean'] )
 
                 if analysis[metabolite][k]['mean'] > 0 and analysis[metabolite][k]['mean'] < minima:
                     minima = analysis[metabolite][k]['mean']
@@ -382,6 +403,8 @@ class dataManager():
         # avglog = int( np.log2( (minima + maxima) / 2) )
         self.scale = [n for n in range(-4, +5)] # Scale 9 big
         self.scale_type = 'log2'
+        self.statistics['minima'] = minima
+        self.statistics['maxima'] = maxima
             
         for metabolite in self.metabolites:
             if metabolite in analysis:
@@ -472,8 +495,6 @@ class dataManager():
             print "Scaling pathway scores to pathway sizes..."
             for p,v in pathway_scores.items():
                 pathway_scores[p] = float(v) / len( db.pathways[p].reactions )
-
-
     
         pathway_scorest = pathway_scores.items() # Switch it to a dict so we can sort
         pathway_scorest = [(p,v) for p,v in pathway_scorest if v>0] # Remove any scores of 0

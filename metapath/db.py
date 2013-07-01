@@ -139,6 +139,8 @@ class databaseManager():
         self.proteins = defaultdict(Protein)
         self.genes = defaultdict(Gene)
 
+        self.unification = defaultdict( dict ) 
+
         
         # Load the data
         self.load_pathways()
@@ -149,22 +151,42 @@ class databaseManager():
 
         self.load_reactions()
 
-        # self.save_reactions()
-
         # Load synonym interface for conversion and data-interpreting
         self.load_synonyms()
         self.load_identities()
+        self.load_xrefs()
+
+    # Helper functions
+    def get_via_unification(self, database, id):
+        try:
+            return self.unification[database][id]
+        except:
+            return None
+
 
 
     # Handler to load all identity files in /identities
     def load_identities(self): 
-        identities_files=os.listdir( os.path.join( utils.scriptdir,'identities') )
+        identities_files=os.listdir( os.path.join( utils.scriptdir,'identities','synonyms') )
         if len(identities_files)>0:
-            print "Loading additional identities:"
+            print "Loading additional synonyms:"
             for filename in identities_files:
-                reader = UnicodeReader( open( os.path.join( utils.scriptdir,'identities', filename), 'rU'), delimiter=',', dialect='excel')
+                print "- %s" % filename
+                reader = UnicodeReader( open( os.path.join( utils.scriptdir,'identities', 'synonyms', filename), 'rU'), delimiter=',', dialect='excel')
                 for id, identity in reader:
                     self.add_identity(id, identity)
+            print "Done."
+            
+    def load_xrefs(self):
+        identities_files=os.listdir( os.path.join( utils.scriptdir,'identities','xrefs') )
+        if len(identities_files)>0:
+            print "Loading additional xrefs:"
+            for filename in identities_files:
+                print "- %s" % filename
+                reader = UnicodeReader( open( os.path.join( utils.scriptdir,'identities', 'xrefs', filename), 'rU'), delimiter=',', dialect='excel')
+                for id, db, key in reader:
+                    #self.add_xref(id, db, key)
+                    self.add_db_synonyms(id, {db:key}) #Hack, fix this up
             print "Done."
     
 
@@ -241,9 +263,13 @@ class databaseManager():
         return dbs
         
     def add_db_synonyms(self, id, databases):
-        self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in databases.items()] )
-        self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db in database_link_synonyms] )
-
+        if id in self.index:
+            self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in databases.items()] )
+            self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db in database_link_synonyms] )
+        
+            # Add unification links
+            for db, key in databases.items():
+                self.unification[db][key] = self.index[id]
                 
     def add_reaction(self, id, attr):
         self.reactions[id] = Reaction(**dict(

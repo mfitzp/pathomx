@@ -238,5 +238,12 @@ code {
     line-height: 1;
     -webkit-font-smoothing: antialiased;
 }
-      
+    
+.legend {
+    font-size:0.8em;
+    padding:0.5em;
+    height:4em;
+    vertical-align:bottom;
+}
+
       

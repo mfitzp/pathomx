@@ -41,7 +41,11 @@ METAPATH_PAPER_SIZES = {
     'A5': (5.83, 8.27),
 }
 
-rdbu9 = [0, '1', '2', '3', '4', '#cccccc', '6', '7', '8', '9'] #Override central color, it's too faint on white
+
+rdbu9 =  [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
+rdbu9c = ['#ffffff', '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
+
+# [0, '1', '2', '3', '4', '#cccccc', '6', '7', '8', '9'] #Override central color, it's too faint on white
 
 def add_clusternodes( clusternodes, cluster_key, keys, nodes):
     for key in keys:

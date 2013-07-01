@@ -12,16 +12,29 @@ import os, sys, re, math, codecs, locale
 
 import pydot
 import urllib2
+
 from optparse import Values
 from collections import defaultdict
+
+import numpy as np
 
 # wheezy templating engine
 from wheezy.template.engine import Engine
 from wheezy.template.ext.core import CoreExtension
+from wheezy.template.ext.code import CodeExtension
 from wheezy.template.loader import FileLoader
 
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
+
+from gpml2svg import gpml2svg
+
+
 # MetaPath classes
-import db, data, core, utils, layout, ui
+import db, data, core, utils, layout, ui, figure
+
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
 METAPATH_MINING_TYPE_TEXT = (
@@ -33,6 +46,408 @@ METAPATH_MINING_TYPE_TEXT = (
 
 reload(sys).setdefaultencoding('utf8')
 
+# Class for analysis views, using graph-based visualisations of defined datasets
+# associated layout and/or analysis
+class analysisView(object):
+    def __init__(self, parent):
+        self.parent = parent
+        self.browser = ui.QWebViewScrollFix( parent.onBrowserNav )
+        
+        parent.tab_handlers.append( self )
+    
+    def render(self, metadata):
+        template = self.parent.templateEngine.get_template('figure.html')
+        self.browser.setHtml(template.render( metadata ),"~") 
+        
+    def build_log2_change_table_of_classtypes(self, objects, classes):
+        data = np.zeros( (len(objects), len(classes))  )
+        
+        for y,os in enumerate(objects):
+            for x,ost in enumerate(os):
+                #for n,c in enumerate(classes):
+                if ost in self.parent.data.quantities.keys():
+                    n = self.parent.data.get_log2(ost, self.parent.experiment['test']) - self.parent.data.get_log2( ost , self.parent.experiment['control'] )
+                    data[y,x] = n
+                else:
+                    data[y,x] = np.nan
+
+        return data
+  
+
+    def build_log2_change_control_vs_multi(self, objs, classes):
+        data = np.zeros( (len(objs), len(classes)) )
+        for x,xl in enumerate(classes):
+            for y,yl in enumerate(objs):
+                data[y,x] = self.parent.data.get_log2(yl,xl) - self.parent.data.get_log2( yl , self.parent.experiment['control'] )
+    
+        return data
+
+
+    def build_raw_change_control_vs_multi(self, objs, classes):
+        data = np.zeros( (len(objs), len(classes)) )
+        for x,xl in enumerate(classes):
+            for y,yl in enumerate(objs):
+                data[y,x] = np.mean( self.parent.data.quantities[yl][xl] ) - np.mean( self.parent.data.quantities[ yl ][ self.parent.experiment['control'] ] )
+    
+        return data
+
+    def get_fig_tempfile(self, fig):
+        tf = QTemporaryFile()
+        tf.open()
+        fig.savefig(tf.fileName(), format='png', bbox_inches='tight')
+        return tf
+
+
+class analysisEquilibriaView(analysisView):
+    def __init__(self, *args, **kwargs):
+        super(analysisEquilibriaView, self).__init__(*args, **kwargs)
+    
+        self.nucleosides = [
+            ['AMP', 'ADP', 'ATP'],
+            ['CMP', 'CDP', 'CTP'],
+            ['GMP', 'GDP', 'GTP'],
+            ['UMP', 'UDP', 'UTP'],
+            ['TMP', 'TDP', 'TTP'],
+            #---
+            ['DAMP', 'DADP', 'DATP'],
+            ['DCMP', 'DCDP', 'DCTP'],
+            ['DGMP', 'DGDP', 'DGTP'],
+            ['DUMP', 'DUDP', 'DUTP'],
+            ['DTMP', 'DTDP', 'DTTP'],
+            #---
+            ['Pi', 'PPI', 'PI3','PI4'],
+            #---
+            ['NAD','NADP'],            
+            ['NADH','NADPH'],
+        ]
+        
+        self.proton = [
+            ['NAD', 'NADH'],
+            ['NADP','NADPH'],
+            ['FAD','FADH','FADH2'],
+        ]
+        
+        redox = [
+            ['OXYGEN-MOLECULE', 'WATER'],
+            ['', 'PROTON'],
+            ['NAD', 'NADH'],
+            ['NADP','NADPH'],
+            ['FAD','FADH','FADH2'],
+        ]
+        
+        proton_carriers = {'WATER':1,'PROTON':1,'NADH':1,'NADPH':1,'FADH':1,'FADH2':2} # Double count for H2
+
+        phosphate_carriers = {
+            'AMP':1, 'ADP':2, 'ATP':3,
+            'GMP':1, 'GDP':2, 'GTP':4, 
+            #---
+            'Pi':1,  'PPI':2, 'PI3':3, 'PI4':4,
+            #---
+            'NADP':1, 'NADPH':1,
+            }
+                
+        phosphate = [
+            ['AMP', 'ADP'],
+            ['ADP', 'ATP'],
+            ['GMP', 'GDP'],
+            ['GDP', 'GTP'],
+            #---
+            ['Pi',  'PPI'],
+            ['PPI', 'PI3'],
+            ['PI3', 'PI4'],
+            #---
+            ['NAD','NADP'],            
+            ['NADH','NADPH'],
+        ]
+        
+        # Build redox reaction table
+        # Iterate database, find any reactions with a PROTON in left/right reaction
+        # - or NAD->NADH or, or, or
+        # If on left, swap
+        # Store entry for Min,Mout
+        self.redox = self.equilibrium_table_builder( proton_carriers ) 
+        self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
+
+    def equilibrium_table_builder(self, objs):
+        result = []
+        for rk,r in self.parent.db.reactions.items():
+            inH = sum( [objs[m.id] for m in r.smtins if m.id in objs] )
+            outH = sum( [objs[m.id] for m in r.smtouts if m.id in objs] )
+
+
+            balance = inH-outH
+            add_it = False
+            if balance > 0:
+                add_it = ( r.mtins, r.mtouts )
+            elif balance < 0: # Reverse
+                add_it = ( r.mtouts, r.mtins )
+                
+            if add_it:
+                for mtin in add_it[0]:
+                    for mtout in add_it[1]:
+                        result.append( [mtin.id, mtout.id] )  
+        return result               
+
+    def cofactor_table_builder(self, objs):
+        result = []
+        for p in objs:
+            pin = self.parent.db.metabolites[ p[0] ] if p[0] in self.parent.db.metabolites.keys() else False
+            pout = self.parent.db.metabolites[ p[1] ] if p[1] in self.parent.db.metabolites.keys() else False
+
+            if pin and pout:
+                for rk,r in self.parent.db.reactions.items():
+                    add_it = False
+                    if pin in r.smtins and pout in r.smtouts:
+                        add_it = ( r.mtins, r.mtouts )
+                    elif pout in r.smtins and pin in r.smtouts:
+                        add_it = ( r.mtouts, r.mtins )
+
+                    if add_it:
+                        for mtin in add_it[0]:
+                            for mtout in add_it[1]:
+                                result.append( [mtin.id, mtout.id] )  
+
+        return result
+
+    def generate(self):
+
+        labelsX=[ 'Phosphorylated','Dephosphorylated' ]
+        labelsY=['→'.join(n) for n in self.phosphate]
+
+        data_phosphate = self.build_log2_change_table_of_classtypes( self.phosphate, labelsX )
+        phosphatefig = self.get_fig_tempfile( figure.heatmap( data_phosphate, labelsX=labelsX, labelsY=labelsY) )
+
+        labelsX=[ 'Pi','PPI','PI3','PI4' ]
+        labelsY=['→'.join(n) for n in self.nucleosides]
+
+        data_nuc = self.build_log2_change_table_of_classtypes( self.nucleosides, labelsX )
+        nucelosidefig = self.get_fig_tempfile( figure.heatmap( data_nuc, labelsX=labelsX, labelsY=labelsY) )
+
+        labelsX=[ 'Reduced','Oxidised' ]
+        labelsY=['→'.join(n) for n in self.redox]
+
+        data_redox = self.build_log2_change_table_of_classtypes( self.redox, labelsX )
+        redoxfig = self.get_fig_tempfile( figure.heatmap( data_redox, labelsX=labelsX, labelsY=labelsY) )
+
+        labelsX=[ '-','H','H2' ]
+        labelsY=['→'.join(n) for n in self.proton]
+
+        data_proton = self.build_log2_change_table_of_classtypes( self.proton, labelsX )
+        protonfig = self.get_fig_tempfile( figure.heatmap( data_proton, labelsX=labelsX, labelsY=labelsY) )
+  
+        self.render( {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'figures': {
+                    'Oxidative/Reductive State':[[
+                        {
+                            'figure':redoxfig.fileName(), 
+                            'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
+                            Left-to-right is oxidative.'),
+                        },
+                        {
+                            'figure':protonfig.fileName(), 
+                            'legend':('Redox carrier  balance.','Relative quantities of redox potential carriers. \
+                            Left-to-right shows increasing reduction.'),
+                        },]],
+                    'Phosphorylation and Phosphate carriers':[[
+                        {
+                            'figure':phosphatefig.fileName(), 
+                            'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
+                            Left-to-right is oxidative.'),
+                        },
+                        {
+                            'figure':nucelosidefig.fileName(), 
+                            'legend':('Nucleoside phosphorylation balance.','Relative quantities of nucleosides in each experimental class grouping. \
+                            Left-to-right shows increasing phosphorylation.'),
+                        },
+
+                    ]],
+                    }, 
+        })
+        
+
+
+class analysisMetaboliteView(analysisView):
+    def generate(self):
+        # Sort by scores
+        ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
+        sms = sorted(ms,key=lambda x: abs(x[1]), reverse=True )
+        metabolites = [m for m,s in sms]
+
+        labelsY = metabolites[:30]
+        labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() )
+
+        data1 = self.build_log2_change_control_vs_multi(labelsY, labelsX)
+        filename1 = self.get_fig_tempfile( figure.heatmap( data1, labelsX=labelsX, labelsY=labelsY) )
+
+        data2 = self.build_raw_change_control_vs_multi(labelsY, labelsX)
+        filename2 = self.get_fig_tempfile( figure.heatmap( data2, labelsX=labelsX, labelsY=labelsY) )
+  
+        self.render( {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'figures': {'Key Metabolites':[[
+                        {
+                            'figure':filename1.fileName(), 
+                            'legend':('Relative change in metabolite concentration vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                        },
+                        {
+                            'figure':filename2.fileName(), 
+                            'legend':('Raw metabolite concentration changes vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                    'Scale indicates linear concentration change in original unites, mean centered to zero. Red up, blue down.'),
+                        },
+                    ]]},
+        })
+        
+
+
+class analysisEnergyWasteView(analysisView):
+    def generate(self):
+        # Standard energy sources (CHO)
+        m_energy = ['GLU','GLT']
+        
+        # Standard energy modulators (co-factors, carriers, etc.)
+        m_modulators = ['L-CARNITINE']
+        
+        # Standard waste metabolites
+        m_waste = ['L-LACTATE']
+
+        # Catabolic/anabolic balance
+        m_catabolic = []
+        m_anabolic = []
+    
+        # Build table of metabolic endpoints
+        # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)
+        endpoints = []
+        for k,m in self.parent.db.metabolites.items():
+            if m.type == 'compound':
+                for r in m.reactions:
+                    if m in r.mtins or r.dir == 'both':
+                        break    
+                else:
+                    # Only if we find no reactions
+                    endpoints.append(m.id)
+
+
+        labelsY = endpoints
+        labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() ) 
+        endpoint_data = self.build_log2_change_control_vs_multi( labelsX, labelsY)
+        endpoint_fig = self.get_fig_tempfile( figure.heatmap( endpoint_data, labelsX=labelsX, labelsY=labelsY) )
+            
+  
+        self.render( {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'figures': {'Metabolic Endpoints':[[
+                        {
+                            'figure':endpoint_fig.fileName(), 
+                            'legend':('Relative change in metabolite concentration vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                        },
+                    ]]},
+        })
+
+
+# Class for data visualisations using GPML formatted pathways
+# Supports loading from local file and WikiPathways
+class gpmlPathwayView(analysisView):
+    def __init__(self, parent, gpml=None, svg=None, **kwargs):
+        super(gpmlPathwayView, self).__init__(parent, **kwargs)
+
+        self.gpml = gpml # Source GPML file
+        self.svg = svg # Rendered GPML file as SVG
+        self.metadata = {}
+        
+        
+    def load_gpml_file(self, filename):
+        f = open(filename,'r')
+        self.gpml = f.read()
+        f.close()
+        
+    def load_gpml_wikipathways(self, pathway_id):
+        f = urllib2.urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id )
+        self.gpml = f.read()
+        f.close()
+        
+    def get_xref_via_unification(self, database, id):
+        xref_translate = {
+            'Kegg Compound': 'LIGAND-CPD',
+            'Entrez Gene': 'ENTREZ',
+            'HMDB': 'HMDB',
+            'CAS': 'CAS',
+            }
+        if database in xref_translate:
+            obj = self.parent.db.get_via_unification( xref_translate[database], id )
+            if obj:
+                return ('MetaCyc %s' % obj.type, obj.id )
+        return None
+            
+    def get_extended_xref_via_unification_list(self, xrefs):
+        if xrefs:
+            for xref,id in xrefs.items():
+                xref_extra = self.get_xref_via_unification( xref, id )
+                if xref_extra:
+                    xrefs[ xref_extra[0] ] = xref_extra[1]
+        return xrefs
+                
+    def get_xref(self, obj):
+        print obj, obj.type, obj.id
+        
+        return ('MetaCyc %s' % obj.type, obj.id)
+        
+    def generate(self):
+    
+        # Add our urls to the defaults
+        xref_urls = {
+            'MetaCyc compound': 'metapath://metabolite/%s/view',
+            'MetaCyc gene': 'metapath://gene/%s/view',
+            'MetaCyc protein': 'metapath://protein/%s/view',
+            'WikiPathways': 'metapath://wikipathway/%s/import',
+        }
+        
+        if self.parent.data and self.parent.data.analysis:
+            # Build color_table
+            node_colors = {}
+            for m_id, analysis in self.parent.data.analysis.items():
+                if m_id in self.parent.db.metabolites.keys():
+                    node_colors[ self.get_xref( self.parent.db.metabolites[ m_id ] ) ] = ( core.rdbu9[ analysis['color'] ], core.rdbu9c[ analysis['color'] ] )
+        else:
+            node_colors = {}
+            
+        if self.gpml:
+            self.svg, self.metadata = gpml2svg.gpml2svg( self.gpml, xref_urls=xref_urls, xref_synonyms_fn=self.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
+            self.render()
+            print self.svg
+        else:
+            self.svg = None
+            
+    def render(self):
+        if self.svg is None:
+            self.generate()
+        
+        if self.svg is None:
+            html_source = ''
+        else:
+            html_source = '''<html><body><div id="svg%d" class="svg">''' + self.svg + '''</body></html>'''
+
+        self.browser.setHtml(html_source)
+
+
+class dialogWikiPathways(ui.remoteQueryDialog):
+    def __init__(self, parent=None, **kwargs):
+        super(dialogWikiPathways, self).__init__(parent, **kwargs)        
+        
+        self.setWindowTitle("Load GPML pathway from WikiPathways")
+
+    def parse(self, data):
+        result = {}
+        tree = et.fromstring( data.encode('utf-8') )
+        pathways = tree.iterfind('{http://www.wso2.org/php/xsd}result')
+        
+        for p in pathways:
+            result[ '%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text ) ] = p.find('{http://www.wikipathways.org/webservice}id').text
+            
+        return result        
+    
       
 class dialogDefineExperiment(ui.genericDialog):
     
@@ -41,7 +456,6 @@ class dialogDefineExperiment(ui.genericDialog):
             rx = re.compile('(?P<timecourse>%s)' % text)                
         except:
             return
-        print text
         
         filtered_classes = list( set(  [rx.sub('',c) for c in self.classes] ) )
         self.cb_control.clear()
@@ -218,11 +632,15 @@ class MainWindow(ui.MainWindowUI):
         self.data = None #data.dataManager() No data loaded by default
         self.experiment = dict()
         self.layout = None # No map by default
-        
+
+        # The following holds tabs & pathway objects for gpml imported pathways
+        self.gpmlpathways = [] 
+        self.tab_handlers = []
+
         # Create templating engine
         self.templateEngine = Engine(
             loader=FileLoader( [os.path.join( utils.scriptdir,'html')] ),
-            extensions=[CoreExtension()]
+            extensions=[CoreExtension(),CodeExtension()]
         )
 
         self.update_view_callback_enabled = True
@@ -304,8 +722,8 @@ class MainWindow(ui.MainWindowUI):
     def onBrowserNav(self, url):
         # Interpret the (fake) URL to display Metabolite, Reaction, Pathway data in the sidebar interface
         # then block the continued loading
-        
-        # url is Qurl typ
+
+        # url is Qurl type
         if url.scheme() == 'metapath':
 
             # Take string from metapath:// onwards, split on /
@@ -366,6 +784,16 @@ class MainWindow(ui.MainWindowUI):
                         'title': gene.name,
                         'object': gene,
                         })
+
+            if action == 'import':
+                if type == 'wikipathway':
+                    gpmlpathway = gpmlPathwayView( self )
+                    gpmlpathway.load_gpml_wikipathways(id)
+                    gpmlpathway.generate()
+
+                    self.gpmlpathways.append(gpmlpathway)
+                    self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
+
                         
                 # Store URL so we can reload the sidebar later
                 self.dbBrowser_CurrentURL = url
@@ -398,16 +826,7 @@ class MainWindow(ui.MainWindowUI):
             # Re-translate the datafile
             self.data.translate(self.db)
             self.setWindowTitle('MetaPath: %s' % self.data.filename)
-            
-            # This is handled by onDefineExperiment
-            #self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
-            #self.cb_control.clear()
-            #self.cb_control.addItems( sorted(self.data.classes) )
-            #self.cb_test.clear()
-            #self.cb_test.addItems( sorted(self.data.classes) )
-            #self.update_view_callback_enabled = True
-            
-            self.onDefineExperiment()  # self.generateGraphView()
+            self.onDefineExperiment()
 
 
     def onLoadLayoutFile(self):
@@ -420,7 +839,36 @@ class MainWindow(ui.MainWindowUI):
             self.layout.translate(self.db)
             # Regenerate the graph view
             self.generateGraphView()            
+
+    def onLoadGPMLPathway(self):
+        """ Open a GPML pathway file """
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open GPML pathway file', '')
+        if filename:
         
+            gpmlpathway = gpmlPathwayView( self )
+
+            gpmlpathway.load_gpml_file(filename)
+            gpmlpathway.generate()
+
+            self.gpmlpathways.append(gpmlpathway)
+            self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
+
+    def onLoadGPMLWikiPathways(self):
+        dialog = dialogWikiPathways(parent=self, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
+        ok = dialog.exec_()
+        if ok:
+            # Show
+            idx = dialog.select.selectedItems()
+            for x in idx:
+                gpmlpathway = gpmlPathwayView( self )
+                pathway_id = dialog.data[x.text()]
+                
+                gpmlpathway.load_gpml_wikipathways(pathway_id)
+                gpmlpathway.generate()
+
+                self.gpmlpathways.append(gpmlpathway)
+                self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
+            
     def onDefineExperiment(self):
         """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
         dialog = dialogDefineExperiment(parent=self)
@@ -450,6 +898,27 @@ class MainWindow(ui.MainWindowUI):
             self.update_view_callback_enabled = True    
 
             self.generateGraphView(regenerate_analysis=True)
+            
+            analysisv = analysisMetaboliteView( self )
+            analysisv.generate()
+            self.tabs.addTab( analysisv.browser, '&Metabolites' )
+            
+            analysise = analysisEquilibriaView( self )
+            analysise.generate()
+            self.tabs.addTab( analysise.browser, 'E&quilibria' )
+
+            analysisw = analysisEnergyWasteView( self )
+            analysisw.generate()
+            self.tabs.addTab( analysisw.browser, '&Energy and Waste' )
+            
+            #self.tabs.addTab( analysisv.browser, 'Genes' )
+            #self.tabs.addTab( analysisv.browser, 'Proteins' )
+
+            #self.tabs.addTab( analysisv.browser, 'Phosphorylation' )
+            #self.tabs.addTab( analysisv.browser, 'Oxidative Balance' )
+            
+    
+            
 
         
     def onModifyExperiment(self):
@@ -557,6 +1026,9 @@ class MainWindow(ui.MainWindowUI):
         # If we have no analysis, or re-analysis is reqeusted
         if self.data and (self.data.analysis == None or regenerate_analysis):
             self.data.analyse( self.experiment )
+            
+            for t in self.tab_handlers:
+                t.generate()
         
         # Add the selected pathways
         pathways = [self.db.pathways[pid] for pid in pathway_ids if pid in self.db.pathways.keys()]        

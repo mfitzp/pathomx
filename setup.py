@@ -17,10 +17,18 @@ version_string = '0.6.0'
 
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
-    packages=['PySide','numpy'],
-    excludes=['matplotlib', "scipy", "_xmlplus"]
+    packages=[
+        'PySide',
+        'numpy',
+#        'wheezy.template',
+        'gpml2svg',
+        ],
+    excludes=[
+        'matplotlib',
+        'scipy',
+        '_xmlplus'
+        ]
     )
-
 
 
 try:
@@ -104,7 +112,12 @@ setup(
         ]
     },
 
-    install_requires = ['PySide>=1.1.1','numpy>=1.5.0'],
+    install_requires = [
+#            'PySide>=1.1.1',
+            'numpy>=1.5.0',
+            'wheezy.template>=0.1.135',
+            'gpml2svg>0.1.0',
+            ],
 
     keywords='bioinformatics metabolomics research analysis science',
     license='GPL',
