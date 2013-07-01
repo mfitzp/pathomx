@@ -31,7 +31,6 @@ except ImportError:
 
 from gpml2svg import gpml2svg
 
-
 # MetaPath classes
 import db, data, core, utils, layout, ui, figure
 
@@ -912,11 +911,8 @@ class MainWindow(ui.MainWindowUI):
             self.tabs.addTab( analysisw.browser, '&Energy and Waste' )
             
             #self.tabs.addTab( analysisv.browser, 'Genes' )
-            #self.tabs.addTab( analysisv.browser, 'Proteins' )
-            
+            #self.tabs.addTab( analysisv.browser, 'Proteins' )            
     
-            
-
         
     def onModifyExperiment(self):
         """ Change control or test settings from toolbar interaction """

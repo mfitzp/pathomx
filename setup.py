@@ -18,15 +18,18 @@ version_string = '0.7.0'
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
     packages=[
+        'metapath',
         'PySide',
         'numpy',
-#        'wheezy.template',
+        'wheezy', #.template',
         'gpml2svg',
+        'matplotlib',
         ],
     excludes=[
-        'matplotlib',
         'scipy',
         '_xmlplus'
+        'wx',
+        'IPython',
         ]
     )
 
@@ -45,14 +48,17 @@ else:
                     optimize=2,
                     resources=['metapath/static', 'examples', 'metapath/db', 'metapath/identities', 'metapath/html','metapath/icons'],
                     plist=dict(
-                        CFBundleName               = "MetaPath",
-                        CFBundleShortVersionString = version_string,     # must be in X.X.X format
-                        CFBundleGetInfoString      = "MetaPath %s" % version_string,
-                        CFBundleExecutable         = "MetaPath",
-                        CFBundleIdentifier         = "com.ables.metapath",
+                        CFBundleName = "MetaPath",
+                        CFBundleShortVersionString = version_string, # must be in X.X.X format
+                        CFBundleGetInfoString = "MetaPath %s" % version_string,
+                        CFBundleExecutable = "MetaPath",
+                        CFBundleIdentifier = "com.ables.metapath",
                     ),
                 )
     build_py2app.update( default_build_options )
+
+
+
 
 try:
     from cx_Freeze import setup, Executable
@@ -71,9 +77,15 @@ else:
     base = None
     if sys.platform == "win32":
         base = "Win32GUI"
+        
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
-    executables=Executable("metapath/metapath_gui.py", base=base),
+    executables=[ Executable(
+                    "metapath/metapath_gui.py",
+                    base=base,
+                    copyDependentFiles=True,
+                    icon=None,
+                    ) ]
 
     # Apply default build options to cx/py2app build targets
     build_exe.update( default_build_options )
@@ -113,7 +125,7 @@ setup(
     },
 
     install_requires = [
-            'PySide>=1.1.1',
+#            'PySide>=1.1.1',
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>0.1.0',

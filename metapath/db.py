@@ -192,7 +192,7 @@ class databaseManager():
 
     # Synonym interface for metabolites, reactions and pathways (shared namespace)
     # Can call with filename to load a specific synonym file, e.g. containing peak ids
-    def load_synonyms(self, filename = os.path.join( utils.scriptdir,'db/synonyms') ): 
+    def load_synonyms(self, filename = os.path.join( utils.scriptdir,'database/synonyms') ): 
         reader = UnicodeReader( open(filename, 'rU'), delimiter=',', dialect='excel')
         for id, name in reader:
             if id in self.synfwd: # Protection 
@@ -200,7 +200,7 @@ class databaseManager():
 
     def load_metabolites(self):
         import urllib
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/metabolites'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/metabolites'),'rU'), delimiter=',', dialect='excel')
         for id, name, type, db_unification in reader:
             self.add_metabolite(id, {
                 'name': name,
@@ -209,7 +209,7 @@ class databaseManager():
                 })
                         
     def load_reactions(self):
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/reactions'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/reactions'),'rU'), delimiter=',', dialect='excel')
         for id, name, origin, dest, smtins, smtouts, proteins, dir, pathways, db_unification in reader:
             self.add_reaction(id, {
                 'name': name,        
@@ -226,7 +226,7 @@ class databaseManager():
             })
             
     def load_pathways(self):
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/pathways'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/pathways'),'rU'), delimiter=',', dialect='excel')
         for id, name, db_unification in reader:
             self.add_pathway(id, {
                 'name': name,
@@ -234,7 +234,7 @@ class databaseManager():
             })
             
     def load_proteins(self):
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/proteins'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/proteins'),'rU'), delimiter=',', dialect='excel')
         for id, name, genes, compartments, db_unification in reader:
             self.add_protein(id, {
                 'name': name,
@@ -244,7 +244,7 @@ class databaseManager():
                 })
 
     def load_genes(self):
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'db/genes'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/genes'),'rU'), delimiter=',', dialect='excel')
         for id, name, db_unification in reader:
             self.add_gene(id, {
                 'name': name,
