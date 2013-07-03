@@ -303,18 +303,12 @@ class analysisMetaboliteView(analysisView):
 class analysisEnergyWasteView(analysisView):
     def generate(self):
         # Standard energy sources (CHO)
-        m_energy = ['GLU','GLT']
-        
+        m_energy = ['GLC','GLN',
         # Standard energy modulators (co-factors, carriers, etc.)
-        m_modulators = ['L-CARNITINE']
-        
+                    'CARNITINE',
         # Standard waste metabolites
-        m_waste = ['L-LACTATE']
+                    'L-LACTATE',]
 
-        # Catabolic/anabolic balance
-        m_catabolic = []
-        m_anabolic = []
-    
         # Build table of metabolic endpoints
         # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)
         endpoints = []
@@ -330,18 +324,27 @@ class analysisEnergyWasteView(analysisView):
 
         labelsY = endpoints
         labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() ) 
-        endpoint_data = self.build_log2_change_control_vs_multi( labelsX, labelsY)
+        endpoint_data = self.build_log2_change_control_vs_multi( labelsY, labelsX)
         endpoint_fig = self.get_fig_tempfile( figure.heatmap( endpoint_data, labelsX=labelsX, labelsY=labelsY) )
-            
+
+        labelsY = m_energy
+        energy_data = self.build_log2_change_control_vs_multi( labelsY, labelsX)
+        energy_fig = self.get_fig_tempfile( figure.heatmap( energy_data, labelsX=labelsX, labelsY=labelsY) )
   
         self.render( {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': {'Metabolic Endpoints':[[
+            'figures': {'Metabolic Endpoints & Energy':[[
                         {
                             'figure':endpoint_fig.fileName(), 
-                            'legend':('Relative change in metabolite concentration vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                            'legend':('Relative change in concentration of metabolic endpoints vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down. Metabolic endpoint in this context refers to \
+                                      metabolites for which there exists no onward reaction in the database.'),
                         },
+                        {
+                            'figure':energy_fig.fileName(), 
+                            'legend':('Relative change in concentration of common energy sources, carriers and sinks vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                        }                    
                     ]]},
         })
 

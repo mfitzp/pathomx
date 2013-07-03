@@ -1,6 +1,6 @@
 import os, sys, re, math
 import pydot
-import networkx as nx
+#import networkx as nx
 import numpy as np
 import copy
 

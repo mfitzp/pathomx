@@ -1,4 +1,4 @@
-import re,os
+import re, os, sys
 import csv, codecs, cStringIO
 from collections import defaultdict
 
@@ -142,7 +142,7 @@ def find_packager():
 
     import sys
     frozen = getattr(sys, 'frozen', None)
-    
+
     if not frozen:
         # COULD be certain cx_Freeze options or bundlebuilder, nothing to worry about though
         return None 
@@ -151,7 +151,7 @@ def find_packager():
     elif frozen in ('macosx_app',):
         return 'py2app' 
     elif frozen is True:
-        return None # it doesn't ALWAYS set this return 'cx_Freeze' 
+        return True # it doesn't ALWAYS set this return 'cx_Freeze' 
     else:
         return '<unknown packager: %r>' % (frozen,) 
         
@@ -160,6 +160,8 @@ def find_packager():
 pkg = find_packager()
 if pkg == None:
     scriptdir = os.path.realpath(__file__).rpartition('/')[0]
+elif pkg == True:
+    scriptdir = os.path.join( os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding( ))), 'metapath' )
 elif pkg == 'py2app':
     #'/Applications/MetaPath.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']

@@ -339,8 +339,8 @@ class databaseManager():
         
         # Check if we have a compound image for this metabolite
         if 'LIGAND-CPD' in self.metabolites[id].databases.keys():
-            self.metabolites[id].image = os.path.join(utils.scriptdir,'db','figures','%s.png' % id)
-            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'db','figures','%d','%s.png' % id)
+            self.metabolites[id].image = os.path.join(utils.scriptdir,'database','figures','%s.png' % id)
+            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'database','figures','%d','%s.png' % id)
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
@@ -382,32 +382,32 @@ class databaseManager():
         
     # Output the current database to disk (Overwrite completely)
     def save_metabolites(self):
-        writer = UnicodeWriter(open('./db/metabolites', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/metabolites', 'wb'), delimiter=',')
         for metabolite in self.metabolites.values():
             writer.writerow( metabolite.as_csv() )  
 
     def save_reactions(self):
-        writer = UnicodeWriter(open('./db/reactions', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/reactions', 'wb'), delimiter=',')
         for reaction in self.reactions.values():
             writer.writerow( reaction.as_csv() )  
 
     def save_pathways(self):
-        writer = UnicodeWriter(open('./db/pathways', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/pathways', 'wb'), delimiter=',')
         for pathway in self.pathways.values():
             writer.writerow( pathway.as_csv() )      
             
     def save_proteins(self):
-        writer = UnicodeWriter(open('./db/proteins', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/proteins', 'wb'), delimiter=',')
         for protein in self.proteins.values():
             writer.writerow( protein.as_csv() )      
             
     def save_genes(self):
-        writer = UnicodeWriter(open('./db/genes', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/genes', 'wb'), delimiter=',')
         for gene in self.genes.values():
             writer.writerow( gene.as_csv() )          
         
     def save_synonyms(self):
-        writer = UnicodeWriter(open('./db/synonyms', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/synonyms', 'wb'), delimiter=',')
         for synk,synv in self.synfwd.items():
             for syn in synv:
                 row = [ synk, syn ]

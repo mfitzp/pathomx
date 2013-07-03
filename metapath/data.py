@@ -279,7 +279,7 @@ class dataManager():
                 transid = db.synrev[ m.lower() ].id
                 self.metabolites[ self.metabolites.index( m ) ] = transid
                 self.quantities[ transid ] = self.quantities.pop( m )
-        print self.metabolites
+        #print self.metabolites
         
 ###### PRE-PROCESS
     def analyse(self, experiment):
@@ -518,28 +518,3 @@ class dataManager():
                 self.analysis['mining_ranked_remaining_pathways'].append( p[0] )
 
         self.analysis_suggested_pathways = [db.pathways[p[0]] for p in pathway_scorest]
-
-
-
-"""            
-                if options.statistic:
-                    from scipy import stats 
-                    self.analysis[metabolite]['stats'] = dict()
-        
-                    # If is entirely zero, dump it (wont be significant)
-                    if sum( analysis[metabolite]['control']['data']) ==0 and sum(analysis[metabolite]['test']['data'] ) == 0:
-                        del analysis[metabolite]
-                        continue # Next metabolite
-                        
-                    if options.statistic == 'trel':
-                        t, p = stats.ttest_rel( analysis[metabolite]['control']['data'], analysis[metabolite]['test']['data'] )
-                    else:
-                        t, p = stats.ttest_ind( analysis[metabolite]['control']['data'], analysis[metabolite]['test']['data']  )
-        
-                    if p>0.05:
-                        del analysis[metabolite]
-                        continue # Next metabolite
-                    else:
-                        analysis[metabolite]['stats']['p'] = p
-                        analysis[metabolite]['stats']['sigstars'] = utils.sigstars(p)
-"""

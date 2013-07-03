@@ -14,49 +14,52 @@ from setuptools import setup, find_packages
 
 version_string = '0.7.0'
 
+sys.path.append('metapath')
 
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
     packages=[
-        'metapath',
         'PySide',
         'numpy',
-        'wheezy', #.template',
-        'gpml2svg',
-        'matplotlib',
         ],
+    includes=[],
     excludes=[
         'scipy',
-        '_xmlplus'
-        'wx',
+        '_xmlplus',
         'IPython',
-        ]
+        'test',
+        'networkx',
+        'wx',
+        ],
     )
 
+build_mac = None
+build_exe = None
+build_py2app = None
+
+executables = []
 
 try:
     import py2app
 except:
-    build_py2app = None
+    pass
 else:
     # py2app setup
-    
     build_py2app = dict(
                     iconfile='metapath/static/icon.icns',
-                    #'_ssl', 'doctest', 'pdb', 'unittest', 'difflib', 'inspect',],
                     site_packages=True,
                     optimize=2,
-                    resources=['metapath/static', 'examples', 'metapath/db', 'metapath/identities', 'metapath/html','metapath/icons'],
+                    resources=['metapath/static', 'examples', 'metapath/database', 'metapath/identities', 'metapath/html','metapath/icons'],
                     plist=dict(
                         CFBundleName = "MetaPath",
                         CFBundleShortVersionString = version_string, # must be in X.X.X format
                         CFBundleGetInfoString = "MetaPath %s" % version_string,
                         CFBundleExecutable = "MetaPath",
-                        CFBundleIdentifier = "com.ables.metapath",
+                        CFBundleIdentifier = "com.mfitzp.metapath",
                     ),
+                    matplotlib_backends=['macosx'],
                 )
     build_py2app.update( default_build_options )
-
 
 
 
@@ -77,21 +80,15 @@ else:
     base = None
     if sys.platform == "win32":
         base = "Win32GUI"
-        
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
-    executables=[ Executable(
-                    "metapath/metapath_gui.py",
-                    base=base,
-                    copyDependentFiles=True,
-                    icon=None,
-                    ) ]
+    executables=Executable("metapath/metapath_gui.py", base=base),
 
     # Apply default build options to cx/py2app build targets
     build_exe.update( default_build_options )
     build_mac.update( default_build_options )
-
-
+    
+    
 
 setup(
 
@@ -128,7 +125,8 @@ setup(
 #            'PySide>=1.1.1',
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
-            'gpml2svg>0.1.0',
+            'gpml2svg>=0.1.0',
+            'matplotlib>=1.2.1'
             ],
 
     keywords='bioinformatics metabolomics research analysis science',
@@ -146,11 +144,11 @@ setup(
 
     # cx_freeze/py2app settings for building the .app file
     options={
-            "build_exe": build_exe,
-            "build_mac": build_mac,
-            'py2app': build_py2app, 
+        "build_exe": build_exe,
+        "build_mac": build_mac,
+        "py2app": build_py2app
     },
     app=[ 'metapath/metapath_gui.py' ],
-    executables=executables,
+    setup_requires=["py2app"],
 
     )
