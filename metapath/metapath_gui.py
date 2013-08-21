@@ -32,7 +32,7 @@ except ImportError:
 from gpml2svg import gpml2svg
 
 # MetaPath classes
-import db, data, core, utils, layout, ui, figure
+import db, data, core, utils, layout, ui#, figure -deprecated in favour of d3
 
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
@@ -97,7 +97,64 @@ class analysisView(object):
         return tf
 
 
-class analysisEquilibriaView(analysisView):
+# Class for analysis views, using graph-based visualisations of defined datasets
+# associated layout and/or analysis
+class analysisHeatmapView(analysisView):
+    def __init__(self, parent):
+        self.parent = parent
+        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
+        
+        parent.tab_handlers.append( self )
+        
+    def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
+        buckets = []
+
+
+        if remove_empty_rows:
+            mask = ~np.isnan(data).all(axis=1)
+            data = data[mask]
+            labelsY = [l for l,m in zip(labelsY,mask) if m]
+
+        elif remove_incomplete_rows:
+            mask = ~np.isnan(data).any(axis=1)
+            data = data[mask]
+            labelsY = [l for l,m in zip(labelsY,mask) if m]
+
+
+        # Broken, fix if needed
+        #if remove_empty_cols:
+        #    mask = ~np.isnan(data).all(axis=0)
+        #    data = data.T[mask.T]
+        #    labelsX = [l for l,m in zip(labelsX,mask) if m]
+
+        if sort_data:
+            # Preferable would be to sort by the total for each row
+            # can then use that to sort the labels list also
+            totals = np.ma.masked_invalid(data).sum(1).data # Get sum for rows, ignoring NaNs
+            si = totals.argsort()[::-1]
+            data = data[si] # Sort
+            labelsY = list( np.array( labelsY )[si] ) # Sort Ylabels via numpy array.
+        
+        for x, xL in enumerate(labelsX):
+            for y, yL in enumerate(labelsY):  
+
+                if data[y][x] != np.nan:
+                    buckets.append([ xL, yL, data[y][x] ] )
+
+        return buckets    
+
+    def render(self, metadata, debug=False):
+        template = self.parent.templateEngine.get_template('d3/figures.html')
+        self.browser.setHtml(template.render( metadata ),"~")
+        self.browser.exposeQtWebView()
+        
+        if debug: 
+            f = open('/Users/mxf793/Desktop/testout.html','w')
+            f.write( template.render( metadata ) )
+            f.close()
+
+
+class analysisEquilibriaView(analysisHeatmapView):
     def __init__(self, *args, **kwargs):
         super(analysisEquilibriaView, self).__init__(*args, **kwargs)
     
@@ -212,61 +269,62 @@ class analysisEquilibriaView(analysisView):
 
         labelsX=[ 'Phosphorylated','Dephosphorylated' ]
         labelsY=['→'.join(n) for n in self.phosphate]
-
-        data_phosphate = self.build_log2_change_table_of_classtypes( self.phosphate, labelsX )
-        phosphatefig = self.get_fig_tempfile( figure.heatmap( data_phosphate, labelsX=labelsX, labelsY=labelsY) )
+        data_phosphate = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
 
         labelsX=[ 'Pi','PPI','PI3','PI4' ]
         labelsY=['→'.join(n) for n in self.nucleosides]
-
-        data_nuc = self.build_log2_change_table_of_classtypes( self.nucleosides, labelsX )
-        nucelosidefig = self.get_fig_tempfile( figure.heatmap( data_nuc, labelsX=labelsX, labelsY=labelsY) )
+        data_nuc = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.nucleosides, labelsX ), sort_data=True)
 
         labelsX=[ 'Reduced','Oxidised' ]
         labelsY=['→'.join(n) for n in self.redox]
-
-        data_redox = self.build_log2_change_table_of_classtypes( self.redox, labelsX )
-        redoxfig = self.get_fig_tempfile( figure.heatmap( data_redox, labelsX=labelsX, labelsY=labelsY) )
+        data_redox = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.redox, labelsX ), remove_incomplete_rows=True, sort_data=True )
 
         labelsX=[ '-','H','H2' ]
         labelsY=['→'.join(n) for n in self.proton]
-
-        data_proton = self.build_log2_change_table_of_classtypes( self.proton, labelsX )
-        protonfig = self.get_fig_tempfile( figure.heatmap( data_proton, labelsX=labelsX, labelsY=labelsY) )
+        data_proton = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.proton, labelsX ), sort_data=True )
   
         self.render( {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': {
-                    'Oxidative/Reductive State':[[
-                        {
-                            'figure':redoxfig.fileName(), 
+            'figures': [ 
+                        [{
+                            'type':'heatmap',
+                            'data':data_redox,
                             'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
                             Left-to-right is oxidative.'),
-                        },
-                        {
-                            'figure':protonfig.fileName(), 
+                            'scale':'Δlog2',
+                            'n':1,
+                        },[
+                            [{
+                                'type':'heatmap',
+                                'data':data_phosphate, 
+                                'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
+                                Left-to-right is oxidative.'),
+                                'scale':'Δlog2',
+                                'n':2,
+                            },
+                            {
+                                'type':'heatmap',
+                                'data':data_nuc, 
+                                'legend':('Nucleoside phosphorylation balance.','Relative quantities of nucleosides in each experimental class grouping. \
+                                Left-to-right shows increasing phosphorylation.'),
+                                'scale':'Δlog2',
+                                'n':3,
+                            }],[{
+                            'type':'heatmap',
+                            'data':data_proton, 
                             'legend':('Redox carrier  balance.','Relative quantities of redox potential carriers. \
                             Left-to-right shows increasing reduction.'),
-                        },]],
-                    'Phosphorylation and Phosphate carriers':[[
-                        {
-                            'figure':phosphatefig.fileName(), 
-                            'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
-                            Left-to-right is oxidative.'),
-                        },
-                        {
-                            'figure':nucelosidefig.fileName(), 
-                            'legend':('Nucleoside phosphorylation balance.','Relative quantities of nucleosides in each experimental class grouping. \
-                            Left-to-right shows increasing phosphorylation.'),
-                        },
-
-                    ]],
-                    }, 
+                            'scale':'Δlog2',
+                            'n':4,
+                            }],
+                        ],
+                        ],
+                        ],
         })
         
 
 
-class analysisMetaboliteView(analysisView):
+class analysisMetaboliteView(analysisHeatmapView):
     def generate(self):
         # Sort by scores
         ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
@@ -276,31 +334,36 @@ class analysisMetaboliteView(analysisView):
         labelsY = metabolites[:30]
         labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() )
 
-        data1 = self.build_log2_change_control_vs_multi(labelsY, labelsX)
-        filename1 = self.get_fig_tempfile( figure.heatmap( data1, labelsX=labelsX, labelsY=labelsY) )
-
-        data2 = self.build_raw_change_control_vs_multi(labelsY, labelsX)
-        filename2 = self.get_fig_tempfile( figure.heatmap( data2, labelsX=labelsX, labelsY=labelsY) )
+        data1 = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
+        data2 = self.build_heatmap_buckets( labelsX, labelsY, self.build_raw_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
   
         self.render( {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': {'Key Metabolites':[[
+            'figures': [[
                         {
-                            'figure':filename1.fileName(), 
+                            'type':'heatmap',
+                            'data':data1, 
                             'legend':('Relative change in metabolite concentration vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
                                       'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                            'scale':'Δlog2',
+                            'n':1,                            
                         },
                         {
-                            'figure':filename2.fileName(), 
+                            'type':'heatmap',
+                            'data':data2, 
                             'legend':('Raw metabolite concentration changes vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
                                     'Scale indicates linear concentration change in original unites, mean centered to zero. Red up, blue down.'),
+                            'scale':'Δlog2',
+                            'n':2,
                         },
-                    ]]},
+                    ]],
         })
         
 
 
-class analysisEnergyWasteView(analysisView):
+
+class analysisEnergyWasteView(analysisHeatmapView):
+
     def generate(self):
         # Standard energy sources (CHO)
         m_energy = ['GLC','GLN',
@@ -324,30 +387,193 @@ class analysisEnergyWasteView(analysisView):
 
         labelsY = endpoints
         labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() ) 
-        endpoint_data = self.build_log2_change_control_vs_multi( labelsY, labelsX)
-        endpoint_fig = self.get_fig_tempfile( figure.heatmap( endpoint_data, labelsX=labelsX, labelsY=labelsY) )
+        endpoint_data = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
 
         labelsY = m_energy
-        energy_data = self.build_log2_change_control_vs_multi( labelsY, labelsX)
-        energy_fig = self.get_fig_tempfile( figure.heatmap( energy_data, labelsX=labelsX, labelsY=labelsY) )
-  
+        energy_data = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
+
+        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
+                   # Buckets is an array x,y,value x = class, y metabolite, value 
+                    'figures': [[
+                                {
+                                    'type':'heatmap',
+                                    'data':endpoint_data,
+                                    'legend':('Relative change in concentration of metabolic endpoints vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                              'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down. Metabolic endpoint in this context refers to \
+                                              metabolites for which there exists no onward reaction in the database.'),
+                                    'scale':'Δlog2',
+                                    'n':1,
+                                    
+                                },
+                                {
+                                    'type':'heatmap',
+                                    'data':energy_data,
+                                    'legend':('Relative change in concentration of common energy sources, carriers and sinks vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
+                                              'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
+                                    'scale':'Δlog2',
+                                    'n':2,
+                                }                    
+                               ]],                   
+                    }                   
+
+        self.render(metadata)
+
+
+
+class analysisCircosView(analysisHeatmapView):
+    def __init__(self, parent):
+        self.parent = parent
+        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
+        parent.tab_handlers.append( self )
+
+
+    def build_matrix(self, targets, target_links):
+
+        data = []
+        for mx in targets:
+            row = []
+            for my in targets:
+                n = len( list( target_links[my] & target_links[mx] ) )
+                row.append( n )
+    
+            data.append( row )
+        return data, targets
+
+
+    def generate(self):
+        pathways = self.parent.db.pathways.keys()
+        pathway_metabolites = dict()
+        
+        for k,p in self.parent.db.pathways.items():
+            pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
+
+        data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
+
+        pathway_reactions = dict()
+        
+        for k,p in self.parent.db.pathways.items():
+            pathway_reactions[p.id] = set( [m for m in p.reactions] )
+
+        data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
+
+
+        pathway_active_reactions = dict()
+        pathway_active_metabolites = dict()
+        active_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways_id = []
+        
+        for p in active_pathways:
+            pathway_active_reactions[p.id] = set( [r for r in p.reactions] )
+            pathway_active_metabolites[p.id] = set( [r for r in p.metabolites] )
+            active_pathways_id.append(p.id)
+    
+
+        data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
+        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_metabolites)
+
+
         self.render( {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': {'Metabolic Endpoints & Energy':[[
+            'figures': [[
                         {
-                            'figure':endpoint_fig.fileName(), 
-                            'legend':('Relative change in concentration of metabolic endpoints vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down. Metabolic endpoint in this context refers to \
-                                      metabolites for which there exists no onward reaction in the database.'),
+                            'type':'circos',
+                            'data': data_ar,
+                            'labels': labels_ar,
+                            'n':1,  
+                            'legend':('Metabolic pathway reaction interconnections','Links between pathways indicate proportions of shared reactions between the two pathways in MetaCyc database')                             
                         },
                         {
-                            'figure':energy_fig.fileName(), 
-                            'legend':('Relative change in concentration of common energy sources, carriers and sinks vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
-                        }                    
-                    ]]},
-        })
+                            'type':'circos',
+                            'data': data_am,
+                            'labels': labels_am,
+                            'n':2,  
+                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
+                        },                                             
+                    ]],
+                    }, debug=True)
 
+"""                        
+                        {
+                            'type':'circos',
+                            'data': data_m,
+                            'labels': labels_m,
+                            'n':1,  
+                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
+                                                      
+                        },
+                        {
+                            'type':'circos',
+                            'data': data_r,
+                            'labels': labels_r,
+                            'n':2,  
+                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
+                                                      
+                        }],
+                        [
+
+
+                            {
+                            'type':'corrmatrix',
+                            'data': [
+                              {'group':"setosa","sepal length":1, "sepal width":5, "petal length":3, "petal width":2},
+                              {'group':"versicolor","sepal length":2, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"virginica","sepal length":3, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"setosa","sepal length":4, "sepal width":5, "petal length":3, "petal width":0},
+                              {'group':"versicolor","sepal length":5, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"virginica","sepal length":6, "sepal width":5, "petal length":3, "petal width":2},
+                            ],
+                            'traits': ["sepal length", "sepal width", "petal length", "petal width"],
+                            'groups': ["setosa", "versicolor", "virginica"],
+                            'n':5,
+                            'legend':('a','b'),
+"""   
+                    
+        
+# Class for analysis views, using graph-based visualisations of defined datasets
+# associated layout and/or analysis
+class d3View(analysisView):
+    def __init__(self, parent):
+        self.parent = parent
+        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
+        parent.tab_handlers.append( self )
+    
+    def generate(self):
+        current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
+        # Iterate pathways and get a list of all metabolites (list, for index)
+        metabolites = []
+        reactions = []
+        metabolite_pathway_groups = {}
+        for p in current_pathways:
+
+            for r in p.reactions:
+                ms = r.mtins + r.mtouts
+                for m in ms:
+                    if m not in metabolites:
+                        metabolites.append(m)
+
+                for m in ms:
+                    metabolite_pathway_groups[m] = current_pathways.index(p)
+
+                for mi in r.mtins:
+                    for mo in r.mtouts:
+                        reactions.append( [ metabolites.index(mi), metabolites.index(mo) ] )
+                
+        
+        # Get list of all reactions
+        # In template:
+        # Loop metabolites (nodes; plus their groups)
+    
+    
+        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
+                     'pathways':[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')],
+                     'metabolites':metabolites,
+                     'metabolite_pathway_groups':metabolite_pathway_groups, 
+                     'reactions':reactions,
+                     }
+        template = self.parent.templateEngine.get_template('d3/force.html')
+
+        self.browser.setHtml(template.render( metadata ),"~") 
+        self.browser.exposeQtWebView()
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
@@ -623,12 +849,6 @@ class MainWindow(ui.MainWindowUI):
         # Central variable for storing application configuration (load/save from file?
         self.config = QSettings()
         
-        if self.config.value('/MetaPath/Is_Setup') != True:
-            print "Setting up initial configuration..."
-            self.onResetConfig()
-        
-            print 'Done'
-
         # Create database accessor
         self.db = db.databaseManager()
         self.data = None #data.dataManager() No data loaded by default
@@ -652,17 +872,40 @@ class MainWindow(ui.MainWindowUI):
         # Inhereted from ui; UI setup etc
         super(MainWindow, self).__init__()
 
+
+        if self.config.value('/MetaPath/Is_Setup') != True:
+            print "Setting up initial configuration..."
+            self.onResetConfig()
+        
+            print 'Done'
+        
+        self.onResetConfig()
+        
+
+        # Additional tabs; data analysis, data summary, identification, etc.
+        analysisv = d3View( self )
+        analysisv.generate()
+        self.tabs.addTab( analysisv.browser, '&d3' )
+
+        # Additional tabs; data analysis, data summary, identification, etc.
+        analysisc = analysisCircosView( self )
+        analysisc.generate()
+        self.tabs.addTab( analysisc.browser, '&Circo' )
+
+
         self.setWindowTitle('MetaPath: Metabolic pathway visualisation and analysis')
         self.statusBar().showMessage('Ready')
 
 
         self.showMaximized()
+
+
         
     # Init
     
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
-        self.config.setValue('/Pathways/Show', '') 
+        self.config.setValue('/Pathways/Show', 'GLYCOLYSIS') 
         self.config.setValue('/Pathways/ShowLinks', False)
 
         self.config.setValue('/Data/MiningActive', False)
@@ -727,16 +970,15 @@ class MainWindow(ui.MainWindowUI):
 
         # url is Qurl type
         if url.scheme() == 'metapath':
-
             # Take string from metapath:// onwards, split on /
             type = url.host()
             null, id, action = url.path().split('/') # FIXME: Can use split here once stop using pathwaynames           
-            
+            print id, action
             # Add an object to the current view
             if action == 'add':
     
                 # FIXME: Hacky test of an idea
-                if type == 'pathway':
+                if type == 'pathway' and id in self.db.pathways:
                     # Add the pathway and regenerate
                     pathways = self.config.value('/Pathways/Show').split(',')
                     pathways.append( urllib2.unquote(id) )
@@ -747,7 +989,7 @@ class MainWindow(ui.MainWindowUI):
             if action == 'remove':
     
                 # FIXME: Hacky test of an idea
-                if type == 'pathway':
+                if type == 'pathway' and id in self.db.pathways:
                     # Add the pathway and regenerate
                     pathways = self.config.value('/Pathways/Show').split(',')
                     pathways.remove( urllib2.unquote(id) )
@@ -756,31 +998,31 @@ class MainWindow(ui.MainWindowUI):
 
             # View an object
             if action == 'view':
-                if type == 'pathway':
+                if type == 'pathway' and id in self.db.pathways:
                     pathway = self.db.pathways[id]
                     self.generatedbBrowserView(template='pathway.html', data={
                         'title': pathway.name,
                         'object': pathway,
                         })
-                elif type == 'reaction':
+                elif type == 'reaction' and id in self.db.reactions:
                     reaction = self.db.reactions[id]
                     self.generatedbBrowserView(template='reaction.html', data={
                         'title': reaction.name,
                         'object': reaction,
                         })
-                elif type == 'metabolite':
+                elif type == 'metabolite' and id in self.db.metabolites:
                     metabolite = self.db.metabolites[id]
                     self.generatedbBrowserView(template='metabolite.html', data={
                         'title': metabolite.name,
                         'object': metabolite,
                         })
-                elif type == 'protein':
+                elif type == 'protein' and id in self.db.proteins:
                     protein = self.db.proteins[id]
                     self.generatedbBrowserView(template='protein.html', data={
                         'title': protein.name,
                         'object': protein,
                         })
-                elif type == 'gene':
+                elif type == 'gene' and id in self.db.gene:
                     gene = self.db.genes[id]
                     self.generatedbBrowserView(template='gene.html', data={
                         'title': gene.name,
@@ -899,7 +1141,7 @@ class MainWindow(ui.MainWindowUI):
                   
             self.update_view_callback_enabled = True    
 
-            self.generateGraphView(regenerate_analysis=True)
+            self.generateGraphView(regenerate_analysis=True, regenerate_suggested=True)
             
             analysisv = analysisMetaboliteView( self )
             analysisv.generate()
@@ -923,7 +1165,7 @@ class MainWindow(ui.MainWindowUI):
         if self.update_view_callback_enabled:
             self.experiment['control'] = self.cb_control.currentText()
             self.experiment['test'] = self.cb_test.currentText()
-            self.generateGraphView(regenerate_analysis=True)
+            self.generateGraphView(regenerate_analysis=True, regenerate_suggested=True)
 
     def onMiningSettings(self):
         """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
@@ -942,6 +1184,7 @@ class MainWindow(ui.MainWindowUI):
     def onModifyMiningDepth(self):
         """ Change mine depth via toolbar spinner """    
         self.config.setValue('/Data/MiningDepth', self.sb_miningDepth.value())
+        self.generateGraphView(regenerate_suggested=True)
         self.generateGraphView()
         
     def onModifyCluster(self):
@@ -1009,7 +1252,7 @@ class MainWindow(ui.MainWindowUI):
             'mining_type': '%s%s%s' % ( self.config.value('/Data/MiningType'),
                                         'r' if bool( self.config.value('/Data/MiningRelative') ) else '',
                                         's' if bool( self.config.value('/Data/MiningShared') ) else '' ),
-            'splines': 'spline',
+            'splines': 'true',
             'focus':False,
             'show_pathway_links': bool( self.config.value('/Pathways/ShowLinks') ),
             # Always except when saving the file
@@ -1023,8 +1266,8 @@ class MainWindow(ui.MainWindowUI):
         if self.data and (self.data.analysis == None or regenerate_analysis):
             self.data.analyse( self.experiment )
             
-            for t in self.tab_handlers:
-                t.generate()
+        for t in self.tab_handlers:
+            t.generate()
         
         # Add the selected pathways
         pathways = [self.db.pathways[pid] for pid in pathway_ids if pid in self.db.pathways.keys()]        

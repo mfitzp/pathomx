@@ -1,0 +1,19 @@
+@extends("d3/heatmap.html")
+@require(htmlbase, buckets)
+
+@def generate():
+<script>
+    buckets = [
+    @for row in buckets:
+        {
+        'x':'@row[0]!s',
+        'y':'@row[1]!s',
+        'value':@row[2]!s,
+        },
+    @endfor
+    ]
+
+
+    heatmap('one',buckets);
+</script>
+@end

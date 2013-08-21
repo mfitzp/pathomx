@@ -1,0 +1,144 @@
+@extends("d3/base.html")
+@require(htmlbase, pathways, metabolites, reactions, metabolite_pathway_groups)
+
+@def styles():
+<style>
+
+.node {
+  fill: #000;
+
+}
+
+.node.fixed {
+  fill: #f00;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+</style>
+@end
+<body>
+
+        
+@def script():
+<script>
+
+window.onload = function(){
+
+
+var w = window.innerWidth,
+    h = window.innerHeight;
+
+var color = d3.scale.category20();
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", w)
+    .attr("height", h)
+    .attr("pointer-events", "all");
+    
+/* This zoom function does not work within WebKit WebView because of the trackpad scroll bug (on Mac touchpads)
+  .append('svg:g')
+    .call(d3.behavior.zoom().on("zoom", redraw))
+  .append('svg:g');
+
+
+svg.append('svg:rect')
+    .attr('width', w)
+    .attr('height', h)
+    .attr('fill', 'white');
+
+function redraw() {
+  console.log("here", d3.event.translate, d3.event.scale);
+  svg.attr("transform",
+      "translate(" + d3.event.translate + ")"
+      + " scale(" + d3.event.scale + ")");
+}
+  */  
+    
+    
+
+graph = {
+  "nodes":[
+    @for m in metabolites:
+        {"name":"@m.name","group":@metabolite_pathway_groups[m]!s},
+    @end
+  ],
+  "links":[
+    @for r in reactions:
+        {"source":@r[0]!s,"target":@r[1]!s, "value":1, "group":1},
+    @end
+  ]
+};
+
+
+
+var force = d3.layout.force()
+    .charge(-500)
+    .linkDistance(50)
+    .gravity(0.05)
+    .nodes(graph.nodes)
+    .links(graph.links)
+    .size([w, h])
+    .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+      .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+      .enter()
+        .append("text")
+            .attr("class", "node")
+            .attr("style", "text-anchor:middle; cursor:pointer;")
+            .attr("r", 15)
+        .text(function(d){return d.name;})
+        /*      .style("fill", function(d) { return color(d.group); }) */
+        .call(force.drag);
+      
+
+  /* node.append("title")
+      .text(function(d) { return d.name; }); */
+    node.on("contextmenu", rclicknode)
+    node.on("click", function(d){
+        delegateLink('metapath://metabolite/'+d.name+'/view');
+    });
+
+var drag = force.drag()
+    .on("dragstart", dragstart);
+
+function dragstart(d) {
+      d.fixed = true
+      d3.select(this).classed("fixed", true);
+}
+
+function rclicknode(d) {
+    d.fixed = false;
+    d3.select(this).classed("fixed", false);
+    e = document.getElementById('dummy');
+    e.onclick();
+}
+
+
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("x", function(d) { return d.x = Math.max(0, Math.min(w, d.x)); })
+        .attr("y", function(d) { return d.y = Math.max(0, Math.min(h, d.y)); });
+  });
+
+}
+
+
+</script>
+@end
+

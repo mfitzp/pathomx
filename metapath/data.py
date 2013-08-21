@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Experimental data manager
 # Loads a csv data file and extracts key information into usable structures for analysis
 
@@ -425,7 +426,7 @@ class dataManager():
                 analysis[metabolite]['delta']['meanlog'] = (test_log - cont_log)
     
                 # Calculate color using palette (rbu9) note red is 1 blue is 9 so need to reverse scale (-)
-                analysis[metabolite]['color'] = 5 -( analysis[metabolite]['delta']['meanlog'] )
+                analysis[metabolite]['color'] = round( 5 -( 2* analysis[metabolite]['delta']['meanlog'] ), 0 )
                 analysis[metabolite]['color'] = int( max( min( analysis[metabolite]['color'], 9), 1) )
 
                 # Ranking score for picking pathways; meanlog scaled to control giving rel log change
@@ -433,7 +434,6 @@ class dataManager():
                 
                 #analysis[metabolite]['color'] = int( max( min( 5-round( analysis[metabolite]['delta']['mean']*25 ), 9), 1) )
                 #analysis[metabolite]['score'] = analysis[metabolite]['delta']['mean']
-                
         return analysis
 
 
@@ -452,7 +452,6 @@ class dataManager():
         print "Mining using '%s'" % mining_type
         
         for m_id in self.analysis:
-            
             score = self.analysis[ m_id ]['score']
             
             # 1' neighbours; 2' neighbours etc. add score
@@ -473,10 +472,12 @@ class dataManager():
             elif m_id in db.genes.keys():
                 pathways = db.genes[ m_id ].pathways
             else:
-                continue # Skip out of the loop        
+                continue # Skip out of the loop     
+                
+            if pathways == []:
+                continue   
                 
             if "s" in mining_type:
-                print "!"
                 # Share the change score between the associated pathways
                 # this prevents metabolites having undue influence
                 score = score / len(pathways)    

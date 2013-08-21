@@ -1,0 +1,264 @@
+@extends("d3/base.html")
+@require(htmlbase, figures)
+
+@def styles():
+<style>
+body {
+    margin:auto; padding:0.5em;
+}
+
+table.figures {
+    border:none;
+    background:none;
+    
+    border-collapse:separate;
+    border-spacing:0.5em;
+    
+    margin:-0.5em; padding:0;
+    width:100%;
+    height:100%;    
+    max-width:100%;
+}
+
+svg {
+    font-size:8pt;
+}
+
+td.figure {
+    background-color:#fff;
+    vertical-align:bottom;
+    padding:1em;
+}
+
+td.wrapper {
+    padding:0;
+}
+
+p.legend {
+    margin:1rem 0 0 0;
+    font-size:0.8rem;
+    min-height:5em;
+    
+}
+
+/* Heatmap */
+
+.heatmap .label {
+  font-weight: bold;
+}
+
+.heatmap .tile {
+  shape-rendering: crispEdges;
+}
+
+.heatmap .axis path,
+.heatmap .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+/* Chord */
+
+.circos .chord path {
+  fill-opacity: .67;
+/*  stroke: #000; */
+  stroke-width: .5px;
+}
+
+/* Scatter Matrix */
+
+.axis path {
+  display: none;
+}
+
+rect.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+rect.frame {
+  fill: #fff;
+  fill-opacity: .7;
+  stroke: #aaa;
+}
+
+circle {
+  fill: #ccc;
+  fill-opacity: .5;
+}
+
+.legend circle {
+  fill-opacity: 1;
+}
+
+.legend text {
+}
+
+.setosa {
+  fill: #800;
+}
+
+.versicolor {
+  fill: #080;
+}
+
+.virginica {
+  fill: #008;
+}
+
+
+</style>
+@end
+
+        
+@def script():
+<script>
+
+
+</script>
+@end
+
+
+@def recursefig(tree):
+    @#...
+    <table class="figures">
+    @for row in tree:
+        <tr>
+        @for f in row:
+        @if type(f) == list:
+            <td class="wrapper">@recursefig(f)</td>
+        @else:
+            <td class="figure">
+            <div id="figure@f['n']!s"></div>
+            <p class="legend"><strong>Figure @f['n']!s. @f['legend'][0]</strong> @f['legend'][1]</p>
+            </td>
+            <script>
+                id = "#figure@f['n']!s";
+                
+                @if f['type'] == 'circos':
+                    var matrix = [
+                    @for row in f['data']:
+                      [
+                        @(
+                            _out = ','.join( [str(i) for i in row] )
+                        )
+                        @_out,
+                      ],
+                    @endfor
+                    ];
+
+                    var labels = [
+                    @for l in f['labels']:
+                        "@l!s",
+                    @endfor
+                    ];
+                    circos(id, matrix, labels);
+                    
+                    
+                @elif f['type'] == 'corrmatrix':
+                    var traits = [
+                    @for l in f['traits']:
+                        "@l!s",
+                    @endfor
+                    ];
+                      
+                    var groups = [
+                    @for l in f['groups']:
+                        "@l!s",
+                    @endfor
+                    ];                      
+                                        
+                    var data = [
+                    @for row in f['data']:
+                        {
+                            @for k,v in row.items():
+                                '@k!s':'@v!s',
+                            @endfor
+                        },
+                    @endfor
+                    ];
+
+                    corrmatrix(id, groups, traits, matrix);
+                
+
+                @else:
+                    buckets = [
+                    @for d in f['data']:
+                        {
+                        'x':'@d[0]!s',
+                        'y':'@d[1]!s',
+                        'value':'@d[2]!s',
+                        },
+                    @endfor
+                    ];
+                    
+                    
+
+                    heatmap(id, buckets, "@f['scale']!s");
+                @endif
+            </script>
+        @endif
+    @endfor
+    </tr>
+    @endfor
+    </table>
+@end   
+
+
+@def layoutfig(figures):
+    @(
+        n = 0
+    )
+    @for row in figures:
+        <div class="row">
+        @for f in row:
+            @(
+                cwidth = f['cwidth'] if 'cwidth' in f else 4
+                n = n +1
+            )
+            <div class="columns large-@cwidth!s figure">
+            <div id="figure@n!s"></div>
+            <p class="legend"><strong>Figure @n!s. @f['legend'][0]</strong> @f['legend'][1]</p>
+            <script>
+                @if f['type'] == 'circos':
+                    var matrix = [
+                    @for row in f['data']:
+                      [
+                        @(
+                            _out = ','.join( [str(i) for i in row] )
+                        )
+                        @_out,
+                      ],
+                    @endfor
+                    ];
+                    var labels = [
+                    @for l in f['labels']:
+                        "@l!s",
+                    @endfor
+                    ];
+                    circos("#figure@n!s", matrix, labels);
+                @else:
+                    buckets = [
+                    @for d in f['data']:
+                        {
+                        'x':'@d[0]!s',
+                        'y':'@d[1]!s',
+                        'value':'@d[2]!s',
+                        },
+                    @endfor
+                    ];
+                    heatmap("#figure@n!s", buckets, "@f['scale']!s");
+                @endif
+            </script>
+            </div>
+    @endfor
+    </div>
+    @endfor
+@end   
+
+
+@def generate():
+    @recursefig(figures)
+@end

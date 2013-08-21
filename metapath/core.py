@@ -43,7 +43,7 @@ METAPATH_PAPER_SIZES = {
 
 
 rdbu9 =  [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
-rdbu9c = ['#ffffff', '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
+rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 
 # [0, '1', '2', '3', '4', '#cccccc', '6', '7', '8', '9'] #Override central color, it's too faint on white
 
@@ -295,7 +295,6 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
                 fillcolor = None
                 
             nodes.append([pathway_node, fillcolor, True])
-
     # Generate the analysis graph from datasets
     graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgeslast', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc") #, model='mds') #, overlap='ipsep', mode='ipsep', model='mds') 
     subgraphs = list()
@@ -440,6 +439,9 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         color = '#888888'
         url = REACTION_URL
         length = 2
+        penwidth = 1
+        weight = 1
+        dir = r.dir
    
         # End of any edge touching a DUMMY-RXN is left blank
         if dest.type == 'dummy':
@@ -505,7 +507,10 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
         #else:
         #    width = 1
             
-        e = pydot.Edge(origin.id, dest.id, len=length, penwidth=1, dir=r.dir, label=u'<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
+        if hasattr(r, 'gibbs'):
+            penwidth=abs( r.gibbs['deltaG_w'] )
+            
+        e = pydot.Edge(origin.id, dest.id, weight=weight, len=length, penwidth=penwidth, dir=dir, label=u'<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
         graph.add_edge(e)
 
     #import matplotlib.pyplot as plt

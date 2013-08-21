@@ -246,4 +246,6 @@ code {
     vertical-align:bottom;
 }
 
-      
+div.row {
+   width:100%; 
+}

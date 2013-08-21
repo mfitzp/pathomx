@@ -1,0 +1,75 @@
+@require(htmlbase, categories, apps)
+
+<html>
+    <head>
+        <title>Welcome to MetaPath</title>
+
+    <link rel="stylesheet" type="text/css" href="foundation.min.css">
+
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+        
+    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
+    <base href="file://@htmlbase/">
+    <style>
+        body {
+            background-color:#f5f5f5;
+            margin:1em;
+            }
+        
+        .app {
+            height:180px;
+            display: inline-block;
+            box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.2);
+            transition: all 200ms ease-out 0s;
+            position:relative;
+            background:#fff;
+            width:100%;
+            cursor:pointer;
+        }
+        
+        .app:hover {
+            box-shadow: 0px 0px 6px 1px rgba(43, 166, 203, 0.5);
+            }
+        
+        .app .meta {
+            position:absolute;
+            width:100%;
+            bottom:0px;
+            vertical-align:bottom;
+            background-color:#fff;
+            background-color:rgba(255,255,255,0.9);
+            padding:1em;            
+        }
+        
+        .app .description {
+            font-size:0.8em;
+        }
+        
+        
+        </style>
+    </head>
+    <body id="mainwindow">
+    <h1>Apps</h1>
+        @for category in categories:
+        <h2>@category</h2>
+        <ul class="large-block-grid-5">
+            @for app in apps[category]:
+                <li><div class="app"
+                            @if 'image' in app:
+                                style="background-image:url('@app['image']');"
+                            @endif
+                                onclick="delegateUrl('metapath://app-manager/@app['id']/add');">
+                        <div class="meta">
+                            <div class="name"><a href="metapath://app-manager/@app['id']/add">@app['name']</a></div>
+                            <div class="description">@app['description']</div>
+                        </div>
+                    </div>
+                </li>
+            @endfor
+        </ul>
+        @endfor
+
+        
+    </body>
+</html>

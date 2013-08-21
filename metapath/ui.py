@@ -85,10 +85,48 @@ class remoteQueryDialog(genericDialog):
         self.dialogFinalise()
 
 
-class QWebViewScrollFix(QWebView):
+class QWebPageJSLog(QWebPage):
+    """
+    Makes it possible to use a Python logger to print javascript console messages
+    """
+    def __init__(self, parent=None, **kwargs):
+        super(QWebPageJSLog, self).__init__(parent, **kwargs)
+
+    def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
+        print "JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg)
+
+
+class QWebViewExtend(QWebView):
 
     def __init__(self, onNavEvent=None, **kwargs):
-        super(QWebViewScrollFix, self).__init__(**kwargs)        
+        super(QWebViewExtend, self).__init__(**kwargs)        
+
+        #self.js_page_object = QWebPageJSLog()
+        #self.setPage( self.js_page_object)
+        self.page().setContentEditable(False)
+        self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        # Override links for internal link cleverness
+        if onNavEvent:
+            self.onNavEvent = onNavEvent
+            self.linkClicked.connect( self.onNavEvent )
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
+
+
+    def exposeQtWebView(self):
+        frame = self.page().mainFrame()
+        frame.addToJavaScriptWindowObject("QtWebView", self);
+
+    @Slot(str)
+    def delegateLink(self, url):
+        self.onNavEvent( QUrl(url) )
+        return True
+
+
+class QWebViewScrollFix(QWebViewExtend):
+
+    def __init__(self, onNavEvent=None, **kwargs):
+        super(QWebViewScrollFix, self).__init__(onNavEvent,**kwargs)        
 
         self.resetTimer()
          
@@ -97,13 +135,7 @@ class QWebViewScrollFix(QWebView):
         self.wheelBugDirAccumulator[ Qt.Orientation.Vertical ] = 0
         
         self.wheelBugLatest = None
-        
-        # Override links for internal link cleverness
-        self.page().setContentEditable(False)
-        self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.linkClicked.connect( onNavEvent )
-        self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
-
+    
     def resetTimer(self):
         self.wheelBugTimer = QTimer.singleShot(25, self.wheelTrigger)
 
@@ -139,7 +171,6 @@ class QWebViewScrollFix(QWebView):
 
 #We ran into the same issue. We worked around the problem by overriding QWebView::wheelEvent, and doing the following:
 #When a wheelEvent comes in, we start a 25 ms single-shot timer and process the wheelEvent. For any future wheelEvent's that come in while the timer is active, we just accumulate the event->delta( )'s (and pos & globalPos values, too). When the timer finally fires, the accumulated deltas are packaged into a QWheelEvent and delivered to QWebView::wheelEvent. (One further refinement is that we only do this for wheelEvents that have NoButton and NoModifier.)
-
 
 
 class MainWindowUI(QMainWindow):
@@ -396,28 +427,85 @@ class MainWindowUI(QMainWindow):
         QWebSettings.setMaximumPagesInCache( 0 )
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
+        QWebSettings.globalSettings().setAttribute( QWebSettings.WebAttribute.DeveloperExtrasEnabled, True)
         
         self.mainBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+        self.appBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
 
 
         self.tabs = QTabWidget()
         self.tabs.setTabsClosable(True)
         self.tabs.setDocumentMode(True)
-        self.tabs.addTab(self.mainBrowser, 'MetaCyc Explorer')
+        self.tabs.addTab(self.appBrowser, '★') 
+        self.tabs.addTab(self.mainBrowser, '?')
+
         self.setCentralWidget(self.tabs)
         
+        # Hide close button from the homepage
+        self.tabs.tabBar().setTabButton(1, self.tabs.tabBar().ButtonPosition(), None)
         self.tabs.tabBar().setTabButton(0, self.tabs.tabBar().ButtonPosition(), None)
-        
-        #self.mainBrowser = QWebViewScrollFix()
-        #self.tabs = QTabWidget()
-        #self.tabs.addTab( self.mainBrowser, 'Pathways' )
-        #self.setCentralWidget(self.tabs)
+
+#        self.inspect = QWebInspector()
+#        self.tabs.addTab(self.inspect, 'Inspector')
 
 
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
         self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
+
+        # Display the app browser
+        metadata = {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'categories':['Input','Processing','Analysis','Visualisation','Output','Misc'],
+            'apps':{
+                'Input':[
+                    {'id':'import-text','name':'Text','description':'Load data from text files in various formats'},
+                    {'id':'import-excel','name':'Excel','description':'Interactively import data from Excel files in various formats'},
+                    {'id':'nmrglue','name':'NMR Glue','description':'Import raw NMR data from Bruker, Varian and more','image':'file:///Users/mxf793/Scripts/metapath/metapath/html/img/nmrglue.png'},
+                
+                ],
+                'Processing':[
+                    {'id':'nmrlab','name':'NMR Lab','description':'MATLAB based tool for the processing NMR spectra','image':'file:///Users/mxf793/Scripts/metapath/metapath/html/img/nmrlab.png'},
+                    {'id':'nmr-peak','name':'Peak Picking','description':'Convert loaded data to metabolite quantities via peak picking'},
+
+                ],
+                'Analysis':[
+                    {'id':'pca','name':'PCA','description':'Principle components analysis of data sets'},                
+                    {'id':'net-analysis','name':'NET Analysis','description':'Network Embedded Thermodynamic analysis'},                
+                ],
+                'Visualisation':[
+                    {'id':'metaviz','name':'MetaViz','description':'Automated pathway layouts, powered by Graphviz','image':'file:///Users/mxf793/Scripts/metapath/metapath/html/img/metaviz.png'},
+                    {'id':'pathway-connections','name':'Pathway Connections','description':'Visualise data in pathway context, identify locales of regulation','image':'file:///Users/mxf793/Scripts/metapath/metapath/html/img/pathway-links.png'},
+                ],
+                'Output':[
+                
+                
+                
+                ],
+                'Misc':[
+                    {'id':'force-visualisation-test','name':'Force d3','description':'Force directed graph visualisation test'},
+                
+                ],
+            
+            }
+        
+        }
+        
+        
+        from pymatbridge import Matlab
+        mlab = Matlab('/Applications/MATLAB_R2011a_Student.app/bin/matlab')
+        mlab.start()
+        mlab.run_code('nmrlab')
+        
+        template = self.templateEngine.get_template('apps.html')
+        self.appBrowser.setHtml(template.render( metadata ),"~") 
+        self.appBrowser.loadFinished.connect( self.onBrowserLoadDone )
+        
+        f = open('/Users/mxf793/Desktop/testapps.html','w')
+        f.write(template.render( metadata ))
+        f.close()
+        
 
         self.dbBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
         # Display a sponsors
@@ -431,7 +519,6 @@ class MainWindowUI(QMainWindow):
         self.dataDock.setFeatures(QDockWidget.DockWidgetMovable)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
         
-        # Additional tabs; data analysis, data summary, identification, etc.
 
         # Data vis: visualisation of loaded dataset (spectra, etc.); peak picking; data->metabolite conversion
         # Identification: table view for each datatype, identifier -> metabolite link (mostly automatic, but allow tweaks); or simply show (combine with above/below?)

@@ -3,7 +3,9 @@
 <html>
     <head>
         <title>@title</title>
-        
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+
     <link rel="stylesheet" href="file://@htmlbase/css/base.css">
     <base href="file://@htmlbase/">
     </head>
@@ -21,6 +23,20 @@
     @def figure():
     @end
     @figure()
+    
+    @def thermodynamics():
+        <div id="thermodynamics">
+        @if hasattr(object,'gibbs'):
+            <table>
+            <tr><th style="text-align:left;">&Delta;G 37&deg;C</th><td>@object.gibbs['deltaG_bio']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
+            <tr><th style="text-align:left;">&Delta;G°</th><td>@object.gibbs['deltaG']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
+            <tr><th style="text-align:left;">Charge</th><td>@object.gibbs['charge']!s</td></tr>
+            </table>
+        @end
+        </div>
+    @end
+    @thermodynamics()
+
     
     @if hasattr(object, 'pathways') and object.pathways:
         <h2>Pathways <small>(@str(len(object.pathways)))</small></h2>
@@ -135,26 +151,22 @@
 
             @if dbkey == 'CAS':
                 <a href="http://www.commonchemistry.org/ChemicalDetail.aspx?ref=@dbid">CAS @dbid</a>
-            @end
-
-            @if dbkey == 'NCBI-TAXONOMY-DB':
+            @elif dbkey == 'NCBI-TAXONOMY-DB':
                 <a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=@dbid">NCBI @dbid</a>
-            @end
-
-            @if dbkey == 'CHEBI':
+            @elif dbkey == 'CHEBI':
                 <a href="http://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:@dbid">CHEBI @dbid</a>
-            @end
-
-            @if dbkey == 'LIGAND-CPD':
+            @elif dbkey == 'LIGAND-CPD' or dbkey =='KEGG':
                 <a href="http://www.genome.ad.jp/dbget-bin/www_bget?@dbid">KEGG Compound @dbid</a>
-            @end
-
-            @if dbkey == 'PUBCHEM':
+            @elif dbkey == 'PUBCHEM':
                 <a href="http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi?cid=@dbid">PubChem @dbid</a>
-            @end
-
-            @if dbkey == 'KNAPSACK':
-                <a href="http://kanaya.naist.jp/knapsack_jsp/information.jsp?sname=C_ID&word=C00001361">KNApSAcK @dbid</a>
+            @elif dbkey == 'KNAPSACK':
+                <a href="http://kanaya.naist.jp/knapsack_jsp/information.jsp?sname=C_ID&word=@dbid">KNApSAcK @dbid</a>
+            @elif dbkey == 'HMDB':
+                <a href="http://www.hmdb.ca/metabolites/@dbid">HMDB @dbid</a>
+            @elif dbkey =='BIOPATH':
+                <a href="http://www.molecular-networks.com/biopath3/biopath/mols/@dbid">BIOPATH @dbid</a>
+            @else:
+                @dbkey @dbid</a>
             @end
 
             </li>
@@ -162,10 +174,12 @@
     @end
         </ul>
 
-        @end
+    @end
 
 
     </div>
+    
+    
     <div id="actions">
         @def actions():
         @end

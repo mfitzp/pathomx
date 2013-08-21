@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Database manager
 # Loads metabolites, reactions and pathways on initialisation. Provides interface to 
 # filter sets, list etc. 
@@ -8,6 +9,7 @@ from utils import UnicodeReader, UnicodeWriter
 from collections import defaultdict
 
 import utils
+import numpy as np
 
 # Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
@@ -131,15 +133,15 @@ class databaseManager():
         self.index = dict()
 
         # Separate subtypes
-        self.pathways = defaultdict(Pathway)
+        self.pathways = dict() #Pathway)
 
-        self.reactions = defaultdict(Reaction)
-        self.metabolites = defaultdict(Metabolite)
+        self.reactions = dict() #Reaction)
+        self.metabolites = dict() #Metabolite)
 
-        self.proteins = defaultdict(Protein)
-        self.genes = defaultdict(Gene)
+        self.proteins = dict() #Protein)
+        self.genes = dict() #Gene)
 
-        self.unification = defaultdict( dict ) 
+        self.unification = defaultdict(dict)
 
         
         # Load the data
@@ -155,6 +157,9 @@ class databaseManager():
         self.load_synonyms()
         self.load_identities()
         self.load_xrefs()
+        
+        # Load additional chemical data
+        self.load_gibbs()
 
     # Helper functions
     def get_via_unification(self, database, id):
@@ -251,7 +256,56 @@ class databaseManager():
                 'databases': self.extract_db_unification( db_unification ),
                 })
                       
+    def load_gibbs(self):
+    
+        def sum_gibbs_in_outs( key, ins, outs):
+            return sum([ m.gibbs[key] for m in ins if hasattr(m,'gibbs')] ) - sum([ m.gibbs[key] for m in outs if hasattr(m,'gibbs')] )
+    
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/gibbs'),'rU'), delimiter=',', dialect='excel')
+        
+        # Add reactions from each metabolite that we have gibbs data for
+        gibbs_reactions = set()
+        
+        for kegg_id, deltag, uncertainty, charge in reader:
+            if kegg_id in self.unification['KEGG']:
+                
+                self.unification['KEGG'][kegg_id].gibbs = {
+                        'deltaG':   float(deltag), # + 8314 * 310.15 * np.log(2), # G = G° + RTln(C2/C1) n.b. 310.15K = 37°C; R= 8.314 gas constant
+                        'deltaG_bio': float(deltag),
+                        'uncertainty': float(uncertainty),
+                        'charge': float(charge)
+                    }
+                gibbs_reactions.update( self.unification['KEGG'][kegg_id].reactions )
+        
+        for r in list( gibbs_reactions ):
+            # Do we have gibbs data for all reactants (excl. H+ and?)
+            # Some are uncalculated (e.g. pseudoatom H so can't be included - how to treat, could mark these somehow from original source data
+            ins =  r.mtins + r.smtins
+            outs = r.mtouts + r.smtouts
 
+            deltag = sum_gibbs_in_outs( 'deltaG', ins, outs )
+            
+            # Swap reaction directions on birectional reactions to match gibbs
+            if r.dir == 'both' and deltag > 0:
+                print r, "swap!"
+                tmtins, tsmtins = r.mtins, r.smtins
+                r.mtins, r.smtins = r.mtouts, r.smtouts
+                r.mtouts, r.smtouts = tmtins, tsmtins
+                deltag = -deltag
+            
+            # Calculate penwidth for deltag viz
+            if deltag == 0:
+                deltag_w = 1
+            else:
+                deltag_w = 1+ (np.log2( abs(deltag) )+1) * deltag/abs(deltag) # Signed log2
+
+            r.gibbs = {
+                    'deltaG': deltag, # sum_gibbs_in_outs( 'deltaG', ins, outs ),
+                    'deltaG_bio': deltag, # sum_gibbs_in_outs( 'deltaG', ins, outs ),
+                    'deltaG_w': deltag_w,
+                    'uncertainty': sum_gibbs_in_outs( 'uncertainty', ins, outs ),
+                    'charge': sum_gibbs_in_outs( 'charge', ins, outs ),
+                }
             
     def extract_db_unification(self, db_unification):
         # Process database links field
@@ -267,6 +321,9 @@ class databaseManager():
             self.add_synonyms(id, ['%s:%s' % (db,key) for db, key in databases.items()] )
             self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db in database_link_synonyms] )
         
+            for db, key in databases.items():
+                self.index[id].databases[db] = key
+            
             # Add unification links
             for db, key in databases.items():
                 self.unification[db][key] = self.index[id]
@@ -379,6 +436,7 @@ class databaseManager():
         if id in self.index:
             self.synrev[identity] = self.index[id] # Synonym -> Object
             self.synrev[identity.lower()] = self.index[id] # lc Synonym -> Object
+    
         
     # Output the current database to disk (Overwrite completely)
     def save_metabolites(self):
