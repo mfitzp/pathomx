@@ -118,7 +118,7 @@ function heatmap(id, buckets, scale){
     svg.selectAll(".y .tick").each(function(d) {
         d3.select(this)
             .attr('style','cursor:pointer;')
-            .on("click",function(d){ delegateLink('metapath://metabolite/'+d+'/view'); });
+            .on("click",function(d){ delegateLink('metapath://db/metabolite/'+d+'/view'); });
     });
 
     d3.select(id)
@@ -205,7 +205,7 @@ function circos(id, matrix, labels){
         })
         .text(function(d) { return labels[d.index]; })
         .attr('style','cursor:pointer;')
-        .on("click",function(d){ delegateLink('metapath://pathway/'+labels[d.index]+'/view'); });
+        .on("click",function(d){ delegateLink('metapath://db/pathway/'+labels[d.index]+'/view'); });
 
 
     svg.append("g")

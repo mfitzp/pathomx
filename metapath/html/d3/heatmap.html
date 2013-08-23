@@ -158,7 +158,7 @@ var svg = d3.select(id).insert("svg",':first-child')
     svg.selectAll(".y .tick").each(function(d) {
         d3.select(this)
             .attr('style','cursor:pointer;')
-            .on("click",function(d){ delegateLink('metapath://metabolite/'+d+'/view'); });
+            .on("click",function(d){ delegateLink('metapath://db/metabolite/'+d+'/view'); });
     });
 
 

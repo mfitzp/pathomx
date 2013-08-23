@@ -24,11 +24,11 @@ PRUNE_IDENTICAL = lambda a, b, c, d: (a,b,c,d)
 #REACTION_URL = ''
 
 # Internal URLS
-METABOLITE_URL = 'metapath://metabolite/%s/view'
-PATHWAY_URL = 'metapath://pathway/%s/view'
-REACTION_URL = 'metapath://reaction/%s/view'
-PROTEIN_URL = 'metapath://protein/%s/view'
-GENE_URL = 'metapath://gene/%s/view'
+METABOLITE_URL = 'metapath://db/metabolite/%s/view'
+PATHWAY_URL = 'metapath://db/pathway/%s/view'
+REACTION_URL = 'metapath://db/reaction/%s/view'
+PROTEIN_URL = 'metapath://db/protein/%s/view'
+GENE_URL = 'metapath://db/gene/%s/view'
 
 # Paper sizes for print scaling printing
 METAPATH_PAPER_SIZES = {

@@ -18,6 +18,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from yapsy.PluginManager import PluginManager
+
 # wheezy templating engine
 from wheezy.template.engine import Engine
 from wheezy.template.ext.core import CoreExtension
@@ -29,11 +31,10 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-from gpml2svg import gpml2svg
 
 # MetaPath classes
 import db, data, core, utils, layout, ui#, figure -deprecated in favour of d3
-
+import plugins # plugin helper/manager
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
 METAPATH_MINING_TYPE_TEXT = (
@@ -45,116 +46,11 @@ METAPATH_MINING_TYPE_TEXT = (
 
 reload(sys).setdefaultencoding('utf8')
 
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class analysisView(object):
-    def __init__(self, parent):
-        self.parent = parent
-        self.browser = ui.QWebViewScrollFix( parent.onBrowserNav )
-        
-        parent.tab_handlers.append( self )
-    
-    def render(self, metadata):
-        template = self.parent.templateEngine.get_template('figure.html')
-        self.browser.setHtml(template.render( metadata ),"~") 
-        
-    def build_log2_change_table_of_classtypes(self, objects, classes):
-        data = np.zeros( (len(objects), len(classes))  )
-        
-        for y,os in enumerate(objects):
-            for x,ost in enumerate(os):
-                #for n,c in enumerate(classes):
-                if ost in self.parent.data.quantities.keys():
-                    n = self.parent.data.get_log2(ost, self.parent.experiment['test']) - self.parent.data.get_log2( ost , self.parent.experiment['control'] )
-                    data[y,x] = n
-                else:
-                    data[y,x] = np.nan
-
-        return data
-  
-
-    def build_log2_change_control_vs_multi(self, objs, classes):
-        data = np.zeros( (len(objs), len(classes)) )
-        for x,xl in enumerate(classes):
-            for y,yl in enumerate(objs):
-                data[y,x] = self.parent.data.get_log2(yl,xl) - self.parent.data.get_log2( yl , self.parent.experiment['control'] )
-    
-        return data
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 
-    def build_raw_change_control_vs_multi(self, objs, classes):
-        data = np.zeros( (len(objs), len(classes)) )
-        for x,xl in enumerate(classes):
-            for y,yl in enumerate(objs):
-                data[y,x] = np.mean( self.parent.data.quantities[yl][xl] ) - np.mean( self.parent.data.quantities[ yl ][ self.parent.experiment['control'] ] )
-    
-        return data
-
-    def get_fig_tempfile(self, fig):
-        tf = QTemporaryFile()
-        tf.open()
-        fig.savefig(tf.fileName(), format='png', bbox_inches='tight')
-        return tf
-
-
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class analysisHeatmapView(analysisView):
-    def __init__(self, parent):
-        self.parent = parent
-        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
-        
-        parent.tab_handlers.append( self )
-        
-    def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
-        buckets = []
-
-
-        if remove_empty_rows:
-            mask = ~np.isnan(data).all(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-        elif remove_incomplete_rows:
-            mask = ~np.isnan(data).any(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-
-        # Broken, fix if needed
-        #if remove_empty_cols:
-        #    mask = ~np.isnan(data).all(axis=0)
-        #    data = data.T[mask.T]
-        #    labelsX = [l for l,m in zip(labelsX,mask) if m]
-
-        if sort_data:
-            # Preferable would be to sort by the total for each row
-            # can then use that to sort the labels list also
-            totals = np.ma.masked_invalid(data).sum(1).data # Get sum for rows, ignoring NaNs
-            si = totals.argsort()[::-1]
-            data = data[si] # Sort
-            labelsY = list( np.array( labelsY )[si] ) # Sort Ylabels via numpy array.
-        
-        for x, xL in enumerate(labelsX):
-            for y, yL in enumerate(labelsY):  
-
-                if data[y][x] != np.nan:
-                    buckets.append([ xL, yL, data[y][x] ] )
-
-        return buckets    
-
-    def render(self, metadata, debug=False):
-        template = self.parent.templateEngine.get_template('d3/figures.html')
-        self.browser.setHtml(template.render( metadata ),"~")
-        self.browser.exposeQtWebView()
-        
-        if debug: 
-            f = open('/Users/mxf793/Desktop/testout.html','w')
-            f.write( template.render( metadata ) )
-            f.close()
-
-
-class analysisEquilibriaView(analysisHeatmapView):
+class analysisEquilibriaView(ui.analysisHeatmapView):
     def __init__(self, *args, **kwargs):
         super(analysisEquilibriaView, self).__init__(*args, **kwargs)
     
@@ -324,7 +220,7 @@ class analysisEquilibriaView(analysisHeatmapView):
         
 
 
-class analysisMetaboliteView(analysisHeatmapView):
+class analysisMetaboliteView(ui.analysisHeatmapView):
     def generate(self):
         # Sort by scores
         ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
@@ -362,7 +258,7 @@ class analysisMetaboliteView(analysisHeatmapView):
 
 
 
-class analysisEnergyWasteView(analysisHeatmapView):
+class analysisEnergyWasteView(ui.analysisHeatmapView):
 
     def generate(self):
         # Standard energy sources (CHO)
@@ -420,7 +316,7 @@ class analysisEnergyWasteView(analysisHeatmapView):
 
 
 
-class analysisCircosView(analysisHeatmapView):
+class analysisCircosView(ui.analysisHeatmapView):
     def __init__(self, parent):
         self.parent = parent
         self.browser = ui.QWebViewExtend( parent.onBrowserNav )
@@ -531,7 +427,7 @@ class analysisCircosView(analysisHeatmapView):
         
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class d3View(analysisView):
+class d3View(ui.analysisView):
     def __init__(self, parent):
         self.parent = parent
         self.browser = ui.QWebViewExtend( parent.onBrowserNav )
@@ -575,107 +471,6 @@ class d3View(analysisView):
         self.browser.setHtml(template.render( metadata ),"~") 
         self.browser.exposeQtWebView()
 
-# Class for data visualisations using GPML formatted pathways
-# Supports loading from local file and WikiPathways
-class gpmlPathwayView(analysisView):
-    def __init__(self, parent, gpml=None, svg=None, **kwargs):
-        super(gpmlPathwayView, self).__init__(parent, **kwargs)
-
-        self.gpml = gpml # Source GPML file
-        self.svg = svg # Rendered GPML file as SVG
-        self.metadata = {}
-        
-        
-    def load_gpml_file(self, filename):
-        f = open(filename,'r')
-        self.gpml = f.read()
-        f.close()
-        
-    def load_gpml_wikipathways(self, pathway_id):
-        f = urllib2.urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id )
-        self.gpml = f.read()
-        f.close()
-        
-    def get_xref_via_unification(self, database, id):
-        xref_translate = {
-            'Kegg Compound': 'LIGAND-CPD',
-            'Entrez Gene': 'ENTREZ',
-            'HMDB': 'HMDB',
-            'CAS': 'CAS',
-            }
-        if database in xref_translate:
-            obj = self.parent.db.get_via_unification( xref_translate[database], id )
-            if obj:
-                return ('MetaCyc %s' % obj.type, obj.id )
-        return None
-            
-    def get_extended_xref_via_unification_list(self, xrefs):
-        if xrefs:
-            for xref,id in xrefs.items():
-                xref_extra = self.get_xref_via_unification( xref, id )
-                if xref_extra:
-                    xrefs[ xref_extra[0] ] = xref_extra[1]
-        return xrefs
-                
-    def get_xref(self, obj):
-        print obj, obj.type, obj.id
-        
-        return ('MetaCyc %s' % obj.type, obj.id)
-        
-    def generate(self):
-    
-        # Add our urls to the defaults
-        xref_urls = {
-            'MetaCyc compound': 'metapath://metabolite/%s/view',
-            'MetaCyc gene': 'metapath://gene/%s/view',
-            'MetaCyc protein': 'metapath://protein/%s/view',
-            'WikiPathways': 'metapath://wikipathway/%s/import',
-        }
-        
-        if self.parent.data and self.parent.data.analysis:
-            # Build color_table
-            node_colors = {}
-            for m_id, analysis in self.parent.data.analysis.items():
-                if m_id in self.parent.db.metabolites.keys():
-                    node_colors[ self.get_xref( self.parent.db.metabolites[ m_id ] ) ] = ( core.rdbu9[ analysis['color'] ], core.rdbu9c[ analysis['color'] ] )
-        else:
-            node_colors = {}
-            
-        if self.gpml:
-            self.svg, self.metadata = gpml2svg.gpml2svg( self.gpml, xref_urls=xref_urls, xref_synonyms_fn=self.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
-            self.render()
-            print self.svg
-        else:
-            self.svg = None
-            
-    def render(self):
-        if self.svg is None:
-            self.generate()
-        
-        if self.svg is None:
-            html_source = ''
-        else:
-            html_source = '''<html><body><div id="svg%d" class="svg">''' + self.svg + '''</body></html>'''
-
-        self.browser.setHtml(html_source)
-
-
-class dialogWikiPathways(ui.remoteQueryDialog):
-    def __init__(self, parent=None, **kwargs):
-        super(dialogWikiPathways, self).__init__(parent, **kwargs)        
-        
-        self.setWindowTitle("Load GPML pathway from WikiPathways")
-
-    def parse(self, data):
-        result = {}
-        tree = et.fromstring( data.encode('utf-8') )
-        pathways = tree.iterfind('{http://www.wso2.org/php/xsd}result')
-        
-        for p in pathways:
-            result[ '%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text ) ] = p.find('{http://www.wikipathways.org/webservice}id').text
-            
-        return result        
-    
       
 class dialogDefineExperiment(ui.genericDialog):
     
@@ -858,6 +653,8 @@ class MainWindow(ui.MainWindowUI):
         # The following holds tabs & pathway objects for gpml imported pathways
         self.gpmlpathways = [] 
         self.tab_handlers = []
+        self.url_handlers = {}
+        self.app_launchers = {}
 
         # Create templating engine
         self.templateEngine = Engine(
@@ -965,80 +762,60 @@ class MainWindow(ui.MainWindowUI):
             self.generateGraphView()
 
     def onBrowserNav(self, url):
-        # Interpret the (fake) URL to display Metabolite, Reaction, Pathway data in the sidebar interface
+        # Interpret internal URLs for message passing to display Metabolite, Reaction, Pathway data in the sidebar interface
         # then block the continued loading
-
-        # url is Qurl type
+        
         if url.scheme() == 'metapath':
             # Take string from metapath:// onwards, split on /
-            type = url.host()
-            null, id, action = url.path().split('/') # FIXME: Can use split here once stop using pathwaynames           
-            print id, action
-            # Add an object to the current view
-            if action == 'add':
-    
-                # FIXME: Hacky test of an idea
-                if type == 'pathway' and id in self.db.pathways:
-                    # Add the pathway and regenerate
-                    pathways = self.config.value('/Pathways/Show').split(',')
-                    pathways.append( urllib2.unquote(id) )
-                    self.config.setValue('/Pathways/Show', ','.join(pathways) )
-                    self.generateGraphView()   
+            app = url.host()
+            if app == 'app-manager':
+                app, action = url.path().strip('/').split('/')
+                if action == 'add':
 
-            # Remove an object to the current view
-            if action == 'remove':
-    
-                # FIXME: Hacky test of an idea
-                if type == 'pathway' and id in self.db.pathways:
-                    # Add the pathway and regenerate
-                    pathways = self.config.value('/Pathways/Show').split(',')
-                    pathways.remove( urllib2.unquote(id) )
-                    self.config.setValue('/Pathways/Show', ','.join(pathways))
-                    self.generateGraphView()
+                    self.app_launchers[ app ]()
 
-            # View an object
-            if action == 'view':
-                if type == 'pathway' and id in self.db.pathways:
-                    pathway = self.db.pathways[id]
-                    self.generatedbBrowserView(template='pathway.html', data={
-                        'title': pathway.name,
-                        'object': pathway,
-                        })
-                elif type == 'reaction' and id in self.db.reactions:
-                    reaction = self.db.reactions[id]
-                    self.generatedbBrowserView(template='reaction.html', data={
-                        'title': reaction.name,
-                        'object': reaction,
-                        })
-                elif type == 'metabolite' and id in self.db.metabolites:
-                    metabolite = self.db.metabolites[id]
-                    self.generatedbBrowserView(template='metabolite.html', data={
-                        'title': metabolite.name,
-                        'object': metabolite,
-                        })
-                elif type == 'protein' and id in self.db.proteins:
-                    protein = self.db.proteins[id]
-                    self.generatedbBrowserView(template='protein.html', data={
-                        'title': protein.name,
-                        'object': protein,
-                        })
-                elif type == 'gene' and id in self.db.gene:
-                    gene = self.db.genes[id]
-                    self.generatedbBrowserView(template='gene.html', data={
-                        'title': gene.name,
-                        'object': gene,
-                        })
+            elif app == 'db':
+                kind, id, action = url.path().strip('/').split('/')
+                            # View an object
+                if action == 'view':
+                    if kind == 'pathway' and id in self.db.pathways:
+                        pathway = self.db.pathways[id]
+                        self.generatedbBrowserView(template='pathway.html', data={
+                            'title': pathway.name,
+                            'object': pathway,
+                            })
+                    elif kind == 'reaction' and id in self.db.reactions:
+                        reaction = self.db.reactions[id]
+                        self.generatedbBrowserView(template='reaction.html', data={
+                            'title': reaction.name,
+                            'object': reaction,
+                            })
+                    elif kind == 'metabolite' and id in self.db.metabolites:
+                        metabolite = self.db.metabolites[id]
+                        self.generatedbBrowserView(template='metabolite.html', data={
+                            'title': metabolite.name,
+                            'object': metabolite,
+                            })
+                    elif kind == 'protein' and id in self.db.proteins:
+                        protein = self.db.proteins[id]
+                        self.generatedbBrowserView(template='protein.html', data={
+                            'title': protein.name,
+                            'object': protein,
+                            })
+                    elif kind == 'gene' and id in self.db.gene:
+                        gene = self.db.genes[id]
+                        self.generatedbBrowserView(template='gene.html', data={
+                            'title': gene.name,
+                            'object': gene,
+                            })
 
-            if action == 'import':
-                if type == 'wikipathway':
-                    gpmlpathway = gpmlPathwayView( self )
-                    gpmlpathway.load_gpml_wikipathways(id)
-                    gpmlpathway.generate()
+            
+            
 
-                    self.gpmlpathways.append(gpmlpathway)
-                    self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
+            #metaviz/metabolite/%s/view            
+            elif app in self.url_handlers:
+                self.url_handlers[app]( url.path().strip('/') )
 
-                        
                 # Store URL so we can reload the sidebar later
                 self.dbBrowser_CurrentURL = url
 
@@ -1083,35 +860,6 @@ class MainWindow(ui.MainWindowUI):
             self.layout.translate(self.db)
             # Regenerate the graph view
             self.generateGraphView()            
-
-    def onLoadGPMLPathway(self):
-        """ Open a GPML pathway file """
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open GPML pathway file', '')
-        if filename:
-        
-            gpmlpathway = gpmlPathwayView( self )
-
-            gpmlpathway.load_gpml_file(filename)
-            gpmlpathway.generate()
-
-            self.gpmlpathways.append(gpmlpathway)
-            self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
-
-    def onLoadGPMLWikiPathways(self):
-        dialog = dialogWikiPathways(parent=self, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
-        ok = dialog.exec_()
-        if ok:
-            # Show
-            idx = dialog.select.selectedItems()
-            for x in idx:
-                gpmlpathway = gpmlPathwayView( self )
-                pathway_id = dialog.data[x.text()]
-                
-                gpmlpathway.load_gpml_wikipathways(pathway_id)
-                gpmlpathway.generate()
-
-                self.gpmlpathways.append(gpmlpathway)
-                self.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
             
     def onDefineExperiment(self):
         """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """

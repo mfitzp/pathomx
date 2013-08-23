@@ -12,8 +12,11 @@
     <link rel="stylesheet" href="file://@htmlbase/css/base.css">
     <base href="file://@htmlbase/">
     <style>
+        html, body {
+            background:#f8f8f8 !important;
+            }
+            
         body {
-            background-color:#f5f5f5;
             margin:1em;
             }
         
@@ -50,14 +53,13 @@
         </style>
     </head>
     <body id="mainwindow">
-    <h1>Apps</h1>
         @for category in categories:
         <h2>@category</h2>
         <ul class="large-block-grid-5">
             @for app in apps[category]:
                 <li><div class="app"
-                            @if 'image' in app:
-                                style="background-image:url('@app['image']');"
+                            @if app['image']:
+                                style="background-image:url('file://@app['image']');"
                             @endif
                                 onclick="delegateUrl('metapath://app-manager/@app['id']/add');">
                         <div class="meta">
