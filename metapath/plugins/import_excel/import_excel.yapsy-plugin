@@ -1,0 +1,9 @@
+[Core]
+Name = Import Excel
+Module = import_excel
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Interactively import data from Excel files in various formats

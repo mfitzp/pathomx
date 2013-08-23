@@ -1,0 +1,9 @@
+[Core]
+Name = Import Text/XML
+Module = import_text
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Import text and XML in various standard formats

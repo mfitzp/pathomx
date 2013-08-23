@@ -1,0 +1,9 @@
+[Core]
+Name = Pathway Mining
+Module = pathway_mining
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Automated mining of regulated pathways using network hints

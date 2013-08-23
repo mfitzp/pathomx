@@ -1,0 +1,9 @@
+[Core]
+Name = NMR Lab
+Module = nmrlab
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = MATLAB based tool for the processing NMR spectra
