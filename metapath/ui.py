@@ -167,10 +167,11 @@ class analysisView(object):
 
         template = self.parent.templateEngine.get_template('d3/figure.html')
         self.browser.setHtml(template.render( metadata ),"~") 
+        self.browser.exposeQtWebView()
         
-        f = open('/Users/mxf793/Desktop/test.html','w')
-        f.write( template.render( metadata ) )
-        f.close()
+        #f = open('/Users/mxf793/Desktop/test.html','w')
+        #f.write( template.render( metadata ) )
+        #f.close()
         
     def build_log2_change_table_of_classtypes(self, objects, classes):
         data = np.zeros( (len(objects), len(classes))  )
@@ -819,7 +820,7 @@ class MainWindowUI(QMainWindow):
             for plugin in self.pluginManager.getPluginsOfCategory(category):
 
                 #plugin_id = os.path.basename( plugin.path )
-                plugin_image = plugin.path + '.png'
+                plugin_image = os.path.join( os.path.dirname(plugin.path), 'icon.png' )
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
                 

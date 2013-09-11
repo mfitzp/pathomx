@@ -2,15 +2,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+
+import os, sys, re, math, codecs, locale
+
+UTF8Writer = codecs.getwriter('utf8')
+sys.stdout = UTF8Writer(sys.stdout)
+reload(sys).setdefaultencoding('utf8')
+
 # Import PySide classes
 from PySide.QtGui import *
 from PySide.QtCore import *
 from PySide.QtWebKit import *
 from PySide.QtNetwork import *
 
-import os, sys, re, math, codecs, locale
-
-import pydot
 import urllib2
 
 from optparse import Values
@@ -33,7 +37,7 @@ except ImportError:
 
 
 # MetaPath classes
-import db, data, utils, ui# core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
+import db, data, utils, ui # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
 import plugins # plugin helper/manager
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
@@ -44,7 +48,6 @@ METAPATH_MINING_TYPE_TEXT = (
     'Number metabolites with data per pathway',
 )
 
-reload(sys).setdefaultencoding('utf8')
 
 import logging
 logging.basicConfig(level=logging.DEBUG)

@@ -15,6 +15,23 @@ import xml.etree.cElementTree as et
 from PySide.QtGui import *
 from PySide.QtCore import *
 
+
+# Provider/Consumer classes define data availability and requirements for a given dataManager/analysisManager object.
+# Object can accept input from any Provider that offers it's Consumer requirements; process it; and then provide it downstream
+# view it's own Provider class definition.
+
+class dataProvider():
+    pass
+    
+    
+    
+class dataConsumer():
+    pass
+
+
+## TODO: Chaining and update notification/re-processing 
+
+
 # dataManager models offer QAbstractTableModel interface to loaded dataset. Data is stored internally as 
 # two sets of headers and a combined table of the data underneath. Alternate interfaces to the same data
 # are automatically maintained and updated to represent changes
@@ -29,6 +46,17 @@ class dataManager(QAbstractTableModel):
         QAbstractTableModel.__init__(self, None, *args, **kwargs)
 
         self.load_datafile(filename)
+        
+        self.parents = []
+        self.children = []
+
+    def refresh_from_parent_data(self, parent):
+        # Trigger to refresh data from parent object (parent)
+        # 1st check this is in our parents list;
+        # Re-validate the dataProvider/dataConsumer link between self and parent
+        # Re-generate dataset
+        # (trigger children to refresh) to complete chaining
+        pass
 
     def rowCount(self, parent):
         return len(self.table)

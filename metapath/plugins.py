@@ -9,7 +9,7 @@ from PySide.QtNetwork import *
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManager import PluginManagerSingleton
 
-import os
+import os, inspect
 
 class BasePlugin(IPlugin):
 
@@ -21,7 +21,27 @@ class BasePlugin(IPlugin):
         self.m = manager.m
         self.instances = []
         self.id = self.__module__
-                
+        
+        self.path = os.path.dirname( inspect.getfile(self.__class__) )
+
+    @property
+    def icon(self):
+        icon_path = os.path.join( self.path, 'icon.png' )
+        if os.path.exists( icon_path ):
+            return QIcon( icon_path )
+        else:
+            return None
+
+    @property
+    def workspace_icon(self):
+        icon_path = os.path.join( self.path, 'icon-16.png' )
+        if os.path.exists( icon_path ):
+            return QIcon( icon_path )
+        else:
+            return None
+                       
+
+                    
     def register_app_launcher(self, app_launcher):
         self.m.app_launchers[ self.id ] = app_launcher
 

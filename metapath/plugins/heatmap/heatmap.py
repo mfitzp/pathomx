@@ -311,11 +311,8 @@ class HeatmapView(analysisEquilibriaView):
         #self.o.show() 
         #self.plugin.register_url_handler( self.id, self.url_handler )
         
-        # Horrible
-        icon = QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons',
-                os.path.join( os.path.dirname( os.path.realpath(__file__) ), 'heatmap-type-icon.png') 
-                ) ) )       
-        self.workspace_item = self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=icon) #, icon = None)
+
+        self.workspace_item = self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
 
 
 
@@ -326,11 +323,6 @@ class Heatmap(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(Heatmap, self).__init__(**kwargs)
-        #self.register_url_handler( self.id, self.url_handler )
-        #self.register_menus( 'pathways', [
-        #    {'title': u'&Load GPML pathway\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway file'},
-        #    {'title': u'&Load GPML pathway via WikiPathways\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway from WikiPathways service'},        
-        #] )
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours

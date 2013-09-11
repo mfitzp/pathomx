@@ -28,7 +28,7 @@ class PathwayConnectsView(ui.analysisView):
 
         self.generate()
         
-        self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'PathwayX', is_selected=True) #, icon = None)
+        self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'Pathway Connects', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
         
 
     def url_handler(self, url):

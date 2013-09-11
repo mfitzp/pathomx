@@ -31,12 +31,12 @@ class gpmlPathwayView(ui.analysisView):
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
-        load_gpmlAction = QAction(QIcon.fromTheme("gpml-open", QIcon( os.path.join( utils.scriptdir,'icons','document-open-gpml.png') )), 'Load a GPML pathway file\u2026', self.m)
+        load_gpmlAction = QAction( QIcon( os.path.join( self.plugin.path,'document-open-gpml.png' ) ), 'Load a GPML pathway file\u2026', self.m)
         load_gpmlAction.setShortcut('Ctrl+Q')
         load_gpmlAction.setStatusTip('Load a GPML pathway file')
         load_gpmlAction.triggered.connect(self.onLoadGPMLPathway)
 
-        load_wikipathwaysAction = QAction(QIcon.fromTheme("wikipathways-open", QIcon( os.path.join( utils.scriptdir,'icons','wikipathways-open.png') )), 'Load pathway map from WikiPathways\u2026', self.m)
+        load_wikipathwaysAction = QAction( QIcon( os.path.join( self.plugin.path,'wikipathways-open.png' ) ), 'Load pathway map from WikiPathways\u2026', self.m)
         load_wikipathwaysAction.setShortcut('Ctrl+Q')
         load_wikipathwaysAction.setStatusTip('Load a GPML pathway from WikiPathways service')
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
@@ -50,7 +50,7 @@ class gpmlPathwayView(ui.analysisView):
          
         #self.o.show() 
         self.plugin.register_url_handler( self.id, self.url_handler )
-        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'WikiPathways', is_selected=True) #, icon = None)
+        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'WikiPathways', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
 
 
     def url_handler(self, url):
@@ -65,13 +65,11 @@ class gpmlPathwayView(ui.analysisView):
 
         if action == 'import':
             if kind == 'wikipathway':
-                gpmlpathway = gpmlPathwayView( self )
-                gpmlpathway.load_gpml_wikipathways(id)
-                gpmlpathway.generate()
-
-                self.m.gpmlpathways.append(gpmlpathway)
-                
-                self.m.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
+                # Create a new GPML viewer entity, delegating it to the parent plugin
+                g = gpmlPathwayView( self.plugin, self.m )
+                g.load_gpml_wikipathways(id)
+                g.generate()
+                self.plugin.instances.append( g )
                 
                 
         
