@@ -1,6 +1,6 @@
-from plugins import InputPlugin
+from plugins import DataPlugin
 
-class NMRGlue(InputPlugin):
+class NMRGlue(DataPlugin):
 
 
 

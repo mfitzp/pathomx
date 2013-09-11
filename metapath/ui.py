@@ -18,7 +18,7 @@ import os, urllib, urllib2
 # MetaPath classes
 import utils
 
-
+import numpy as np
 
 
 
@@ -48,7 +48,7 @@ class QWebViewExtend(QWebView):
             self.linkClicked.connect( self.onNavEvent )
 
         self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
-
+        
 
     def exposeQtWebView(self):
         frame = self.page().mainFrame()
@@ -110,25 +110,67 @@ class QWebViewScrollFix(QWebViewExtend):
 #When a wheelEvent comes in, we start a 25 ms single-shot timer and process the wheelEvent. For any future wheelEvent's that come in while the timer is active, we just accumulate the event->delta( )'s (and pos & globalPos values, too). When the timer finally fires, the accumulated deltas are packaged into a QWheelEvent and delivered to QWebView::wheelEvent. (One further refinement is that we only do this for wheelEvents that have NoButton and NoModifier.)
 
 
+#### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
+
+# Data view prototypes
+
+class dataView(object):
+    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
+    
+        self.plugin = plugin
+        self.m = parent
+        self.id = str( id( self ) )
+
+        self.w = QMainWindow()
+        t = self.w.addToolBar('Data')
+        t.setIconSize( QSize(16,16) )
+        
+        self.summary = QWebViewScrollFix()
+        self.table = QTableView()
+        #self.table.setRowCount(10)
+        #self.table.setColumnCount(5)
+        
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True)
+        self.tabs.setTabsClosable(False)
+        self.tabs.setTabPosition( QTabWidget.South )
+        self.tabs.addTab(self.summary, 'Summary')
+        self.tabs.addTab(self.table,'Table')
+        
+        self.w.setCentralWidget(self.tabs)
+         
+        #self.o.show() 
+        #self.plugin.register_url_handler( self.id, self.url_handler )
+        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'Data', is_selected=True) #, icon = None)
+            
+    def render(self, metadata):
+        return
+        
 
 
 
+# Analysis/Visualisation view prototypes
 
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class analysisView(object):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
         self.parent = parent
         self.browser = QWebViewScrollFix( parent.onBrowserNav )
-        
-        parent.tab_handlers.append( self )
+        self.id = str( id( self ) )
+                
+        #parent.tab_handlers.append( self )
     
     def render(self, metadata):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
-        template = self.parent.templateEngine.get_template('figure.html')
+        template = self.parent.templateEngine.get_template('d3/figure.html')
         self.browser.setHtml(template.render( metadata ),"~") 
+        
+        f = open('/Users/mxf793/Desktop/test.html','w')
+        f.write( template.render( metadata ) )
+        f.close()
         
     def build_log2_change_table_of_classtypes(self, objects, classes):
         data = np.zeros( (len(objects), len(classes))  )
@@ -174,32 +216,77 @@ class analysisView(object):
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class analysisd3View(analysisView):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
+        super(analysisd3View, self).__init__(parent, **kwargs)        
+    
         self.parent = parent
-        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
-        
-        parent.tab_handlers.append( self )
+        self.browser = QWebViewExtend( parent.onBrowserNav )
         
     def render(self, metadata, debug=False):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
     
-        template = self.parent.templateEngine.get_template('d3/figures.html')
+        template = self.parent.templateEngine.get_template('d3/figure.html')
         self.browser.setHtml(template.render( metadata ),"~")
         self.browser.exposeQtWebView()
+
+                    
         
-        if debug: 
-            f = open('/Users/mxf793/Desktop/testout.html','w')
-            f.write( template.render( metadata ) )
-            f.close()
+# Class for analysis views, using graph-based visualisations of defined datasets
+# associated layout and/or analysis
+class d3View(analysisView):
+    def __init__(self, parent, **kwargs):
+        super(d3View, self).__init__(parent, **kwargs)        
+    
+        self.parent = parent
+        self.browser = QWebViewExtend( parent.onBrowserNav )
+    
+    def generate(self):
+        current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
+        # Iterate pathways and get a list of all metabolites (list, for index)
+        metabolites = []
+        reactions = []
+        metabolite_pathway_groups = {}
+        for p in current_pathways:
 
+            for r in p.reactions:
+                ms = r.mtins + r.mtouts
+                for m in ms:
+                    if m not in metabolites:
+                        metabolites.append(m)
 
+                for m in ms:
+                    metabolite_pathway_groups[m] = current_pathways.index(p)
+
+                for mi in r.mtins:
+                    for mo in r.mtouts:
+                        reactions.append( [ metabolites.index(mi), metabolites.index(mo) ] )
+                
+        
+        # Get list of all reactions
+        # In template:
+        # Loop metabolites (nodes; plus their groups)
+    
+    
+        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
+                     'pathways':[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')],
+                     'metabolites':metabolites,
+                     'metabolite_pathway_groups':metabolite_pathway_groups, 
+                     'reactions':reactions,
+                     }
+        template = self.parent.templateEngine.get_template('d3/force.html')
+
+        self.browser.setHtml(template.render( metadata ),"~") 
+        self.browser.exposeQtWebView()
+
+      
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class analysisHeatmapView(analysisd3View):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
+        super(analysisHeatmapView, self).__init__(parent, **kwargs)        
         self.parent = parent
-        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
+        self.browser = QWebViewExtend( parent.onBrowserNav )
         
         parent.tab_handlers.append( self )
         
@@ -243,11 +330,10 @@ class analysisHeatmapView(analysisd3View):
 
 
 class analysisCircosView(analysisd3View):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
+        super(analysisCircosView, self).__init__(parent, **kwargs)        
         self.parent = parent
-        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
-        parent.tab_handlers.append( self )
-
+        self.browser = QWebViewExtend( parent.onBrowserNav )
 
     def build_matrix(self, targets, target_links):
 
@@ -267,7 +353,117 @@ class analysisCircosView(analysisd3View):
 
 
 
+class analysisCircosPathwayView(analysisHeatmapView):
+    def __init__(self, parent, **kwargs):
+        super(analysisCircosPathwayView, self).__init__(parent, **kwargs)        
 
+        self.parent = parent
+        self.browser = QWebViewExtend( parent.onBrowserNav )
+
+
+    def build_matrix(self, targets, target_links):
+
+        data = []
+        for mx in targets:
+            row = []
+            for my in targets:
+                n = len( list( target_links[my] & target_links[mx] ) )
+                row.append( n )
+    
+            data.append( row )
+        return data, targets
+
+
+    def generate(self):
+        pathways = self.parent.db.pathways.keys()
+        pathway_metabolites = dict()
+        
+        for k,p in self.parent.db.pathways.items():
+            pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
+
+        data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
+
+        pathway_reactions = dict()
+        
+        for k,p in self.parent.db.pathways.items():
+            pathway_reactions[p.id] = set( [m for m in p.reactions] )
+
+        data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
+
+
+        pathway_active_reactions = dict()
+        pathway_active_metabolites = dict()
+        active_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways_id = []
+        
+        for p in active_pathways:
+            pathway_active_reactions[p.id] = set( [r for r in p.reactions] )
+            pathway_active_metabolites[p.id] = set( [r for r in p.metabolites] )
+            active_pathways_id.append(p.id)
+    
+
+        data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
+        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_metabolites)
+
+
+        self.render( {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'figures': [[
+                        {
+                            'type':'circos',
+                            'data': data_ar,
+                            'labels': labels_ar,
+                            'n':1,  
+                            'legend':('Metabolic pathway reaction interconnections','Links between pathways indicate proportions of shared reactions between the two pathways in MetaCyc database')                             
+                        },
+                        {
+                            'type':'circos',
+                            'data': data_am,
+                            'labels': labels_am,
+                            'n':2,  
+                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
+                        },                                             
+                    ]],
+                    }, debug=True)
+
+"""                        
+                        {
+                            'type':'circos',
+                            'data': data_m,
+                            'labels': labels_m,
+                            'n':1,  
+                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
+                                                      
+                        },
+                        {
+                            'type':'circos',
+                            'data': data_r,
+                            'labels': labels_r,
+                            'n':2,  
+                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
+                                                      
+                        }],
+                        [
+
+
+                            {
+                            'type':'corrmatrix',
+                            'data': [
+                              {'group':"setosa","sepal length":1, "sepal width":5, "petal length":3, "petal width":2},
+                              {'group':"versicolor","sepal length":2, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"virginica","sepal length":3, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"setosa","sepal length":4, "sepal width":5, "petal length":3, "petal width":0},
+                              {'group':"versicolor","sepal length":5, "sepal width":5, "petal length":3, "petal width":1},
+                              {'group':"virginica","sepal length":6, "sepal width":5, "petal length":3, "petal width":2},
+                            ],
+                            'traits': ["sepal length", "sepal width", "petal length", "petal width"],
+                            'groups': ["setosa", "versicolor", "virginica"],
+                            'n':5,
+                            'legend':('a','b'),
+"""   
+
+
+# GENERIC CONFIGURATION AND OPTION HANDLING
 
 # Generic configuration dialog handling class
 class genericDialog(QDialog):
@@ -356,23 +552,54 @@ class MainWindowUI(QMainWindow):
         }
 
         # FILE MENU 
-        
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'About', self)
         aboutAction.setStatusTip('About MetaPath')
         aboutAction.triggered.connect(self.onAbout)
         self.menuBar['file'].addAction(aboutAction)
 
-        saveAction = QAction(QIcon.fromTheme("document-save", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), u'&Save As\u2026', self)
+        newAction = QAction(QIcon.fromTheme("new-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-new.png') )), u'&New Blank Workspace', self)
+        newAction.setShortcut('Ctrl+O')
+        newAction.setStatusTip('Create new blank workspace')
+        newAction.triggered.connect(self.onSaveAs)
+        self.menuBar['file'].addAction(newAction)
+        
+
+        openAction = QAction(QIcon.fromTheme("open-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') )), u'&Open\u2026', self)
+        openAction.setShortcut('Ctrl+O')
+        openAction.setStatusTip('Open previous analysis workspace')
+        openAction.triggered.connect(self.onSaveAs)
+        self.menuBar['file'].addAction(openAction)
+
+        self.menuBar['file'].addSeparator()
+                
+        saveAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') )), u'&Save', self)
         saveAction.setShortcut('Ctrl+S')
-        saveAction.setStatusTip('Save current metabolic pathway map in multiple formats')
+        saveAction.setStatusTip('Save current workspace for future use')
         saveAction.triggered.connect(self.onSaveAs)
         self.menuBar['file'].addAction(saveAction)
 
-        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-print.png') )), u'&Print\u2026', self)
+        saveAsAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), u'Save &As\u2026', self)
+        saveAsAction.setShortcut('Ctrl+A')
+        saveAsAction.setStatusTip('Save current workspace for future use')
+        saveAsAction.triggered.connect(self.onSaveAs)
+        self.menuBar['file'].addAction(saveAsAction)
+
+        self.menuBar['file'].addSeparator()        
+
+        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), u'&Print\u2026', self)
         printAction.setShortcut('Ctrl+P')
         printAction.setStatusTip('Print current metabolic pathway')
         printAction.triggered.connect(self.onPrint)
         self.menuBar['file'].addAction(printAction)
+
+        self.menuBar['file'].addSeparator()        
+
+        exportImagesAction = QAction(QIcon.fromTheme("image-export", QIcon( os.path.join( utils.scriptdir, 'icons', 'image-export.png') )), u'&Export figures\u2026', self)
+        exportImagesAction.setShortcut('Ctrl+E')
+        exportImagesAction.setStatusTip('Save current metabolic pathway map in multiple formats')
+        exportImagesAction.triggered.connect(self.onSaveAs)
+        self.menuBar['file'].addAction(exportImagesAction)
+
 
         resetAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','system-restart-panel.png') )), u'&Reset configuration', self)
         resetAction.setStatusTip('Reset config to systm defaults')
@@ -382,42 +609,23 @@ class MainWindowUI(QMainWindow):
         #fileMenu.addAction(exitAction)
 
         # PATHWAY MENU
-        
-        
         show_pathwaysAction = QAction(QIcon.fromTheme("document-open", QIcon( os.path.join( utils.scriptdir,'icons','document-open.png') )), '&Show Selected Pathways\u2026', self)
         show_pathwaysAction.setStatusTip('Show and hide specific metabolic pathways')
         show_pathwaysAction.triggered.connect(self.onPathwaysShow)
         self.menuBar['pathways'].addAction(show_pathwaysAction)
-        
-        show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self)
-        show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
-        show_pathway_linksAction.setCheckable( True )
-        show_pathway_linksAction.setChecked( bool( self.config.value('/Pathways/ShowLinks' ) ) )
-        show_pathway_linksAction.toggled.connect(self.onPathwayLinksToggle)
-        self.menuBar['pathways'].addAction(show_pathway_linksAction)
-        
-        self.menuBar['pathways'].addSeparator()
-
-        load_layoutAction = QAction('&Load predefined layout\u2026', self)
-        load_layoutAction.setStatusTip('Load a pre-defined layout map file e.g KGML')
-        load_layoutAction.triggered.connect(self.onLoadLayoutFile)
-        self.menuBar['pathways'].addAction(load_layoutAction)
-
-        self.menuBar['pathways'].addSeparator()
 
 
         # PATHWAYS Menu
         
         
         # DATA MENU
-        
-        load_dataAction = QAction(QIcon.fromTheme("document-open", QIcon( os.path.join( utils.scriptdir,'icons','document-open.png') )), 'Load metabolite dataset\u2026', self)
+        load_dataAction = QAction(QIcon.fromTheme("document-open", QIcon( os.path.join( utils.scriptdir,'icons','blue-folder-open-table.png') )), 'Load metabolite dataset\u2026', self)
         load_dataAction.setShortcut('Ctrl+Q')
         load_dataAction.setStatusTip('Load metabolite datfile')
         load_dataAction.triggered.connect(self.onLoadDataFile)
         self.menuBar['data'].addAction(load_dataAction)
 
-        define_experimentAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Define experiment\u2026', self)
+        define_experimentAction = QAction(QIcon.fromTheme("layout-design", QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') )), 'Define experiment\u2026', self)
         define_experimentAction.setShortcut('Ctrl+Q')
         define_experimentAction.setStatusTip('Define experiment control, test and timecourse settings')
         define_experimentAction.triggered.connect(self.onDefineExperiment)
@@ -425,7 +633,7 @@ class MainWindowUI(QMainWindow):
         
         self.menuBar['data'].addSeparator()
         
-        enable_pathway_miningAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Enable pathway mining', self)
+        enable_pathway_miningAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','hard-hat-mine.png') )), 'Enable pathway mining', self)
         enable_pathway_miningAction.setShortcut('Ctrl+Q')
         enable_pathway_miningAction.setStatusTip('Enable algorithmic mining of key pathways')
         enable_pathway_miningAction.setCheckable( True )
@@ -433,61 +641,13 @@ class MainWindowUI(QMainWindow):
         enable_pathway_miningAction.toggled.connect(self.onPathwayMiningToggle)
         self.menuBar['data'].addAction(enable_pathway_miningAction)
 
-        pathway_mining_settingsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons', 'visualization.png') )), 'Pathway mining settings\u2026', self)
+        pathway_mining_settingsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons', 'hard-hat-mine.png') )), 'Pathway mining settings\u2026', self)
         pathway_mining_settingsAction.setStatusTip('Define pathway mining settings')
         pathway_mining_settingsAction.triggered.connect(self.onMiningSettings)
         self.menuBar['data'].addAction(pathway_mining_settingsAction)
 
         # VIEW MENU 
-        
-        
-        showenzymesAction = QAction('Show proteins/enzymes', self)
-        showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
-        showenzymesAction.setCheckable( True )
-        showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
-        showenzymesAction.toggled.connect(self.onShowEnzymesToggle)
-        self.menuBar['view'].addAction(showenzymesAction)
-        
-        show2ndAction = QAction('Show 2° metabolites', self)
-        show2ndAction.setStatusTip('Show 2° metabolites on reaction paths')
-        show2ndAction.setCheckable( True )
-        show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
-        show2ndAction.toggled.connect(self.onShow2ndToggle)
-        self.menuBar['view'].addAction(show2ndAction)
-
-        showmolecularAction = QAction('Show molecular structures', self)
-        showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
-        showmolecularAction.setCheckable( True )
-        showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        showmolecularAction.toggled.connect(self.onShowMolecularToggle)
-        self.menuBar['view'].addAction(showmolecularAction)
-
-        showanalysisAction = QAction('Show network analysis', self)
-        showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
-        showanalysisAction.setCheckable( True )
-        showanalysisAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
-        self.menuBar['view'].addAction(showanalysisAction)
-
-        self.menuBar['view'].addSeparator()
-        
-        highlightcolorsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight Reaction Pathways', self)
-        highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
-        highlightcolorsAction.setCheckable( True )
-        highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
-        highlightcolorsAction.toggled.connect(self.onHighlightPathwaysToggle)
-        self.menuBar['view'].addAction(highlightcolorsAction)
-
-        highlightregionAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight pathway/compartment regions', self)
-        highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
-        highlightregionAction.setCheckable( True )
-        highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
-        highlightregionAction.toggled.connect(self.onHighlightRegionsToggle)
-        self.menuBar['view'].addAction(highlightregionAction)
-
-        self.menuBar['view'].addSeparator()
-        
-        refreshAction = QAction(QIcon.fromTheme("view-refresh", QIcon( os.path.join( utils.scriptdir,'icons', 'view-refresh.png') )), u'&Refresh', self)
+        refreshAction = QAction(QIcon.fromTheme("view-refresh", QIcon( os.path.join( utils.scriptdir,'icons', 'refresh.png') )), u'&Refresh', self)
         refreshAction.setShortcut('Ctrl+R')
         refreshAction.setStatusTip('Refresh metabolic pathway map')
         refreshAction.triggered.connect(self.onRefresh)
@@ -506,27 +666,31 @@ class MainWindowUI(QMainWindow):
         self.menuBar['view'].addAction(zoomoutAction)
         
         
-
         # DATABASE MENU
-
-        
-        load_identitiesAction = QAction(QIcon.fromTheme("document-import", QIcon( os.path.join( utils.scriptdir,'icons','document-import.png') )), u'&Load metabolite identities\u2026', self)
+        load_identitiesAction = QAction(QIcon.fromTheme("document-import", QIcon( os.path.join( utils.scriptdir,'icons','database-import.png') )), u'&Load metabolite identities\u2026', self)
         load_identitiesAction.setStatusTip('Load additional metabolite identities/synonyms')
         load_identitiesAction.triggered.connect(self.onLoadIdentities)
         self.menuBar['database'].addAction(load_identitiesAction)
         
         self.menuBar['database'].addSeparator()
         
-        reload_databaseAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','system-restart-panel.png') )), u'&Reload database', self)
+        reload_databaseAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','exclamation-red.png') )), u'&Reload database', self)
         reload_databaseAction.setStatusTip('Reload pathway & metabolite database')
         reload_databaseAction.triggered.connect(self.onReloadDB)
         self.menuBar['database'].addAction(reload_databaseAction)
         
+        
+        
         # TOOLBARS
         self.setToolButtonStyle( Qt.ToolButtonFollowStyle ) #Qt.ToolButtonTextUnderIcon
-
+        self.setIconSize( QSize(16,16) )
+        #self.setUnifiedTitleAndToolBarOnMac( True )
         self.fileToolbar = self.addToolBar('File')
+
+
+        self.fileToolbar.addAction(openAction)
         self.fileToolbar.addAction(saveAction)
+        self.fileToolbar.addAction(exportImagesAction)
         self.fileToolbar.addAction(printAction)
         self.fileToolbar.addAction(printAction)
         
@@ -536,20 +700,13 @@ class MainWindowUI(QMainWindow):
         self.viewToolbar.addAction(zoomoutAction)
         self.viewToolbar.addAction(refreshAction)
         
-        self.cluster_control = QComboBox()
-        self.cluster_control.addItems(['pathway','compartment'])
-        self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
-
-        self.viewToolbar.addWidget(self.cluster_control)
-
-        
 
         self.experimentToolbar = self.addToolBar('Experiment')
         #self.experimentToolbar.addWidget( QLabel('Experiment') )
-        spacerWidget = QWidget()
-        spacerWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        spacerWidget.setVisible(True)
-        self.experimentToolbar.addWidget(spacerWidget)
+        #spacerWidget = QWidget()
+        #spacerWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        #spacerWidget.setVisible(True)
+        #self.experimentToolbar.addWidget(spacerWidget)
 
         self.experimentToolbar.addAction(load_dataAction)
         self.experimentToolbar.addAction(define_experimentAction)
@@ -576,6 +733,10 @@ class MainWindowUI(QMainWindow):
         self.experimentToolbar.addAction(enable_pathway_miningAction)
         self.experimentToolbar.addWidget(self.sb_miningDepth)
 
+
+        self.addToolBarBreak()
+
+
         #self.vboxlayout.addWidget(self.mainBrowser)
         QNetworkProxyFactory.setUseSystemConfiguration( True )
 
@@ -589,37 +750,59 @@ class MainWindowUI(QMainWindow):
         QWebSettings.globalSettings().setAttribute( QWebSettings.WebAttribute.DeveloperExtrasEnabled, True)
         
         self.mainBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
-        self.appBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
 
-        self.tabs = QTabWidget()
-        self.tabs.setTabsClosable(True)
-        self.tabs.setDocumentMode(True)
-        self.tabs.addTab(self.appBrowser, '★') 
-        self.tabs.addTab(self.mainBrowser, '?') #⇲▼◎♥⚑☺⬚
+        #self.tabs = QTabWidget()
+        #self.tabs.setTabsClosable(True)
+        #self.tabs.setDocumentMode(True)
+        #self.tabs.setMovable(True)
+        #self.tabs.setTabPosition( QTabWidget.South )
+        #self.tabs.setTabShape( QTabWidget.Triangular )
         #∞Σ⌘
-        self.setCentralWidget(self.tabs)
+        
+        
         
         # Hide close button from the homepage
-        self.tabs.tabBar().setTabButton(1, self.tabs.tabBar().ButtonPosition(), None)
-        self.tabs.tabBar().setTabButton(0, self.tabs.tabBar().ButtonPosition(), None)
+        #self.tabs.addTab(self.mainBrowser, '⁉') #Help  ↛⇲▼◎♥⚑☺⬚
+        #self.tabs.tabBar().setTabButton(0, self.tabs.tabBar().ButtonPosition(), None)
+
+        #self.tabs.addTab(self.appBrowser, '★') #Apps
+        #self.tabs.tabBar().setTabButton(1, self.tabs.tabBar().ButtonPosition(), None)
+        #self.tabs.tabBar().setTabTextColor(1, QColor(237,212,0))
+
+        #self.tabs.addTab(QWidget(), '⌘') #Database
+        #self.tabs.tabBar().setTabButton(2, self.tabs.tabBar().ButtonPosition(), None)
+        #self.tabs.tabBar().setTabTextColor(2, QColor(115,210,22))
+
+        #self.tabs.addTab(QWidget(), 'Σ') #Data (&Analysis)
+        #self.tabs.tabBar().setTabButton(3, self.tabs.tabBar().ButtonPosition(), None)
+        #self.tabs.tabBar().setTabTextColor(3, QColor(52,101,164))
+
+        #self.tabs.addTab(QWidget(), '↛') #Routefinder: Track analysis pathways?
+        #self.tabs.tabBar().setTabButton(4, self.tabs.tabBar().ButtonPosition(), None)
+        #self.tabs.tabBar().setTabTextColor(4, QColor(117,80,123))
+
+
+
+        #self.setCentralWidget(self.tabs)
+
+#        self.tabs.tabBar().setTabButton(3, self.tabs.tabBar().ButtonPosition(), None)
 
 #        self.inspect = QWebInspector()
 #        self.tabs.addTab(self.inspect, 'Inspector')
-
+        self.dbBrowser_CurrentURL = None
 
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
         self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
-
-        plugin_categories = ['Input','Processing','Analysis','Visualisation','Output','Misc']
         
         self.pluginManager = PluginManagerSingleton.get()
         self.pluginManager.m = self
         self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
         self.pluginManager.setCategoriesFilter({
-               "Input" : plugins.InputPlugin,
+               "Data" : plugins.DataPlugin,
                "Processing" : plugins.ProcessingPlugin,
+               "Assignment": plugins.AssignmentPlugin,
                "Analysis" : plugins.AnalysisPlugin,
                "Visualisation" : plugins.VisualisationPlugin,
                "Output" : plugins.OutputPlugin,
@@ -627,106 +810,135 @@ class MainWindowUI(QMainWindow):
                })
         self.pluginManager.collectPlugins()
 
+        plugin_categories = ['Data','Processing','Assignment','Analysis','Visualisation']
         apps = defaultdict(list)
+        self.appBrowsers = {}
+        
         # Loop round the plugins and print their names.
         for category in plugin_categories:
             for plugin in self.pluginManager.getPluginsOfCategory(category):
 
-                plugin_id = os.path.basename( plugin.path )
+                #plugin_id = os.path.basename( plugin.path )
                 plugin_image = plugin.path + '.png'
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
                 
                 apps[category].append({
-                    'id': plugin_id, 
+                    'id': plugin.plugin_object.__module__, 
                     'image': plugin_image,          
                     'name': plugin.name,
                     'description': plugin.description,
                 })
-
-
-        # Display the app browser
-        metadata = {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'categories':plugin_categories,
-            'apps':apps,
-        }
-        
-        
-        #from pymatbridge import Matlab
-        #mlab = Matlab('/Applications/MATLAB_R2011a_Student.app/bin/matlab')
-        #mlab.start()
-        #mlab.run_code('nmrlab')
-        
-        template = self.templateEngine.get_template('apps.html')
-        self.appBrowser.setHtml(template.render( metadata ),"~") 
-        self.appBrowser.loadFinished.connect( self.onBrowserLoadDone )
-        
-        f = open('/Users/mxf793/Desktop/testapps.html','w')
-        f.write(template.render( metadata ))
-        f.close()
-        
+ 
 
         self.dbBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
-        # Display a sponsors
+        # Display a list of supporting orgs
         template = self.templateEngine.get_template('sponsors.html')
         self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
-        self.dbBrowser_CurrentURL = None
         
-        self.dataDock = QDockWidget('Database Viewer')
-        self.dataDock.setMaximumWidth(300);
+        self.dataDock = QDockWidget('Database')
         self.dataDock.setWidget(self.dbBrowser)
-        self.dataDock.setFeatures(QDockWidget.DockWidgetMovable)
+        self.dataDock.setMinimumWidth(300)
+        self.dataDock.setMaximumWidth(300)
+        
+        #self.dataDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
+
+        self.stack = QStackedWidget()
+        #self.stack.addWidget(self.mainBrowser)
+        #self.stack.addWidget(self.tabs)
+        #self.stack.addWidget(self.appBrowser)
+
+        self.setCentralWidget(self.stack)
+
+        self.stack.setCurrentIndex(0)
+
+        self.workspace_count = 0 # Auto-increment
+        self.workspace_parents = {}
+        
+        self.workspace = QTreeWidget()
+        self.workspace.setColumnCount(2)
+        self.workspace.setHeaderLabels(['','ID']) #,'#'])
+        self.workspace.setUniformRowHeights(True)
+        self.workspace.hideColumn(1)
+        #self.workspace.setIndentation(10)
+        
+        app_category_icons = {
+               "Data" : QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
+               "Processing" : QIcon.fromTheme("processing", QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ) ),
+               "Assignment" : QIcon.fromTheme("assignment", QIcon( os.path.join( utils.scriptdir,'icons','map.png' ) ) ),
+               "Analysis" : QIcon.fromTheme("analysis", QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ) ),
+               "Visualisation" : QIcon.fromTheme("visualisation", QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ) ),
+               }
+    
+        template = self.templateEngine.get_template('apps.html')
+        for category in plugin_categories:
+            self.appBrowsers[ category ] = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+            self.appBrowsers[ category ].setHtml(template.render( 
+                {
+                'htmlbase': os.path.join( utils.scriptdir,'html'),
+                'category':category,
+                'apps':apps[ category ],
+                }                
+             ),"~") 
+                
+            self.appBrowsers[ category ].loadFinished.connect( self.onBrowserLoadDone )
+            self.appBrowsers[ category ].exposeQtWebView()
+                
+            self.addWorkspaceItem( self.appBrowsers[ category ], None, category, app_category_icons[category]   )
+
+
+        #self.addWorkspaceItem( self.mainBrowser, 'Visualisation', "Hs_Glycolysis_and_Gluconeogenesis_WP534_51732",QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') ))  )
+        #self.addWorkspaceItem( self.mainBrowser, 'Visualisation', "Hs_Glycolysis_and_Gluconeogenesis_WP534_51732",QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') ))  )
+
+        self.workspace.setSelectionMode( QAbstractItemView.SingleSelection )
+
+        self.workspace.currentItemChanged.connect( self.onWorkspaceStackChange)
+        #QObject.connect(self.workspace, SIGNAL("itemActivated()"),
+        #self.stack, SLOT("setCurrentIndex(int)"))
+
+        self.workspaceDock = QDockWidget('Workspace')
+        self.workspaceDock.setWidget(self.workspace)
+        self.workspaceDock.setMinimumWidth(300)
+        self.workspaceDock.setMaximumWidth(300)
+        #self.workspaceDock.setMaximumWidth(200)
+        #self.workspaceDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
+
         self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
+
+        #self.workspace.resizeColumnToContents(0)
+        #self.tabifyDockWidget( self.workspaceDock, self.dataDock ) 
         
 
-        # Data vis: visualisation of loaded dataset (spectra, etc.); peak picking; data->metabolite conversion
-        # Identification: table view for each datatype, identifier -> metabolite link (mostly automatic, but allow tweaks); or simply show (combine with above/below?)
-        
-        # Data summary: global view overall dataset; characteristics information
-        
-        # Data analysis: graphs, plots
-        
-        # self.analysisBrowser = QWebView()
-        # Display default no-data view; instructions for loading data etc.
-        #template = self.templateEngine.get_template('data.html')
-        #self.analysisBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
-        #self.analysisBrowser.page().setContentEditable(False)
-        #self.analysisBrowser.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        #self.analysisBrowser.linkClicked.connect( self.onBrowserNav )
-        #self.analysisBrowser.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
+    def onWorkspaceStackChange(self, item, previous):
+        self.stack.setCurrentIndex( int( item.text(1) ) )
 
+    def addWorkspaceItem(self, widget, section, title, icon = None, is_selected=None):
         
+        stack_index = self.stack.addWidget( widget )
+        
+        tw = QTreeWidgetItem()
+        tw.setText(0, title)
+        tw.setText(1, str( stack_index ) )
+        if icon:
+            tw.setIcon(0, icon )
+        
+        if section:
+            self.workspace_parents[ section ].addChild(tw)
+        else:
+            self.workspace.addTopLevelItem(tw) 
+            self.workspace_parents[ title ] = tw 
 
-    # Simple menu toggles
-    def onPathwayLinksToggle(self, checked):
-        self.config.setValue( '/Pathways/ShowLinks', checked)
-        self.generateGraphView()
-
+        if is_selected:
+            if section:
+                self.workspace_parents[ section ].setExpanded(True)
+            self.workspace.setCurrentItem(tw)
+        
+        return tw
+        
+        
     def onPathwayMiningToggle(self, checked):
         self.config.setValue( '/Data/MiningActive', checked)
         self.generateGraphView()
 
-    def onShowEnzymesToggle(self, checked):
-        self.config.setValue( '/View/ShowEnzymes', checked)
-        self.generateGraphView()
 
-    def onShow2ndToggle(self, checked):
-        self.config.setValue( '/View/Show2nd', checked)
-        self.generateGraphView()
-
-    def onShowMolecularToggle(self, checked):
-        self.config.setValue( '/View/ShowMolecular', checked)
-        self.generateGraphView()
-
-    def onShowAnalysisToggle(self, checked):
-        self.config.setValue( '/View/ShowAnalysis', checked)
-        self.generateGraphView()
-        
-    def onHighlightPathwaysToggle(self, checked):
-        self.config.setValue( '/View/HighlightPathways', checked)
-        self.generateGraphView()
-
-    def onHighlightRegionsToggle(self, checked):
-        self.config.setValue( '/View/HighlightRegions', checked)
-        self.generateGraphView()

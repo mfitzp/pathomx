@@ -1,6 +1,6 @@
-from plugins import ProcessingPlugin
+from plugins import DataPlugin
 
-class NMRLab(ProcessingPlugin):
+class NMRLab(DataPlugin):
 
     def print_name(self):
         print "This is MetaViz"

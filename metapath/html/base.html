@@ -43,12 +43,12 @@
         <ul>
             @for p in object.pathways:
                 <li>
-                <a href="metapath://pathway/@p.id/view">@p.name</a>
+                <a href="metapath://db/pathway/@p.id/view">@p.name</a>
 
                 @if p.id not in current_pathways:
-                    <a href="metapath://pathway/@p.id/add"><img src="file://@htmlbase/img/icon_addlink.png"></a>
+                    <a href="metapath://db/pathway/@p.id/add"><img src="file://@htmlbase/img/icon_addlink.png"></a>
                 @else:
-                    <a href="metapath://pathway/@p.id/remove"><img src="file://@htmlbase/img/icon_deletelink.png"></a>
+                    <a href="metapath://db/pathway/@p.id/remove"><img src="file://@htmlbase/img/icon_deletelink.png"></a>
                 @end
 
                 </li>
@@ -60,7 +60,7 @@
         <h2>Reactions <small>(@str(len(object.reactions)))</small></h2>
         <ul>
             @for r in object.reactions:
-                <li><a href="metapath://reaction/@r.id/view">@r.name</a></li>
+                <li><a href="metapath://db/reaction/@r.id/view">@r.name</a></li>
             @end
         </ul>
     @end
@@ -75,7 +75,7 @@
                     @else:
                         <div class="datasq"></div>
                     @end
-                    <a href="metapath://metabolite/@m.id/view">@m.name</a>
+                    <a href="metapath://db/metabolite/@m.id/view">@m.name</a>
                 </li>
             @end
         </ul>
@@ -91,7 +91,7 @@
                     @else:
                         <div class="datasq"></div>
                     @end
-                    <a href="metapath://metabolite/@m.id/view">@m.name</a>
+                    <a href="metapath://db/metabolite/@m.id/view">@m.name</a>
                 </li>
             @end
         </ul>
@@ -117,7 +117,7 @@
                     <div class="datasq">
                 @endif
                 </div>
-                <a href="metapath://protein/@p.id/view">@p.name</a></li>
+                <a href="metapath://db/protein/@p.id/view">@p.name</a></li>
             @end
         </ul>
     @end
@@ -133,7 +133,7 @@
                 @else:
                     <div class="datasq"></div>
                 @end
-                <a href="metapath://gene/@g.id/view">@g.name</a></li>
+                <a href="metapath://db/gene/@g.id/view">@g.name</a></li>
             @end
         </ul>
     @end

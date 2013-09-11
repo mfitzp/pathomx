@@ -2,6 +2,8 @@ import re, os, sys
 import csv, codecs, cStringIO
 from collections import defaultdict
 
+rdbu9 =  [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
+rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 
 def sigstars(p):
     # Return appropriate number of stars or ns for significance

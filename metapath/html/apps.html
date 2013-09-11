@@ -1,4 +1,4 @@
-@require(htmlbase, categories, apps)
+@require(htmlbase, category, apps)
 
 <html>
     <head>
@@ -51,22 +51,27 @@
         
         
         </style>
+<script>
+
+    function delegateLink(url){
+        QtWebView.delegateLink(url);
+    }
+</script>        
     </head>
     <body id="mainwindow">
-        @for category in categories:
         <h2>@category</h2>
-        <ul class="large-block-grid-5">
-            @for app in apps[category]:
-                <li><div class="app"
+        <ul class="large-block-grid-4">
+            @for app in apps:
+                <li><a class="app" href="metapath://app-manager/@app['id']/add"
                             @if app['image']:
                                 style="background-image:url('file://@app['image']');"
                             @endif
-                                onclick="delegateUrl('metapath://app-manager/@app['id']/add');">
+                                onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
                         <div class="meta">
-                            <div class="name"><a href="metapath://app-manager/@app['id']/add">@app['name']</a></div>
+                            <div class="name">@app['name']</div>
                             <div class="description">@app['description']</div>
                         </div>
-                    </div>
+                    </a>
                 </li>
             @endfor
         </ul>

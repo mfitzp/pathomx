@@ -13,11 +13,35 @@ import ui, utils
 
 
 
-class PathwayConnectsView(ui.analysisCircosView):
-    def __init__(self, parent):
-        self.parent = parent
+class PathwayConnectsView(ui.analysisView):
+    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
+        super(PathwayConnectsView, self).__init__(parent, **kwargs)
+
+        self.config = QSettings()
+        self.m = parent
+        self.plugin = plugin
+
         self.browser = ui.QWebViewExtend( parent.onBrowserNav )
         parent.tab_handlers.append( self )
+
+        #self.plugin.register_url_handler( self.id, self.url_handler )
+
+        self.generate()
+        
+        self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'PathwayX', is_selected=True) #, icon = None)
+        
+
+    def url_handler(self, url):
+
+        #http://@app['id']/app/create
+        print url
+        kind, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames   
+        # Probably want to move to url strings &n= etc. for logicalness        
+
+        if action == 'create':
+            self.add_viewer()
+            pass
+
 
 
     def build_matrix(self, targets, target_links):
@@ -66,6 +90,14 @@ class PathwayConnectsView(ui.analysisCircosView):
 
 
         self.render( {
+            'figure':  {
+                            'type':'circos',
+                            'data': data_am,
+                            'labels': labels_am,
+                            'n':2,  
+                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
+                        },  
+                        
             'figures': [[
                         {
                             'type':'circos',
@@ -126,38 +158,14 @@ class PathwayConnectsView(ui.analysisCircosView):
 
 class PathwayConnects(VisualisationPlugin):
 
-    id = 'pathway_connects'
 
     def __init__(self, **kwargs):
         super(PathwayConnects, self).__init__(**kwargs)
-    
-        self.register_url_handler( self.id, self.url_handler )
         self.register_app_launcher( self.app_launcher )
 
-    
-    # Add a new visualiser viewer; 
-    # Create an new analysis browser instance, assign an identifier (based on plugin identifier; + iterator)
-    # Attach the browser window to the parent
+    # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
+        self.instances.append( PathwayConnectsView( self, self.m ) )
 
-        pathwayconnectview = PathwayConnectsView( self.m )
-        #pathway_id = dialog.data[x.text()]
-    
-        #gpmlpathway.load_gpml_wikipathways(pathway_id)
-        pathwayconnectview.generate()
-        self.m.tabs.setCurrentIndex( 
-            self.m.tabs.addTab( pathwayconnectview.browser, 'PathwayX') #gpmlpathway.metadata['Name'] )
-         )
-        
-
-    def url_handler(self, url):
-
-        #http://@app['id']/app/create
-        print url
-        kind, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames   
-        # Probably want to move to url strings &n= etc. for logicalness        
-
-        if action == 'create':
-            self.add_viewer()
-            pass
+                     
         

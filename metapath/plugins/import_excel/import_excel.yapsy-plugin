@@ -6,4 +6,4 @@ Module = import_excel
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Interactively import data from Excel files in various formats
+Description = Import data from Excel files in various layouts

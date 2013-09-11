@@ -1,8 +1,8 @@
-from plugins import InputPlugin
+from plugins import DataPlugin
 
-class ImportExcel(InputPlugin):
+class ImportExcel(DataPlugin):
 
-
+    id = "importexcel"
 
     def print_name(self):
         print "This is plugin 1"

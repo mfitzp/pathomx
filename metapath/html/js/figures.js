@@ -1,5 +1,4 @@
 
-
 function heatmap(id, buckets, scale){
 
 
@@ -13,23 +12,23 @@ function heatmap(id, buckets, scale){
     var xlabels = d3.unique( buckets, function(d) { return d.x }),
         ylabels = d3.unique( buckets, function(d) { return d.y });
 
-    var cellw = 15,
-        cellh = 15;
     
-    var margin = {top: 70, right: 70, bottom: 20, left: 200},
-        width = xlabels.length * cellw, // + margin.left + margin.right,
-        height = ylabels.length * cellh; // + margin.top + margin.bottom;
+    idxy = getElementSize(id)
+    var width = idxy[0],
+        height = idxy[1];
 
-    
-    // The size of the buckets in the CSV data file.
-    // This could be inferred from the data if it weren't sparse.
-    var xStep = 1,
-        yStep = 1;
+    var cellw = 20,
+        cellh = 20;
+        
+    var margin = {top: height/5, right: 0, bottom: 0, left: width/2};
 
     var svg = d3.select(id).insert("svg",':first-child')
                 .attr("class", 'heatmap')
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
+                .attr("width", width) // + margin.left + margin.right)
+                .attr("height", height) // + margin.top + margin.bottom)
+                .attr('viewBox','0 0 ' + width + ' ' + height)
+                .attr('preserveAspectRatio','xMidYMid')        
+                
                 //.attr("id", id)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -46,11 +45,11 @@ function heatmap(id, buckets, scale){
     var x = d3.scale
                 .ordinal()
                 .domain(xlabels )
-                .rangeBands([0, width]),
+                .rangeBands([0, xlabels.length*cellw]),
         y = d3.scale
                 .ordinal()
                 .domain(ylabels)
-                .rangeBands([0, height]),
+                .rangeBands([0, ylabels.length*cellh]),
         z = d3.scale
                 .linear()
                 .domain( [-r , 0, +r] )
@@ -121,9 +120,6 @@ function heatmap(id, buckets, scale){
             .on("click",function(d){ delegateLink('metapath://db/metabolite/'+d+'/view'); });
     });
 
-    d3.select(id)
-        .style('width', width + margin.left + margin.right + 'px')
-        .style('height', height + margin.top + margin.bottom + 'px');
 
 };
 
@@ -137,16 +133,13 @@ function circos(id, matrix, labels){
         .sortSubgroups(d3.descending)
         .matrix(matrix);
 
-    var padding = 100;
         
-    if (id == 'body'){
-        // Solo page figure; take window page size
-        var width = d3.select(id).attr('width'),
-           height = d3.select(id).attr('height');
-    } else {
-        var width = 500,
-            height = 500;
-    }
+    idxy = getElementSize(id)
+    var width = idxy[0],
+        height = idxy[1];
+
+    var padding = Math.min( width, height ) * 0.3;
+
 
     var innerRadius = Math.min(width-padding, height-padding ) * 0.41,
         outerRadius = innerRadius * 1.1;
@@ -159,6 +152,8 @@ function circos(id, matrix, labels){
         .attr("class", 'circos')
         .attr("width", width)
         .attr("height", height)
+        .attr('viewBox','0 0 ' + width + ' ' + height)
+        .attr('preserveAspectRatio','xMidYMid')        
       .append("g")
         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
@@ -217,18 +212,19 @@ function circos(id, matrix, labels){
         .style("fill", function(d) { return fill(d.target.index); })
         .style("opacity", 1);
 
-    d3.select(id)
-        .style('width', width +'px')
-        .style('height', height +'px');
 
 }
 
 
 function corrmatrix(id, groups, traits, data){
 
-var size = 140,
-      padding = 10,
-      n = 4;
+    idxy = getElementSize(id)
+    var width = idxy[0],
+        height = idxy[1];
+
+    var size = 140,
+          padding = 10,
+          n = 4;
 
 
   // Position scales.
@@ -254,11 +250,16 @@ var size = 140,
       .on("brushstart", brushstart)
       .on("brush", brush)
       .on("brushend", brushend);
+      
+      
 
   // Root panel.
   var svg = d3.select(id).insert("svg",':first-child')
-      .attr("width", 1280)
-      .attr("height", 800)
+        .attr("width", width)
+        .attr("height",height)
+        .attr('viewBox','0 0 ' + width + ' ' + height)
+        .attr('preserveAspectRatio','xMidYMid')        
+      
     .append("svg:g")
       .attr("transform", "translate(359.5,69.5)");
 

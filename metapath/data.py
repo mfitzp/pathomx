@@ -12,12 +12,59 @@ import operator
 import utils
 import xml.etree.cElementTree as et
 
+from PySide.QtGui import *
+from PySide.QtCore import *
 
-class dataManager():
+# dataManager models offer QAbstractTableModel interface to loaded dataset. Data is stored internally as 
+# two sets of headers and a combined table of the data underneath. Alternate interfaces to the same data
+# are automatically maintained and updated to represent changes
+#### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.
+
+class dataManager(QAbstractTableModel):
     # Data handler offering API for access to loaded data sets via different interfaces
     # metabolites, reactions, pathways = dict()
-    def __init__(self,filename):
+    #def __init__(self, parent, list, header, *args, **kwargs):
+    #    QAbstractTableModel.__init__(self, parent, *args, **kwargs)
+    def __init__(self, filename, *args, **kwargs):
+        QAbstractTableModel.__init__(self, None, *args, **kwargs)
+
         self.load_datafile(filename)
+
+    def rowCount(self, parent):
+        return len(self.table)
+
+    def columnCount(self, parent):
+        return len(self.table[0])
+        
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        elif role != Qt.DisplayRole:
+            return None
+
+        return self.table[index.row()][index.column()]
+            
+    def headerData(self, col, orientation, role):
+        
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self.table_colh[col]
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return self.table_rowh[col]
+        else:
+            return None
+        
+    def sort(self, col, order):
+        """sort table by given column number col"""
+        self.emit(SIGNAL("layoutAboutToBeChanged()"))
+        self.table = sorted(self.table,
+        key=operator.itemgetter(col))
+        if order == Qt.DescendingOrder:
+            self.table.reverse()
+            self.emit(SIGNAL("layoutChanged()"))
+
+
+       
+    # Data file import handlers (#FIXME probably shouldn't be here)
         
     def load_datafile(self, filename):
         # Determine if we've got a csv or peakml file (extension)
@@ -32,7 +79,7 @@ class dataManager():
             print "Loading..."
             # Set up defaults
             self.filename = filename
-            self.data = dict()
+
             self.metabolites = list()
             self.quantities = dict()
     
@@ -119,18 +166,24 @@ class dataManager():
         hrow = reader.next() # Get 2nd row
         self.classes = hrow[1:]
         self.metabolites = []
+        self.table = []
+        self.table_colh = self.classes
+        
         
         for row in reader:
             metabolite = row[0]
             self.metabolites.append( row[0] )
             self.quantities[ metabolite ] = defaultdict(list)
 
+            self.table.append(row[1:])
+            
             for n, c in enumerate(row[1:]):
                 if self.classes[n] != '.':
                     try:
                         c = float(c)
                     except:
                         c = 0
+                    
                     self.quantities[metabolite][ self.classes[n] ].append( c )
                     self.statistics['ymin'] = min( self.statistics['ymin'], c )
                     self.statistics['ymax'] = max( self.statistics['ymax'], c )
@@ -146,6 +199,9 @@ class dataManager():
         
         hrow = reader.next() # Get top row
         self.metabolites = hrow[2:]
+        self.table = []
+        self.table_colh = self.metabolites
+        self.table_rowh = []
 
         # Build quants table for metabolite classes
         for metabolite in self.metabolites:
@@ -154,6 +210,9 @@ class dataManager():
         for row in reader:
             if row[1] != '.': # Skip excluded classes # row[1] = Class
                 self.classes.add( row[1] )  
+                self.table.append(row[2:])
+                self.table_rowh.append( row[1] )
+
                 for metabolite in self.metabolites:
                     metabolite_column = hrow.index( metabolite )   
                     if row[ metabolite_column ]:

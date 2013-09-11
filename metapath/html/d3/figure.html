@@ -1,0 +1,165 @@
+@extends("d3/base.html")
+@require(htmlbase, figure)
+
+@def styles():
+<style>
+body {
+    margin:0; padding:0;
+}
+
+svg {
+    font-size:8pt;
+}
+
+
+/* Heatmap */
+
+.heatmap .label {
+  font-weight: bold;
+}
+
+.heatmap .tile {
+  shape-rendering: crispEdges;
+}
+
+.heatmap .axis path,
+.heatmap .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+/* Chord */
+
+.circos .chord path {
+  fill-opacity: .67;
+/*  stroke: #000; */
+  stroke-width: .5px;
+}
+
+/* Scatter Matrix */
+
+.axis path {
+  display: none;
+}
+
+rect.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+rect.frame {
+  fill: #fff;
+  fill-opacity: .7;
+  stroke: #aaa;
+}
+
+circle {
+  fill: #ccc;
+  fill-opacity: .5;
+}
+
+.legend circle {
+  fill-opacity: 1;
+}
+
+.legend text {
+}
+
+.setosa {
+  fill: #800;
+}
+
+.versicolor {
+  fill: #080;
+}
+
+.virginica {
+  fill: #008;
+}
+
+
+</style>
+@end
+
+        
+@def script():
+<script>
+
+
+</script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = "body";
+        
+        @if figure['type'] == 'circos':
+            var matrix = [
+            @for row in figure['data']:
+              [
+                @(
+                    _out = ','.join( [str(i) for i in row] )
+                )
+                @_out,
+              ],
+            @endfor
+            ];
+
+            var labels = [
+            @for l in figure['labels']:
+                "@l!s",
+            @endfor
+            ];
+            circos(id, matrix, labels);
+            
+            
+        @elif figure['type'] == 'corrmatrix':
+            var traits = [
+            @for l in figure['traits']:
+                "@l!s",
+            @endfor
+            ];
+              
+            var groups = [
+            @for l in figure['groups']:
+                "@l!s",
+            @endfor
+            ];                      
+                                
+            var data = [
+            @for row in figure['data']:
+                {
+                    @for k,v in row.items():
+                        '@k!s':'@v!s',
+                    @endfor
+                },
+            @endfor
+            ];
+
+            corrmatrix(id, groups, traits, matrix);
+        
+
+        @else:
+            buckets = [
+            @for d in figure['data']:
+                {
+                'x':'@d[0]!s',
+                'y':'@d[1]!s',
+                'value':'@d[2]!s',
+                },
+            @endfor
+            ];
+
+            heatmap(id, buckets, "@figure['scale']!s");
+        @endif
+
+    window.onresize = resizeFigureToWindow;
+
+    </script>
+
+
+@end
