@@ -29,9 +29,6 @@ class ImportDataView( ui.DataView ):
         self.data.addo('output') # Add output slot
         
         fn = self.onImportData()
-        print self.data.o['output'].shape
-        print len(self.data.o['output'].entities[1])
-        print len(self.data.o['output'].labels[1])
         self.table.setModel(self.data.o['output'].as_table)
         
         self.t = self.addToolBar('Data Import')
@@ -77,7 +74,6 @@ class ImportDataView( ui.DataView ):
         fn, fe = os.path.splitext(filename)
         formats = { # Run specific loading function for different source data types
                 '.csv': self.load_csv,
-                '.peakml': self.load_peakml,
                 '': self.load_txt,
             }
             
@@ -218,77 +214,7 @@ class ImportDataView( ui.DataView ):
         self.data.o['output'].labels[0] = classes
         self.data.o['output'].classes[0] = classes
         self.data.o['output'].data = np.array( raw_data )
-        
-    def load_peakml(self, filename, dso):
-
-        def decode(s):
-            s = base64.decodestring(s)
-            # Each number stored as a 4-chr representation (ascii value, not character)
-            l = []
-            for i in xrange(0, len(s), 4):
-                c = s[i:i+4]
-                val = 0
-                for n,v in enumerate(c):
-                    val += ord(v) * 10**(3-n)
-                l.append( str(val) )
-            return l
-        
-        # Read data in from peakml format file
-        xml = et.parse( filename )
-
-        # Get sample ids, names and class groupings
-        sets = xml.iterfind('header/sets/set')
-        midclass = {}
-        for set in sets:
-            id = set.find('id').text
-            mids = set.find('measurementids').text
-            for mid in decode(mids):
-                midclass[mid] = id
-            self.classes.add(id)
-
-        #meaurements = xml.iterfind('peakml/header/measurements/measurement')
-        #samples = {}
-        #for measurement in measurements:
-        #    id = measurement.find('id').text
-        #    label = measurement.find('label').text
-        #    sampleid = measurement.find('sampleid').text
-        #    samples[id] = {'label':label, 'sampleid':sampleid}
-        
-        # We have all the sample data now, parse the intensity and identity info
-        peaksets = xml.iterfind('peaks/peak')
-        metabolites = {}
-        quantities = {}
-        for peakset in peaksets:
-            
-            # Find metabolite identities
-            annotations = peakset.iterfind('annotations/annotation')
-            identities = False
-            for annotation in annotations:
-                if annotation.find('label').text == 'identification':
-                    identities = annotation.find('value').text.split(', ')
-                    break
-
-            if identities:
-                # PeakML supports multiple alternative metabolite identities,currently we don't so duplicate
-                for identity in identities:
-                    if not identity in self.quantities:
-                        self.quantities[ identity ] = defaultdict(list)
-                    self.metabolites.append(identity)
-            
-                # We have identities, now get intensities for the different samples            
-                chromatograms = peakset.iterfind('peaks/peak') # Next level down
-                quants = defaultdict(list)
-                for chromatogram in chromatograms:
-                    mid = chromatogram.find('measurementid').text
-                    intensity = float( chromatogram.find('intensity').text )
-                    
-                    classid = midclass[mid]
-                    quants[classid].append(intensity)
-
-                for classid, q in quants.items():
-                    for identity in identities:
-                        self.quantities[ identity ][ classid ].extend( q )
-
+   
         
 
 class ImportText(DataPlugin):

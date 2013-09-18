@@ -132,9 +132,8 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
         
         self.addDataToolBar()
-        self.setCentralWidget(self.tabs)
-        
-        print self.tabs        
+        self.addFigureToolBar()
+            
         # Setup data consumer options
         self.data.consumer_defs.append( 
             data.DataDefinition('input', {
@@ -280,16 +279,16 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
 
     def _phosphorylation(self):
-        return self.build_heatmap_buckets( [ 'Phosphorylated','Dephosphorylated' ], ['→'.join(n) for n in self.phosphate], self.build_log2_change_table_of_classtypes( self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
+        return self.build_heatmap_buckets( [ 'Phosphorylated','Dephosphorylated' ], [' → '.join(n) for n in self.phosphate], self.build_log2_change_table_of_classtypes( self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
 
     def _phosphate_balance(self):
-        return self.build_heatmap_buckets( [ 'Pi','PPI','PI3','PI4' ], ['→'.join(n) for n in self.nucleosides], self.build_log2_change_table_of_classtypes( self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
+        return self.build_heatmap_buckets( [ 'Pi','PPI','PI3','PI4' ], [' → '.join(n) for n in self.nucleosides], self.build_log2_change_table_of_classtypes( self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
 
     def _redox(self):
-        return self.build_heatmap_buckets( [ 'Reduced','Oxidised' ], ['→'.join(n) for n in self.redox], self.build_log2_change_table_of_classtypes( self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
+        return self.build_heatmap_buckets( [ 'Reduced','Oxidised' ], [' → '.join(n) for n in self.redox], self.build_log2_change_table_of_classtypes( self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
 
     def _proton_balance(self):
-        return self.build_heatmap_buckets( [ '-','H','H2' ], ['→'.join(n) for n in self.proton], self.build_log2_change_table_of_classtypes( self.proton, [ '-','H','H2' ] ), sort_data=True )
+        return self.build_heatmap_buckets( [ '-','H','H2' ], [' → '.join(n) for n in self.proton], self.build_log2_change_table_of_classtypes( self.proton, [ '-','H','H2' ] ), sort_data=True )
 
     def generate(self):
         self.setWorkspaceStatus('active')

@@ -25,6 +25,7 @@ class MapEntityView( ui.GenericView ):
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
+        self.addFigureToolBar()
         self.data.addo('output')
         
         #t.addAction(load_wikipathwaysAction)

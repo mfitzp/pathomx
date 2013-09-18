@@ -1,6 +1,6 @@
 /* Helper functions */
 QtViewportSize = typeof(QtViewportSize) == 'undefined' ? {'x':false,'y':false} : QtViewportSize;
-
+nan = null /* For numpy compatibiltiy */
     
     function getWindowSize(){
         var w = window,
@@ -424,6 +424,8 @@ var s_intensity = [
         Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ), 
         Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ),
         ]
+        
+    console.log( s_intensity) ;
      
             
 var x = d3.scale
@@ -441,8 +443,6 @@ var zoom = d3.behavior.zoom()
     .x(x)
     //.y(y)
     .on("zoom", zoomed);            
-
-console.log('out');
 
 var color = d3.scale.category10();
 
@@ -514,6 +514,7 @@ var clip = svg.append("svg:clipPath")
 
   var spectrum = svg.selectAll(".spectrum")
       .data(spectra)
+      
     .enter().append("g")
       .attr("clip-path", "url(#clip)")
       .attr("class", "spectrum");
@@ -525,7 +526,6 @@ var clip = svg.append("svg:clipPath")
 
 
     var rect = {
-        //.interpolate("basis")
         'x':(function(d) { return x(d.ppm); }),
         'y':(function(d) { return y(s_intensity[1]); }),
         'width':(function(d) { return x( d.ppm_end) - x(d.ppm); }),
@@ -607,3 +607,143 @@ var clip = svg.append("svg:clipPath")
     }
 
 }
+
+
+/* 
+
+DIFFERENCE CHART
+Plot two data lines with differences between each line highlighted in colour
+
+*/
+
+
+function difference(id, data) {
+
+idxy = getElementSize(id)
+var width = idxy[0],
+    height = idxy[1];
+    
+
+var margin = {top: 120, right: 50, bottom: 80, left: 50};
+    //width = width - margin.left - margin.right,
+    //height = height - margin.top - margin.bottom;
+var width_d = width - margin.left - margin.right,
+    height_d = height - margin.top - margin.bottom;
+    
+var s_ppm = d3.extent(data, function(d) { return d.ppm; } )
+var s_ppm = [ s_ppm[1], s_ppm[0] ]
+
+var s_intensity = [
+    d3.min(data, function(d) { return Math.min(d.a, d.b); }),
+    d3.max(data, function(d) { return Math.max(d.a, d.b); })
+  ];
+
+var x = d3.scale
+            .linear()
+            .range([0,width_d])
+            .domain( s_ppm);
+
+            
+var y = d3.scale
+            .linear()
+            .range([height_d,0])
+            .domain( s_intensity);
+        
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var area = d3.svg.area()
+    //.interpolate("basis")
+    .x(function(d) { return x(d.ppm); })
+    .y(function(d) { return y(d.a); });
+    
+var line = d3.svg.line()
+    //.interpolate("basis")
+    .x(function(d) { return x(d.ppm); })
+    .y(function(d) { return y(d.b); });
+    
+
+
+var svg = d3.select(id)//.insert("svg",':first-child')
+    .attr("width", width)
+    .attr("height", height)
+    .attr('viewBox','0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio','xMidYMid')        
+
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    color.domain( d3.keys( data[0].intensity ) );
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height_d + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('ppm');
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('Rel');
+      
+      
+var clip = svg.append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width - (margin.left + margin.right))
+    .attr("height", height);
+
+  svg.datum(data);
+
+  svg.append("clipPath")
+      .attr("id", "clip-below")
+    .append("path")
+      .attr("d", area.y0(height));
+
+  svg.append("clipPath")
+      .attr("id", "clip-above")
+    .append("path")
+      .attr("d", area.y0(0));
+
+  svg.append("path")
+      .attr("class", "area above")
+      .attr("clip-path", "url(#clip-above)")
+      .attr("d", area.y0(function(d) { return y(d.b); }));
+
+  svg.append("path")
+      .attr("class", "area below")
+      .attr("clip-path", "url(#clip-below)")
+      .attr("d", area);
+
+  svg.append("path")
+      .attr("class", "line")
+      .attr("d", line);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+
+}
+

@@ -142,7 +142,9 @@ class DataDefinition( QObject ):
         'aloeic': at_least_one_element_in_common,
     }
     
-    def __init__(self, target, definition):
+    def __init__(self, target, definition,*args, **kwargs):
+        super(DataDefinition, self).__init__(*args, **kwargs)
+    
         # Store consumer/provider description as entity entries from dict
         self.target = target # Target attribute for imported data - stored under this in dataManager
                              # When assigning data; should check if pre-existing and warn to overwrite (or provide options)
@@ -246,6 +248,7 @@ class QTableInterface(QAbstractTableModel):
 
 class DataSet( QObject ):
     def __init__(self, manager=None, size=(0,), name='', description='', *args, **kwargs):
+        super(DataSet, self).__init__(*args, **kwargs)
 
         # DataSet must be assigned to a data manager for inter-object updates/communication to work
         self.manager = manager
@@ -441,10 +444,6 @@ class DataSet( QObject ):
 
             dso.data = np.ma.array(dso.data, mask=np.repeat(mask,self.data.shape[d]))    
 
-        print dso.classes
-        print dso.labels
-        print dso.scales
-        print dso.data
         return dso    
         
     # Compress the dataset object in 'd' dimension; 
@@ -527,14 +526,14 @@ class DataSet( QObject ):
 
         final_shape = list( self.data.shape )
         for d, s in enumerate( shape ):
-            if s<len(self.labels): # Only allow crop
+            if s<len(self.labels[d]): # Only allow crop
                 self.labels[d] = self.labels[d][:s]
                 self.entities[d] = self.entities[d][:s]
                 self.scales[d] = self.scales[d][:s]
                 final_shape[d] = shape[d]
                 
         self.data.resize( final_shape )
-    
+        
     
     
     

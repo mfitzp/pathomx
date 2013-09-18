@@ -16,7 +16,7 @@ from collections import defaultdict
 from yapsy.PluginManager import PluginManager, PluginManagerSingleton
 import plugins
 
-import os, urllib, urllib2
+import os, urllib, urllib2, copy, re
 
 # MetaPath classes
 import utils
@@ -63,6 +63,40 @@ class genericDialog(QDialog):
             
 
 
+class RenderPageToFile(QWebPage):
+    def __init__(self, fn, wv):
+        super(RenderPageToFile, self).__init__()
+
+        self.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
+        self.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
+
+        self.settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+
+        self.finished = False
+        self.size = wv.size()
+        
+        self.loadFinished.connect(self._loadFinished)
+        self.fn = fn
+
+        c = wv.page().mainFrame().toHtml()
+        c = c.replace('<html><head></head><body>','')
+        c = c.replace('</body></html>','')
+        self.mainFrame().setHtml( c )
+    
+    def _loadFinished(self, ok):
+        frame = self.mainFrame()
+        self.size = frame.contentsSize()#        self.setViewportSize(self.size)
+        self.setViewportSize(self.size)
+        image = QImage(self.size, QImage.Format_ARGB32)
+        image.setDotsPerMeterX(11811)
+        image.setDotsPerMeterY(11811)
+        painter = QPainter(image)
+        frame.render(painter)
+        painter.end()
+
+        image.save(self.fn)
+        self.finished = True
+
 class QWebPageJSLog(QWebPage):
     """
     Makes it possible to use a Python logger to print javascript console messages
@@ -100,21 +134,28 @@ class QWebViewExtend(QWebView):
             return super(QWebViewExtend, self).sizeHint()        
     
     def setHtml(self, *args, **kwargs):
-        super(QWebViewExtend, self).setHtml(*args,**kwargs)        
+        super(QWebViewExtend, self).setHtml(*args,**kwargs)  
+        self._loaded = False      
         self.exposeQtWebView()
     
     def exposeQtWebView(self):
         frame = self.page().mainFrame()
         frame.addToJavaScriptWindowObject("QtWebView", self)
         if self.w:
-            frame.evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s}" % (self.w.size().width(), self.w.size().height()-30 ) ) #-30 for tabs (ugh)
+            frame.evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s}" % (self.w.size().width()-30, self.w.size().height()-100 ) ) #-50 for tabs (ugh)
     
     @pyqtSlot(str)
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
         return True
 
-
+    def saveAsImage(self, fn):
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+                                                                                     Portable Network Graphics (*.png)")
+        if filename:
+            r = RenderPageToFile(filename, self ) 
+            while r.finished != True:
+                QCoreApplication.processEvents()
 
 class QWebViewScrollFix(QWebViewExtend):
     
@@ -266,7 +307,23 @@ class GenericView( QMainWindow ):
                 # Update the toolbar dropdown to match
                 #self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
                 #self.generateGraphView(regenerate_suggested=True)        
-    
+
+
+
+    def addFigureToolBar(self):            
+        t = self.addToolBar('Image')
+        t.setIconSize( QSize(16,16) )
+
+        export_imageAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'image-export.png' ) ), 'Export current figure as image\u2026', self.m)
+        export_imageAction.setStatusTip('Export figure to image')
+        export_imageAction.triggered.connect(self.onSaveImage)
+        t.addAction(export_imageAction)
+
+    def onSaveImage(self):
+        # Get currently selected webview
+        self.tabs.currentWidget().saveAsImage('/Users/mxf793/Desktop/test.tiff')        
+
+
     def onRecalculate(self):
         self.generate()
 

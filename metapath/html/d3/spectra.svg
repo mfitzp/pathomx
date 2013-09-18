@@ -19,7 +19,7 @@
 
 .identity-line {
     text-anchor:start;
-    fill:steelblue
+    fill:steelblue;
     stroke:none;
     opacity:0.1;
     
@@ -32,7 +32,7 @@
 
 .label-line {
     text-anchor:start;
-    fill:steelblue
+    fill:steelblue;
     stroke:none;
     opacity:0.1;
 }
@@ -41,6 +41,8 @@
   fill:  lightgray;
   font-size:7pt;
 }
+
+
 
 ]]></style>
 @end
