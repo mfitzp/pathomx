@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
+import QCoreApplication.translate as tr
+
 import urllib2
 
 from optparse import Values
@@ -274,7 +276,7 @@ class MainWindow(ui.MainWindowUI):
         #self.tabs.addTab( analysisc.browser, '&Circo' )
 
 
-        self.setWindowTitle('MetaPath: Metabolic pathway visualisation and analysis')
+        self.setWindowTitle(tr('MetaPath: Metabolic pathway visualisation and analysis'))
         self.statusBar().showMessage('Ready')
 
 
