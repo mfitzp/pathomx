@@ -6,4 +6,4 @@ Module = nmr_peak
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Convert loaded data to metabolite quantities via peak picking
+Description = Convert loaded data to metabolite quantities via manual peak picking

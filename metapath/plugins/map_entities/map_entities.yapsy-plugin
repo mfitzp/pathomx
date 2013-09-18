@@ -1,0 +1,9 @@
+[Core]
+Name = Synonym matching
+Module = map_entities
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Map data to MetaCyc database entities 

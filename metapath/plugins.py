@@ -1,8 +1,11 @@
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
 
 # Yapsy classes
 
@@ -23,6 +26,8 @@ class BasePlugin(IPlugin):
         self.id = self.__module__
         
         self.path = os.path.dirname( inspect.getfile(self.__class__) )
+
+        #self.register_app_launcher( self.app_launcher )
 
     @property
     def icon(self):
@@ -68,8 +73,8 @@ class ProcessingPlugin(BasePlugin):
     default_workspace_category = 'Processing'
     pass
 
-class AssignmentPlugin(BasePlugin):
-    default_workspace_category = 'Assignment'
+class IdentificationPlugin(BasePlugin):
+    default_workspace_category = 'Identification'
     pass
 
 class AnalysisPlugin(BasePlugin):

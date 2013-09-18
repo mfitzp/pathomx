@@ -1,0 +1,9 @@
+[Core]
+Name = Metabolights
+Module = metabolights
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Metabolights file data import

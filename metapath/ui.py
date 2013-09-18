@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
 
 from collections import defaultdict
 
@@ -20,6 +23,44 @@ import utils
 
 import numpy as np
 
+import data
+
+
+# GENERIC CONFIGURATION AND OPTION HANDLING
+
+# Generic configuration dialog handling class
+class genericDialog(QDialog):
+    def __init__(self, parent, **kwargs):
+        super(genericDialog, self).__init__(parent, **kwargs)        
+
+        self.sizer = QVBoxLayout()
+        self.layout = QVBoxLayout()
+        
+        # Setup default button configurations etc.
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+                
+    def dialogFinalise(self):
+        self.sizer.addLayout(self.layout)
+        self.sizer.addWidget(self.buttonBox)
+    
+        # Set dialog layout
+        self.setLayout(self.sizer)
+
+    def setListControl(self, control, list, checked):
+        # Automatically set List control checked based on current options list
+        items = control.GetItems()
+        try:
+            idxs = [items.index(e) for e in list]
+            for idx in idxs:
+                if checked:
+                    control.Select(idx)
+                else:
+                    control.Deselect(idx)
+        except:
+            pass
+            
 
 
 class QWebPageJSLog(QWebPage):
@@ -35,118 +76,278 @@ class QWebPageJSLog(QWebPage):
 
 class QWebViewExtend(QWebView):
 
-    def __init__(self, onNavEvent=None, **kwargs):
-        super(QWebViewExtend, self).__init__(**kwargs)        
-
+    def __init__(self, parent, onNavEvent=None, **kwargs):
+        super(QWebViewExtend, self).__init__(parent, **kwargs)        
+        
+        self.w = parent
         #self.js_page_object = QWebPageJSLog()
         #self.setPage( self.js_page_object)
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+
         # Override links for internal link cleverness
         if onNavEvent:
             self.onNavEvent = onNavEvent
             self.linkClicked.connect( self.onNavEvent )
 
         self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
-        
-
+    
+    def sizeHint(self):
+        if self.w:
+            return self.w.size()
+        else:
+            return super(QWebViewExtend, self).sizeHint()        
+    
+    def setHtml(self, *args, **kwargs):
+        super(QWebViewExtend, self).setHtml(*args,**kwargs)        
+        self.exposeQtWebView()
+    
     def exposeQtWebView(self):
         frame = self.page().mainFrame()
-        frame.addToJavaScriptWindowObject("QtWebView", self);
-
-    @Slot(str)
+        frame.addToJavaScriptWindowObject("QtWebView", self)
+        if self.w:
+            frame.evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s}" % (self.w.size().width(), self.w.size().height()-30 ) ) #-30 for tabs (ugh)
+    
+    @pyqtSlot(str)
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
         return True
 
 
+
 class QWebViewScrollFix(QWebViewExtend):
-
-    def __init__(self, onNavEvent=None, **kwargs):
-        super(QWebViewScrollFix, self).__init__(onNavEvent,**kwargs)        
-
-        self.resetTimer()
-         
-        self.wheelBugDirAccumulator = dict()
-        self.wheelBugDirAccumulator[ Qt.Orientation.Horizontal ] = 0
-        self.wheelBugDirAccumulator[ Qt.Orientation.Vertical ] = 0
-        
-        self.wheelBugLatest = None
     
-    def resetTimer(self):
-        self.wheelBugTimer = QTimer.singleShot(25, self.wheelTrigger)
+    def __init__(self, parent, onNavEvent=None, **kwargs):
+        super(QWebViewScrollFix, self).__init__(parent, onNavEvent=onNavEvent, **kwargs)        
 
-    def wheelEvent(self, e):
-
-        if self.wheelBugTimer is None:
-            self.resetTimer()
-
-        self.wheelBugDirAccumulator[ e.orientation() ] += e.delta()
-        self.wheelBugLatest = {
-                'pos': e.pos(),
-                'buttons': e.buttons(),
-                'modifiers': e.modifiers(),
-            }
-
-        if e.buttons() or e.modifiers():
-            self.wheelTrigger()
-            
-        e.setAccepted(True)
-        return
-
-    def wheelTrigger(self):
-
-        # class PySide.QtGui.QWheelEvent(pos, globalPos, delta, buttons, modifiers[, orient=Qt.Vertical])
-        # class PySide.QtGui.QWheelEvent(pos, delta, buttons, modifiers[, orient=Qt.Vertical])
-        if self.wheelBugLatest:
-
-            for o,d in self.wheelBugDirAccumulator.items():
-               event = QWheelEvent( self.wheelBugLatest['pos'], d, self.wheelBugLatest['buttons'], self.wheelBugLatest['modifiers'], o )
-               QWebView.wheelEvent(self, event)
-               self.wheelBugDirAccumulator[ o ] = 0
-
+        
 
 #We ran into the same issue. We worked around the problem by overriding QWebView::wheelEvent, and doing the following:
 #When a wheelEvent comes in, we start a 25 ms single-shot timer and process the wheelEvent. For any future wheelEvent's that come in while the timer is active, we just accumulate the event->delta( )'s (and pos & globalPos values, too). When the timer finally fires, the accumulated deltas are packaged into a QWheelEvent and delivered to QWebView::wheelEvent. (One further refinement is that we only do this for wheelEvents that have NoButton and NoModifier.)
 
 
+# View Dialogs
+
+class DialogDataSource(genericDialog):
+    def __init__(self, parent=None, view=None, **kwargs):
+        super(DialogDataSource, self).__init__(parent, **kwargs)        
+        
+        self.v = view
+        self.m = view.m
+        
+        self.setWindowTitle("Select Data Source")
+
+        self.lw_sources = QTreeWidget() # Use TreeWidget but flat; for multiple column view
+        self.lw_sources.setColumnCount(6)
+        self.lw_sources.setHeaderLabels(['','Source','Data','Entities', 'Size']) #,'#'])
+        self.lw_sources.setUniformRowHeights(True)
+        self.lw_sources.rootIsDecorated()
+        self.lw_sources.hideColumn(0)                
+        
+        datasets = self.m.datasets # Get a list of dataset objects to test
+        self.datasets = []
+        
+        print "Datasets:", self.m.datasets
+        for dataset in datasets:
+            if self.v.data.can_consume(dataset):
+                self.datasets.append( dataset )
+                
+                print "+", dataset
+                #QListWidgetItem(dataset.name, self.lw_sources)
+                tw = QTreeWidgetItem()
+
+                tw.setText(0, str( len(self.datasets)-1) ) # Store index
+                tw.setText(1, dataset.manager.v.name )
+                if dataset.manager.v.plugin.workspace_icon:
+                    tw.setIcon(1, dataset.manager.v.plugin.workspace_icon )
+
+                tw.setText(2, dataset.name)
+                e = set()
+                for el in dataset.entities_t:
+                    e |= set(el) # Add entities to the set
+                e.remove('NoneType')
+                tw.setText(3, ', '.join( e ) )
+
+                tw.setText(4, 'x'.join( [str(s) for s in dataset.shape ] ) )
+                
+                self.lw_sources.addTopLevelItem(tw) 
+
+        for c in range(5):
+            self.lw_sources.resizeColumnToContents(c)
+        
+        self.layout.addWidget(self.lw_sources)
+        self.setMinimumSize( QSize(600,100) )
+        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
+        
+        # Build dialog layout
+        self.dialogFinalise()
+
+
+
+
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
-
-# Data view prototypes
-
-class dataView(object):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
+class GenericView( QMainWindow ):
+    def __init__(self, plugin, parent, **kwargs):
+        super(GenericView, self).__init__(parent, **kwargs)
     
         self.plugin = plugin
         self.m = parent
         self.id = str( id( self ) )
+        self.data = data.DataManager(self.m, self)
 
-        self.w = QMainWindow()
-        t = self.w.addToolBar('Data')
-        t.setIconSize( QSize(16,16) )
-        
-        self.summary = QWebViewScrollFix()
-        self.table = QTableView()
-        #self.table.setRowCount(10)
-        #self.table.setColumnCount(5)
-        
+        #self.w = QMainWindow()
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
         self.tabs.setTabsClosable(False)
         self.tabs.setTabPosition( QTabWidget.South )
-        self.tabs.addTab(self.summary, 'Summary')
-        self.tabs.addTab(self.table,'Table')
+
+        self.setCentralWidget(self.tabs)
         
-        self.w.setCentralWidget(self.tabs)
-         
-        #self.o.show() 
-        #self.plugin.register_url_handler( self.id, self.url_handler )
-        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'Data', is_selected=True) #, icon = None)
-            
+        self.config = QSettings()
+
     def render(self, metadata):
         return
+    
+    def generate(self):
+        return
+    
+    
+        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), u'&Print\u2026', self)
+        printAction.setShortcut('Ctrl+P')
+        printAction.setStatusTip('Print current metabolic pathway')
+        printAction.triggered.connect(self.onPrint)
+        self.menuBar['file'].addAction(printAction)
+        
+    def set_name(self, name):
+        self.name = name
+        try:
+            self.workspace_item.setText(0, name)
+        except:
+            pass
+
+    def setWorkspaceStatus(self, status):
+        self.m.setWorkspaceStatus( self.workspace_item, status)
+
+    def clearWorkspaceStatus(self):
+        self.m.clearWorkspaceStatus( self.workspace_item )
+
+
+    def addDataToolBar(self):            
+        t = self.addToolBar('Data')
+        t.setIconSize( QSize(16,16) )
+
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'database-import.png' ) ), 'Select a data source\u2026', self.m)
+        select_dataAction.setStatusTip('Select a compatible data source')
+        select_dataAction.triggered.connect(self.onSelectDataSource)
+        t.addAction(select_dataAction)
+
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'arrow-circle-double.png' ) ), 'Recalculate', self.m)
+        select_dataAction.setStatusTip('Recalculate')
+        select_dataAction.triggered.connect(self.onRecalculate)
+        t.addAction(select_dataAction)
+
+        
+    def onSelectDataSource(self):
+        # Basic add data source dialog. Extend later for multiple data sources etc.
+        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
+        dialog = DialogDataSource(parent=self, view=self)
+        ok = dialog.exec_()
+        if ok:
+            try:
+                dso = dialog.datasets[ int( dialog.lw_sources.selectedItems()[0].text(0) ) ]
+                # Read dialog consume_data and set to self
+                # consume_data( target, data )
+            except:
+                pass
+            else:
+                self.data.consume( dso )
+                self.generate()
+                # Update the toolbar dropdown to match
+                #self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
+                #self.generateGraphView(regenerate_suggested=True)        
+    
+    def onRecalculate(self):
+        self.generate()
+
+
+
+# Data view prototypes
+
+class DataView(GenericView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(DataView, self).__init__(plugin, parent, **kwargs)
+
+        self.summary = QWebViewScrollFix(self)
+        self.table = QTableView()
+        self.viewer = QWebViewScrollFix(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
+
+        self.tabs.addTab(self.summary, 'Summary')
+        self.tabs.addTab(self.table,'Table')
+        self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
+        self.tabs.setTabEnabled( self.viewer_tab_index, False)
+        
+         
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Data', is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
+
+    def _build_entity_cmp(self,s,e,l):
+        return e == None
+
+    def _build_label_cmp(self,s,e,l):
+        return e != None or l == None or str(s) == l
+
+    def build_markers(self, zo, i, cmp_fn):
+        accumulator = []
+        last_v = None
+        no = 0
+        for n, (s,e,l) in enumerate(zo):
+            v = zo[n][i]
+            if cmp_fn(s, e, l):
+                last_v = None
+                continue
+            no += 1
+            if last_v == None or v != accumulator[-1][2]:
+                accumulator.append( [s,s,v] )
+            else:
+                accumulator[-1][1] = s
+            
+            last_v = v
+        
+        print "%s reduced to %s" % ( no, len(accumulator) ) 
+        return accumulator
         
 
+    def render(self, metadata):
+        # If we have scale data, enable and render the Viewer tab
+        #FIXME: Must be along the top axis 
+        if 'output' in self.data.o:
+            dso = self.data.o['output']
+            if float in [type(t) for t in dso.scales[1]]:
+                print "Scale data up top; make a spectra view"
+                self.tabs.setTabEnabled( self.viewer_tab_index, True)
+                metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
+            
+                #for a in range(100,110):
+                #    dso.entities[1][a] = self.m.db.index['L-ASPARTATE']
+                #    dso.labels[1][a] = self.m.db.index['L-ASPARTATE'].name
+            
+                dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+
+                metadata['figure'] = {
+                    'data':zip( dso.scales[1], dso.data.T ), # (ppm, [data,data,data])
+                    'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
+                    'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
+                }
+
+                template = self.m.templateEngine.get_template('d3/spectra.svg')
+                self.viewer.setHtml(template.render( metadata ),QUrl('~')) 
+                self.viewer.exposeQtWebView()
+            
+                f = open('/Users/mxf793/Desktop/test.svg','w')
+                f.write( template.render( metadata ) )
+                f.close()
+            
+        return
 
 
 # Analysis/Visualisation view prototypes
@@ -154,37 +355,51 @@ class dataView(object):
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class analysisView(object):
-    def __init__(self, parent, **kwargs):
-        self.parent = parent
-        self.browser = QWebViewScrollFix( parent.onBrowserNav )
-        self.id = str( id( self ) )
-                
-        #parent.tab_handlers.append( self )
+class AnalysisView(GenericView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(AnalysisView, self).__init__(plugin, parent, **kwargs)
+
+        self.browser = QWebViewScrollFix( self, onNavEvent=parent.onBrowserNav )
+        self.tabs.addTab(self.browser, 'View')
     
     def render(self, metadata):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
-        template = self.parent.templateEngine.get_template('d3/figure.html')
-        self.browser.setHtml(template.render( metadata ),"~") 
+        template = self.m.templateEngine.get_template('d3/figure.svg')
+        self.browser.setHtml(template.render( metadata ),QUrl('~')) 
         self.browser.exposeQtWebView()
         
-        #f = open('/Users/mxf793/Desktop/test.html','w')
-        #f.write( template.render( metadata ) )
-        #f.close()
+        f = open('/Users/mxf793/Desktop/test.svg','w')
+        f.write( template.render( metadata ) )
+        f.close()
         
-    def build_log2_change_table_of_classtypes(self, objects, classes):
-        data = np.zeros( (len(objects), len(classes))  )
+    #self.build_log2_change_table_of_classtypes( self.phosphate, labelsX )
+    def build_log2_change_table_of_classtypes(self, objs, classes):
+        dso = self.data.i['input']
         
-        for y,os in enumerate(objects):
-            for x,ost in enumerate(os):
-                #for n,c in enumerate(classes):
-                if ost in self.parent.data.quantities.keys():
-                    n = self.parent.data.get_log2(ost, self.parent.experiment['test']) - self.parent.data.get_log2( ost , self.parent.experiment['control'] )
-                    data[y,x] = n
-                else:
-                    data[y,x] = np.nan
+        # Reduce dimensionality; combine all class/entity objects via np.mean()
+        dso = dso.as_compressed()
+        
+        entities = []
+        for o in objs:
+            entities.extend( [ self.m.db.index[id] for id in o if id in self.m.db.index] )
+        # Filter for the things we're displaying
+        dso = dso.as_filtered( entities=entities)
+        
 
+        #data = data.as_class_grouped(classes=classes)
+        print "Objs/classes:", objs, classes
+        
+        data = np.zeros( (len(objs), len(classes)) )
+
+        for y,obj in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
+            for x,o in enumerate(obj):
+                try:
+                    e = self.m.db.index[o] # Get entity for lookup
+                    data[y,x] = dso.data[ 0, dso.entities[1].index(e) ]
+                except: # Can't find it
+                    pass
+                
         return data
   
 
@@ -213,33 +428,32 @@ class analysisView(object):
 
 
 
-
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class analysisd3View(analysisView):
-    def __init__(self, parent, **kwargs):
-        super(analysisd3View, self).__init__(parent, **kwargs)        
-    
-        self.parent = parent
-        self.browser = QWebViewExtend( parent.onBrowserNav )
+class AnalysisD3View(AnalysisView):
         
-    def render(self, metadata, debug=False):
+    def render(self, metadata, debug=False, template_name='figure'):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-    
-        template = self.parent.templateEngine.get_template('d3/figure.html')
-        self.browser.setHtml(template.render( metadata ),"~")
+        
+        
+        template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
+        self.browser.setHtml(template.render( metadata ),QUrl('~'))
         self.browser.exposeQtWebView()
+        
+        f = open('/Users/mxf793/Desktop/test.svg','w')
+        f.write( template.render( metadata ) )
+        f.close()        
 
                     
         
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class d3View(analysisView):
-    def __init__(self, parent, **kwargs):
-        super(d3View, self).__init__(parent, **kwargs)        
+class D3View(AnalysisView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(D3View, self).__init__(plugin, parent, **kwargs)        
     
         self.parent = parent
-        self.browser = QWebViewExtend( parent.onBrowserNav )
+        self.browser = QWebViewScrollFix( self, onNavEvent=parent.onBrowserNav )
     
     def generate(self):
         current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
@@ -274,26 +488,23 @@ class d3View(analysisView):
                      'metabolite_pathway_groups':metabolite_pathway_groups, 
                      'reactions':reactions,
                      }
-        template = self.parent.templateEngine.get_template('d3/force.html')
+        template = self.parent.templateEngine.get_template('d3/force.svg')
 
-        self.browser.setHtml(template.render( metadata ),"~") 
+        self.browser.setHtml(template.render( metadata ),QUrl('~')) 
         self.browser.exposeQtWebView()
 
+        f = open('/Users/mxf793/Desktop/test.html','w')
+        f.write( template.render( metadata ) )
+        f.close()
       
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class analysisHeatmapView(analysisd3View):
-    def __init__(self, parent, **kwargs):
-        super(analysisHeatmapView, self).__init__(parent, **kwargs)        
-        self.parent = parent
-        self.browser = QWebViewExtend( parent.onBrowserNav )
-        
-        parent.tab_handlers.append( self )
-        
+class AnalysisHeatmapView(AnalysisD3View):
+
+    #self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
     def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
         buckets = []
-
 
         if remove_empty_rows:
             mask = ~np.isnan(data).all(axis=1)
@@ -330,11 +541,11 @@ class analysisHeatmapView(analysisd3View):
 
 
 
-class analysisCircosView(analysisd3View):
-    def __init__(self, parent, **kwargs):
-        super(analysisCircosView, self).__init__(parent, **kwargs)        
+class AnalysisCircosView(AnalysisD3View):
+    def __init__(self, plugin, parent, **kwargs):
+        super(AnalysisCircosView, self).__init__(plugin, parent, **kwargs)        
         self.parent = parent
-        self.browser = QWebViewExtend( parent.onBrowserNav )
+        self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
 
     def build_matrix(self, targets, target_links):
 
@@ -354,12 +565,12 @@ class analysisCircosView(analysisd3View):
 
 
 
-class analysisCircosPathwayView(analysisHeatmapView):
-    def __init__(self, parent, **kwargs):
-        super(analysisCircosPathwayView, self).__init__(parent, **kwargs)        
+class AnalysisCircosPathwayView(AnalysisHeatmapView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(AnalysisCircosPathwayView, self).__init__(plugin, parent, **kwargs)        
 
         self.parent = parent
-        self.browser = QWebViewExtend( parent.onBrowserNav )
+        self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
 
 
     def build_matrix(self, targets, target_links):
@@ -464,42 +675,6 @@ class analysisCircosPathwayView(analysisHeatmapView):
 """   
 
 
-# GENERIC CONFIGURATION AND OPTION HANDLING
-
-# Generic configuration dialog handling class
-class genericDialog(QDialog):
-    def __init__(self, parent, **kwargs):
-        super(genericDialog, self).__init__(parent, **kwargs)        
-
-        self.sizer = QVBoxLayout()
-        self.layout = QVBoxLayout()
-        
-        # Setup default button configurations etc.
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        
-    def dialogFinalise(self):
-        self.sizer.addLayout(self.layout)
-        self.sizer.addWidget(self.buttonBox)
-    
-        # Set dialog layout
-        self.setLayout(self.sizer)
-
-    def setListControl(self, control, list, checked):
-        # Automatically set List control checked based on current options list
-        items = control.GetItems()
-        try:
-            idxs = [items.index(e) for e in list]
-            for idx in idxs:
-                if checked:
-                    control.Select(idx)
-                else:
-                    control.Deselect(idx)
-        except:
-            pass
-            
-
 class remoteQueryDialog(genericDialog):
 
     def parse(self, data):
@@ -527,7 +702,8 @@ class remoteQueryDialog(genericDialog):
         queryboxh.addWidget( self.textbox )        
         queryboxh.addWidget( querybutton )        
         
-        self.data = {}
+        self.data = None # Deprecated
+        
         self.select = QListWidget()
         self.query_target = query_target
         
@@ -616,36 +792,6 @@ class MainWindowUI(QMainWindow):
         self.menuBar['pathways'].addAction(show_pathwaysAction)
 
 
-        # PATHWAYS Menu
-        
-        
-        # DATA MENU
-        load_dataAction = QAction(QIcon.fromTheme("document-open", QIcon( os.path.join( utils.scriptdir,'icons','blue-folder-open-table.png') )), 'Load metabolite dataset\u2026', self)
-        load_dataAction.setShortcut('Ctrl+Q')
-        load_dataAction.setStatusTip('Load metabolite datfile')
-        load_dataAction.triggered.connect(self.onLoadDataFile)
-        self.menuBar['data'].addAction(load_dataAction)
-
-        define_experimentAction = QAction(QIcon.fromTheme("layout-design", QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') )), 'Define experiment\u2026', self)
-        define_experimentAction.setShortcut('Ctrl+Q')
-        define_experimentAction.setStatusTip('Define experiment control, test and timecourse settings')
-        define_experimentAction.triggered.connect(self.onDefineExperiment)
-        self.menuBar['data'].addAction(define_experimentAction)
-        
-        self.menuBar['data'].addSeparator()
-        
-        enable_pathway_miningAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','hard-hat-mine.png') )), 'Enable pathway mining', self)
-        enable_pathway_miningAction.setShortcut('Ctrl+Q')
-        enable_pathway_miningAction.setStatusTip('Enable algorithmic mining of key pathways')
-        enable_pathway_miningAction.setCheckable( True )
-        enable_pathway_miningAction.setChecked( bool( self.config.value('/Data/MiningActive' ) ) )
-        enable_pathway_miningAction.toggled.connect(self.onPathwayMiningToggle)
-        self.menuBar['data'].addAction(enable_pathway_miningAction)
-
-        pathway_mining_settingsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons', 'hard-hat-mine.png') )), 'Pathway mining settings\u2026', self)
-        pathway_mining_settingsAction.setStatusTip('Define pathway mining settings')
-        pathway_mining_settingsAction.triggered.connect(self.onMiningSettings)
-        self.menuBar['data'].addAction(pathway_mining_settingsAction)
 
         # VIEW MENU 
         refreshAction = QAction(QIcon.fromTheme("view-refresh", QIcon( os.path.join( utils.scriptdir,'icons', 'refresh.png') )), u'&Refresh', self)
@@ -702,38 +848,6 @@ class MainWindowUI(QMainWindow):
         self.viewToolbar.addAction(refreshAction)
         
 
-        self.experimentToolbar = self.addToolBar('Experiment')
-        #self.experimentToolbar.addWidget( QLabel('Experiment') )
-        #spacerWidget = QWidget()
-        #spacerWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        #spacerWidget.setVisible(True)
-        #self.experimentToolbar.addWidget(spacerWidget)
-
-        self.experimentToolbar.addAction(load_dataAction)
-        self.experimentToolbar.addAction(define_experimentAction)
-
-        
-        self.cb_control = QComboBox()
-        self.cb_control.addItems(['Control'])
-        self.cb_control.currentIndexChanged.connect(self.onModifyExperiment)
-
-        self.cb_test = QComboBox()
-        self.cb_test.addItems(['Test'])
-        self.cb_test.currentIndexChanged.connect(self.onModifyExperiment)
-
-        self.experimentToolbar.addWidget(self.cb_control)
-        self.experimentToolbar.addWidget(self.cb_test)
-
-        self.sb_miningDepth = QSpinBox()
-        self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( self.config.value('/Data/MiningDepth') ) )
-        self.sb_miningDepth.valueChanged.connect(self.onModifyMiningDepth)
-        
-        
-        
-        self.experimentToolbar.addAction(enable_pathway_miningAction)
-        self.experimentToolbar.addWidget(self.sb_miningDepth)
-
 
         self.addToolBarBreak()
 
@@ -748,53 +862,18 @@ class MainWindowUI(QMainWindow):
         QWebSettings.setMaximumPagesInCache( 0 )
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
-        QWebSettings.globalSettings().setAttribute( QWebSettings.WebAttribute.DeveloperExtrasEnabled, True)
+        #QWebSettings.globalSettings().setAttribute( QWebSettings.WebAttribute.DeveloperExtrasEnabled, True)
         
-        self.mainBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+        self.mainBrowser = QWebViewScrollFix( None, onNavEvent=self.onBrowserNav )
 
-        #self.tabs = QTabWidget()
-        #self.tabs.setTabsClosable(True)
-        #self.tabs.setDocumentMode(True)
-        #self.tabs.setMovable(True)
-        #self.tabs.setTabPosition( QTabWidget.South )
-        #self.tabs.setTabShape( QTabWidget.Triangular )
-        #∞Σ⌘
+        #∞Σ⌘⁉★⌘↛⇲Σ▼◎♥⚑☺⬚↛
         
-        
-        
-        # Hide close button from the homepage
-        #self.tabs.addTab(self.mainBrowser, '⁉') #Help  ↛⇲▼◎♥⚑☺⬚
-        #self.tabs.tabBar().setTabButton(0, self.tabs.tabBar().ButtonPosition(), None)
 
-        #self.tabs.addTab(self.appBrowser, '★') #Apps
-        #self.tabs.tabBar().setTabButton(1, self.tabs.tabBar().ButtonPosition(), None)
-        #self.tabs.tabBar().setTabTextColor(1, QColor(237,212,0))
-
-        #self.tabs.addTab(QWidget(), '⌘') #Database
-        #self.tabs.tabBar().setTabButton(2, self.tabs.tabBar().ButtonPosition(), None)
-        #self.tabs.tabBar().setTabTextColor(2, QColor(115,210,22))
-
-        #self.tabs.addTab(QWidget(), 'Σ') #Data (&Analysis)
-        #self.tabs.tabBar().setTabButton(3, self.tabs.tabBar().ButtonPosition(), None)
-        #self.tabs.tabBar().setTabTextColor(3, QColor(52,101,164))
-
-        #self.tabs.addTab(QWidget(), '↛') #Routefinder: Track analysis pathways?
-        #self.tabs.tabBar().setTabButton(4, self.tabs.tabBar().ButtonPosition(), None)
-        #self.tabs.tabBar().setTabTextColor(4, QColor(117,80,123))
-
-
-
-        #self.setCentralWidget(self.tabs)
-
-#        self.tabs.tabBar().setTabButton(3, self.tabs.tabBar().ButtonPosition(), None)
-
-#        self.inspect = QWebInspector()
-#        self.tabs.addTab(self.inspect, 'Inspector')
         self.dbBrowser_CurrentURL = None
 
         # Display a introductory helpfile 
         template = self.templateEngine.get_template('welcome.html')
-        self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
+        self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),QUrl('~')) 
         self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
         
         self.pluginManager = PluginManagerSingleton.get()
@@ -803,7 +882,7 @@ class MainWindowUI(QMainWindow):
         self.pluginManager.setCategoriesFilter({
                "Data" : plugins.DataPlugin,
                "Processing" : plugins.ProcessingPlugin,
-               "Assignment": plugins.AssignmentPlugin,
+               "Identification": plugins.IdentificationPlugin,
                "Analysis" : plugins.AnalysisPlugin,
                "Visualisation" : plugins.VisualisationPlugin,
                "Output" : plugins.OutputPlugin,
@@ -811,7 +890,7 @@ class MainWindowUI(QMainWindow):
                })
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ['Data','Processing','Assignment','Analysis','Visualisation']
+        plugin_categories = ['Data','Processing','Identification','Analysis','Visualisation']
         apps = defaultdict(list)
         self.appBrowsers = {}
         
@@ -832,12 +911,13 @@ class MainWindowUI(QMainWindow):
                 })
  
 
-        self.dbBrowser = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+        self.dataDock = QDockWidget('Database')
+
+        self.dbBrowser = QWebViewScrollFix( self.dataDock, onNavEvent=self.onBrowserNav )
         # Display a list of supporting orgs
         template = self.templateEngine.get_template('sponsors.html')
-        self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),"~") 
+        self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),QUrl('~')) 
         
-        self.dataDock = QDockWidget('Database')
         self.dataDock.setWidget(self.dbBrowser)
         self.dataDock.setMinimumWidth(300)
         self.dataDock.setMaximumWidth(300)
@@ -846,9 +926,7 @@ class MainWindowUI(QMainWindow):
 
         self.stack = QStackedWidget()
         #self.stack.addWidget(self.mainBrowser)
-        #self.stack.addWidget(self.tabs)
-        #self.stack.addWidget(self.appBrowser)
-
+        
         self.setCentralWidget(self.stack)
 
         self.stack.setCurrentIndex(0)
@@ -857,33 +935,34 @@ class MainWindowUI(QMainWindow):
         self.workspace_parents = {}
         
         self.workspace = QTreeWidget()
-        self.workspace.setColumnCount(2)
-        self.workspace.setHeaderLabels(['','ID']) #,'#'])
+        self.workspace.setColumnCount(3)
+        self.workspace.setHeaderLabels(['','ID',' ⚑']) #,'#'])
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
-        #self.workspace.setIndentation(10)
+        
+
+        self.addWorkspaceItem( self.mainBrowser, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
         
         app_category_icons = {
                "Data" : QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
                "Processing" : QIcon.fromTheme("processing", QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ) ),
-               "Assignment" : QIcon.fromTheme("assignment", QIcon( os.path.join( utils.scriptdir,'icons','map.png' ) ) ),
+               "Identification" : QIcon.fromTheme("identification", QIcon( os.path.join( utils.scriptdir,'icons','target.png' ) ) ),
                "Analysis" : QIcon.fromTheme("analysis", QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ) ),
                "Visualisation" : QIcon.fromTheme("visualisation", QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ) ),
                }
     
         template = self.templateEngine.get_template('apps.html')
         for category in plugin_categories:
-            self.appBrowsers[ category ] = QWebViewScrollFix( onNavEvent=self.onBrowserNav )
+            self.appBrowsers[ category ] = QWebViewScrollFix(  self.workspace, onNavEvent=self.onBrowserNav )
             self.appBrowsers[ category ].setHtml(template.render( 
                 {
                 'htmlbase': os.path.join( utils.scriptdir,'html'),
                 'category':category,
                 'apps':apps[ category ],
                 }                
-             ),"~") 
+             ),QUrl('~')) 
                 
             self.appBrowsers[ category ].loadFinished.connect( self.onBrowserLoadDone )
-            self.appBrowsers[ category ].exposeQtWebView()
                 
             self.addWorkspaceItem( self.appBrowsers[ category ], None, category, app_category_icons[category]   )
 
@@ -894,22 +973,25 @@ class MainWindowUI(QMainWindow):
         self.workspace.setSelectionMode( QAbstractItemView.SingleSelection )
 
         self.workspace.currentItemChanged.connect( self.onWorkspaceStackChange)
+        
         #QObject.connect(self.workspace, SIGNAL("itemActivated()"),
         #self.stack, SLOT("setCurrentIndex(int)"))
 
         self.workspaceDock = QDockWidget('Workspace')
         self.workspaceDock.setWidget(self.workspace)
+        self.workspace.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
+        self.workspace.setColumnWidth(0, 298-25) 
+        self.workspace.setColumnWidth(2, 24) 
         self.workspaceDock.setMinimumWidth(300)
         self.workspaceDock.setMaximumWidth(300)
-        #self.workspaceDock.setMaximumWidth(200)
         #self.workspaceDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dataDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
 
         #self.workspace.resizeColumnToContents(0)
-        #self.tabifyDockWidget( self.workspaceDock, self.dataDock ) 
-        
+        self.tabifyDockWidget( self.workspaceDock, self.dataDock ) 
+        self.workspaceDock.raise_()
 
     def onWorkspaceStackChange(self, item, previous):
         self.stack.setCurrentIndex( int( item.text(1) ) )
@@ -921,6 +1003,7 @@ class MainWindowUI(QMainWindow):
         tw = QTreeWidgetItem()
         tw.setText(0, title)
         tw.setText(1, str( stack_index ) )
+        
         if icon:
             tw.setIcon(0, icon )
         
@@ -928,15 +1011,35 @@ class MainWindowUI(QMainWindow):
             self.workspace_parents[ section ].addChild(tw)
         else:
             self.workspace.addTopLevelItem(tw) 
-            self.workspace_parents[ title ] = tw 
+            self.workspace_parents[ title ] = tw
 
         if is_selected:
             if section:
                 self.workspace_parents[ section ].setExpanded(True)
             self.workspace.setCurrentItem(tw)
-        
+
         return tw
+
+    
+    def setWorkspaceStatus(self, workspace_item, status):
         
+        status_icons = {
+            'active':   QIcon( os.path.join( utils.scriptdir,'icons','flag-green.png' ) ),
+            'waiting':  QIcon( os.path.join( utils.scriptdir,'icons','flag-yellow.png' ) ),
+            'error':    QIcon( os.path.join( utils.scriptdir,'icons','flag-red.png' ) ),
+            'done':     QIcon( os.path.join( utils.scriptdir,'icons','flag-checker.png' ) ),
+            'clear':    QIcon(None)
+        }
+
+        if status not in status_icons.keys():
+            status = 'clear'
+            
+        workspace_item.setIcon(2, status_icons[status] )
+        self.workspace.update( self.workspace.indexFromItem( workspace_item ) )
+        self.app.processEvents()
+
+    def clearWorkspaceStatus(self, workspace_item):
+        self.setWorkspaceStatus(workspace_item, 'clear')        
         
     def onPathwayMiningToggle(self, checked):
         self.config.setValue( '/Data/MiningActive', checked)

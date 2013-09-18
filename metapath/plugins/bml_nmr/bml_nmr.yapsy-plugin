@@ -1,0 +1,9 @@
+[Core]
+Name = BML-NMR
+Module = bml_nmr
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Import FIMA identified metabolites from BML-NMR output

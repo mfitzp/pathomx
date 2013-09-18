@@ -1,0 +1,251 @@
+1	HMDB00357	3-Hydroxybutyric acid	0.941176470588235 (16/16)	Mammalian
+2	HMDB00008	2-Hydroxybutyric acid	0.9375 (15/15)	Mammalian
+3	HMDB01316	6-Phosphogluconic acid	0.923076923076923 (12/12)	Mammalian
+4	HMDB00139	Glyceric acid	0.909090909090909 (10/10)	Mammalian
+5	HMDB01514	Glucosamine	0.897435897435897 (35/38)	Mammalian
+6	HMDB00011	(R)-3-Hydroxybutyric acid	0.888888888888889 (16/17)	Mammalian
+7	HMDB00792	Sebacic acid	0.888888888888889 (8/8)	Mammalian
+8	HMDB00210	Pantothenic acid	0.866666666666667 (13/14)	Mammalian
+9	HMDB00857	Pimelic acid	0.857142857142857 (12/13)	Mammalian
+10	HMDB00076	Dihydrouracil	0.857142857142857 (6/6)	Mammalian
+11	HMDB00251	Taurine	0.857142857142857 (6/6)	Mammalian
+12	HMDB00517	L-Arginine	0.846153846153846 (33/38)	Mammalian
+13	HMDB00742	Homocysteine	0.846153846153846 (22/25)	Mammalian
+14	HMDB00975	Trehalose	0.842105263157895 (16/18)	Mammalian
+15	HMDB01266	L-Sorbose	0.842105263157895 (16/18)	Mammalian
+16	HMDB00169	D-Mannose	0.833333333333333 (30/35)	Mammalian
+17	HMDB00212	N-Acetylgalactosamine	0.833333333333333 (25/29)	Mammalian
+18	HMDB00452	L-a-aminobutyric acid	0.833333333333333 (15/17)	Mammalian
+19	HMDB00247	Sorbitol	0.833333333333333 (15/17)	Mammalian
+20	HMDB00696	L-Methionine	0.833333333333333 (15/17)	Mammalian
+21	HMDB00187	L-Serine	0.833333333333333 (10/11)	Mammalian
+22	HMDB00549	Gamma-Butyrolactone	0.833333333333333 (10/11)	Mammalian
+23	HMDB00819	Normetanephrine	0.833333333333333 (10/11)	Mammalian
+24	HMDB00895	Acetylcholine	0.833333333333333 (5/5)	Mammalian
+25	HMDB00557	L-Alloisoleucine	0.827586206896552 (24/28)	Mammalian
+26	HMDB00660	D-Fructose	0.827586206896552 (24/28)	Mammalian
+27	HMDB00162	L-Proline	0.823529411764706 (28/33)	Mammalian
+28	HMDB01881	Propylene glycol	0.823529411764706 (14/16)	Mammalian
+29	HMDB00122	D-Glucose	0.82051282051282 (32/38)	Mammalian
+30	HMDB01624	2-Hydroxycaproic acid	0.818181818181818 (27/32)	Mammalian
+31	HMDB00143	D-Galactose	0.818181818181818 (27/32)	Mammalian
+32	HMDB00148	L-Glutamic acid	0.818181818181818 (18/21)	Mammalian
+33	HMDB00893	Suberic acid	0.818181818181818 (9/10)	Mammalian
+34	HMDB00192	L-Cystine	0.818181818181818 (9/10)	Mammalian
+35	HMDB00214	Ornithine	0.814814814814815 (22/26)	Mammalian
+36	HMDB00413	3-Hydroxydodecanedioic acid	0.8125 (26/31)	Mammalian
+37	HMDB00625	Gluconic acid	0.8125 (13/15)	Mammalian
+38	HMDB00150	Gluconolactone	0.8125 (13/15)	Mammalian
+39	HMDB00215	N-Acetyl-D-glucosamine	0.810810810810811 (30/36)	Mammalian
+40	HMDB00126	Glycerol 3-phosphate	0.80952380952381 (17/20)	Mammalian
+41	HMDB00641	L-Glutamine	0.80952380952381 (17/20)	Mammalian
+42	HMDB00747	Isovalerylalanine	0.807692307692308 (21/25)	Mammalian
+43	HMDB00408	2-Methyl-3-ketovaleric acid	0.807692307692308 (21/25)	Mammalian
+44	HMDB00131	Glycerol	0.8 (12/14)	Mammalian
+45	HMDB00858	Monomethyl glutaric acid	0.8 (12/14)	Mammalian
+46	HMDB01900	Ribonolactone	0.8 (8/9)	Mammalian
+47	HMDB00532	Acetylglycine	0.8 (4/4)	Mammalian
+48	HMDB00535	Caproic acid	0.791666666666667 (19/23)	Mammalian
+49	HMDB01586	Glucose 1-phosphate	0.791666666666667 (19/23)	Mammalian
+50	HMDB00725	Hydroxyproline	0.791666666666667 (19/23)	Mammalian
+51	HMDB00279	Saccharopine	0.787234042553192 (37/46)	Mammalian
+52	HMDB00163	D-Maltose	0.782608695652174 (36/45)	Mammalian
+53	HMDB00127	D-Glucuronic acid	0.782608695652174 (18/22)	Mammalian
+54	HMDB00805	Pyrrolidonecarboxylic acid	0.782608695652174 (18/22)	Mammalian
+55	HMDB00884	Ribothymidine	0.782608695652174 (18/22)	Mammalian
+56	HMDB00510	Aminoadipic acid	0.78125 (50/63)	Mammalian
+57	HMDB04987	Alpha-Aspartyl-lysine	0.780487804878049 (32/40)	Mammalian
+58	HMDB00258	Sucrose	0.777777777777778 (21/26)	Mammalian
+59	HMDB00892	Valeric acid	0.777777777777778 (14/17)	Mammalian
+60	HMDB01851	L-Arabitol	0.777777777777778 (14/17)	Mammalian
+61	HMDB00576	Monoethyl malonic acid	0.777777777777778 (7/8)	Mammalian
+62	HMDB00766	N-Acetyl-L-alanine	0.777777777777778 (7/8)	Mammalian
+63	HMDB03406	D-Serine	0.777777777777778 (7/8)	Mammalian
+64	HMDB00883	L-Valine	0.769230769230769 (10/12)	Mammalian
+65	HMDB00168	L-Asparagine	0.769230769230769 (10/12)	Mammalian
+66	HMDB00700	Hydroxypropionic acid	0.769230769230769 (10/12)	Mammalian
+67	HMDB00071	Deoxyinosine	0.766666666666667 (23/29)	Mammalian
+68	HMDB00174	L-Fucose	0.766666666666667 (23/29)	Mammalian
+69	HMDB00172	L-Isoleucine	0.766666666666667 (23/29)	Mammalian
+70	HMDB01877	Valproic acid	0.766666666666667 (23/29)	Mammalian
+71	HMDB00023	(S)-3-Hydroxyisobutyric acid	0.764705882352941 (13/16)	Mammalian
+72	HMDB00687	L-Leucine	0.764705882352941 (13/16)	Mammalian
+73	HMDB01844	Methylsuccinic acid	0.764705882352941 (13/16)	Mammalian
+74	HMDB02712	1,5-Anhydrosorbitol	0.76 (19/24)	Mammalian
+75	HMDB01138	N-Acetylglutamic acid	0.76 (19/24)	Mammalian
+76	HMDB00670	Homo-L-arginine	0.756756756756757 (28/36)	Mammalian
+77	HMDB01520	Flavin Mononucleotide	0.75609756097561 (31/40)	Mammalian
+78	HMDB00631	Deoxycholic acid glycine conjugate	0.75 (63/83)	Mammalian
+79	HMDB00450	5-Hydroxylysine	0.75 (42/55)	Mammalian
+80	HMDB00186	Alpha-Lactose	0.75 (30/39)	Mammalian
+81	HMDB00099	L-Cystathionine	0.75 (27/35)	Mammalian
+82	HMDB00721	Glycylproline	0.75 (18/23)	Mammalian
+83	HMDB00159	L-Phenylalanine	0.75 (15/19)	Mammalian
+84	HMDB00753	3-Hexanone	0.75 (15/19)	Mammalian
+85	HMDB00193	Isocitric acid	0.75 (12/15)	Mammalian
+86	HMDB00112	Gamma-Aminobutyric acid	0.75 (9/11)	Mammalian
+87	HMDB01256	Spermine	0.75 (9/11)	Mammalian
+88	HMDB00622	Ethylmalonic acid	0.75 (9/11)	Mammalian
+89	HMDB00235	Thiamine	0.75 (9/11)	Mammalian
+90	HMDB00528	4,5-Dihydroorotic acid	0.75 (9/11)	Mammalian
+91	HMDB00224	O-Phosphoethanolamine	0.75 (6/7)	Mammalian
+92	HMDB00448	Adipic acid	0.75 (6/7)	Mammalian
+93	HMDB00888	Undecanedioic acid	0.75 (6/7)	Mammalian
+94	HMDB01149	5-Aminolevulinic acid	0.75 (6/7)	Mammalian
+95	HMDB00246	Tetrahydrofuran	0.75 (6/7)	Mammalian
+96	HMDB02006	2,3-Diaminopropionic acid	0.75 (6/7)	Mammalian
+97	HMDB01414	Putrescine	0.75 (6/7)	Mammalian
+98	HMDB00026	Ureidopropionic acid	0.75 (6/7)	Mammalian
+99	HMDB00310	Methylacetoacetic acid	0.75 (3/3)	Mammalian
+100	HMDB00455	Allocystathionine	0.742857142857143 (26/34)	Mammalian
+101	HMDB00101	Deoxyadenosine	0.741935483870968 (23/30)	Mammalian
+102	HMDB00182	L-Lysine	0.741935483870968 (23/30)	Mammalian
+103	HMDB01401	Glucose 6-phosphate	0.735294117647059 (25/33)	Mammalian
+104	HMDB00206	N6-Acetyl-L-lysine	0.735294117647059 (25/33)	Mammalian
+105	HMDB01645	L-Norleucine	0.733333333333333 (22/29)	Mammalian
+106	HMDB00672	Hexadecanedioic acid	0.733333333333333 (22/29)	Mammalian
+107	HMDB01874	D-threo-Isocitric acid	0.733333333333333 (11/14)	Mammalian
+108	HMDB00491	3-Methyl-2-oxovaleric acid	0.730769230769231 (19/25)	Mammalian
+109	HMDB00656	Cysteineglutathione disulfide	0.72972972972973 (27/36)	Mammalian
+110	HMDB00286	Uridine diphosphate glucose	0.72972972972973 (27/36)	Mammalian
+111	HMDB00273	Thymidine	0.727272727272727 (24/32)	Mammalian
+112	HMDB00422	2-Methylglutaric acid	0.727272727272727 (16/21)	Mammalian
+113	HMDB00306	Tyramine	0.727272727272727 (8/10)	Mammalian
+114	HMDB00058	Cyclic AMP	0.727272727272727 (8/10)	Mammalian
+115	HMDB00784	Azelaic acid	0.727272727272727 (8/10)	Mammalian
+116	HMDB00085	Deoxyguanosine	0.724137931034483 (21/28)	Mammalian
+117	HMDB00905	Deoxyadenosine monophosphate	0.724137931034483 (21/28)	Mammalian
+118	HMDB02005	Methionine sulfoxide	0.722222222222222 (26/35)	Mammalian
+119	HMDB00646	L-Arabinose	0.722222222222222 (26/35)	Mammalian
+120	HMDB00086	Glycerophosphocholine	0.72 (18/24)	Mammalian
+121	HMDB00953	Suberylglycine	0.714285714285714 (15/20)	Mammalian
+122	HMDB00272	Phosphoserine	0.714285714285714 (10/13)	Mammalian
+123	HMDB00177	L-Histidine	0.714285714285714 (10/13)	Mammalian
+124	HMDB00149	Ethanolamine	0.714285714285714 (5/6)	Mammalian
+125	HMDB00161	L-Alanine	0.714285714285714 (5/6)	Mammalian
+126	HMDB00426	Citramalic acid	0.714285714285714 (5/6)	Mammalian
+127	HMDB00202	Methylmalonic acid	0.714285714285714 (5/6)	Mammalian
+128	HMDB03134	Biocytin	0.710144927536232 (49/68)	Mammalian
+129	HMDB00378	2-Methylbutyroylcarnitine	0.709677419354839 (44/61)	Mammalian
+130	HMDB00002	1,3-Diaminopropane	0.7 (7/9)	Mammalian
+131	HMDB00898	1-Methylhistamine	0.7 (7/9)	Mammalian
+132	HMDB00518	Chenodeoxycholic acid	0.697368421052632 (53/75)	Mammalian
+133	HMDB00694	L-2-Hydroxyglutaric acid	0.696969696969697 (23/32)	Mammalian
+134	HMDB00744	Malic acid	0.692307692307692 (9/12)	Mammalian
+135	HMDB00508	Ribitol	0.692307692307692 (9/12)	Mammalian
+136	HMDB01451	Lipoic acid	0.689655172413793 (40/57)	Mammalian
+137	HMDB01342	Thymidine 5'-triphosphate	0.6875 (22/31)	Mammalian
+138	HMDB01547	Corticosterone	0.686746987951807 (57/82)	Mammalian
+139	HMDB00575	DL-Homocystine	0.684210526315789 (13/18)	Mammalian
+140	HMDB00607	Cyanocobalamin	0.681818181818182 (75/109)	Mammalian
+141	HMDB00290	Uridine diphosphate-N-acetylglucosamine	0.680851063829787 (32/46)	Mammalian
+142	HMDB00619	Cholic acid	0.680555555555556 (49/71)	Mammalian
+143	HMDB00014	Deoxycytidine	0.675675675675676 (25/36)	Mammalian
+144	HMDB00904	Citrulline	0.666666666666667 (24/35)	Mammalian
+145	HMDB00070	Pipecolic acid	0.666666666666667 (22/32)	Mammalian
+146	HMDB00124	Fructose 6-phosphate	0.666666666666667 (20/29)	Mammalian
+147	HMDB01904	3-Nitrotyrosine	0.666666666666667 (12/17)	Mammalian
+148	HMDB00666	Heptanoic acid	0.666666666666667 (12/17)	Mammalian
+149	HMDB02064	N-Acetylputrescine	0.666666666666667 (12/17)	Mammalian
+150	HMDB01389	Melatonin	0.666666666666667 (12/17)	Mammalian
+151	HMDB01051	Glyceraldehyde	0.666666666666667 (10/14)	Mammalian
+152	HMDB00062	L-Carnitine	0.666666666666667 (10/14)	Mammalian
+153	HMDB00718	Isovaleric acid	0.666666666666667 (8/11)	Mammalian
+154	HMDB00191	L-Aspartic acid	0.666666666666667 (8/11)	Mammalian
+155	HMDB00156	L-Malic acid	0.666666666666667 (8/11)	Mammalian
+156	HMDB01987	2-Hydroxy-2-methylbutyric acid	0.666666666666667 (6/8)	Mammalian
+157	HMDB02994	Erythritol	0.666666666666667 (6/8)	Mammalian
+158	HMDB00064	Creatine	0.666666666666667 (2/2)	Mammalian
+159	HMDB00043	Betaine	0.666666666666667 (2/2)	Mammalian
+160	HMDB00060	Acetoacetic acid	0.666666666666667 (2/2)	Mammalian
+161	HMDB01522	Methylguanidine	0.666666666666667 (2/2)	Mammalian
+162	HMDB00092	Dimethylglycine	0.666666666666667 (2/2)	Mammalian
+163	HMDB01857	1,3-Dimethyluric acid	0.666666666666667 (2/2)	Mammalian
+164	HMDB00791	L-Octanoylcarnitine	0.65625 (21/31)	Mammalian
+165	HMDB00098	D-Xylose	0.65625 (21/31)	Mammalian
+166	HMDB00296	Uridine	0.652173913043478 (15/22)	Mammalian
+167	HMDB00665	Leucinic acid	0.652173913043478 (15/22)	Mammalian
+168	HMDB01257	Spermidine	0.65 (13/19)	Mammalian
+169	HMDB00446	N-Alpha-ccetyllysine	0.647058823529412 (22/33)	Mammalian
+170	HMDB00759	Glycyl-L-leucine	0.647058823529412 (11/16)	Mammalian
+171	HMDB00832	Capryloylglycine	0.647058823529412 (11/16)	Mammalian
+172	HMDB00746	Hydroxyisocaproic acid	0.647058823529412 (11/16)	Mammalian
+173	HMDB00424	2-Hydroxydecanedioic acid	0.636363636363636 (14/21)	Mammalian
+174	HMDB00407	2-Hydroxy-3-methylbutyric acid	0.636363636363636 (7/10)	Mammalian
+175	HMDB00387	3-Hydroxydodecanoic acid	0.631578947368421 (12/18)	Mammalian
+176	HMDB00736	Isobutyryl-L-carnitine	0.62962962962963 (17/26)	Mammalian
+177	HMDB00121	Folic acid	0.625 (20/31)	Mammalian
+178	HMDB01975	2-Ethyl-2-Hydroxybutyric acid	0.625 (10/15)	Mammalian
+179	HMDB00755	Hydroxyphenyllactic acid	0.625 (10/15)	Mammalian
+180	HMDB00720	Levulinic acid	0.625 (5/7)	Mammalian
+181	HMDB00097	Choline	0.625 (5/7)	Mammalian
+182	HMDB00005	2-Ketobutyric acid	0.625 (5/7)	Mammalian
+183	HMDB00870	Histamine	0.625 (5/7)	Mammalian
+184	HMDB00703	Mandelic acid	0.625 (5/7)	Mammalian
+185	HMDB00107	Galactitol	0.625 (5/7)	Mammalian
+186	HMDB02176	Ethylmethylacetic acid	0.615384615384615 (16/25)	Mammalian
+187	HMDB01833	Aminopterin	0.611111111111111 (22/35)	Mammalian
+188	HMDB01864	2-Ketohexanoic acid	0.611111111111111 (11/17)	Mammalian
+189	HMDB00866	N-Acetyl-L-tyrosine	0.6 (12/19)	Mammalian
+190	HMDB00479	3-Methylhistidine	0.6 (9/14)	Mammalian
+191	HMDB00068	Epinephrine	0.6 (9/14)	Mammalian
+192	HMDB00001	1-Methylhistidine	0.6 (9/14)	Mammalian
+193	HMDB00232	Quinolinic acid	0.6 (6/9)	Mammalian
+194	HMDB01861	3-Methylhistamine	0.6 (6/9)	Mammalian
+195	HMDB01368	3-Mercaptopyruvic acid	0.6 (3/4)	Mammalian
+196	HMDB00094	Citric acid	0.6 (3/4)	Mammalian
+197	HMDB00033	Carnosine	0.59375 (19/31)	Mammalian
+198	HMDB00021	Iodotyrosine	0.590909090909091 (13/21)	Mammalian
+199	HMDB00089	Cytidine	0.583333333333333 (14/23)	Mammalian
+200	HMDB00910	Tridecanoic acid	0.583333333333333 (7/11)	Mammalian
+201	HMDB00211	Myoinositol	0.583333333333333 (7/11)	Mammalian
+202	HMDB00711	Hydroxyoctanoic acid	0.578947368421053 (11/18)	Mammalian
+203	HMDB01532	dATP	0.571428571428571 (16/27)	Mammalian
+204	HMDB00336	(R)-3-Hydroxyisobutyric acid	0.571428571428571 (8/13)	Mammalian
+205	HMDB00482	Caprylic acid	0.571428571428571 (8/13)	Mammalian
+206	HMDB01140	Octanal	0.571428571428571 (8/13)	Mammalian
+207	HMDB00208	Oxoglutaric acid	0.571428571428571 (4/6)	Mammalian
+208	HMDB00056	Beta-Alanine	0.571428571428571 (4/6)	Mammalian
+209	HMDB00190	L-Lactic acid	0.571428571428571 (4/6)	Mammalian
+210	HMDB00705	Hexanoylcarnitine	0.552631578947368 (21/37)	Mammalian
+211	HMDB00195	Inosine	0.55 (11/19)	Mammalian
+212	HMDB00651	Decanoylcarnitine	0.548387096774194 (17/30)	Mammalian
+213	HMDB00847	Pelargonic acid	0.545454545454545 (6/10)	Mammalian
+214	HMDB00947	Undecanoic acid	0.545454545454545 (6/10)	Mammalian
+215	HMDB00442	(S)-3-Hydroxybutyric acid	0.545454545454545 (6/10)	Mammalian
+216	HMDB00529	5-Dodecenoic acid	0.540540540540541 (20/36)	Mammalian
+217	HMDB00022	3-Methoxytyramine	0.538461538461538 (7/12)	Mammalian
+218	HMDB00227	Mevalonic acid	0.535714285714286 (15/27)	Mammalian
+219	HMDB00812	N-Acetyl-L-aspartic acid	0.533333333333333 (8/14)	Mammalian
+220	HMDB01227	5-Thymidylic acid	0.533333333333333 (8/14)	Mammalian
+221	HMDB00012	Deoxyuridine	0.53125 (17/31)	Mammalian
+222	HMDB00392	2-Octenoic acid	0.52 (13/24)	Mammalian
+223	HMDB02873	Deacetyldiltiazem	0.5 (21/41)	Mammalian
+224	HMDB01568	trans-2-Octenoic acid	0.5 (14/27)	Mammalian
+225	HMDB00050	Adenosine	0.5 (10/19)	Mammalian
+226	HMDB00303	Tryptamine	0.5 (9/17)	Mammalian
+227	HMDB00073	Dopamine	0.5 (7/13)	Mammalian
+228	HMDB00259	Serotonin	0.5 (7/13)	Mammalian
+229	HMDB00959	Tiglylglycine	0.5 (6/11)	Mammalian
+230	HMDB00019	A-Ketoisovaleric acid	0.5 (5/9)	Mammalian
+231	HMDB00821	Phenylacetylglycine	0.5 (5/9)	Mammalian
+232	HMDB00509	Senecioic acid	0.5 (2/3)	Mammalian
+233	HMDB00473	6-Dimethylaminopurine	0.5 (2/3)	Mammalian
+234	HMDB00072	cis-Aconitic acid	0.5 (2/3)	Mammalian
+235	HMDB00223	Oxalacetic acid	0.5 (1/1)	Mammalian
+236	HMDB00115	Glycolic acid	0.5 (1/1)	Mammalian
+237	HMDB00283	D-Ribose	0.5 (1/1)	Mammalian
+238	HMDB00042	Acetic acid	0.5 (1/1)	Mammalian
+239	HMDB00142	Formic acid	0.5 (1/1)	Mammalian
+240	HMDB00925	Trimethylamine oxide	0.5 (1/1)	Mammalian
+241	HMDB00128	Guanidoacetic acid	0.5 (1/1)	Mammalian
+242	HMDB02303	Dimethylsulfide	0.5 (1/1)	Mammalian
+243	HMDB00691	Malonic acid	0.5 (1/1)	Mammalian
+244	HMDB00123	Glycine	0.5 (1/1)	Mammalian
+245	HMDB01906	2-Aminoisobutyric acid	0.5 (1/1)	Mammalian
+246	HMDB02455	Pyruvatoxime	0.5 (1/1)	Mammalian
+247	HMDB02001	Dimethylmalonic acid	0.5 (1/1)	Mammalian
+248	HMDB00087	Dimethylamine	0.5 (1/1)	Mammalian
+249	HMDB00164	Methylamine	0.5 (1/1)	Mammalian
+250	HMDB00243	Pyruvic acid	0.5 (1/1)	Mammalian
+251	HMDB00729	Alpha-Hydroxyisobutyric acid	0.5 (1/1)	Mammalian

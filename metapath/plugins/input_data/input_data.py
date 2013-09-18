@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 from plugins import DataPlugin
 
 import ui, data
 
-class InputDataView( ui.dataView ):
+class InputDataView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(InputDataView, self).__init__(plugin, parent, **kwargs)
 

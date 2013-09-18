@@ -65,33 +65,33 @@
         </ul>
     @end
 
-    @if hasattr(object, 'metabolites') and object.metabolites:
-        <h2>Metabolites <small>(@str(len(object.metabolites)))</small></h2>
+    @if hasattr(object, 'compounds') and object.compounds:
+        <h2>Compounds <small>(@str(len(object.compounds)))</small></h2>
         <ul>
-            @for m in object.metabolites:
+            @for m in object.compounds:
                 <li>
                     @if data and data.analysis and m.id in data.analysis:
                         <div class="datasq rdbu9-@data.analysis[m.id]['color']!s"></div>
                     @else:
                         <div class="datasq"></div>
                     @end
-                    <a href="metapath://db/metabolite/@m.id/view">@m.name</a>
+                    <a href="metapath://db/compound/@m.id/view">@m.name</a>
                 </li>
             @end
         </ul>
     @end
     
-    @if hasattr(object, 'secondary_metabolites') and object.secondary_metabolites:
-        <h2>2&deg; Metabolites <small>(@str(len(object.secondary_metabolites)))</small></h2>
+    @if hasattr(object, 'secondary_compounds') and object.secondary_compounds:
+        <h2>2&deg; Compounds <small>(@str(len(object.secondary_compounds)))</small></h2>
         <ul>
-            @for m in object.secondary_metabolites:
+            @for m in object.secondary_compounds:
                 <li>
                     @if data and data.analysis and m.id in data.analysis:
                         <div class="datasq rdbu9-@data.analysis[m.id]['color']!s"></div>
                     @else:
                         <div class="datasq"></div>
                     @end
-                    <a href="metapath://db/metabolite/@m.id/view">@m.name</a>
+                    <a href="metapath://db/compound/@m.id/view">@m.name</a>
                 </li>
             @end
         </ul>
@@ -162,7 +162,7 @@
             @elif dbkey == 'KNAPSACK':
                 <a href="http://kanaya.naist.jp/knapsack_jsp/information.jsp?sname=C_ID&word=@dbid">KNApSAcK @dbid</a>
             @elif dbkey == 'HMDB':
-                <a href="http://www.hmdb.ca/metabolites/@dbid">HMDB @dbid</a>
+                <a href="http://www.hmdb.ca/compounds/@dbid">HMDB @dbid</a>
             @elif dbkey =='BIOPATH':
                 <a href="http://www.molecular-networks.com/biopath3/biopath/mols/@dbid">BIOPATH @dbid</a>
             @else:

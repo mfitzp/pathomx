@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from plugins import VisualisationPlugin
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
+from PyQt5.QtSvg import *
 
 
 from optparse import Values, OptionParser
@@ -21,14 +25,14 @@ import copy
 import operator
 
 # MetaPath classes and handlers
-import ui, utils, db
+import ui, utils, db, data
 from db import ReactionIntermediate
 
 PRUNE_ALL = lambda a, b, c, d: (a,b,c)
 PRUNE_IDENTICAL = lambda a, b, c, d: (a,b,c,d)    
 
 # Internal URLS
-METABOLITE_URL = 'metapath://db/metabolite/%s/view'
+COMPOUND_URL = 'metapath://db/compound/%s/view'
 PATHWAY_URL = 'metapath://db/pathway/%s/view'
 REACTION_URL = 'metapath://db/reaction/%s/view'
 PROTEIN_URL = 'metapath://db/protein/%s/view'
@@ -55,7 +59,7 @@ def add_clusternodes( clusternodes, cluster_key, keys, nodes):
         clusternodes[cluster_key][key].extend(nodes)
     return clusternodes
 
-def get_metabolite_color( analysis, m ):
+def get_compound_color( analysis, m ):
     return analysis[m.id] if m.id in analysis else '#cccccc'
 
 def get_pathway_color( analysis, m ):
@@ -86,7 +90,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
     if options.focus:
         focus_re = re.compile('.*(' + options.focus + ').*', flags=re.IGNORECASE)
 
-    # Internode counter (create dummy nodes for split metabolites)
+    # Internode counter (create dummy nodes for split compounds)
     intno = 0
     
     # Pathway colour list
@@ -109,7 +113,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
     edgesprune = list()
     #nodepathway = defaultdict( list )
 
-    focus_metabolites = list()
+    focus_compounds = list()
     inter_node = 0
     itr = 0
 
@@ -149,8 +153,8 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                 focus_match.extend( [l for l in r.mtouts for m in [focus_re.search(l)] if m] )
                 if len( focus_match ) > 0:
                     visible = True
-                    focus_metabolites.extend( r.mtins )
-                    focus_metabolites.extend( r.mtouts )
+                    focus_compounds.extend( r.mtins )
+                    focus_compounds.extend( r.mtouts )
                 else:
                     visible = False
             else:
@@ -178,8 +182,8 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                 inter_react = copy.copy(r) # FIXME:? This was a deepcopy, but causing recursion - switched to simple copy and still works
                 inter_react.name = ''
                 inter_react.proteins = [] # Hide the enzyme name, it'll be on the other object
-                inter_react.smtins = [] # Hide the small metabolites
-                inter_react.smtouts = [] # Hide the small metabolites
+                inter_react.smtins = [] # Hide the small compounds
+                inter_react.smtouts = [] # Hide the small compounds
 
                 edgecluster['pathway'][inter_react].append(p)
                 edgecluster['compartment'][inter_react].extend(compartments)
@@ -233,7 +237,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                 clusternodes = add_clusternodes( clusternodes, 'compartment', compartments, [mtout])
         
     # id,type,names 
-    for m in db.metabolites.values():
+    for m in db.compounds.values():
 
         # It's in one of our pathways (union)
         if set( m.pathways ) & set( pathways ):
@@ -260,21 +264,21 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             
             # Check that a reaction for this isn't already on the map
             if r not in visible_reactions:
-                # Now find out which end of it is (one side's metabolites [or both])
+                # Now find out which end of it is (one side's compounds [or both])
                 for p in r.pathways:
                     pathway_node = ReactionIntermediate(**{'id': '%s' % p.id, 'name': p.name, 'type':'pathway'})
                     
                     for mt in r.mtins:
-                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
+                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Compound is already on the graph
                             print mt
-                            mp = db.metabolites[mt.id].pathways[0]
+                            mp = db.compounds[mt.id].pathways[0]
                             pathway_annotate.add( (p, mp, pathway_node, mt, pathway_node, r.dir) )
                             pathway_annotate_dupcheck.add( (p, mt) )
                             break
                         
                     for mt in r.mtouts:
-                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Metabolite is already on the graph
-                            mp = db.metabolites[mt.id].pathways[0]
+                        if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck: # Compound is already on the graph
+                            mp = db.compounds[mt.id].pathways[0]
                             pathway_annotate.add( (p, mp, pathway_node, pathway_node, mt, r.dir) )
                             pathway_annotate_dupcheck.add( (p, mt) )
                             break
@@ -288,9 +292,9 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
             if analysis: # and options.mining:
                 # Not actually used for color, this is a ranking value (bud-sized on pathway link)
-                p_metabolite_scores = [ analysis[m.id]['color'] for m in p.metabolites if m.id in analysis] 
-                if p_metabolite_scores:
-                    fillcolor = sum( p_metabolite_scores ) / len( p_metabolite_scores )
+                p_compound_scores = [ analysis[m.id]['color'] for m in p.compounds if m.id in analysis] 
+                if p_compound_scores:
+                    fillcolor = sum( p_compound_scores ) / len( p_compound_scores )
                 else:
                     fillcolor = None
                 # fillcolor = max(1, 11-analysis['mining_ranked_remaining_pathways'].index( p.id ) ) if p.id in analysis['mining_ranked_remaining_pathways'] else 1
@@ -344,7 +348,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             style ='solid'
 
         subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color=bcolor, bgcolor=bgcolor, style=style, fontcolor=bcolor, labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non') #PATHWAY_URL % cluster.id )
-        # Read node file of metabolites to show
+        # Read node file of compounds to show
         # TODO: Filter this by the option specification
         for n in clusternodes[ cluster_key ][cluster]:
             subgraph.add_node(pydot.Node(n.id))
@@ -364,7 +368,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
         shape = 'rect'
         fontcolor = 'black'
         colorscheme = 'rdbu9'
-        url = METABOLITE_URL
+        url = COMPOUND_URL
         width, height = 0.75, 0.5
           
                     
@@ -383,7 +387,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
         elif m.type=='pathway':
             shape='point'
             label = '%s' % m.name
-            size = len(db.pathways[ m.id ].metabolites )
+            size = len(db.pathways[ m.id ].compounds )
             width, height = size/24., size/24.
             if fillcolor is None:
                 fillcolor = '#cccccc'          
@@ -489,7 +493,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                 
             if options.show_secondary and (hasattr(r,'smtins')): #If there's an in there's an out
                 if len(r.smtins + r.smtouts) > 0:
-                    # Process to add colors if metabolite in db
+                    # Process to add colors if compound in db
                     smtins, smtouts = [], []                
                     for sm in r.smtins:
                         if analysis and sm.id in analysis:
@@ -522,16 +526,28 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
         
 
-class MetaVizView(ui.analysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
-        super(MetaVizView, self).__init__(parent, **kwargs)
+class MetaVizView(ui.AnalysisView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(MetaVizView, self).__init__(plugin, parent, **kwargs)
 
         self.config = QSettings()
-        self.m = parent
-        self.plugin = plugin
-        self.generate()
 
+        self.browser = ui.QWebViewScrollFix( self, parent.onBrowserNav )
+        #self.overview = QSvgWidget()
+        parent.tab_handlers.append( self )
 
+        #self.plugin.register_url_handler( self.id, self.url_handler )
+
+        self.addDataToolBar()
+        
+        # Setup data consumer options
+        self.data.consumer_defs.append( 
+            data.DataDefinition('suggested_pathways', {
+            'entities_t':   (['Pathway'], None), 
+            })
+        )
+        
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         
         show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
@@ -546,13 +562,13 @@ class MetaVizView(ui.analysisView):
         showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
         showenzymesAction.toggled.connect(self.onShowEnzymesToggle)
         
-        show2ndAction = QAction(QIcon.fromTheme("metabolites-small", QIcon( os.path.join( utils.scriptdir,'icons','metabolites-small.png') )), 'Show 2° metabolites', self.m)
-        show2ndAction.setStatusTip('Show 2° metabolites on reaction paths')
+        show2ndAction = QAction(QIcon.fromTheme("compounds-small", QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') )), 'Show 2° compounds', self.m)
+        show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
         show2ndAction.setCheckable( True )
         show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
         show2ndAction.toggled.connect(self.onShow2ndToggle)
 
-        showmolecularAction = QAction(QIcon.fromTheme("metabolite-structure", QIcon( os.path.join( utils.scriptdir,'icons','metabolite-structure.png') )),'Show molecular structures', self.m)
+        showmolecularAction = QAction(QIcon.fromTheme("compound-structure", QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') )),'Show molecular structures', self.m)
         showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
         showmolecularAction.setCheckable( True )
         showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
@@ -580,14 +596,12 @@ class MetaVizView(ui.analysisView):
         self.cluster_control.addItems(['pathway','compartment'])
         self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
 
-        
         #self.o = QMainWindow(self.m)
         #self.o.setCentralWidget( self.gpmlpathway.browser )
         #self.o.setWindowTitle('GPML')
-        self.w = QMainWindow()
         #o.add( gpmlpathway.browser )
-        t = self.w.addToolBar('MetaViz')
-        self.w.setIconSize( QSize(16,16) )
+        t = self.addToolBar('MetaViz')
+        self.setIconSize( QSize(16,16) )
 
         t.addAction(showenzymesAction)
         t.addAction(show2ndAction)
@@ -597,10 +611,14 @@ class MetaVizView(ui.analysisView):
         t.addAction(highlightregionAction)
         t.addWidget(self.cluster_control)
 
-        self.w.setCentralWidget(self.browser)
+        self.tabs.addTab(self.browser,'View')
+        #self.tabs.addTab(self.overview,'Overview')
 
-        self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'MetaViz', is_selected=True) #, icon = None)
-  
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'MetaViz', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+
+        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.generate()
+          
 
     def url_handler(self, url):
 
@@ -714,11 +732,16 @@ class MetaVizView(ui.analysisView):
 
         })
         
-        pathway_ids = self.config.value('/Pathways/Show').split(',')
+        #pathway_ids = self.config.value('/Pathways/Show').split(',')
+        if 'suggested_pathways' in self.data.i:
+            pathway_ids = [p.id for p in self.data.i['suggested_pathways'].entities[0] ]
+        else:
+            pathway_ids = []
+
         
         # If we have no analysis, or re-analysis is reqeusted
-        if self.m.data and (self.m.data.analysis == None or regenerate_analysis):
-            self.m.data.analyse( self.m.experiment )
+        #if self.m.data and (self.m.data.analysis == None or regenerate_analysis):
+        #    self.m.data.analyse( self.m.experiment )
         
         # Add the selected pathways
         pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]        
@@ -734,6 +757,8 @@ class MetaVizView(ui.analysisView):
         pathway_ids_hide = self.config.value('/Pathways/Hide').split(',')
         pathways = [p for p in pathways if p.id not in pathway_ids_hide]
         
+        if pathway_ids == []:
+            return None        
             
         if self.m.data:
             if self.m.data.analysis_timecourse:
@@ -758,6 +783,7 @@ class MetaVizView(ui.analysisView):
             return None
         
     def generate(self, regenerate_analysis = False, regenerate_suggested = False):
+        self.setWorkspaceStatus('active')
 
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
@@ -776,6 +802,8 @@ class MetaVizView(ui.analysisView):
                 
         # Add file:// refs to image links (Graphviz bug?)
         svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
+        
+        #self.overview.load(filename)
 
         scale = ''
         if self.m.data:
@@ -820,11 +848,10 @@ class MetaVizView(ui.analysisView):
         html_source += '''</body></html>'''
         
         self.browser.setHtml(html_source) #,"~") 
-        
 
-
-
-
+        self.setWorkspaceStatus('done')
+        self.data.refresh_consumers()
+        self.clearWorkspaceStatus()
 
 
 class MetaViz(VisualisationPlugin):

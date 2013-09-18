@@ -80,6 +80,9 @@ def invert_direction(direction):
 def swap(ino, outo):
     return (outo, ino)
 
+def nonull(stream):
+    for line in stream:
+        yield line.replace('\x00', '')
 
 class UTF8Recoder:
     """

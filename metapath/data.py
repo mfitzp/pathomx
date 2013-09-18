@@ -2,82 +2,232 @@
 # Experimental data manager
 # Loads a csv data file and extracts key information into usable structures for analysis
 
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
+
 import os, sys, re, base64
-import csv
 import numpy as np
 
-from collections import defaultdict
 import operator
 
-import utils
-import xml.etree.cElementTree as et
+from copy import copy, deepcopy
 
-from PySide.QtGui import *
-from PySide.QtCore import *
+# DataManager allows a view/analysis class to handle control of consumable data sources
+class DataManager( QObject ):
+
+    # Signals
+    source_updated = pyqtSignal()
+
+    def __init__(self, parent, view, *args, **kwargs):
+        super(DataManager, self).__init__( *args, **kwargs)
+
+        self.m = parent
+        self.v = view
+
+        self.consumer_defs = [] # Holds data-consumer definitions 
+        self.consumes = [] # Holds list of data objects that are consumed
+
+        self.provides = [] # A list of dataset objects available from this manager
+
+        self.i = {} # Input
+        self.o = {} # Output
+
+        
+    
+    def addo(self, target, dso=None, provide=True):
+        if dso==None:
+            dso = DataSet( manager=self)
+            
+        self.o[ target ] = dso
+        if provide:
+            self.provides.append( dso )
+        
+        # If we're in a constructed view we will have a reference to the global data table
+        # This feels a bit hacky
+        try:
+            self.m.datasets.append( dso )
+        except:
+            pass
+            
+        
+        
+    def remove_data(self, data ):
+        self.stop_providing( data )
+        self.provides.remove( data )
+
+    # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
+    # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
+    def can_consume(self, data):
+        for consumer_def in self.consumer_defs:
+            if consumer_def.can_consume(data):
+                return True
+        return False
+        
+    # Check if a manager has a consumable data object
+    def has_consumable(self, manager):
+        for data in manager.provides:
+            if self.can_consume( data ):
+                return True
+        return False
+        
+    def consume(self, data):
+        for consumer_def in self.consumer_defs:
+            if consumer_def.can_consume(data):
+                # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
+                # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
+                # Register this as an attribute in the current object
+                self.i[ consumer_def.target ] = data
+                self.consumes.append( data )
+                data.consumers.append( self )
+                return True
+                
+    def consume_from_manager(self, manager):
+        for data in manager.provides:
+            if self.consume( data ):
+                return True # Stop if we manage it
+                
+    def consume_any_of(self, data_l):
+        for dso in data_l:
+            if self.consume(dso):
+                return True
+            
+    def provide(self, target):
+        self.provides.append( self.o[target] )
+                
+    def stop_consuming(self, target ):
+        self.consumes.remove( self.i[ target ])
+        del self.i[ target ]
+
+    def stop_providing(self, data):
+        data.remove_all_consumers()
+        self.provides.remove(data)
+        
+
+    def refresh_consumed_data(self):
+        self.source_updated.emit() # Trigger recalculation
+
+    def refresh_consumers(self):
+        managers = []
+        [ managers.extend( dso.consumers ) for dso in self.provides ]
+        print managers
+        for manager in set(managers):
+            manager.refresh_consumed_data()
+        # Data object is the object that has refreshed
+        #self.refresh() # Global data recalculate
 
 
-# Provider/Consumer classes define data availability and requirements for a given dataManager/analysisManager object.
+
+# Provider/Consumer classes define data availability and requirements for a given dataManager object.
 # Object can accept input from any Provider that offers it's Consumer requirements; process it; and then provide it downstream
 # view it's own Provider class definition.
 
-class dataProvider():
-    pass
+def at_least_one_element_in_common(l1, l2):
+    return len( set(l1) & set(l2) ) > 0
+
+class DataDefinition( QObject ):
+
+    cmp_map = {
+         '<': operator.lt,
+        '<=': operator.le,
+         '=': operator.eq,
+        '!=': operator.ne,
+         '>': operator.gt,
+        '>=': operator.ge,
+        'aloeic': at_least_one_element_in_common,
+    }
     
-    
-    
-class dataConsumer():
-    pass
+    def __init__(self, target, definition):
+        # Store consumer/provider description as entity entries from dict
+        self.target = target # Target attribute for imported data - stored under this in dataManager
+                             # When assigning data; should check if pre-existing and warn to overwrite (or provide options)
+        self.definition = definition
 
 
-## TODO: Chaining and update notification/re-processing 
-
-
-# dataManager models offer QAbstractTableModel interface to loaded dataset. Data is stored internally as 
-# two sets of headers and a combined table of the data underneath. Alternate interfaces to the same data
-# are automatically maintained and updated to represent changes
-#### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.
-
-class dataManager(QAbstractTableModel):
-    # Data handler offering API for access to loaded data sets via different interfaces
-    # metabolites, reactions, pathways = dict()
-    #def __init__(self, parent, list, header, *args, **kwargs):
-    #    QAbstractTableModel.__init__(self, parent, *args, **kwargs)
-    def __init__(self, filename, *args, **kwargs):
-        QAbstractTableModel.__init__(self, None, *args, **kwargs)
-
-        self.load_datafile(filename)
+    def get_cmp_fn(self,s):
+        if type( s ) == list:
+            return self.cmp_map['aloeic'], s
+            
+        s = str(s) # Treat all input as strings
+        for k,v in self.cmp_map.items():
+            if k in s:
+                return v, s.replace(k,'')
+        return self.cmp_map['='], s
         
-        self.parents = []
-        self.children = []
+    def can_consume(self, data):
+        # Prevent self-consuming (inf. loop)
+        #FIXME: Need a reference to the manager in self for this to work? Add to definition?
+        #if data.manager == self:
+        #    print "Don't consume oneself."
+        #    return False
+        # Retrieve matching record in provider; see if provides requirement
+        # if we fail at any point return False
+        # self.interface holds the interface for this 
+        # Test each option; if we get to the bottom we're alright!
+        print "CONSUME? [%s]" % data.name
+        print self.definition
+        for k,v in self.definition.items():
+            t = getattr( data, k )
+            print " COMPARE: %s %s %s" % (k,v,t)
+            # t = (1d,2d,3d)
+            # Dimensionality check
+            if len(v) != len(t):
+                print "  dimensionality failure %s %s" %( len(v), len(t) )
+                return False
+                
+            for n, cr in enumerate(v):
+                if cr == None: # No restriction on this definition
+                    print '  pass'
+                    continue 
 
-    def refresh_from_parent_data(self, parent):
-        # Trigger to refresh data from parent object (parent)
-        # 1st check this is in our parents list;
-        # Re-validate the dataProvider/dataConsumer link between self and parent
-        # Re-generate dataset
-        # (trigger children to refresh) to complete chaining
-        pass
+                cmp_fn, crr = self.get_cmp_fn( cr )
+                try:
+                    crr = type(t[n])(crr) 
+                except:
+                    # If we can't match equivalent types; it's nonsense so fail
+                    print "  type failure %s %s" %( type(t[n]), type(crr) )
+                    return False
+
+                "  comparison %s %s %s = %s" %( t[n], cmp_fn, crr, cmp_fn( t[n], crr))
+                if not cmp_fn( t[n], crr):
+                    print "  comparison failure %s %s %s" %( t[n], cmp_fn, crr )
+                    return False                                
+            
+        print " successful"
+        return True
+
+
+# QAbstractTableModel interface to loaded dataset. 
+class QTableInterface(QAbstractTableModel):
+    def __init__(self, parent, *args, **kwargs):        
+        super(QTableInterface, self).__init__(*args, **kwargs)
+        self.d = parent
 
     def rowCount(self, parent):
-        return len(self.table)
+        return self.d.shape[0]
 
     def columnCount(self, parent):
-        return len(self.table[0])
+        return self.d.shape[1]
         
     def data(self, index, role):
         if not index.isValid():
             return None
         elif role != Qt.DisplayRole:
             return None
-
-        return self.table[index.row()][index.column()]
+            
+        return float( self.d.data[ index.row(), index.column()] )
             
     def headerData(self, col, orientation, role):
         
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.table_colh[col]
+            return self.d.labels[1][col]
         elif orientation == Qt.Vertical and role == Qt.DisplayRole:
-            return self.table_rowh[col]
+            return self.d.labels[0][col]
         else:
             return None
         
@@ -91,518 +241,301 @@ class dataManager(QAbstractTableModel):
             self.emit(SIGNAL("layoutChanged()"))
 
 
-       
-    # Data file import handlers (#FIXME probably shouldn't be here)
-        
-    def load_datafile(self, filename):
-        # Determine if we've got a csv or peakml file (extension)
-        fn, fe = os.path.splitext(filename)
-        formats = { # Run specific loading function for different source data types
-                '.csv': self.load_csv,
-                '.peakml': self.load_peakml,
-                '': self.load_txt,
-            }
-            
-        if fe in formats.keys():
-            print "Loading..."
-            # Set up defaults
-            self.filename = filename
+#### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.
+## TODO: Chaining and update notification/re-processing 
 
-            self.metabolites = list()
-            self.quantities = dict()
+class DataSet( QObject ):
+    def __init__(self, manager=None, size=(0,), name='', description='', *args, **kwargs):
+
+        # DataSet must be assigned to a data manager for inter-object updates/communication to work
+        self.manager = manager
+        
+        self.consumers = [] # List of managers that consume this data object (access; but dont affect)
     
-            self.statistics = dict()
-            self.statistics['ymin'] = 0
-            self.statistics['ymax'] = 0
-            self.statistics['excluded'] = 0
-            self.classes = set()
-            
-            # Scale list; will be filled with 9 values (rdbu9)
-            self.scale = None
-            self.scale_type = None
+        self.name = name
+        self.description = description
+        self.type = None
+        self.empty(size)
         
-            # Load using handler for matching filetype
-            formats[fe](filename)
+        # DEFAULT INTERFACE SETS 
+        # Data managers can provide >1 of these, but must handle updating of each from the other
+        # e.g. if a table is updated, it must re-write the dataset representation
+        # Helpers for doing this should ideally be implemented
+        self.interfaces = [] # Interface interface table; for triggering refresh on update
+        
+        self.register_interface( 'as_table', QTableInterface(self) )
+        # self.as_table = #
 
-            self.classes = list( self.classes ) # makes easier to handle later
-            self.metabolites = list( set( self.metabolites ) ) # Remove duplicates
-            self.analysis = None
-            self.analysis_timecourse = None
-            self.analysis_suggested_pathways = None
+        # MetaData derived from data formats, inc. statistics etc. [informational only; not prescribed]
+    
+    # Wipes the data and metadata from the object; but does not alter references to it (or name/description)
+    def empty(self, size=(0,)):
+
+        self.labels = []
+        self.entities = []
+        self.scales = []
+        self.classes = []
+        
+        for s in size:
+            self.labels.append( [''] * s )
+            self.entities.append( [None] * s )
+            self.scales.append( [None] * s )
+            self.classes.append( [None] * s ) 
+        
+        self.data = np.zeros( size ) #np.array([]) # Data container  
+        
+        self.metadata = {}
+              
+    
+    def import_data(self, dso):
+        
+        self.name = copy(dso.name)
+        self.description = copy(dso.description)
+        self.type = copy(dso.type)
+
+        self.labels = [x for x in dso.labels] 
+        self.entities = [x for x in dso.entities]
+        self.scales = [x for x in dso.scales]
+        self.classes = [x for x in dso.classes]
+
+        self.data  = deepcopy(dso.data)
+        
+
+    def register_interface(self, interface_name, interface):
+        self.__dict__[ interface_name ] = interface
+        self.interfaces.append( interface )        
+        
+    # Helper functions for describing this dataset object; they summarise the data held in a consistent way
+    # naming conventionis _l for lists; _n for 'number of' e.g. class_l holds a list of all classes (in each dimension)
+    # class_n holds the number of classes (in each dimension). All accessible as properties
+
+    def _l(self, ls):
+        return [ list( set( l ) ) for l in ls ]
+
+    def _n(self, ls):
+        return [len(l) for l in self._l(ls)]
+        
+    def _t(self, ls):
+        # Entities_l returns [EntityA, EntityB],[EntityC, EntityC]
+        # Collapse for each dimension    
+        et = []
+        for el in self._l( ls ):
+            et.append( list( set([e.__class__.__name__ for e in el ] ) ) )
+        return et
+    
+    # List of unique labels, entities, classes
+    @property
+    def labels_l(self):
+        return self._l( self.labels)
+
+    @property
+    def entities_l(self):
+        return self._l( self.entities)
+
+    @property
+    def classes_l(self):
+        return self._l( self.classes)
+
+    # Number of unique labels, entities, classes        
+    @property
+    def labels_n(self):
+        return self._n( self.labels)
+
+    @property
+    def entities_n(self):
+        return self._n( self.entities)
+
+    @property
+    def classes_n(self):
+        return self._n( self.classes)        
+
+    # Range description (min/max) for scales
+    @property
+    def scales_n(self):
+        return self._n( self.scales)        
+    
+    @property
+    def scales_r(self):
+        return [ (min(s), max(s)) for s in self.scales if s is not None ]
             
-        else:
-            print "Unsupported file format."
-
-    def get_log2(self, m, c):
+    @property
+    def scales_t(self):
+        return self._t( self.scales )  
+            
+    # Entity types
+    @property
+    def entities_t(self):
+        return self._t( self.entities )  
+        
+    @property
+    def shape(self):
+        return self.data.shape
+        
+    @property
+    def dimensions(self):
+        return len(self.shape)
+    
+    def add_consumer(self, manager):
+        self.consumers.append( manager )
+        
+    def remove_consumer(self, manager):
+        manager.stop_consuming( self )
         try:
-            ns = self.quantities[m][c]
-            ns = [n if n != 0 else self.statistics['minima'] for n in ns ]
-                    
+            del self.consumers[manager]
         except:
-            ns = self.statistics['minima']
+            pass        
+    
+    def remove_all_consumers(self):
+        for dso in self.consumers:
+            self.remove_consumer( dso.manager )
 
-        return np.log2( np.mean( ns ) )
-
-    def get_log10(self, m, c):
-        try:
-            ns = self.quantities[m][c]
-            ns = [n if n != 0 else self.statistics['minima'] for n in ns ]
-                    
-        except:
-            ns = self.statitics['minima']
-
-        return np.log10( np.mean( ns ) )
-
-###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
-
-    def load_csv(self, filename):
-        print "Loading .csv..."
-        # Wrapper function to allow loading from alternative format CSV files
-        # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
-        hrow = reader.next() # Get top row
+    def refresh_consumers(self):
+        # Perform calculations again
+        for consumer in self.consumers:
+            consumer.refresh_consumed_data()
         
-        if hrow[0].lower() == 'sample':
-            if hrow[1].lower() == 'class':
-                self.load_csv_R(filename)
-            else:
-                self.load_csv_C(filename)
+    # Return data table np.array containing supplied classes as grouped means
+    # classes is a list, d is dimension to collapse
+    # FIXME: This function only works for dim = 0
+    def as_class_groups(self, d=0, fn=np.ma.mean, classes=None ):
 
-
-    def load_txt(self, filename):
-        print "Loading text file..."
-        # Wrapper function to allow loading from alternative format txt files
-        # Currently only supports Metabolights format files
-        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
-        hrow = reader.next() # Get top row
-        
-        if hrow[0].lower() == 'database_identifier': # M format metabolights
-            self.load_metabolights(filename)
-
-        if hrow[0].lower() == 'identifier': # A format metabolights
-            self.load_metabolights(filename, id_col=0, name_col=2, data_col=19)
-
-
-###### LOAD HANDLERS
-
-    def load_csv_C(self, filename): # Load from csv with experiments in COLUMNS, metabolites in ROWS
-        
-        # Read in data for the graphing metabolite, with associated value (generate mean)
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
-        
-        hrow = reader.next() # Discard top row (sample no's)
-        hrow = reader.next() # Get 2nd row
-        self.classes = hrow[1:]
-        self.metabolites = []
-        self.table = []
-        self.table_colh = self.classes
-        
-        
-        for row in reader:
-            metabolite = row[0]
-            self.metabolites.append( row[0] )
-            self.quantities[ metabolite ] = defaultdict(list)
-
-            self.table.append(row[1:])
-            
-            for n, c in enumerate(row[1:]):
-                if self.classes[n] != '.':
-                    try:
-                        c = float(c)
-                    except:
-                        c = 0
-                    
-                    self.quantities[metabolite][ self.classes[n] ].append( c )
-                    self.statistics['ymin'] = min( self.statistics['ymin'], c )
-                    self.statistics['ymax'] = max( self.statistics['ymax'], c )
-
-        self.statistics['excluded'] = self.classes.count('.')
-        self.classes = set( [c for c in self.classes if c != '.' ] )
-        
-                
-    def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
-       
-        # Read in data for the graphing metabolite, with associated value (generate mean)
-        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
-        
-        hrow = reader.next() # Get top row
-        self.metabolites = hrow[2:]
-        self.table = []
-        self.table_colh = self.metabolites
-        self.table_rowh = []
-
-        # Build quants table for metabolite classes
-        for metabolite in self.metabolites:
-            self.quantities[ metabolite ] = defaultdict(list)
-        
-        for row in reader:
-            if row[1] != '.': # Skip excluded classes # row[1] = Class
-                self.classes.add( row[1] )  
-                self.table.append(row[2:])
-                self.table_rowh.append( row[1] )
-
-                for metabolite in self.metabolites:
-                    metabolite_column = hrow.index( metabolite )   
-                    if row[ metabolite_column ]:
-                        self.quantities[metabolite][ row[1] ].append( float(row[ metabolite_column ]) )
-                        self.statistics['ymin'] = min( self.statistics['ymin'], float(row[ metabolite_column ]) )
-                        self.statistics['ymax'] = max( self.statistics['ymax'], float(row[ metabolite_column ]) )
-                    else:
-                        self.quantities[metabolite][ row[1] ].append( 0 )
-            else:
-                self.statistics['excluded'] += 1
- 
-        
-    def load_peakml(self, filename):
-        print "Loading PeakML..."
-
-        def decode(s):
-            s = base64.decodestring(s)
-            # Each number stored as a 4-chr representation (ascii value, not character)
-            l = []
-            for i in xrange(0, len(s), 4):
-                c = s[i:i+4]
-                val = 0
-                for n,v in enumerate(c):
-                    val += ord(v) * 10**(3-n)
-                l.append( str(val) )
-            return l
-        
-        # Read data in from peakml format file
-        xml = et.parse( filename )
-
-        # Get sample ids, names and class groupings
-        sets = xml.iterfind('header/sets/set')
-        midclass = {}
-        for set in sets:
-            id = set.find('id').text
-            mids = set.find('measurementids').text
-            for mid in decode(mids):
-                midclass[mid] = id
-            self.classes.add(id)
-
-        #meaurements = xml.iterfind('peakml/header/measurements/measurement')
-        #samples = {}
-        #for measurement in measurements:
-        #    id = measurement.find('id').text
-        #    label = measurement.find('label').text
-        #    sampleid = measurement.find('sampleid').text
-        #    samples[id] = {'label':label, 'sampleid':sampleid}
-        
-        # We have all the sample data now, parse the intensity and identity info
-        peaksets = xml.iterfind('peaks/peak')
-        metabolites = {}
-        quantities = {}
-        for peakset in peaksets:
-            
-            # Find metabolite identities
-            annotations = peakset.iterfind('annotations/annotation')
-            identities = False
-            for annotation in annotations:
-                if annotation.find('label').text == 'identification':
-                    identities = annotation.find('value').text.split(', ')
-                    break
-
-            if identities:
-                # PeakML supports multiple alternative metabolite identities,currently we don't so duplicate
-                for identity in identities:
-                    if not identity in self.quantities:
-                        self.quantities[ identity ] = defaultdict(list)
-                    self.metabolites.append(identity)
-            
-                # We have identities, now get intensities for the different samples            
-                chromatograms = peakset.iterfind('peaks/peak') # Next level down
-                quants = defaultdict(list)
-                for chromatogram in chromatograms:
-                    mid = chromatogram.find('measurementid').text
-                    intensity = float( chromatogram.find('intensity').text )
-                    
-                    classid = midclass[mid]
-                    quants[classid].append(intensity)
-
-                for classid, q in quants.items():
-                    for identity in identities:
-                        self.quantities[ identity ][ classid ].extend( q )
-
-
-    def load_metabolights(self, filename, id_col=0, name_col=4, data_col=18): # Load from csv with experiments in COLUMNS, metabolites in ROWS
-        print "Loading Metabolights..."
-        
-        # Read in data for the graphing metabolite, with associated value (generate mean)
-        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
-        
-        hrow = reader.next() # Get top row
-        self.classes = hrow[data_col:]
-        self.metabolites = []
-        print self.classes
-        for row in reader:
-            for m_col in [id_col,name_col]: # This is a bit fugly; we're pulling the data *twice* to account for IDs and names columns
-                                # an improvement would be to rewrite backend to allow synonyms to be supplied from the data
-                                # then implement multi-step translations
-                metabolite = row[m_col]
-                self.metabolites.append( row[m_col] )
-                self.quantities[ metabolite ] = defaultdict(list)
-
-                for n, c in enumerate(row[data_col:]):
-                    if self.classes[n] != '.':
-                        try:
-                            c = float(c)
-                        except:
-                            c = 0
-                        self.quantities[metabolite][ self.classes[n] ].append( c )
-                        self.statistics['ymin'] = min( self.statistics['ymin'], c )
-                        self.statistics['ymax'] = max( self.statistics['ymax'], c )
-
-        self.statistics['excluded'] = self.classes.count('.')
-        self.classes = set( [c for c in self.classes if c != '.' ] )
-
-
-
-###### TRANSLATION to METACYC IDENTIFIERS
-                        
-    def translate(self, db):
-        # Translate loaded data names to metabolite IDs using provided database for lookup
-        for m in self.metabolites:
-            if m.lower() in db.synrev:
-                transid = db.synrev[ m.lower() ].id
-                self.metabolites[ self.metabolites.index( m ) ] = transid
-                self.quantities[ transid ] = self.quantities.pop( m )
-        #print self.metabolites
-        
-###### PRE-PROCESS
-    def analyse(self, experiment):
-        self.analysis = None
-        self.analysis_timecourse = None
-        self.analysis_suggested_pathways = None
-
-        if 'timecourse' in experiment:
-            self.analyse_timecourse( [experiment['control']], [experiment['test']], experiment['timecourse'])
+        # Collapse the classes to a set 
+        if classes:
+            classmatch = list( set( self.classes[d] ) & set( classes ) ) # Matched the classes
         else:
-            self.analyse_single( [experiment['control']], [experiment['test']])           
-
-
-    def analyse_single(self, control, test):
-        self.analysis = self._analyse(control, test)
-
-    def analyse_timecourse(self, control, test, timecourse):
-    
-        # Timecourse
-        # Iterate the full class list and build 2 lists for comparison: one class global, then each timepoint
-            # a10, a20, a30 vs. b10, b20, b30
-            # a10 vs b10, a20 vs b20
+            classmatch = self.classes_l
         
-        classes = control + test
-        print '^(?P<pre>.*?)(?P<timecourse>%s)(?P<post>.*?)$' % timecourse 
-        rx = re.compile('^(?P<pre>.*?)(?P<timecourse>%s)(?P<post>.*?)$' % timecourse )
-        classes_glob, classes_time = defaultdict(list), defaultdict(list)
-
-        tcx = re.compile('(?P<int>\d+)') # Extract out the numeric only component of the timecourse filter
+        sizeR = list( self.shape )
+        sizeR[d] = len(classmatch) # Resizing
         
-        for c in self.classes: 
-            m = rx.match(c)
-            if m:
-                remainder_class = m.group('pre') + m.group('post')
-                if remainder_class in classes:
-                    classes_glob[ remainder_class ].append( c )
-
-                    # Extract numeric component of the timecourse filtered data
-                    tc = m.group('timecourse')
-                    tpm = tcx.match(tc)
-                    classes_time[ tpm.group('int') ].append( c ) 
-
-        # defaultdict(<type 'list'>, {'MPO': ['MPO56'], 'HSA': ['HSA56']}) defaultdict(<type 'list'>, {'56': ['HSA56', 'MPO56']})
-        # Store the global analysis for this test; used for pathway mining etc.
-        self.analysis = self._analyse( classes_glob.items()[0][1], classes_glob.items()[1][1] )        
-        self.analysis_timecourse = dict()
+        dso = DataSet()
+        dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
+        dso.data = np.zeros(sizeR)
         
-        # Perform the individual timecourse analysis steps, storing in analysis_timecourse structure
-        for tp,tpc in classes_time.items():
-            print tp, tpc
-            self.analysis_timecourse[tp] = self._analyse( [ tpc[0] ], [ tpc[1] ] )    
-    
-    def _analyse(self, control, test):
-    
-        analysis = defaultdict(dict)
-        
-        # Get detection limits (smallest detected concentration)
-        minima, maxima = 1e10, 0
-        minimad, maximad = 1e10, 0
-        maxfold = 0
-        ranged = 0
-        
-        experiment = {
-            'control': control,
-            'test': test,
-            }
+        for n,c in enumerate( classmatch):    
+            mask = np.array( [True if c in classmatch else False for c in self.classes[d] ] )
+            masked_data = np.ma.array(self.data, mask=np.repeat(mask,self.data.shape[d]))    
             
-        for metabolite in self.metabolites:
-            quants = self.quantities[metabolite]
-            
-            analysis[metabolite] = dict()
-            
-            for k,v in experiment.items():
-                analysis[metabolite][k] = dict()
-                analysis[metabolite][k]['data'] = list()
-                # Allow multiple-class comparisons
-                for c in v:
-                    analysis[metabolite][k]['data'].extend( quants[c] ) 
-
-                # No empty values allowed
-                analysis[metabolite][k]['data'] = [x for x in analysis[metabolite][k]['data'] if x != '']
-
-                # If either of the control/test datasets are empty break out of this loop
-                if len(analysis[metabolite][k]['data']) == 0: # Or max = 0?
-                    del(analysis[metabolite])
-                    break 
-                    
-
-                analysis[metabolite][k]['mean'] = np.mean( analysis[metabolite][k]['data'] )
-                analysis[metabolite][k]['stddev'] = np.std( analysis[metabolite][k]['data'] )
-                analysis[metabolite][k]['log2'] = np.log2( analysis[metabolite][k]['mean'] )
-                analysis[metabolite][k]['log10'] = np.log10( analysis[metabolite][k]['mean'] )
-
-                if analysis[metabolite][k]['mean'] > 0 and analysis[metabolite][k]['mean'] < minima:
-                    minima = analysis[metabolite][k]['mean']
-                elif analysis[metabolite][k]['mean'] > maxima:
-                    maxima = analysis[metabolite][k]['mean']
-  
-            if metabolite in analysis: # We've not dropped it, calculate
-  
-                analysis[metabolite]['delta'] = dict()
-                analysis[metabolite]['delta']['mean'] = analysis[metabolite]['test']['mean'] - analysis[metabolite]['control']['mean']
-
-        limit = max( abs(minima), maxima)
-
-        # Calculate logN base
-        logN = pow(maximad, 1.0/9) #rdbu9 1/2 for + and - range
-
-        # Adjust foldscaling to fit 1-9 range
-        # foldscale = 9/maxfold
-    
-        #llogN = np.log(logN)
-        minimadsc = 1.0/minimad
-        #minlog = 10 ** np.log2( minima ) -1)
-        minlog = np.log2( minima )-1
-        
-        # Find logN to cover this distance in 9 steps (colorscheme rdbu9)
-        print "Detection limit minima %s; maxima %s; minlog %s" % ( minima, maxima, minlog )
-        
-        # Generate scale
-        # avglog = int( np.log2( (minima + maxima) / 2) )
-        self.scale = [n for n in range(-4, +5)] # Scale 9 big
-        self.scale_type = 'log2'
-        self.statistics['minima'] = minima
-        self.statistics['maxima'] = maxima
-            
-        for metabolite in self.metabolites:
-            if metabolite in analysis:
-                #cont_log = ( np.log( analysis[metabolite]['control']['mean']) / np.log(logN) ) if analysis[metabolite]['control']['mean']>0 else minlog
-                #test_log = ( np.log( analysis[metabolite]['test']['mean']) / np.log(logN) ) if analysis[metabolite]['test']['mean']>0 else minlog
-                #np.log( abs(-0.000444) ) / np.log(0.045044)
-
-                #if analysis[metabolite]['test']['mean'] > analysis[metabolite]['control']['mean']:
-                #    analysis[metabolite]['delta']['fold'] = analysis[metabolite]['test']['mean'] / max(minlog, analysis[metabolite]['control']['mean'])
-                #elif analysis[metabolite]['test']['mean'] < analysis[metabolite]['control']['mean']:
-                #    analysis[metabolite]['delta']['fold'] = -analysis[metabolite]['control']['mean'] / max(minlog, analysis[metabolite]['test']['mean'])
-                #else:
-                #    analysis[metabolite]['delta']['fold'] = 0
-
-                cont_log = ( np.log2( analysis[metabolite]['control']['mean']) ) if analysis[metabolite]['control']['mean']>0 else minlog
-                test_log = ( np.log2( analysis[metabolite]['test']['mean']) ) if analysis[metabolite]['test']['mean']>0 else minlog
-
-                analysis[metabolite]['delta']['meanlog'] = (test_log - cont_log)
-    
-                # Calculate color using palette (rbu9) note red is 1 blue is 9 so need to reverse scale (-)
-                analysis[metabolite]['color'] = round( 5 -( 2* analysis[metabolite]['delta']['meanlog'] ), 0 )
-                analysis[metabolite]['color'] = int( max( min( analysis[metabolite]['color'], 9), 1) )
-
-                # Ranking score for picking pathways; meanlog scaled to control giving rel log change
-                analysis[metabolite]['score'] = min( max( analysis[metabolite]['delta']['meanlog'],-4),+4) #/  ( np.log(analysis[metabolite]['control']['mean'])  / np.log(logN) )
-                
-                #analysis[metabolite]['color'] = int( max( min( 5-round( analysis[metabolite]['delta']['mean']*25 ), 9), 1) )
-                #analysis[metabolite]['score'] = analysis[metabolite]['delta']['mean']
-        return analysis
-
-
-
-
-    # Generate pathway suggestions from the database based on a given data analysis (use set options)
-    def suggest(self, db, mining_type='n', mining_depth=5):
-    
-        # Iterate all the metabolites in the current analysis
-        # Assign score to each of the metabolite's pathways
-        # Sum up, crop and return a list of pathway_ids to display
-        # Pass this in as the list to view
-        # + requested pathways, - excluded pathways
-        
-        pathway_scores = defaultdict( int )
-        print "Mining using '%s'" % mining_type
-        
-        for m_id in self.analysis:
-            score = self.analysis[ m_id ]['score']
-            
-            # 1' neighbours; 2' neighbours etc. add score
-            # Get a list of methods in connected reactions, add their score % to this metabolite
-            # if m_id in db.metabolites.keys():
-            #    n_metabolites = [r.metabolites for r in db.metabolites[ m_id ].reactions ]
-            #     print n_metabolites
-            #     n_metabolites = [m for ml in n_metabolites for m in ml if n_m.id in self.analysis and m.id != m_id ]
-            #     for n_m in n_metabolites:
-            #         score += self.analysis[ n_m.id ]['score'] * 0.5
-
-            
-            # Iterate the metabolite's pathways
-            if m_id in db.metabolites.keys():
-                pathways = db.metabolites[ m_id ].pathways
-            elif m_id in db.proteins.keys():
-                pathways = db.proteins[ m_id ].pathways
-            elif m_id in db.genes.keys():
-                pathways = db.genes[ m_id ].pathways
-            else:
-                continue # Skip out of the loop     
-                
-            if pathways == []:
-                continue   
-                
-            if "s" in mining_type:
-                # Share the change score between the associated pathways
-                # this prevents metabolites having undue influence
-                score = score / len(pathways)    
-        
-            for p in pathways:
-                mining_val = {
-                    'c': abs( score),
-                    'u': max( 0, score),
-                    'd': abs( min( 0, score ) ),
-                    'm': 1.0
-                    }
-                pathway_scores[ p.id ] += mining_val[ mining_type[0] ]
-                    
-        # If we're pruning, then remove any pathways not in keep_pathways
-        if "r" in mining_type:
-            print "Scaling pathway scores to pathway sizes..."
-            for p,v in pathway_scores.items():
-                pathway_scores[p] = float(v) / len( db.pathways[p].reactions )
-    
-        pathway_scorest = pathway_scores.items() # Switch it to a dict so we can sort
-        pathway_scorest = [(p,v) for p,v in pathway_scorest if v>0] # Remove any scores of 0
-        pathway_scorest.sort(key=lambda tup: tup[1], reverse=True) # Sort by scores (either system)
-        
-        # Get top N defined by mining_depth parameter
-        keep_pathways = pathway_scorest[0:mining_depth]
-        remaining_pathways = pathway_scorest[mining_depth+1:mining_depth+100]
-
-        print "Mining recommended %d out of %d" % ( len( keep_pathways ), len(pathway_scores) )
-       
-        for n,p in enumerate(keep_pathways):
-            print "- %d. %s [%.2f]" % (n+1, db.pathways[ p[0] ].name, p[1])
-
-        self.analysis['mining_ranked_remaining_pathways'] = []
+            calculated_d = fn( masked_data, axis=d)
+            dso.data[n,:] = calculated_d
                         
-        if remaining_pathways:
-            print "Note: Next pathways by current scoring method are..."
-            for n2,p in enumerate(remaining_pathways):
-                print "- %d. %s [%.2f]" % (n+n2+1, db.pathways[ p[0] ].name, p[1])
-                self.analysis['mining_ranked_remaining_pathways'].append( p[0] )
+        dso.classes[d] = classmatch
+        dso.labels[d] = classmatch
 
-        self.analysis_suggested_pathways = [db.pathways[p[0]] for p in pathway_scorest]
+        return dso        
+
+    def as_filtereXXd(self, d=0, classes=None, labels=None, scales=None ):
+
+        dso = DataSet()
+        dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
+
+        # Build masks
+        for match,matcht in [
+            (classes,self.classes[d]),
+            (labels, self.labels[d]),
+            (scales, self.scales[d])]:
+            if match == None:
+                continue
+            mask = np.array( [True if t in match else False for t in matcht ] )
+            matcht = [t for t in matcht if t in match]
+
+            dso.data = np.ma.array(dso.data, mask=np.repeat(mask,self.data.shape[d]))    
+
+        print dso.classes
+        print dso.labels
+        print dso.scales
+        print dso.data
+        return dso    
+        
+    # Compress the dataset object in 'd' dimension; 
+    # being compressed in d dimension by the fn function
+    # Compression only if classes, labels and entities are equal. Scale is treated the same as data (fn function)
+    def as_compressed(self, fn=np.mean, dim=1):
+    
+        print "Entities before compression (own):",self.entities
+        dso = DataSet()
+        dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
+        print "Entities before compression (copied):",dso.entities
+
+        # Build combined (class, label, entity) tuples as matching value
+        identities = [ (c, l, e) for c,l,e in zip( dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
+        unique = set( identities )
+        
+        old_shape, new_shape = dso.data.shape, list( dso.data.shape )
+        new_shape[ dim ] = len( unique )
+        print 'Reshape from %s to %s' % (old_shape,new_shape)
+        dso.crop( new_shape )
+        
+        for n,u in enumerate( unique ):
+            dso.classes[dim][n], dso.labels[dim][n], dso.entities[dim][n] = u
+            # Build mask against the original identities file
+            mask = np.array([ True if u == i else False for i in identities ])
+            # Mask of T F T T T F if the identity at this position matches our unique value
+            # Apply this mask to the data; then use our function to reduce it in our dimension
+            #mask = np.repeat(mask, old_shape[dim])
+            #mask= np.reshape( mask, old_shape )
+            data = self.data[ :, mask] #np.ma.array(self.data, mask=mask)
+            compressed_data = fn( data, axis=dim) #, keepdims=True )
+            dso.data[:,n] = compressed_data
+
+
+        print "Entities after compression:",dso.entities
+
+        return dso
+    
+    # Filter data by labels/entities on a given axis    
+    def as_filtered(self, dim=1, scales=None, labels=None, entities=None):
+        
+        print 'Entities before filtering:',self.entities
+        dso = DataSet()
+        dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
+
+        old_shape, new_shape = dso.data.shape, list( dso.data.shape )
+
+        # Build consecutive mask
+        iter = [
+            (dso.entities[dim], entities),
+            (dso.labels[dim], labels),
+            (dso.scales[dim], scales),
+        ]
+        
+        mask = np.array([ True for i in dso.entities[dim] ])
+        
+        for dis,ois in iter:
+            if ois == None:
+                continue
+            imask = np.array([ True if di not in ois else False for di in dis ]) 
+            mask[imask] = False
+            
+        new_shape[dim] = list(mask).count(True) # New size of it
+
+        print 'Reshape from %s to %s' % (old_shape,new_shape)
+
+        dso.crop( new_shape )
+        dso.data = self.data[ : ,mask ]
+
+        dso.classes[dim] = [v for t,v in zip( mask, self.classes[dim]) if t]
+        dso.entities[dim] = [v for t,v in zip( mask, self.entities[dim]) if t]
+        dso.labels[dim] = [v for t,v in zip( mask, self.labels[dim]) if t]
+        dso.scales[dim] = [v for t,v in zip( mask, self.scales[dim]) if t]
+
+        return dso        
+        
+    # DESTRUCTIVE resizing of the current dso
+    # All entries are simply clipped to size
+    def crop(self,shape):
+
+        final_shape = list( self.data.shape )
+        for d, s in enumerate( shape ):
+            if s<len(self.labels): # Only allow crop
+                self.labels[d] = self.labels[d][:s]
+                self.entities[d] = self.entities[d][:s]
+                self.scales[d] = self.scales[d][:s]
+                final_shape[d] = shape[d]
+                
+        self.data.resize( final_shape )
+    
+    
+    
+    
+    

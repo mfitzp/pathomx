@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
+
 
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
@@ -24,7 +28,7 @@ import ui, utils
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class DynamicView(ui.analysisView):
+class DynamicView(ui.AnalysisView):
     def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
         super(DynamicView, self).__init__(parent, **kwargs)
 

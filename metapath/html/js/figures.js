@@ -1,28 +1,63 @@
+/* Helper functions */
+QtViewportSize = typeof(QtViewportSize) == 'undefined' ? {'x':false,'y':false} : QtViewportSize;
 
+    
+    function getWindowSize(){
+        var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            q = QtViewportSize;
+            
+            x = q.x || w.innerWidth || e.clientWidth || g.clientWidth,
+            y = q.y || w.innerHeight|| e.clientHeight|| g.clientHeight;
+    
+        console.log([x,y]);
+        return [x,y]
+    }
+    
+    function getElementSize(id){
+        if (id == 'body' || id =='svg'){
+            return getWindowSize();
+        } else {
+            xy = [        
+                d3.select(id)[0][0].offsetWidth.parseInt(),
+                d3.select(id)[0][0].offsetHeight.parseInt(),
+                ];
+            if (xy[1] == 0) { xy[1] = xy[0]*2/3; } //800*600
+            return xy
+        }
+    }
+
+    
+    
+/* Figure d3 functions */
 function heatmap(id, buckets, scale){
 
-
+    idxy = getElementSize(id)
+    var width = idxy[0],
+        height = idxy[1];
+    
     // Buckets contains x,y,value data
     // id for resulting SVG object (can shift it somewhere else after) or may want to move object definition to parent
 
     buckets.forEach(function(d) {
         d.value = parseFloat(d.value);
     });
-       
     var xlabels = d3.unique( buckets, function(d) { return d.x }),
         ylabels = d3.unique( buckets, function(d) { return d.y });
 
-    
-    idxy = getElementSize(id)
-    var width = idxy[0],
-        height = idxy[1];
+    var cellw = 18,
+        cellh = 18;
 
-    var cellw = 20,
-        cellh = 20;
+    var height = (ylabels.length * 18) + 150;
+    //width = (xlabels.length * 20) +150;
         
-    var margin = {top: height/5, right: 0, bottom: 0, left: width/2};
+    var margin = {top: 100, right: 50, bottom: 50, left: width/2};
 
-    var svg = d3.select(id).insert("svg",':first-child')
+
+
+    var svg = d3.select(id)//.insert("svg",':first-child')
                 .attr("class", 'heatmap')
                 .attr("width", width) // + margin.left + margin.right)
                 .attr("height", height) // + margin.top + margin.bottom)
@@ -77,7 +112,7 @@ function heatmap(id, buckets, scale){
       .data(z.ticks(6).slice(1).reverse())
     .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(" + (width + 20) + "," + (20 + i * 20) + ")"; });
+      .attr("transform", function(d, i) { return "translate(" + (width - 50) + "," + (20 + i * 20) + ")"; });
 
     legend.append("rect")
       .attr("width", 20)
@@ -138,6 +173,8 @@ function circos(id, matrix, labels){
     var width = idxy[0],
         height = idxy[1];
 
+
+
     var padding = Math.min( width, height ) * 0.3;
 
 
@@ -148,7 +185,7 @@ function circos(id, matrix, labels){
         //.domain(d3.range(4))
         //.range(["#000000", "#FFDD89", "#957244", "#F26223"]);
 
-    var svg = d3.select(id).insert("svg",':first-child')
+    var svg = d3.select(id)//.insert("svg",':first-child')
         .attr("class", 'circos')
         .attr("width", width)
         .attr("height", height)
@@ -225,8 +262,7 @@ function corrmatrix(id, groups, traits, data){
     var size = 140,
           padding = 10,
           n = 4;
-
-
+          
   // Position scales.
   var x = {}, y = {};
   traits.forEach(function(trait) {
@@ -254,7 +290,7 @@ function corrmatrix(id, groups, traits, data){
       
 
   // Root panel.
-  var svg = d3.select(id).insert("svg",':first-child')
+  var svg = d3.select(id)//.insert("svg",':first-child')
         .attr("width", width)
         .attr("height",height)
         .attr('viewBox','0 0 ' + width + ' ' + height)
@@ -364,5 +400,210 @@ function corrmatrix(id, groups, traits, data){
     for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
     return c;
   }
+
+}
+
+
+function nmr_spectra(id, data, identities, labels) {
+
+idxy = getElementSize(id)
+var width = idxy[0],
+    height = idxy[1];
+    
+
+var margin = {top: 120, right: 50, bottom: 80, left: 50};
+    //width = width - margin.left - margin.right,
+    //height = height - margin.top - margin.bottom;
+var width_d = width - margin.left - margin.right,
+    height_d = height - margin.top - margin.bottom;
+    
+var s_ppm = d3.extent(data, function(d) { return d.ppm; } )
+var s_ppm = [ s_ppm[1], s_ppm[0] ]
+
+var s_intensity = [
+        Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ), 
+        Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ),
+        ]
+     
+            
+var x = d3.scale
+            .linear()
+            .range([0,width_d])
+            .domain( s_ppm);
+            
+            
+var y = d3.scale
+            .linear()
+            .range([height_d,0])
+            .domain( s_intensity);
+            
+var zoom = d3.behavior.zoom()
+    .x(x)
+    //.y(y)
+    .on("zoom", zoomed);            
+
+console.log('out');
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line = d3.svg.line()
+    //.interpolate("basis")
+    .x(function(d) { return x(d.ppm); })
+    .y(function(d) { return y(d.intensity); });
+    
+
+var svg = d3.select(id)//.insert("svg",':first-child')
+    .attr("width", width)
+    .attr("height", height)
+    .attr('viewBox','0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio','xMidYMid')        
+      .call(zoom)
+
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    color.domain( d3.keys( data[0].intensity ) );
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height_d + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('ppm');
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('Rel');
+      
+      
+var clip = svg.append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width - (margin.left + margin.right))
+    .attr("height", height);
+
+
+  var spectra = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {ppm: d.ppm, intensity: +d.intensity[name]};
+      })
+    };
+  });
+
+  var spectrum = svg.selectAll(".spectrum")
+      .data(spectra)
+    .enter().append("g")
+      .attr("clip-path", "url(#clip)")
+      .attr("class", "spectrum");
+    
+  spectrum.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+
+
+    var rect = {
+        //.interpolate("basis")
+        'x':(function(d) { return x(d.ppm); }),
+        'y':(function(d) { return y(s_intensity[1]); }),
+        'width':(function(d) { return x( d.ppm_end) - x(d.ppm); }),
+        'height':(function(d) { return y( 0) - y(s_intensity[1]); }),
+        }
+        
+    var label_position_transform = function(d,i){ return "translate(" +  x( (d.ppm+d.ppm_end)/2 )  +"," + y( s_intensity[1] )+ ") rotate(-60)"; }
+
+    var identity = svg.selectAll(".identity")
+          .data(identities)
+          .enter();
+          
+        identity.append("svg:rect")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+                .attr("class","identity-line")
+
+        identity.append("text")
+            .attr("transform", label_position_transform)
+                .style("text-anchor", "start")
+                .attr("dx", ".1em")     
+                .attr("class","identity-label")
+          .text(function(d,i) { return d.compound.name; })
+            .attr('style','cursor:pointer;')
+            .on("click",function(d){ delegateLink( d.compound.url); });          
+            
+    // Labels         
+            
+    var label = svg.selectAll(".labels")
+          .data(labels)
+          .enter();
+          
+        label.append("svg:rect")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+            .attr("class","label-line");
+
+        label.append("text")
+            .attr("transform", label_position_transform)
+                .style("text-anchor", "start")
+                .attr("dx", ".1em")     
+                .attr("class","label-label")
+            
+          .text(function(d){ return d.label; });
+    
+
+    function zoomed() {
+        svg.select(".x.axis").call(xAxis);
+        svg.select(".y.axis").call(yAxis);
+
+        svg.selectAll(".line")
+              .attr("class", "line")
+              .attr("d", function(d) { return line(d.values); })
+              .style("stroke", function(d) { return color(d.name); });
+
+        svg.selectAll(".identity-line")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+
+        svg.selectAll(".identity-label")
+            .attr("transform", label_position_transform)
+
+        svg.selectAll(".label-line")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+
+        svg.selectAll(".label-label")
+            .attr("transform", label_position_transform)
+
+            
+    }
 
 }

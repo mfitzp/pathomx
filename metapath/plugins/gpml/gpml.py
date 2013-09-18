@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
+
 
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
@@ -14,22 +18,41 @@ from gpml2svg import gpml2svg
 from plugins import VisualisationPlugin
 
 import os
-import ui, utils
+import ui, utils, data
 
+import urllib2
 
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
 
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class gpmlPathwayView(ui.analysisView):
+class gpmlPathwayView(ui.AnalysisView):
     def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
-        super(gpmlPathwayView, self).__init__(parent, **kwargs)
+        super(gpmlPathwayView, self).__init__( plugin, parent, **kwargs)
 
-        self.plugin = plugin
-        self.m = parent
         self.gpml = gpml # Source GPML file
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
+
+        #self.data = data.DataManager()
+        # Setup data consumer options
+        self.data.consumer_defs.append( 
+            data.DataDefinition('input', {
+            # Dimensionality in tuple
+            #self.labels = None
+            #self.entities = None
+            #self.scales = None
+            #self.classes = None
+            'entities_t':   (['Compound','Gene'], None), 
+            #'classes_n':    ('>2', None),
+            })
+        )
+
+        self.data.consume_any_of( self.m.datasets[::-1] )
 
         load_gpmlAction = QAction( QIcon( os.path.join( self.plugin.path,'document-open-gpml.png' ) ), 'Load a GPML pathway file\u2026', self.m)
         load_gpmlAction.setShortcut('Ctrl+Q')
@@ -42,6 +65,10 @@ class gpmlPathwayView(ui.analysisView):
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
         
         self.w = QMainWindow()
+
+
+        self.addDataToolBar()
+
         t = self.w.addToolBar('GPML')
         t.setIconSize( QSize(16,16) )
         t.addAction(load_gpmlAction)
@@ -50,7 +77,8 @@ class gpmlPathwayView(ui.analysisView):
          
         #self.o.show() 
         self.plugin.register_url_handler( self.id, self.url_handler )
-        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, 'WikiPathways', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+        self.set_name( 'Wikipathways' )
+        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
 
 
     def url_handler(self, url):
@@ -111,6 +139,8 @@ class gpmlPathwayView(ui.analysisView):
     
     def generate(self):
 
+        self.setWorkspaceStatus('active')
+
         # Add our urls to the defaults
         xref_urls = {
             'MetaCyc compound': 'metapath://db/metabolite/%s/view',
@@ -134,6 +164,10 @@ class gpmlPathwayView(ui.analysisView):
         else:
             self.svg = None
         
+        self.setWorkspaceStatus('done')
+        self.data.refresh_consumers()
+        self.clearWorkspaceStatus()            
+        
     def render(self):
         if self.svg is None:
             self.generate()
@@ -156,7 +190,7 @@ class gpmlPathwayView(ui.analysisView):
             self.generate()
 
             if self.workspace_item:
-                self.workspace_item.setText(0, self.metadata['Name'])
+                self.set_name( self.metadata['Name'] )
 
     def onLoadGPMLWikiPathways(self):
         dialog = dialogWikiPathways(parent=self.m, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
@@ -172,14 +206,14 @@ class gpmlPathwayView(ui.analysisView):
                 self.generate()
                 
                 if self.workspace_item:
-                    self.workspace_item.setText(0, self.metadata['Name'])
+                    self.set_name( self.metadata['Name'] )
 
 
 
 
 class dialogWikiPathways(ui.remoteQueryDialog):
-    def __init__(self, parent=None, **kwargs):
-        super(dialogWikiPathways, self).__init__(parent, **kwargs)        
+    def __init__(self, parent=None, query_target=None, **kwargs):
+        super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)        
     
         self.setWindowTitle("Load GPML pathway from WikiPathways")
 

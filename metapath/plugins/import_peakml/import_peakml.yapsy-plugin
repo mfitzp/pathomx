@@ -1,0 +1,9 @@
+[Core]
+Name = Import PeakML
+Module = import_peakml
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Import PeakML output from MzMatch

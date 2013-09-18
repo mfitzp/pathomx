@@ -1,33 +1,14 @@
-@extends("d3/base.html")
+@extends("d3/base.svg")
 @require(htmlbase, figure)
 
 @def styles():
-<style>
+<style><![CDATA[
+
 body {
     margin:0; padding:0;
 }
 
-svg {
-    font-size:8pt;
-}
 
-
-/* Heatmap */
-
-.heatmap .label {
-  font-weight: bold;
-}
-
-.heatmap .tile {
-  shape-rendering: crispEdges;
-}
-
-.heatmap .axis path,
-.heatmap .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
 
 /* Chord */
 
@@ -67,35 +48,19 @@ circle {
 .legend text {
 }
 
-.setosa {
-  fill: #800;
-}
-
-.versicolor {
-  fill: #080;
-}
-
-.virginica {
-  fill: #008;
-}
-
-
-</style>
+]]></style>
 @end
 
         
 @def script():
-<script>
-
-
-</script>
+<script></script>
 @end
 
 
 @def generate():
     @#...
     <script>
-        id = "body";
+        id = "svg";
         
         @if figure['type'] == 'circos':
             var matrix = [
@@ -143,21 +108,7 @@ circle {
             corrmatrix(id, groups, traits, matrix);
         
 
-        @else:
-            buckets = [
-            @for d in figure['data']:
-                {
-                'x':'@d[0]!s',
-                'y':'@d[1]!s',
-                'value':'@d[2]!s',
-                },
-            @endfor
-            ];
-
-            heatmap(id, buckets, "@figure['scale']!s");
         @endif
-
-    window.onresize = resizeFigureToWindow;
 
     </script>
 

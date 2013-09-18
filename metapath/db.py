@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Database manager
-# Loads metabolites, reactions and pathways on initialisation. Provides interface to 
+# Loads compounds, reactions and pathways on initialisation. Provides interface to 
 # filter sets, list etc. 
 # Database is a key-based store of each dataset
 
@@ -15,6 +15,13 @@ import numpy as np
 database_link_synonyms = [
     'UCSC', 'ENSEMBL', 'HMDB', 'CAS',
 ]
+
+# Internal URLS
+COMPOUND_URL = 'metapath://db/compound/%s/view'
+PATHWAY_URL = 'metapath://db/pathway/%s/view'
+REACTION_URL = 'metapath://db/reaction/%s/view'
+PROTEIN_URL = 'metapath://db/protein/%s/view'
+GENE_URL = 'metapath://db/gene/%s/view'
 
 # Global MetaPath db object class to simplify object display, synonym referencing, etc. 
 class _MetaPathObject(object):
@@ -32,7 +39,7 @@ class _MetaPathObject(object):
         return hash(self.id)
 
     def __eq__(self, other):
-        return self.id == other.id
+        return type(self) == type(other) and self.id == other.id
         
 
     def get_piped_str(self,l):
@@ -53,7 +60,7 @@ class _MetaPathObject(object):
     
 
 # Dummy wrapper classes for readability
-class Metabolite(_MetaPathObject):
+class Compound(_MetaPathObject):
     type = 'compound'
     def as_csv(self):
         return [
@@ -61,7 +68,10 @@ class Metabolite(_MetaPathObject):
             self.name,
             self.type,
             self.get_db_str(self.databases) ]
-            
+    @property
+    def url(self):
+        return COMPOUND_URL % self.id
+
 class Pathway(_MetaPathObject):
     type = 'pathway'
     def as_csv(self):
@@ -69,6 +79,9 @@ class Pathway(_MetaPathObject):
             self.id,
             self.name,
             self.get_db_str(self.databases) ]
+    @property
+    def url(self):
+        return PATHWAY_URL % self.id
 
 class Reaction(_MetaPathObject):
     type = 'reaction'
@@ -86,11 +99,15 @@ class Reaction(_MetaPathObject):
             self.get_db_str(self.databases) ]
 
     @property
-    def metabolites(self):
+    def url(self):
+        return REACTION_URL % self.id
+
+    @property
+    def compounds(self):
         return self.mtins + self.mtouts
 
     @property
-    def secondary_metabolites(self):
+    def secondary_compounds(self):
         return self.smtins + self.smtouts
         
 class Protein(_MetaPathObject):
@@ -102,6 +119,10 @@ class Protein(_MetaPathObject):
             self.get_piped_str(self.genes),
             self.get_piped_str(self.compartments),
             self.get_db_str(self.databases) ]
+            
+    @property
+    def url(self):
+        return PROTEIN_URL % self.id
 
 class Gene(_MetaPathObject):
     type = 'gene'
@@ -111,10 +132,13 @@ class Gene(_MetaPathObject):
             self.name,
             self.get_db_str(self.databases) ]
 
+    @property
+    def url(self):
+        return GENE_URL % self.id
 
 
             
-# Dummy class to handle reaction intermediate metabolites/reaction steps
+# Dummy class to handle reaction intermediate compounds/reaction steps
 class ReactionIntermediate(_MetaPathObject):
     # Standard values
     type = 'dummy'
@@ -122,7 +146,7 @@ class ReactionIntermediate(_MetaPathObject):
 
 class databaseManager():
 
-    # metabolites, reactions, pathways = dict()
+    # compounds, reactions, pathways = dict()
     def __init__(self):
     
         # Initialise variables
@@ -136,7 +160,7 @@ class databaseManager():
         self.pathways = dict() #Pathway)
 
         self.reactions = dict() #Reaction)
-        self.metabolites = dict() #Metabolite)
+        self.compounds = dict() #Compound)
 
         self.proteins = dict() #Protein)
         self.genes = dict() #Gene)
@@ -146,7 +170,7 @@ class databaseManager():
         
         # Load the data
         self.load_pathways()
-        self.load_metabolites()
+        self.load_compounds()
 
         self.load_genes()
         self.load_proteins()
@@ -195,7 +219,7 @@ class databaseManager():
             print "Done."
     
 
-    # Synonym interface for metabolites, reactions and pathways (shared namespace)
+    # Synonym interface for compounds, reactions and pathways (shared namespace)
     # Can call with filename to load a specific synonym file, e.g. containing peak ids
     def load_synonyms(self, filename = os.path.join( utils.scriptdir,'database/synonyms') ): 
         reader = UnicodeReader( open(filename, 'rU'), delimiter=',', dialect='excel')
@@ -203,11 +227,11 @@ class databaseManager():
             if id in self.synfwd: # Protection 
                 self.add_synonym(id, name)
 
-    def load_metabolites(self):
+    def load_compounds(self):
         import urllib
-        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/metabolites'),'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/compounds'),'rU'), delimiter=',', dialect='excel')
         for id, name, type, db_unification in reader:
-            self.add_metabolite(id, {
+            self.add_compound(id, {
                 'name': name,
                 'type': type,
                 'databases': self.extract_db_unification( db_unification ),
@@ -218,7 +242,7 @@ class databaseManager():
         for id, name, origin, dest, smtins, smtouts, proteins, dir, pathways, db_unification in reader:
             self.add_reaction(id, {
                 'name': name,        
-                # Build internal db links to metabolites
+                # Build internal db links to compounds
                 'mtins':    [self.index[mid] for mid in origin.split('|')],
                 'mtouts':   [self.index[mid] for mid in dest.split('|')],
                 'smtins':   [self.index[mid] for mid in smtins.split('|') if mid != ''], #[s for s in smtins.split('|') if s != ''],
@@ -263,7 +287,7 @@ class databaseManager():
     
         reader = UnicodeReader( open(os.path.join( utils.scriptdir,'database/gibbs'),'rU'), delimiter=',', dialect='excel')
         
-        # Add reactions from each metabolite that we have gibbs data for
+        # Add reactions from each compound that we have gibbs data for
         gibbs_reactions = set()
         
         for kegg_id, deltag, uncertainty, charge in reader:
@@ -342,16 +366,16 @@ class databaseManager():
             if hasattr(pathway,'id'):
                 self.pathways[pathway.id].reactions.append(self.reactions[id])     
         
-        # Add pathway links to metabolites
+        # Add pathway links to compounds
         for m in self.reactions[id].mtins + self.reactions[id].mtouts:
             # The follow instead of extend to remove duplicates
             if hasattr(m,'id'):
-                self.metabolites[m.id].pathways.extend( [ p for p in self.reactions[id].pathways if p not in self.metabolites[m.id].pathways ] )
-                self.metabolites[m.id].reactions.append( self.reactions[id] )
+                self.compounds[m.id].pathways.extend( [ p for p in self.reactions[id].pathways if p not in self.compounds[m.id].pathways ] )
+                self.compounds[m.id].reactions.append( self.reactions[id] )
 
                 for p in self.reactions[id].pathways:
-                    if self.metabolites[m.id] not in self.pathways[p.id].metabolites:
-                        self.pathways[p.id].metabolites.append( self.metabolites[m.id] ) 
+                    if self.compounds[m.id] not in self.pathways[p.id].compounds:
+                        self.pathways[p.id].compounds.append( self.compounds[m.id] ) 
         
         # Add pathway links to proteins
         for pr in self.reactions[id].proteins:
@@ -377,27 +401,27 @@ class databaseManager():
 
     def add_pathway(self, id, attr):
         self.pathways[id] = Pathway(**dict(
-            {'id': id, 'synonyms': self.synfwd[id], 'reactions':[], 'metabolites':[], 'proteins':[], 'genes':[], }.items() + attr.items())
+            {'id': id, 'synonyms': self.synfwd[id], 'reactions':[], 'compounds':[], 'proteins':[], 'genes':[], }.items() + attr.items())
         )
     
         # Store id and names in the synonym database
         self.index[id] = self.pathways[id]
         self.add_synonym(id, attr['name'])
         
-    def add_metabolite(self, id, attr):
-        self.metabolites[id] = Metabolite(**dict(
+    def add_compound(self, id, attr):
+        self.compounds[id] = Compound(**dict(
             {'id': id, 'synonyms': self.synfwd[id], 'reactions':[], 'pathways':[], }.items() + attr.items())
         )
             
         # Store id and name in the synonym database
-        self.index[id] = self.metabolites[id]
+        self.index[id] = self.compounds[id]
         self.add_synonym(id, attr['name'])
-        self.add_db_synonyms(id, self.metabolites[id].databases )
+        self.add_db_synonyms(id, self.compounds[id].databases )
         
-        # Check if we have a compound image for this metabolite
-        if 'LIGAND-CPD' in self.metabolites[id].databases.keys():
-            self.metabolites[id].image = os.path.join(utils.scriptdir,'database','figures','%s.png' % id)
-            self.metabolites[id].imagecolor= os.path.join(utils.scriptdir,'database','figures','%d','%s.png' % id)
+        # Check if we have a compound image for this compound (KEGG Sourced)
+        if 'LIGAND-CPD' in self.compounds[id].databases.keys():
+            self.compounds[id].image = os.path.join(utils.scriptdir,'database','figures','%s.png' % id)
+            self.compounds[id].imagecolor= os.path.join(utils.scriptdir,'database','figures','%d','%s.png' % id)
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
@@ -439,10 +463,10 @@ class databaseManager():
     
         
     # Output the current database to disk (Overwrite completely)
-    def save_metabolites(self):
-        writer = UnicodeWriter(open('./database/metabolites', 'wb'), delimiter=',')
-        for metabolite in self.metabolites.values():
-            writer.writerow( metabolite.as_csv() )  
+    def save_compounds(self):
+        writer = UnicodeWriter(open('./database/compounds', 'wb'), delimiter=',')
+        for compound in self.compounds.values():
+            writer.writerow( compound.as_csv() )  
 
     def save_reactions(self):
         writer = UnicodeWriter(open('./database/reactions', 'wb'), delimiter=',')

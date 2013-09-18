@@ -1,34 +1,44 @@
 import os
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
 
 from plugins import VisualisationPlugin
 
-import ui, utils
+import ui, utils, data
 
 
 
 
-class PathwayConnectsView(ui.analysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
-        super(PathwayConnectsView, self).__init__(parent, **kwargs)
+class PathwayConnectsView(ui.AnalysisView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(PathwayConnectsView, self).__init__(plugin, parent, **kwargs)
 
-        self.config = QSettings()
-        self.m = parent
-        self.plugin = plugin
-
-        self.browser = ui.QWebViewExtend( parent.onBrowserNav )
-        parent.tab_handlers.append( self )
-
+        #self.browser = ui.QWebViewExtend( self.m.stack, parent.onBrowserNav )
+        #self.tabs.addTab(self.browser, 'Connections')
         #self.plugin.register_url_handler( self.id, self.url_handler )
 
-        self.generate()
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Pathway Connections', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+
+        self.addDataToolBar()
         
-        self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'Pathway Connects', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+        # Setup data consumer options
+        self.data.consumer_defs.append( 
+            data.DataDefinition('input', {
+            'entities_t':   (['Pathway'], None), 
+            })
+        )
+        
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+
+        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.generate()
         
 
     def url_handler(self, url):
@@ -58,35 +68,37 @@ class PathwayConnectsView(ui.analysisView):
 
 
     def generate(self):
-        pathways = self.parent.db.pathways.keys()
-        pathway_metabolites = dict()
-        
-        for k,p in self.parent.db.pathways.items():
-            pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
+        self.setWorkspaceStatus('active')
 
-        data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
+        print "Generating..."
+        pathways = self.m.db.pathways.keys()
+        pathway_compounds = dict()
+        
+        for k,p in self.m.db.pathways.items():
+            pathway_compounds[p.id] = set( [m for m in p.compounds] )
+
+        data_m, labels_m = self.build_matrix(pathways, pathway_compounds)
 
         pathway_reactions = dict()
         
-        for k,p in self.parent.db.pathways.items():
+        for k,p in self.m.db.pathways.items():
             pathway_reactions[p.id] = set( [m for m in p.reactions] )
 
         data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
 
-
         pathway_active_reactions = dict()
-        pathway_active_metabolites = dict()
-        active_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        pathway_active_compounds = dict()
+        active_pathways = self.data.i['input'].entities[0] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
         active_pathways_id = []
         
         for p in active_pathways:
             pathway_active_reactions[p.id] = set( [r for r in p.reactions] )
-            pathway_active_metabolites[p.id] = set( [r for r in p.metabolites] )
+            pathway_active_compounds[p.id] = set( [r for r in p.compounds] )
             active_pathways_id.append(p.id)
     
 
         data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
-        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_metabolites)
+        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_compounds)
 
 
         self.render( {
@@ -95,7 +107,7 @@ class PathwayConnectsView(ui.analysisView):
                             'data': data_am,
                             'labels': labels_am,
                             'n':2,  
-                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
+                            'legend':('Metabolic pathway compound interconnections','Links between pathways indicate proportions of shared compounds between the two pathways in MetaCyc database')
                         },  
                         
             'figures': [[
@@ -111,48 +123,14 @@ class PathwayConnectsView(ui.analysisView):
                             'data': data_am,
                             'labels': labels_am,
                             'n':2,  
-                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
+                            'legend':('Metabolic pathway compound interconnections','Links between pathways indicate proportions of shared compounds between the two pathways in MetaCyc database')
                         },                                             
                     ]],
                     })
 
-"""                        
-                        {
-                            'type':'circos',
-                            'data': data_m,
-                            'labels': labels_m,
-                            'n':1,  
-                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
-                                                      
-                        },
-                        {
-                            'type':'circos',
-                            'data': data_r,
-                            'labels': labels_r,
-                            'n':2,  
-                            'legend':('Metabolic pathway interconnections','Complete set of shared metabolites for pathways in current database')
-                                                      
-                        }],
-                        [
+        self.setWorkspaceStatus('done')
+        self.clearWorkspaceStatus()
 
-
-                            {
-                            'type':'corrmatrix',
-                            'data': [
-                              {'group':"setosa","sepal length":1, "sepal width":5, "petal length":3, "petal width":2},
-                              {'group':"versicolor","sepal length":2, "sepal width":5, "petal length":3, "petal width":1},
-                              {'group':"virginica","sepal length":3, "sepal width":5, "petal length":3, "petal width":1},
-                              {'group':"setosa","sepal length":4, "sepal width":5, "petal length":3, "petal width":0},
-                              {'group':"versicolor","sepal length":5, "sepal width":5, "petal length":3, "petal width":1},
-                              {'group':"virginica","sepal length":6, "sepal width":5, "petal length":3, "petal width":2},
-                            ],
-                            'traits': ["sepal length", "sepal width", "petal length", "petal width"],
-                            'groups': ["setosa", "versicolor", "virginica"],
-                            'n':5,
-                            'legend':('a','b'),
-"""   
-                    
-        
 
 
 

@@ -1,0 +1,52 @@
+@extends("d3/base.svg")
+@require(htmlbase, figure)
+
+@def styles():
+<style><![CDATA[
+
+/* Heatmap */
+
+.heatmap .label {
+  font-weight: bold;
+}
+
+.heatmap .tile {
+  shape-rendering: crispEdges;
+}
+
+.heatmap .axis path,
+.heatmap .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+
+]]></style>
+@end
+
+        
+@def script():
+<script></script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = 'svg';
+            buckets = [
+            @for d in figure['data']:
+                {
+                'x':'@d[0]!s',
+                'y':'@d[1]!s',
+                'value':'@d[2]!s',
+                },
+            @endfor
+            ];
+
+            heatmap(id, buckets, "log2");
+    </script>
+
+
+@end

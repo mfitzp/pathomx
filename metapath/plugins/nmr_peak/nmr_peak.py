@@ -1,6 +1,6 @@
-from plugins import ProcessingPlugin
+from plugins import IdentificationPlugin
 
-class MetaViz(ProcessingPlugin):
+class MetaViz(IdentificationPlugin):
 
 
 

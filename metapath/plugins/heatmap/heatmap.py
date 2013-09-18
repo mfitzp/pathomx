@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
 
 import numpy as np
 
@@ -16,189 +19,11 @@ from gpml2svg import gpml2svg
 from plugins import VisualisationPlugin
 
 import os
-import ui, utils
+import ui, utils, data
 
 
 
-class analysisEquilibriaView(ui.analysisHeatmapView):
-    def __init__(self, *args, **kwargs):
-        super(analysisEquilibriaView, self).__init__(*args, **kwargs)
-    
-        self.nucleosides = [
-            ['AMP', 'ADP', 'ATP'],
-            ['CMP', 'CDP', 'CTP'],
-            ['GMP', 'GDP', 'GTP'],
-            ['UMP', 'UDP', 'UTP'],
-            ['TMP', 'TDP', 'TTP'],
-            #---
-            ['DAMP', 'DADP', 'DATP'],
-            ['DCMP', 'DCDP', 'DCTP'],
-            ['DGMP', 'DGDP', 'DGTP'],
-            ['DUMP', 'DUDP', 'DUTP'],
-            ['DTMP', 'DTDP', 'DTTP'],
-            #---
-            ['Pi', 'PPI', 'PI3','PI4'],
-            #---
-            ['NAD','NADP'],            
-            ['NADH','NADPH'],
-        ]
-        
-        self.proton = [
-            ['NAD', 'NADH'],
-            ['NADP','NADPH'],
-            ['FAD','FADH','FADH2'],
-        ]
-        
-        redox = [
-            ['OXYGEN-MOLECULE', 'WATER'],
-            ['', 'PROTON'],
-            ['NAD', 'NADH'],
-            ['NADP','NADPH'],
-            ['FAD','FADH','FADH2'],
-        ]
-        
-        proton_carriers = {'WATER':1,'PROTON':1,'NADH':1,'NADPH':1,'FADH':1,'FADH2':2} # Double count for H2
-
-        phosphate_carriers = {
-            'AMP':1, 'ADP':2, 'ATP':3,
-            'GMP':1, 'GDP':2, 'GTP':4, 
-            #---
-            'Pi':1,  'PPI':2, 'PI3':3, 'PI4':4,
-            #---
-            'NADP':1, 'NADPH':1,
-            }
-                
-        phosphate = [
-            ['AMP', 'ADP'],
-            ['ADP', 'ATP'],
-            ['GMP', 'GDP'],
-            ['GDP', 'GTP'],
-            #---
-            ['Pi',  'PPI'],
-            ['PPI', 'PI3'],
-            ['PI3', 'PI4'],
-            #---
-            ['NAD','NADP'],            
-            ['NADH','NADPH'],
-        ]
-        
-        # Build redox reaction table
-        # Iterate database, find any reactions with a PROTON in left/right reaction
-        # - or NAD->NADH or, or, or
-        # If on left, swap
-        # Store entry for Min,Mout
-        self.redox = self.equilibrium_table_builder( proton_carriers ) 
-        self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
-
-    def equilibrium_table_builder(self, objs):
-        result = []
-        for rk,r in self.parent.db.reactions.items():
-            inH = sum( [objs[m.id] for m in r.smtins if m.id in objs] )
-            outH = sum( [objs[m.id] for m in r.smtouts if m.id in objs] )
-
-
-            balance = inH-outH
-            add_it = False
-            if balance > 0:
-                add_it = ( r.mtins, r.mtouts )
-            elif balance < 0: # Reverse
-                add_it = ( r.mtouts, r.mtins )
-                
-            if add_it:
-                for mtin in add_it[0]:
-                    for mtout in add_it[1]:
-                        result.append( [mtin.id, mtout.id] )  
-        return result               
-
-    def cofactor_table_builder(self, objs):
-        result = []
-        for p in objs:
-            pin = self.parent.db.metabolites[ p[0] ] if p[0] in self.parent.db.metabolites.keys() else False
-            pout = self.parent.db.metabolites[ p[1] ] if p[1] in self.parent.db.metabolites.keys() else False
-
-            if pin and pout:
-                for rk,r in self.parent.db.reactions.items():
-                    add_it = False
-                    if pin in r.smtins and pout in r.smtouts:
-                        add_it = ( r.mtins, r.mtouts )
-                    elif pout in r.smtins and pin in r.smtouts:
-                        add_it = ( r.mtouts, r.mtins )
-
-                    if add_it:
-                        for mtin in add_it[0]:
-                            for mtout in add_it[1]:
-                                result.append( [mtin.id, mtout.id] )  
-
-        return result
-
-    def generate(self):
-
-        labelsX=[ 'Phosphorylated','Dephosphorylated' ]
-        labelsY=['→'.join(n) for n in self.phosphate]
-        data_phosphate = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
-
-        labelsX=[ 'Pi','PPI','PI3','PI4' ]
-        labelsY=['→'.join(n) for n in self.nucleosides]
-        data_nuc = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.nucleosides, labelsX ), sort_data=True)
-
-        labelsX=[ 'Reduced','Oxidised' ]
-        labelsY=['→'.join(n) for n in self.redox]
-        data_redox = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.redox, labelsX ), remove_incomplete_rows=True, sort_data=True )
-
-        labelsX=[ '-','H','H2' ]
-        labelsY=['→'.join(n) for n in self.proton]
-        data_proton = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.proton, labelsX ), sort_data=True )
-  
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': [ 
-                        [{
-                            'type':'heatmap',
-                            'data':data_redox,
-                            'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
-                            Left-to-right is oxidative.'),
-                            'scale':'Δlog2',
-                            'n':1,
-                        },[
-                            [{
-                                'type':'heatmap',
-                                'data':data_phosphate, 
-                                'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
-                                Left-to-right is oxidative.'),
-                                'scale':'Δlog2',
-                                'n':2,
-                            },
-                            {
-                                'type':'heatmap',
-                                'data':data_nuc, 
-                                'legend':('Nucleoside phosphorylation balance.','Relative quantities of nucleosides in each experimental class grouping. \
-                                Left-to-right shows increasing phosphorylation.'),
-                                'scale':'Δlog2',
-                                'n':3,
-                            }],[{
-                            'type':'heatmap',
-                            'data':data_proton, 
-                            'legend':('Redox carrier  balance.','Relative quantities of redox potential carriers. \
-                            Left-to-right shows increasing reduction.'),
-                            'scale':'Δlog2',
-                            'n':4,
-                            }],
-                        ],
-                        ],
-                        ],
-            'figure':  {
-                            'type':'heatmap',
-                            'data':data_redox,
-                            'legend':('Redox reaction balance.','Relative quantities of metabolites on oxidative and reductive reaction. \
-                            Left-to-right is oxidative.'),
-                            'scale':'Δlog2',
-                            'n':1,
-                        },                        
-        })
-        
-
-
-class analysisMetaboliteView(ui.analysisHeatmapView):
+class AnalysisMetaboliteView(ui.AnalysisHeatmapView):
     def generate(self):
         # Sort by scores
         ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
@@ -236,7 +61,7 @@ class analysisMetaboliteView(ui.analysisHeatmapView):
 
 
 
-class analysisEnergyWasteView(ui.analysisHeatmapView):
+class analysisEnergyWasteView(ui.AnalysisHeatmapView):
 
     def generate(self):
         # Standard energy sources (CHO)
@@ -300,23 +125,192 @@ class analysisEnergyWasteView(ui.analysisHeatmapView):
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class HeatmapView(analysisEquilibriaView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
-        super(HeatmapView, self).__init__(parent, **kwargs)
-
-        self.plugin = plugin
-        self.m = parent
+class HeatmapView(ui.AnalysisHeatmapView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(HeatmapView, self).__init__(plugin, parent, **kwargs)
          
-        self.generate()
-        #self.o.show() 
-        #self.plugin.register_url_handler( self.id, self.url_handler )
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
         
+        self.addDataToolBar()
+        self.setCentralWidget(self.tabs)
+        
+        print self.tabs        
+        # Setup data consumer options
+        self.data.consumer_defs.append( 
+            data.DataDefinition('input', {
+            'entities_t':   (None,['Compound']), 
+            })
+        )
+        
+            
+        th = self.addToolBar('Heatmap')
+        self.hm_control = QComboBox()
+        th.addWidget(self.hm_control)
+        self.hm_control.currentIndexChanged.connect(self.onChangeHeatmap)
 
-        self.workspace_item = self.m.addWorkspaceItem(self.browser, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+        
+        self.initialise_predefined_views()
+        self.hm_control.addItems( [h for h in self.predefined_heatmaps.keys()] )
+        
+        
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+
+        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.generate()
+
+    def equilibrium_table_builder(self, objs):
+        result = []
+        for rk,r in self.m.db.reactions.items():
+            inH = sum( [objs[m.id] for m in r.smtins if m.id in objs] )
+            outH = sum( [objs[m.id] for m in r.smtouts if m.id in objs] )
+
+            balance = inH-outH
+            add_it = False
+            if balance > 0:
+                add_it = ( r.mtins, r.mtouts )
+            elif balance < 0: # Reverse
+                add_it = ( r.mtouts, r.mtins )
+                
+            if add_it:
+                for mtin in add_it[0]:
+                    for mtout in add_it[1]:
+                        result.append( [mtin.id, mtout.id] )  
+        return result               
+
+    def cofactor_table_builder(self, objs):
+        result = []
+        for p in objs:
+            pin = self.m.db.metabolites[ p[0] ] if p[0] in self.m.db.metabolites.keys() else False
+            pout = self.m.db.metabolites[ p[1] ] if p[1] in self.m.db.metabolites.keys() else False
+
+            if pin and pout:
+                for rk,r in self.m.db.reactions.items():
+                    add_it = False
+                    if pin in r.smtins and pout in r.smtouts:
+                        add_it = ( r.mtins, r.mtouts )
+                    elif pout in r.smtins and pin in r.smtouts:
+                        add_it = ( r.mtouts, r.mtins )
+
+                    if add_it:
+                        for mtin in add_it[0]:
+                            for mtout in add_it[1]:
+                                result.append( [mtin.id, mtout.id] )  
+
+        return result
 
 
+    # Build lookup tables for pre-defined views (saves regenerating on view)
+    def initialise_predefined_views(self):
+        
+        self._show_predefined_heatmap = 'Phosphorylation'
+
+        self.predefined_heatmaps = {
+            'Phosphorylation': self._phosphorylation,
+            'Phosphate balance': self._phosphate_balance,
+            'Redox': self._redox,
+            'Proton Balance': self._proton_balance,
+            }
 
 
+        self.nucleosides = [
+            ['AMP', 'ADP', 'ATP'],
+            ['CMP', 'CDP', 'CTP'],
+            ['GMP', 'GDP', 'GTP'],
+            ['UMP', 'UDP', 'UTP'],
+            ['TMP', 'TDP', 'TTP'],
+            #---
+            ['DAMP', 'DADP', 'DATP'],
+            ['DCMP', 'DCDP', 'DCTP'],
+            ['DGMP', 'DGDP', 'DGTP'],
+            ['DUMP', 'DUDP', 'DUTP'],
+            ['DTMP', 'DTDP', 'DTTP'],
+            #---
+            ['Pi', 'PPI', 'PI3','PI4'],
+            #---
+            ['NAD','NADP'],            
+            ['NADH','NADPH'],
+        ]
+        
+        self.proton = [
+            ['NAD', 'NADH'],
+            ['NADP','NADPH'],
+            ['FAD','FADH','FADH2'],
+        ]
+        
+        self.redox = [
+            ['OXYGEN-MOLECULE', 'WATER'],
+            ['', 'PROTON'],
+            ['NAD', 'NADH'],
+            ['NADP','NADPH'],
+            ['FAD','FADH','FADH2'],
+        ]
+
+        self.phosphate = [
+            ['AMP', 'ADP'],
+            ['ADP', 'ATP'],
+            ['GMP', 'GDP'],
+            ['GDP', 'GTP'],
+            #---
+            ['Pi',  'PPI'],
+            ['PPI', 'PI3'],
+            ['PI3', 'PI4'],
+            #---
+            ['NAD','NADP'],            
+            ['NADH','NADPH'],
+        ]
+        
+        proton_carriers = {'WATER':1,'PROTON':1,'NADH':1,'NADPH':1,'FADH':1,'FADH2':2} # Double count for H2
+
+        phosphate_carriers = {
+            'AMP':1, 'ADP':2, 'ATP':3,
+            'GMP':1, 'GDP':2, 'GTP':4, 
+            #---
+            'Pi':1,  'PPI':2, 'PI3':3, 'PI4':4,
+            #---
+            'NADP':1, 'NADPH':1,
+            }
+                
+
+        # Build redox reaction table
+        # Iterate database, find any reactions with a PROTON in left/right reaction
+        # - or NAD->NADH or, or, or
+        # If on left, swap
+        # Store entry for Min,Mout
+        self.redox = self.equilibrium_table_builder( proton_carriers ) 
+        self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
+
+    def _phosphorylation(self):
+        return self.build_heatmap_buckets( [ 'Phosphorylated','Dephosphorylated' ], ['→'.join(n) for n in self.phosphate], self.build_log2_change_table_of_classtypes( self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
+
+    def _phosphate_balance(self):
+        return self.build_heatmap_buckets( [ 'Pi','PPI','PI3','PI4' ], ['→'.join(n) for n in self.nucleosides], self.build_log2_change_table_of_classtypes( self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
+
+    def _redox(self):
+        return self.build_heatmap_buckets( [ 'Reduced','Oxidised' ], ['→'.join(n) for n in self.redox], self.build_log2_change_table_of_classtypes( self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
+
+    def _proton_balance(self):
+        return self.build_heatmap_buckets( [ '-','H','H2' ], ['→'.join(n) for n in self.proton], self.build_log2_change_table_of_classtypes( self.proton, [ '-','H','H2' ] ), sort_data=True )
+
+    def generate(self):
+        self.setWorkspaceStatus('active')
+    
+        self.render( {
+            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            'figure':  {
+                            'type':'heatmap',
+                            'data': self.predefined_heatmaps[ self._show_predefined_heatmap ](),
+                        },                        
+        }, template_name='heatmap')
+
+        self.setWorkspaceStatus('done')
+        self.clearWorkspaceStatus()
+        
+    def onChangeHeatmap(self):
+        self._show_predefined_heatmap = self.hm_control.currentText()
+        self.set_name( self.hm_control.currentText() )
+        self.generate()
+        
+        
 
 
 class Heatmap(VisualisationPlugin):
@@ -328,3 +322,6 @@ class Heatmap(VisualisationPlugin):
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
         self.instances.append( HeatmapView( self, self.m ) )
+        
+
+                     

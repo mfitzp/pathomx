@@ -1,0 +1,9 @@
+[Core]
+Name = MetaboHunter
+Module = metabohunter
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Map 1D 1H NMR spectra or picked peaks against the Metabohunter identification database

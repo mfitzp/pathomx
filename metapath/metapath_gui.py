@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-
 import os, sys, re, math, codecs, locale
 
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 reload(sys).setdefaultencoding('utf8')
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
 
 import urllib2
 
@@ -42,10 +44,10 @@ import plugins # plugin helper/manager
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
 METAPATH_MINING_TYPE_TEXT = (
-    'Metabolite change scores for pathway',
-    'Metabolite up-regulation scores for pathway', 
-    'Metabolite down-regulation scores for pathway',
-    'Number metabolites with data per pathway',
+    'Compound change scores for pathway',
+    'Compound up-regulation scores for pathway', 
+    'Compound down-regulation scores for pathway',
+    'Number compounds with data per pathway',
 )
 
 
@@ -200,7 +202,7 @@ class dialogMiningSettings(ui.genericDialog):
         self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
         self.xb_miningRelative.setChecked( bool(parent.config.value('/Data/MiningRelative') ) )
 
-        self.xb_miningShared = QCheckBox('Share metabolite scores between pathways') 
+        self.xb_miningShared = QCheckBox('Share compound scores between pathways') 
         self.xb_miningShared.setChecked( bool(parent.config.value('/Data/MiningShared') ) )
                         
 
@@ -218,15 +220,17 @@ class dialogMiningSettings(ui.genericDialog):
          
 class MainWindow(ui.MainWindowUI):
 
-    def __init__(self):
+    def __init__(self, app):
 
-
+        self.app = app
         # Central variable for storing application configuration (load/save from file?
         self.config = QSettings()
         
         # Create database accessor
         self.db = db.databaseManager()
-        self.data = None #data.dataManager() No data loaded by default
+        self.data = None #deprecated
+        self.datasets = [] #List of instances of data.datasets() // No data loaded by default
+
         self.experiment = dict()
         self.layout = None # No map by default
 
@@ -342,9 +346,8 @@ class MainWindow(ui.MainWindowUI):
             self.generateGraphView()
 
     def onBrowserNav(self, url):
-        # Interpret internal URLs for message passing to display Metabolite, Reaction, Pathway data in the sidebar interface
+        # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface
         # then block the continued loading
-        
         if url.scheme() == 'metapath':
             # Take string from metapath:// onwards, split on /
             app = url.host()
@@ -370,11 +373,11 @@ class MainWindow(ui.MainWindowUI):
                             'title': reaction.name,
                             'object': reaction,
                             })
-                    elif kind == 'metabolite' and id in self.db.metabolites:
-                        metabolite = self.db.metabolites[id]
-                        self.generatedbBrowserView(template='metabolite.html', data={
-                            'title': metabolite.name,
-                            'object': metabolite,
+                    elif kind == 'compound' and id in self.db.compounds:
+                        compound = self.db.compounds[id]
+                        self.generatedbBrowserView(template='compound.html', data={
+                            'title': compound.name,
+                            'object': compound,
                             })
                     elif kind == 'protein' and id in self.db.proteins:
                         protein = self.db.proteins[id]
@@ -388,11 +391,14 @@ class MainWindow(ui.MainWindowUI):
                             'title': gene.name,
                             'object': gene,
                             })
+                            
+                    # Focus the database dock
+                    self.dataDock.raise_()
 
             
             
 
-            #metaviz/metabolite/%s/view            
+            #metaviz/compound/%s/view            
             elif app in self.url_handlers:
                 self.url_handlers[app]( url.path().strip('/') )
 
@@ -410,7 +416,7 @@ class MainWindow(ui.MainWindowUI):
 
     def onLoadIdentities(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self, 'Load metabolite identities file', '')
+        filename, _ = QFileDialog.getOpenFileName(self, 'Load compound identities file', '')
         if filename:
             self.db.load_synonyms(filename)
             # Re-translate the datafile if there is one and refresh
@@ -421,7 +427,7 @@ class MainWindow(ui.MainWindowUI):
                
     def onLoadDataFile(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open experimental metabolite data file', '')
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open experimental compound data file', '')
         if filename:
             self.data = data.dataManager(filename)
             # Re-translate the datafile
@@ -440,81 +446,6 @@ class MainWindow(ui.MainWindowUI):
             self.layout.translate(self.db)
             # Regenerate the graph view
             self.generateGraphView()            
-            
-    def onDefineExperiment(self):
-        """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogDefineExperiment(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            # Regenerate the graph view
-            self.experiment['control'] = dialog.cb_control.currentText()
-            self.experiment['test'] = dialog.cb_test.currentText()      
-        
-            # Update toolbar to match any change caused by timecourse settings
-            self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
-            self.cb_control.clear()
-            self.cb_test.clear()
-
-            self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
-            self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
-            
-            if dialog.le_timecourseRegExp.text() != '':
-                self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
-            elif 'timecourse' in self.experiment:                
-                del(self.experiment['timecourse'])
-        
-            # Update the toolbar dropdown to match
-            self.cb_control.setCurrentIndex( self.cb_control.findText( self.experiment['control'] ) )
-            self.cb_test.setCurrentIndex( self.cb_test.findText( self.experiment['test'] ) )
-                  
-            self.update_view_callback_enabled = True    
-
-            self.generateGraphView(regenerate_analysis=True, regenerate_suggested=True)
-            
-            analysisv = analysisMetaboliteView( self )
-            analysisv.generate()
-            self.tabs.addTab( analysisv.browser, '&Metabolites' )
-            
-            analysise = analysisEquilibriaView( self )
-            analysise.generate()
-            self.tabs.addTab( analysise.browser, 'E&quilibria' )
-
-            analysisw = analysisEnergyWasteView( self )
-            analysisw.generate()
-            self.tabs.addTab( analysisw.browser, '&Energy and Waste' )
-            
-            #self.tabs.addTab( analysisv.browser, 'Genes' )
-            #self.tabs.addTab( analysisv.browser, 'Proteins' )            
-    
-        
-    def onModifyExperiment(self):
-        """ Change control or test settings from toolbar interaction """
-        # Cheat a bit, simply change both - only one will be incorrect
-        if self.update_view_callback_enabled:
-            self.experiment['control'] = self.cb_control.currentText()
-            self.experiment['test'] = self.cb_test.currentText()
-            self.generateGraphView(regenerate_analysis=True, regenerate_suggested=True)
-
-    def onMiningSettings(self):
-        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogMiningSettings(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            self.config.setValue('/Data/MiningDepth', dialog.sb_miningDepth.value() )
-            self.config.setValue('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
-            self.config.setValue('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
-            self.config.setValue('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
-
-            # Update the toolbar dropdown to match
-            self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
-            self.generateGraphView(regenerate_suggested=True)
-
-    def onModifyMiningDepth(self):
-        """ Change mine depth via toolbar spinner """    
-        self.config.setValue('/Data/MiningDepth', self.sb_miningDepth.value())
-        self.generateGraphView(regenerate_suggested=True)
-        self.generateGraphView()
-        
     
     def onSaveAs(self):
         """ Save a copy of the graph as one of the supported formats"""
@@ -559,20 +490,19 @@ class MainWindow(ui.MainWindowUI):
         }
             
         template = self.templateEngine.get_template(template)
-        self.dbBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),"~") 
+        self.dbBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),QUrl("~")) 
       
 def main():
     # Create a Qt application
-    # Qt5 QApplication.setStyle(FusionStyle())
-    # QApplication.setStyle('plastique')
     app = QApplication(sys.argv)
+    app.setStyle('fusion')
     app.setOrganizationName("Martin Fitzpatrick")
     app.setOrganizationDomain("martinfitzpatrick.name")
     app.setApplicationName("MetaPath")
-
-    window = MainWindow()
+    window = MainWindow(app)
+    app.exec_()
     # Enter Qt application main loop
-    sys.exit(app.exec_())
+    sys.exit()
     
 if __name__ == "__main__":
     main()

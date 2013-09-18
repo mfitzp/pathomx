@@ -1,0 +1,92 @@
+@require(htmlbase, entities)
+
+<html>
+    <head>
+        <title>Entity mapping</title>
+
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+        
+    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
+    <base href="file://@htmlbase/">
+    <style>
+        html, body {
+            background:#f8f8f8 !important;
+            }
+            
+        body {
+            margin:1em;
+            }
+        
+        .entity {
+            aheight:80px;
+            display: inline-block;
+            box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.2);
+            transition: all 200ms ease-out 0s;
+            position:relative;
+            background:#fff;
+            width:100%;
+            cursor:pointer;
+            padding:0.5em;
+            
+        }
+        
+        .entity-not-mapped {
+            background-color:#ffeeee;
+        }
+        
+        .entity-no-mapped-text {
+            font-size:small;
+            font-style:italic;
+        }
+        
+        .entity:hover {
+            box-shadow: 0px 0px 6px 1px rgba(43, 166, 203, 0.5);
+            }
+        
+        .entity .meta {
+            position:absolute;
+            width:100%;
+            bottom:0px;
+            vertical-align:bottom;
+            background-color:#fff;
+            background-color:rgba(255,255,255,0.9);
+            padding:1em;            
+        }
+        
+        .entity .description {
+            font-size:0.8em;
+        }
+        
+        
+        </style>
+     
+    </head>
+
+    <body id="mainwindow">
+        <ul class="large-block-grid-4">
+            @for label, entity in entities:
+                <li>
+                    @if entity == None:
+                    <div href="metapath://entities/" class="entity entity-not-mapped">
+                    @else:
+                    <a href="metapath://db/@entity.type/@entity.id/view" class="entity">
+                    @endif
+                    @if hasattr(entity,'image'):
+                        <img src="file://@entity.image">
+                    @endif
+                    <h3>@label!s</h3>
+                    @if entity == None:
+                        <span class="entity-no-mapped-text">Entity not mapped</span>
+                        </div>
+                    @else:
+                        @entity.name</a>
+                    @endif
+                </div></li>
+            @endfor
+        </ul>
+        @endfor
+
+        
+    </body>
+</html>

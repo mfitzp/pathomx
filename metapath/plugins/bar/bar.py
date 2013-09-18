@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# Import PySide classes
-from PySide.QtGui import *
-from PySide.QtCore import *
-from PySide.QtWebKit import *
-from PySide.QtNetwork import *
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
 
 import numpy as np
 
@@ -20,7 +20,7 @@ import ui, utils
 
 
 
-class analysisEquilibriaView(ui.analysisHeatmapView):
+class AnalysisEquilibriaView(ui.AnalysisHeatmapView):
     def __init__(self, *args, **kwargs):
         super(analysisEquilibriaView, self).__init__(*args, **kwargs)
     
@@ -198,7 +198,7 @@ class analysisEquilibriaView(ui.analysisHeatmapView):
         
 
 
-class analysisMetaboliteView(ui.analysisHeatmapView):
+class analysisMetaboliteView(ui.AnalysisHeatmapView):
     def generate(self):
         # Sort by scores
         ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
@@ -236,7 +236,7 @@ class analysisMetaboliteView(ui.analysisHeatmapView):
 
 
 
-class analysisEnergyWasteView(ui.analysisHeatmapView):
+class analysisEnergyWasteView(ui.AnalysisHeatmapView):
 
     def generate(self):
         # Standard energy sources (CHO)
@@ -300,7 +300,7 @@ class analysisEnergyWasteView(ui.analysisHeatmapView):
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class BarView(analysisEquilibriaView):
+class BarView(AnalysisEquilibriaView):
     def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
         super(BarView, self).__init__(parent, **kwargs)
 

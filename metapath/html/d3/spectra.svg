@@ -1,0 +1,96 @@
+@extends("d3/base.svg")
+@require(htmlbase, figure)
+
+@def styles():
+<style><![CDATA[
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1px;
+} 
+
+.identity-line {
+    text-anchor:start;
+    fill:steelblue
+    stroke:none;
+    opacity:0.1;
+    
+}
+
+.identity-label {
+  fill: steelblue;
+  font-size:7pt;
+}
+
+.label-line {
+    text-anchor:start;
+    fill:steelblue
+    stroke:none;
+    opacity:0.1;
+}
+
+.label-label {
+  fill:  lightgray;
+  font-size:7pt;
+}
+
+]]></style>
+@end
+
+        
+@def script():
+<script></script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = 'svg';
+         data = [
+            @for d in figure['data']:
+                {
+                'ppm':@d[0]!s,
+                'intensity':{
+                @for n,i in enumerate( d[1] ):
+                    '@n!s': @i!s,
+                @endfor
+                    },
+                },
+            @endfor
+            ];
+         compounds = [
+            @for d in figure['compounds']:
+                {
+                'ppm':@d[0]!s,
+                'ppm_end':@d[1]!s,
+                'compound':{
+                    'id':'@d[2].id!s',
+                    'name':'@d[2].name!s',
+                    'url':'@d[2].url!s',
+                    }
+                },
+            @endfor
+            ];
+             labels = [
+            @for d in figure['labels']:
+                {
+                'ppm':@d[0]!s,
+                'ppm_end':@d[1]!s,
+                'label':'@d[2]!s'
+                },
+            @endfor
+            ];            
+    nmr_spectra(id, data, compounds, labels);
+    </script>
+
+
+@end
