@@ -993,7 +993,7 @@ class MainWindowUI(QMainWindow):
         
         self.workspace = QTreeWidget()
         self.workspace.setColumnCount(3)
-        self.workspace.setHeaderLabels(['','ID',' ⚑']) #,'#'])
+        self.workspace.setHeaderLabels(['','ID','▶']) #,'#'])
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
         
