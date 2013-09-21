@@ -159,7 +159,7 @@ function heatmap(id, buckets, scale){
 };
 
 
-function circos(id, matrix, labels){
+function circos(id, matrix, labels, urls){
 
     // From http://mkweb.bcgsc.ca/circos/guide/tables/
 

@@ -24,10 +24,9 @@ class BasePlugin(IPlugin):
         self.m = manager.m
         self.instances = []
         self.id = self.__module__
+        self.name = "%s %s " % (self.default_workspace_category, "Plugin")
         
         self.path = os.path.dirname( inspect.getfile(self.__class__) )
-
-        #self.register_app_launcher( self.app_launcher )
 
     @property
     def icon(self):

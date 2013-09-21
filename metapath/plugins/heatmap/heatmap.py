@@ -129,8 +129,6 @@ class HeatmapView(ui.AnalysisHeatmapView):
     def __init__(self, plugin, parent, **kwargs):
         super(HeatmapView, self).__init__(plugin, parent, **kwargs)
          
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Heatmap', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
-        
         self.addDataToolBar()
         self.addFigureToolBar()
             
@@ -142,15 +140,13 @@ class HeatmapView(ui.AnalysisHeatmapView):
         )
         
             
-        th = self.addToolBar('Heatmap')
-        self.hm_control = QComboBox()
-        th.addWidget(self.hm_control)
-        self.hm_control.currentIndexChanged.connect(self.onChangeHeatmap)
-
-        
+        t = self.addToolBar('Heatmap')
+        t.hm_control = QComboBox()
+        t.hm_control.currentIndexChanged.connect(self.onChangeHeatmap)
         self.initialise_predefined_views()
-        self.hm_control.addItems( [h for h in self.predefined_heatmaps.keys()] )
-        
+        t.hm_control.addItems( [h for h in self.predefined_heatmaps.keys()] )
+        t.addWidget(t.hm_control)
+        self.toolbars['heatmap'] = t
         
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
@@ -305,8 +301,8 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.clearWorkspaceStatus()
         
     def onChangeHeatmap(self):
-        self._show_predefined_heatmap = self.hm_control.currentText()
-        self.set_name( self.hm_control.currentText() )
+        self._show_predefined_heatmap = self.toolbars['heatmap'].hm_control.currentText()
+        self.set_name( self._show_predefined_heatmap )
         self.generate()
         
         

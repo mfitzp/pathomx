@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-
 import utils
 import csv
 import xml.etree.cElementTree as et

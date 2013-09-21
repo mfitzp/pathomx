@@ -324,6 +324,8 @@ class BarView(AnalysisEquilibriaView):
 
 class Bar(VisualisationPlugin):
 
+    name = 'Bar graph'
+
     def __init__(self, **kwargs):
         super(Bar, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )

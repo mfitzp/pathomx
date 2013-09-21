@@ -22,6 +22,8 @@ import ui, utils, data
 
 import urllib2
 
+import numpy as np
+
 try:
     import xml.etree.cElementTree as et
 except ImportError:
@@ -38,21 +40,17 @@ class gpmlPathwayView(ui.AnalysisView):
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
+        self.browser = ui.QWebViewExtend(self)
+        self.tabs.addTab(self.browser,'View')
+
         #self.data = data.DataManager()
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
-            # Dimensionality in tuple
-            #self.labels = None
-            #self.entities = None
-            #self.scales = None
-            #self.classes = None
-            'entities_t':   (['Compound','Gene'], None), 
-            #'classes_n':    ('>2', None),
-            })
+            data.DataDefinition('data', {
+            'entities_t':   (None, ['Compound','Gene']), 
+            }),
         )
 
-        self.data.consume_any_of( self.m.datasets[::-1] )
 
         load_gpmlAction = QAction( QIcon( os.path.join( self.plugin.path,'document-open-gpml.png' ) ), 'Load a GPML pathway file\u2026', self.m)
         load_gpmlAction.setShortcut('Ctrl+Q')
@@ -63,22 +61,19 @@ class gpmlPathwayView(ui.AnalysisView):
         load_wikipathwaysAction.setShortcut('Ctrl+Q')
         load_wikipathwaysAction.setStatusTip('Load a GPML pathway from WikiPathways service')
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
-        
-        self.w = QMainWindow()
-
 
         self.addDataToolBar()
 
-        t = self.w.addToolBar('GPML')
+        t = self.addToolBar('GPML')
         t.setIconSize( QSize(16,16) )
         t.addAction(load_gpmlAction)
         t.addAction(load_wikipathwaysAction)
-        self.w.setCentralWidget(self.browser)
          
         #self.o.show() 
         self.plugin.register_url_handler( self.id, self.url_handler )
-        self.set_name( 'Wikipathways' )
-        self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+
+        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.data.consume_any_of( self.m.datasets[::-1] )
 
 
     def url_handler(self, url):
@@ -133,9 +128,29 @@ class gpmlPathwayView(ui.AnalysisView):
         return xrefs
             
     def get_xref(self, obj):
-        print obj, obj.type, obj.id
+        if obj is not None:
+            return ('MetaCyc %s' % obj.type, obj.id)
     
-        return ('MetaCyc %s' % obj.type, obj.id)
+    def calculate_scaling_factor(self, minima, maxima, n):
+        # Get limits (we assume we traverse zero
+        #minf = min( abs(minima), abs(maxima) )
+        maxf = max( abs(minima), abs(maxima) )
+        print "Scale max", maxf
+        # Set limits at maxf zero centered (n must be odd)
+        # Find centre point of scale
+        # c = int( np.ceil( n/2 ) )
+        return (n/2) /float( maxf ) #+/-
+    
+    def calculate_rdbu9_color(self, sf, value):
+        # Rescale minima-maxima to range of rdbu9 (9)
+        print ">",value, sf
+        try:
+            rdbu9col = int( np.round( value*sf ) ) + 5
+        except:
+            return None # Fill zero nothing if not known
+        print 'C:',rdbu9col
+        return utils.rdbu9[ rdbu9col ]            
+    
     
     def generate(self):
 
@@ -149,15 +164,32 @@ class gpmlPathwayView(ui.AnalysisView):
             'WikiPathways': 'metapath://wikipathway/%s/import',
         }
     
+        node_colors = {}
+        
+        # Calculate maxima and minima for dataset
+        minima, maxima = np.min( self.data.i['data'].data ), np.max( self.data.i['data'].data )
+
+        sf = self.calculate_scaling_factor( minima, maxima, 9) # rdbu9 scale
+        print "Sf %s" % sf
+        if self.data.i['data']:
+            for n, m in enumerate(self.data.i['data'].entities[1]):
+                xref = self.get_xref( m )
+                ecol = self.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
+                print xref, ecol
+                if xref is not None and ecol is not None:
+                    node_colors[ xref ] = (ecol, ecol)
+               
+        print node_colors
+        '''    
         if self.m.data and self.m.data.analysis:
             # Build color_table
             node_colors = {}
             for m_id, analysis in self.m.data.analysis.items():
                 if m_id in self.m.db.metabolites.keys():
-                    node_colors[ self.get_xref( self.m.db.metabolites[ m_id ] ) ] = ( utils.rdbu9[ analysis['color'] ], utils.rdbu9c[ analysis['color'] ] )
+                    node_colors[ self.get_xref( self.m.db.metabolites[ m_id ] ) ] =
         else:
             node_colors = {}
-        
+        '''
         if self.gpml:
             self.svg, self.metadata = gpml2svg.gpml2svg( self.gpml, xref_urls=xref_urls, xref_synonyms_fn=self.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
             self.render()
@@ -189,8 +221,7 @@ class gpmlPathwayView(ui.AnalysisView):
             self.load_gpml_file(filename)
             self.generate()
 
-            if self.workspace_item:
-                self.set_name( self.metadata['Name'] )
+            self.set_name( self.metadata['Name'] )
 
     def onLoadGPMLWikiPathways(self):
         dialog = dialogWikiPathways(parent=self.m, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
@@ -205,8 +236,7 @@ class gpmlPathwayView(ui.AnalysisView):
                 self.load_gpml_wikipathways(pathway_id)
                 self.generate()
                 
-                if self.workspace_item:
-                    self.set_name( self.metadata['Name'] )
+                self.set_name( self.metadata['Name'] )
 
 
 

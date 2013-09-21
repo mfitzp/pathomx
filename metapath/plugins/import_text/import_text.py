@@ -22,48 +22,13 @@ import numpy as np
 
 import data, ui, db
 
-class ImportDataView( ui.DataView ):
+class ImportTextView( ui.ImportDataView ):
+
+    import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
+    import_description =  "Open experimental data from text file data file"
+
     def __init__(self, plugin, parent, **kwargs):
-        super(ImportDataView, self).__init__(plugin, parent, **kwargs)
-    
-        self.data.addo('output') # Add output slot
-        
-        fn = self.onImportData()
-        self.table.setModel(self.data.o['output'].as_table)
-        
-        self.t = self.addToolBar('Data Import')
-        self.t.setIconSize( QSize(16,16) )
-
-        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import from file\u2026', self.m)
-        import_dataAction.setStatusTip('Import from a compatible file source')
-        import_dataAction.triggered.connect(self.onImportData)
-        self.t.addAction(import_dataAction)
-
-    def onImportData(self):
-        """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open experimental metabolite data file', '')
-        if filename:
-
-            self.load_datafile( filename )
-
-            self.file_watcher = QFileSystemWatcher()            
-            self.file_watcher.fileChanged.connect( self.onFileChanged )
-            self.file_watcher.addPath( filename )
-
-            self.render({})
-
-            #self.data.o['imported_data'].as_filtered(classes=['H'])
-            
-            #self.m.data.translate(self.m.db)
-            self.workspace_item.setText(0, os.path.basename(filename))
-            
-        return False
-        
-    def onFileChanged(self, file):
-        self.load_datafile( file )
-
-
-
+        super(ImportTextView, self).__init__(plugin, parent, **kwargs)
 
        
     # Data file import handlers (#FIXME probably shouldn't be here)
@@ -85,13 +50,16 @@ class ImportDataView( ui.DataView ):
             self.data.o['output'].empty()
 
             formats[fe](filename)
-            
+
             self.data.o['output'].name = os.path.basename( filename )
             self.data.o['output'].description = 'Imported %s file' % fe  
 
             self.set_name( self.data.o['output'].name )
+            self.render({})
             
             self.setWorkspaceStatus('done')
+            
+            
             self.data.o['output'].refresh_consumers()
             self.clearWorkspaceStatus()
             
@@ -170,6 +138,7 @@ class ImportDataView( ui.DataView ):
         ydim = 0
         xdim = len(metabolites)
         
+        samples = []
         classes = []
         raw_data = []
 
@@ -180,6 +149,7 @@ class ImportDataView( ui.DataView ):
         for row in reader:
             ydim += 1
             if row[1] != '.': # Skip excluded classes # row[1] = Class
+                samples.append( row[0] )
                 classes.append( row[1] )  
                 data_row = []
                 for i in row[2:]: # in self.metabolites:
@@ -211,7 +181,7 @@ class ImportDataView( ui.DataView ):
                 scales.append( None )
                 
         self.data.o['output'].scales[1] = scales
-        self.data.o['output'].labels[0] = classes
+        self.data.o['output'].labels[0] = samples
         self.data.o['output'].classes[0] = classes
         self.data.o['output'].data = np.array( raw_data )
    
@@ -225,4 +195,4 @@ class ImportText(DataPlugin):
 
     def app_launcher(self):
         #self.load_data_file()
-        self.instances.append( ImportDataView( self, self.m ) )
+        self.instances.append( ImportTextView( self, self.m ) )

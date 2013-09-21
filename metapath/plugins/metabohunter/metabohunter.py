@@ -43,13 +43,11 @@ class MetaboHunterView( ui.DataView ):
         
         self.addDataToolBar()
         self.data.addo('output')
+        self.table.setModel(self.data.o['output'].as_table)
         
         #t.addAction(load_wikipathwaysAction)
         #self.browser = ui.QWebViewExtend(self.m.onBrowserNav)
         #self.w.setCentralWidget(self.browser)
-
-        self.set_name('MetaboHunter')
-        #self.workspace_item = self.m.addWorkspaceItem(self.w, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
         
         # Setup data consumer options
         self.data.consumer_defs.append( 

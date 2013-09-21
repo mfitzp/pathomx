@@ -236,16 +236,23 @@ class GenericView( QMainWindow ):
         self.m = parent
         self.id = str( id( self ) )
         self.data = data.DataManager(self.m, self)
+        self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
 
         #self.w = QMainWindow()
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
         self.tabs.setTabsClosable(False)
         self.tabs.setTabPosition( QTabWidget.South )
+        
+        self.toolbars = {}
+        self.controls = defaultdict( dict ) # Store accessible controls
 
         self.setCentralWidget(self.tabs)
         
         self.config = QSettings()
+        
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
+        
 
     def render(self, metadata):
         return
@@ -287,6 +294,8 @@ class GenericView( QMainWindow ):
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
+        
+        self.toolbars['image'] = t        
 
         
     def onSelectDataSource(self):
@@ -318,6 +327,8 @@ class GenericView( QMainWindow ):
         export_imageAction.setStatusTip('Export figure to image')
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
+        
+        self.toolbars['image'] = t
 
     def onSaveImage(self):
         # Get currently selected webview
@@ -343,10 +354,7 @@ class DataView(GenericView):
         self.tabs.addTab(self.table,'Table')
         self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
-        
-         
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Data', is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
-
+    
     def _build_entity_cmp(self,s,e,l):
         return e == None
 
@@ -379,32 +387,88 @@ class DataView(GenericView):
         #FIXME: Must be along the top axis 
         if 'output' in self.data.o:
             dso = self.data.o['output']
+            self.data.o['output'].as_table.refresh()
+
             if float in [type(t) for t in dso.scales[1]]:
                 print "Scale data up top; make a spectra view"
-                self.tabs.setTabEnabled( self.viewer_tab_index, True)
                 metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
             
-                #for a in range(100,110):
-                #    dso.entities[1][a] = self.m.db.index['L-ASPARTATE']
-                #    dso.labels[1][a] = self.m.db.index['L-ASPARTATE'].name
-            
                 dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-
+                
+                # Copy to sort without affecting original
+                scale = np.array(dso.scales[1])
+                data = np.array(dso.data)
+                
+                # Sort along x axis
+                sp = np.argsort( scale )
+                scale = scale[sp]
+                data = data[:,sp]
+                
                 metadata['figure'] = {
-                    'data':zip( dso.scales[1], dso.data.T ), # (ppm, [data,data,data])
+                    'data':zip( scale, data.T ), # (ppm, [data,data,data])
                     'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
                     'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
                 }
 
                 template = self.m.templateEngine.get_template('d3/spectra.svg')
                 self.viewer.setHtml(template.render( metadata ),QUrl('~')) 
-                self.viewer.exposeQtWebView()
-            
-                f = open('/Users/mxf793/Desktop/test.svg','w')
+        
+                self.tabs.setTabEnabled( self.viewer_tab_index, True)
+                
+                f = open('/Users/mxf793/Desktop/test3.svg','w')
                 f.write( template.render( metadata ) )
                 f.close()
             
         return
+
+# Import Data viewer
+
+class ImportDataView( DataView ):
+
+    import_type = 'Data'
+    import_filename_filter = "All Files (*.*);;"
+    import_description =  "Open experimental data from file"
+
+    def __init__(self, plugin, parent, **kwargs):
+        super(ImportDataView, self).__init__(plugin, parent, **kwargs)
+    
+        self.data.addo('output') # Add output slot
+        self.data.o['output'].data = np.zeros((10,10))
+        self.table.setModel(self.data.o['output'].as_table)
+        
+        t = self.addToolBar('Data Import')
+        t.setIconSize( QSize(16,16) )
+
+        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import from file\u2026', self.m)
+        import_dataAction.setStatusTip('Import from a compatible file source')
+        import_dataAction.triggered.connect(self.onImportData)
+        t.addAction(import_dataAction)
+        
+        self.toolbars['data_import'] = t
+        
+        fn = self.onImportData()
+
+    def onImportData(self):
+        """ Open a data file"""
+        filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, '', self.import_filename_filter)
+        if filename:
+
+            self.load_datafile( filename )
+
+            self.file_watcher = QFileSystemWatcher()            
+            self.file_watcher.fileChanged.connect( self.onFileChanged )
+            self.file_watcher.addPath( filename )
+
+            self.render({})
+            
+            self.workspace_item.setText(0, os.path.basename(filename))
+            
+        return False
+        
+    def onFileChanged(self, file):
+        self.load_datafile( file )
+
+
 
 
 # Analysis/Visualisation view prototypes
@@ -435,7 +499,7 @@ class AnalysisView(GenericView):
         dso = self.data.i['input']
         
         # Reduce dimensionality; combine all class/entity objects via np.mean()
-        dso = dso.as_compressed()
+        dso = dso.as_summary()
         
         entities = []
         for o in objs:
@@ -483,7 +547,38 @@ class AnalysisView(GenericView):
         fig.savefig(tf.fileName(), format='png', bbox_inches='tight')
         return tf
 
+    def addExperimentToolBar(self):
 
+        t = self.addToolBar('Experiment')
+        t.setIconSize( QSize(16,16) )
+
+        # DATA MENU
+        define_experimentAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') ), 'Define experiment\u2026', self)
+        define_experimentAction.setShortcut('Ctrl+Q')
+        define_experimentAction.setStatusTip('Define experiment control, test and timecourse settings')
+        define_experimentAction.triggered.connect(self.onDefineExperiment)
+
+        t.addAction(define_experimentAction)
+        
+        t.cb_control = QComboBox()
+        t.cb_control.addItems(['Control'])
+        t.cb_control.currentIndexChanged.connect(self.onModifyExperiment)
+
+        t.cb_test = QComboBox()
+        t.cb_test.addItems(['Test'])
+        t.cb_test.currentIndexChanged.connect(self.onModifyExperiment)
+
+        t.addWidget(t.cb_control)
+        t.addWidget(t.cb_test)
+    
+        self.toolbars['experiment'] = t
+        
+        
+    def onDefineExperiment(self):
+        pass
+
+    def onModifyExperiment(self):
+        pass
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
@@ -935,6 +1030,7 @@ class MainWindowUI(QMainWindow):
         
         self.pluginManager = PluginManagerSingleton.get()
         self.pluginManager.m = self
+        
         self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
         self.pluginManager.setCategoriesFilter({
                "Data" : plugins.DataPlugin,
@@ -950,12 +1046,13 @@ class MainWindowUI(QMainWindow):
         plugin_categories = ['Data','Processing','Identification','Analysis','Visualisation']
         apps = defaultdict(list)
         self.appBrowsers = {}
+        self.plugin_names = dict()
         
         # Loop round the plugins and print their names.
         for category in plugin_categories:
             for plugin in self.pluginManager.getPluginsOfCategory(category):
-
-                #plugin_id = os.path.basename( plugin.path )
+                self.plugin_names[ plugin.plugin_object.__module__ ] = plugin.name
+                
                 plugin_image = os.path.join( os.path.dirname(plugin.path), 'icon.png' )
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
@@ -966,7 +1063,6 @@ class MainWindowUI(QMainWindow):
                     'name': plugin.name,
                     'description': plugin.description,
                 })
- 
 
         self.dataDock = QDockWidget('Database')
 
@@ -1079,7 +1175,6 @@ class MainWindowUI(QMainWindow):
 
     
     def setWorkspaceStatus(self, workspace_item, status):
-        
         status_icons = {
             'active':   QIcon( os.path.join( utils.scriptdir,'icons','flag-green.png' ) ),
             'waiting':  QIcon( os.path.join( utils.scriptdir,'icons','flag-yellow.png' ) ),

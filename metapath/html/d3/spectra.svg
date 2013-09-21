@@ -21,7 +21,7 @@
     text-anchor:start;
     fill:steelblue;
     stroke:none;
-    opacity:0.1;
+    opacity:0.2;
     
 }
 
@@ -34,7 +34,7 @@
     text-anchor:start;
     fill:steelblue;
     stroke:none;
-    opacity:0.1;
+    opacity:0.2;
 }
 
 .label-label {

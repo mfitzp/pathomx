@@ -1,5 +1,8 @@
 # Introduction
 
+**Unstable** The current trunk of MetaPath is unstable as it undergoes a transformation. Stable earlier versions are
+available as [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+
 MetaPath is a tool for the analysis of metabolic pathway and associated visualisation
 of experimental data. Built on the [MetaCyc][metacyc] database it provides an interactive map in which multiple pathways can be simultaneously visualised. Multiple annotations from the MetaCyc database are available including synonyms, associated reactions and pathways and database unification links.
 

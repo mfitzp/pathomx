@@ -610,11 +610,11 @@ class MetaVizView(ui.AnalysisView):
         t.addAction(highlightcolorsAction)
         t.addAction(highlightregionAction)
         t.addWidget(self.cluster_control)
+        
+        self.toolbars['metaviz'] = t
 
         self.tabs.addTab(self.browser,'View')
         #self.tabs.addTab(self.overview,'Overview')
-
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'MetaViz', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.generate()

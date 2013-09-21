@@ -23,7 +23,7 @@ class MapEntityView( ui.GenericView ):
         super(MapEntityView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
-        
+                
         self.addDataToolBar()
         self.addFigureToolBar()
         self.data.addo('output')
@@ -32,8 +32,10 @@ class MapEntityView( ui.GenericView ):
         self.browser = ui.QWebViewExtend(self, self.m.onBrowserNav)
         self.tabs.addTab(self.browser, 'Entities')
 
-        self.set_name('Synonym matching')
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
+        #self.a = QMainWindow()
+        #self.a.setCentralWidget(self)
+        #self.a.show()
+        #self.show()
         
         # Setup data consumer options
         self.data.consumer_defs.append( 

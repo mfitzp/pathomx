@@ -12,7 +12,7 @@ distribute_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
-version_string = '0.7.0'
+version_string = '0.9.0'
 
 sys.path.append('metapath')
 
@@ -49,7 +49,7 @@ else:
                     iconfile='metapath/static/icon.icns',
                     site_packages=True,
                     optimize=2,
-                    resources=['metapath/static', 'examples', 'metapath/database', 'metapath/identities', 'metapath/html','metapath/icons'],
+                    resources=['metapath/static', 'examples', 'metapath/database', 'metapath/plugins', 'metapath/identities', 'metapath/html','metapath/icons'],
                     plist=dict(
                         CFBundleName = "MetaPath",
                         CFBundleShortVersionString = version_string, # must be in X.X.X format
@@ -113,11 +113,8 @@ setup(
     exclude_package_data = { '': ['README.txt'] },
 
     entry_points = {
-        'console_scripts': [
-            'metapath = metapath.metapath:main',
-        ],
         'gui_scripts': [
-            'metapath-gui = metapath.metapath_gui:main',
+            'metapath = metapath.metapath:main',
         ]
     },
 
@@ -126,7 +123,7 @@ setup(
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>=0.1.0',
-            'matplotlib>=1.2.1'
+#            'matplotlib>=1.2.1'
             ],
 
     keywords='bioinformatics metabolomics research analysis science',
@@ -148,7 +145,7 @@ setup(
         "build_mac": build_mac,
         "py2app": build_py2app
     },
-    app=[ 'metapath/metapath_gui.py' ],
+    app=[ 'metapath/metapath.py' ],
     setup_requires=["py2app"],
 
     )

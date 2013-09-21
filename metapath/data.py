@@ -39,6 +39,18 @@ class DataManager( QObject ):
         self.o = {} # Output
 
         
+    # Get a dataset through input interface id;
+    # This provides direct access to the object (local link in self.i = {})
+    def get(self, id):
+        pass
+        
+    
+    # Output a dataset through output interface id
+    # Advertise object for consumption; needs to handle notification of all consumers
+    # independent of the object itself (so can overwrite instead of warping)
+    def put(self, id):
+        pass
+    
     
     def addo(self, target, dso=None, provide=True):
         if dso==None:
@@ -64,6 +76,8 @@ class DataManager( QObject ):
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
     def can_consume(self, data):
+        if data.manager == self:
+            return False
         for consumer_def in self.consumer_defs:
             if consumer_def.can_consume(data):
                 return True
@@ -76,25 +90,29 @@ class DataManager( QObject ):
                 return True
         return False
         
-    def consume(self, data):
+    def _consume(self, data):
+        # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
+        # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
+        # Register this as an attribute in the current object
+        if data.manager == self:
+            return False
         for consumer_def in self.consumer_defs:
             if consumer_def.can_consume(data):
-                # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
-                # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
-                # Register this as an attribute in the current object
                 self.i[ consumer_def.target ] = data
                 self.consumes.append( data )
                 data.consumers.append( self )
-                return True
-                
-    def consume_from_manager(self, manager):
-        for data in manager.provides:
-            if self.consume( data ):
-                return True # Stop if we manage it
+                return True    
+        
+    def consume(self, data):
+        if self._consume(data):
+            self.source_updated.emit()
+            return True
+        return False
                 
     def consume_any_of(self, data_l):
         for dso in data_l:
-            if self.consume(dso):
+            if self._consume(dso):
+                self.source_updated.emit()
                 return True
             
     def provide(self, target):
@@ -206,15 +224,15 @@ class DataDefinition( QObject ):
 
 # QAbstractTableModel interface to loaded dataset. 
 class QTableInterface(QAbstractTableModel):
-    def __init__(self, parent, *args, **kwargs):        
+    def __init__(self, dso, *args, **kwargs):        
         super(QTableInterface, self).__init__(*args, **kwargs)
-        self.d = parent
-
+        self.dso = dso
+        
     def rowCount(self, parent):
-        return self.d.shape[0]
+        return self.dso.shape[0]
 
     def columnCount(self, parent):
-        return self.d.shape[1]
+        return self.dso.shape[1]
         
     def data(self, index, role):
         if not index.isValid():
@@ -222,16 +240,28 @@ class QTableInterface(QAbstractTableModel):
         elif role != Qt.DisplayRole:
             return None
             
-        return float( self.d.data[ index.row(), index.column()] )
+        return float( self.dso.data[ index.row(), index.column()] )
             
     def headerData(self, col, orientation, role):
         
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.d.labels[1][col]
+            try:
+                return self.dso.labels[1][col]
+            except:
+                pass
+            
         elif orientation == Qt.Vertical and role == Qt.DisplayRole:
-            return self.d.labels[0][col]
-        else:
-            return None
+            try:
+                return self.dso.labels[0][col]
+            except:
+                pass
+            
+        return None
+        
+    def refresh(self):
+        self.headerDataChanged.emit(Qt.Horizontal,0,self.columnCount(None))
+        self.headerDataChanged.emit(Qt.Vertical,0,self.rowCount(None))
+        self.layoutChanged.emit()
         
     def sort(self, col, order):
         """sort table by given column number col"""
@@ -297,7 +327,7 @@ class DataSet( QObject ):
         self.type = copy(dso.type)
 
         self.labels = [x for x in dso.labels] 
-        self.entities = [x for x in dso.entities]
+        self.entities = [copy(x) for x in dso.entities]
         self.scales = [x for x in dso.scales]
         self.classes = [x for x in dso.classes]
 
@@ -449,16 +479,19 @@ class DataSet( QObject ):
     # Compress the dataset object in 'd' dimension; 
     # being compressed in d dimension by the fn function
     # Compression only if classes, labels and entities are equal. Scale is treated the same as data (fn function)
-    def as_compressed(self, fn=np.mean, dim=1):
+    def as_summary(self, fn=np.mean, dim=1, match_attribs=['classes','labels','entities']):
     
-        print "Entities before compression (own):",self.entities
+        available_match_attribs = ['classes','labels','entities'] # If anything not specified collapse/wipe object entities
+    
         dso = DataSet()
         dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
-        print "Entities before compression (copied):",dso.entities
 
         # Build combined (class, label, entity) tuples as matching value
-        identities = [ (c, l, e) for c,l,e in zip( dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
-        unique = set( identities )
+        # We match only on those specified as match_attribs
+        #print "!!", [ dso.__dict__[ma][dim] for ma in match_attribs ]
+        identities = [ tuple(o) for o in zip( *[ dso.__dict__[ma][dim] for ma in match_attribs ] )  ]#dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
+        print identities
+        unique = tuple( set( identities ) )
         
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )
         new_shape[ dim ] = len( unique )
@@ -466,26 +499,38 @@ class DataSet( QObject ):
         dso.crop( new_shape )
         
         for n,u in enumerate( unique ):
-            dso.classes[dim][n], dso.labels[dim][n], dso.entities[dim][n] = u
+            for ma in match_attribs:
+                dso.__dict__[ma][dim][n] = u
+                
             # Build mask against the original identities file
             mask = np.array([ True if u == i else False for i in identities ])
             # Mask of T F T T T F if the identity at this position matches our unique value
-            # Apply this mask to the data; then use our function to reduce it in our dimension
-            #mask = np.repeat(mask, old_shape[dim])
-            #mask= np.reshape( mask, old_shape )
-            data = self.data[ :, mask] #np.ma.array(self.data, mask=mask)
-            compressed_data = fn( data, axis=dim) #, keepdims=True )
-            dso.data[:,n] = compressed_data
+            # Apply this mask to the data; then use specified np.function to reduce it in our dimension
+            if dim == 0:
+                data = self.data[ mask, :] #np.ma.array(self.data, mask=mask)
+                summarised_data = fn( data, axis=dim) #, keepdims=True )
+                dso.data[n,:] = summarised_data
+                # FIXME: We wipe but could combine to keep record
 
+            elif dim ==1:
+                data = self.data[ :, mask] #np.ma.array(self.data, mask=mask)
+                summarised_data = fn( data, axis=dim) #, keepdims=True )
+                dso.data[:,n] = summarised_data
 
-        print "Entities after compression:",dso.entities
+            # Fix existing class markers
+            for mn, ma in enumerate(match_attribs):
+                dso.__dict__[ma][dim][n] = unique[n][ mn ]
+
+            # Wipe out compressed attributes
+            for ma in set(match_attribs) - set(available_match_attribs):
+                dso.__dict__[ma][dim] = [None]*new_shape[dim]
+            
 
         return dso
     
     # Filter data by labels/entities on a given axis    
-    def as_filtered(self, dim=1, scales=None, labels=None, entities=None):
+    def as_filtered(self, dim=1, scales=None, classes=None, labels=None, entities=None):
         
-        print 'Entities before filtering:',self.entities
         dso = DataSet()
         dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
 
@@ -494,8 +539,9 @@ class DataSet( QObject ):
         # Build consecutive mask
         iter = [
             (dso.entities[dim], entities),
-            (dso.labels[dim], labels),
+            (dso.classes[dim], classes),
             (dso.scales[dim], scales),
+            (dso.labels[dim], labels),
         ]
         
         mask = np.array([ True for i in dso.entities[dim] ])
@@ -509,16 +555,21 @@ class DataSet( QObject ):
         new_shape[dim] = list(mask).count(True) # New size of it
 
         print 'Reshape from %s to %s' % (old_shape,new_shape)
-
         dso.crop( new_shape )
-        dso.data = self.data[ : ,mask ]
+        # FIXME: Hacky; what about 3d arrays
+        if dim == 0:
+            dso.data = self.data[ mask, : ]
+        else:
+            dso.data = self.data[ :, mask ]
 
         dso.classes[dim] = [v for t,v in zip( mask, self.classes[dim]) if t]
         dso.entities[dim] = [v for t,v in zip( mask, self.entities[dim]) if t]
         dso.labels[dim] = [v for t,v in zip( mask, self.labels[dim]) if t]
         dso.scales[dim] = [v for t,v in zip( mask, self.scales[dim]) if t]
 
-        return dso        
+        return dso     
+    
+
         
     # DESTRUCTIVE resizing of the current dso
     # All entries are simply clipped to size

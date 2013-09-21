@@ -73,7 +73,6 @@ class PathwayMiningView( ui.GenericView ):
         self.browser = ui.QWebViewExtend(self, self.m.onBrowserNav)
         self.setCentralWidget(self.browser)
 
-        self.set_name('Pathway mining')
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
         
         # Setup data consumer options

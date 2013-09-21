@@ -22,6 +22,8 @@ import numpy as np
 
 import data, ui, db
 
+#import nmrglue
+
 class NMRGlueView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(NMRGlueView, self).__init__(plugin, parent, **kwargs)
@@ -53,10 +55,6 @@ class NMRGlueView( ui.DataView ):
             self.file_watcher.addPath( filename )
 
             self.render({})
-
-            #self.data.o['imported_data'].as_filtered(classes=['H'])
-            
-            #self.m.data.translate(self.m.db)
             self.workspace_item.setText(0, os.path.basename(filename))
             
         return False

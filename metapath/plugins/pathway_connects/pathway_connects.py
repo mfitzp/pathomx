@@ -39,7 +39,7 @@ class PathwayConnectsView(ui.AnalysisView):
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.generate()
-        
+
 
     def url_handler(self, url):
 

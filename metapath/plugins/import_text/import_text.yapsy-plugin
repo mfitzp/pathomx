@@ -1,9 +1,9 @@
 [Core]
-Name = Import Text/XML
+Name = Import Text/CSV
 Module = import_text
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Import text and XML in various standard formats
+Description = Import data from text and CSV files

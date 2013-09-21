@@ -34,9 +34,3 @@ class ImportExcel(DataPlugin):
 
         self.statistics['excluded'] = self.classes.count('.')
         self.classes = set( [c for c in self.classes if c != '.' ] )
-
-
-    
-
-    def print_name(self):
-        print "This is plugin 1"
