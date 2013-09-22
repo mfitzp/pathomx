@@ -49,10 +49,6 @@ METAPATH_PAPER_SIZES = {
     'A5': (5.83, 8.27),
 }
 
-rdbu9 =  [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
-rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
-
-# [0, '1', '2', '3', '4', '#cccccc', '6', '7', '8', '9'] #Override central color, it's too faint on white
 
 def add_clusternodes( clusternodes, cluster_key, keys, nodes):
     for key in keys:
@@ -60,10 +56,10 @@ def add_clusternodes( clusternodes, cluster_key, keys, nodes):
     return clusternodes
 
 def get_compound_color( analysis, m ):
-    return analysis[m.id] if m.id in analysis else '#cccccc'
+    return analysis[m.id][0] if m.id in analysis else '#cccccc'
 
 def get_pathway_color( analysis, m ):
-    return analysis[m.id] if m.id in analysis else '#cccccc'
+    return analysis[m.id][0] if m.id in analysis else '#cccccc'
 
 def get_reaction_color( analysis, r ):
     # For reactions, we need gene and protein data (where it exists)
@@ -71,14 +67,14 @@ def get_reaction_color( analysis, r ):
     if hasattr(r, 'proteins'): # Dummy ReactionIntermediates will not; til that's fixed!
         for p in r.proteins:
             if p.id in analysis:
-                colors.append( rdbu9[ analysis[p.id]['color'] ] )
+                colors.append( rdbu9[ analysis[p.id][0] ] )
                         
             for g in p.genes:
                 if g.id in analysis:
-                    colors.append( rdbu9[ analysis[g.id]['color'] ] )
+                    colors.append( rdbu9[ analysis[g.id][0] ] )
     
     if colors == []:
-        colors = [ rdbu9[5] ] # Mid-grey      
+        colors = [ utils.rdbu9[5] ] # Mid-grey      
          
     return '"%s"' % ':'.join( colors ) 
 
@@ -246,7 +242,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             if analysis:
                 if m.id in analysis:                                        
                 # We found it by one of the names
-                    fillcolor = analysis[ m.id ]['color']
+                    fillcolor = analysis[ m.id ]
                     
             # This node is in one of our pathways, store it
             nodes.append([m, fillcolor, visible])
@@ -292,7 +288,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
             if analysis: # and options.mining:
                 # Not actually used for color, this is a ranking value (bud-sized on pathway link)
-                p_compound_scores = [ analysis[m.id]['color'] for m in p.compounds if m.id in analysis] 
+                p_compound_scores = [ analysis[m.id] for m in p.compounds if m.id in analysis] 
                 if p_compound_scores:
                     fillcolor = sum( p_compound_scores ) / len( p_compound_scores )
                 else:
@@ -302,6 +298,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                 fillcolor = None
                 
             nodes.append([pathway_node, fillcolor, True])
+            
     # Generate the analysis graph from datasets
     graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgeslast', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc") #, model='mds') #, overlap='ipsep', mode='ipsep', model='mds') 
     subgraphs = list()
@@ -357,7 +354,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
     
     # Add nodes to map
     
-    for m,fillcolor,visible in nodes:
+    for m,node_color,visible in nodes:
 
         if m in nodes_added: # Previously added, another pathway: use simplified add (speed up)
             graph.add_node(pydot.Node(m.id))
@@ -367,6 +364,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
         color = 'black'
         shape = 'rect'
         fontcolor = 'black'
+        fillcolor = '#eeeeee'
         colorscheme = 'rdbu9'
         url = COMPOUND_URL
         width, height = 0.75, 0.5
@@ -389,15 +387,15 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             label = '%s' % m.name
             size = len(db.pathways[ m.id ].compounds )
             width, height = size/24., size/24.
-            if fillcolor is None:
+            if node_color is None:
                 fillcolor = '#cccccc'          
-            color = fillcolor
+            color = node_color[0]
             border=0
             url=PATHWAY_URL
 
         else:
             label = label="%s" % m.name # {%s |{ | | } } "
-            if fillcolor == False:
+            if node_color == False:
                 if analysis: # Showing data
                     fillcolor = '#ffffff'
                 else:
@@ -405,8 +403,8 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             else:
                 shape = 'box'
                 style = 'filled'
-                if fillcolor in [1,2,8,9]:
-                    fontcolor = 'white'
+                fontcolor = node_color[1]
+                fillcolor = node_color[0]
         
             if options.show_network_analysis:
                 border = min( len( m.reactions ) /2, 5)
@@ -415,8 +413,8 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             
         if options.show_molecular and hasattr(m,'image'):
             label = ' '
-            if analysis and isinstance(fillcolor, int):
-                image = m.imagecolor % int(fillcolor)
+            if analysis and node_color and isinstance(node_color[2], int):
+                image = m.imagecolor % int(node_color[2])
             else:
                 image = m.image
             style = 'solid'
@@ -485,10 +483,10 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                     prgenestr = ''
                     for pr in r.proteins:
                         if pr.id in analysis:
-                            prgenestr += '<font color="/rdbu9/%s">&#x25C6;</font>' % analysis[ pr.id ]['color']
+                            prgenestr += '<font color="%s">&#x25C6;</font>' % analysis[ pr.id ][0]
                         for g in pr.genes:
                             if g.id in analysis:
-                                prgenestr += '<font color="/rdbu9/%s">&#x25cf;</font>' % analysis[ g.id ]['color']
+                                prgenestr += '<font color="%s">&#x25cf;</font>' % analysis[ g.id ][0]
                     label.append(u'%s'  % prgenestr )#pr.genes
                 
             if options.show_secondary and (hasattr(r,'smtins')): #If there's an in there's an out
@@ -497,13 +495,13 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
                     smtins, smtouts = [], []                
                     for sm in r.smtins:
                         if analysis and sm.id in analysis:
-                            smtins.append('<font color="/rdbu9/%s">%s</font>' % (analysis[ sm.id ]['color'], sm) ) # We found it by one of the names
+                            smtins.append('<font color="%s">%s</font>' % (analysis[ sm.id ][0], sm) ) # We found it by one of the names
                         else:
                             smtins.append('%s' % sm)
 
                     for sm in r.smtouts:
                         if analysis and sm.id in analysis:
-                            smtouts.append('<font color="/rdbu9/%s">%s</font>' % (analysis[ sm.id ]['color'], sm) ) # We found it by one of the names
+                            smtouts.append('<font color="%s">%s</font>' % (analysis[ sm.id ][0], sm) ) # We found it by one of the names
                         else:
                             smtouts.append('%s' % sm)
                                         
@@ -532,20 +530,19 @@ class MetaVizView(ui.AnalysisView):
 
         self.config = QSettings()
 
-        self.browser = ui.QWebViewScrollFix( self, parent.onBrowserNav )
-        #self.overview = QSvgWidget()
-        parent.tab_handlers.append( self )
-
-        #self.plugin.register_url_handler( self.id, self.url_handler )
+        #self.browser = ui.QWebViewScrollFix( self, parent.onBrowserNav )
 
         self.addDataToolBar()
         
         # Setup data consumer options
-        self.data.consumer_defs.append( 
+        self.data.consumer_defs.extend([
             data.DataDefinition('suggested_pathways', {
             'entities_t':   (['Pathway'], None), 
+            }),
+            data.DataDefinition('data', {
+            'entities_t':   (None, ['Compound','Gene','Protein']), 
             })
-        )
+        ])
         
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         
@@ -747,11 +744,11 @@ class MetaVizView(ui.AnalysisView):
         pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]        
            
         # Add mining pathways
-        if self.m.data and options.mining:
-            # Regenerate pathway suggestions if none yet in place or requested (regenerating analysis will set suggested = None
-            if self.m.data.analysis_suggested_pathways == None or regenerate_suggested:
-                self.m.data.suggest( self.m.db, mining_type=options.mining_type, mining_depth=options.mining_depth)
-            pathways += self.m.data.analysis_suggested_pathways[0:options.mining_depth]
+        #if self.m.data and options.mining:
+        #    # Regenerate pathway suggestions if none yet in place or requested (regenerating analysis will set suggested = None
+        #    if self.m.data.analysis_suggested_pathways == None or regenerate_suggested:
+        #        self.m.data.suggest( self.m.db, mining_type=options.mining_type, mining_depth=options.mining_depth)
+        #    pathways += self.m.data.analysis_suggested_pathways[0:options.mining_depth]
 
         # Now remove the Hide pathways
         pathway_ids_hide = self.config.value('/Pathways/Hide').split(',')
@@ -760,23 +757,36 @@ class MetaVizView(ui.AnalysisView):
         if pathway_ids == []:
             return None        
             
-        if self.m.data:
-            if self.m.data.analysis_timecourse:
-                # Generate the multiple views
-                tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )
-                # Insert counter variable into the filename
-                filename = self.get_filename_with_counter(filename) 
-                print "Generate timecourse..."
-                for tp in tps:
-                    print "%s" % tp
-                    graph = generator( pathways, options, self.m.db, analysis=self.m.data.analysis_timecourse[ tp ]) #, layout=self.layout) 
-                    graph.write(filename % tp, format=options.output, prog='neato')
-                return tps
-            else:
-                print "Generate map for single control:test..."
-                graph = generator( pathways, options, self.m.db, analysis=self.m.data.analysis) #, layout=self.layout) 
-                graph.write(filename, format=options.output, prog='neato')
-                return None
+        if self.data.i['data']:
+            print 'hello!'
+            #if self.m.data.analysis_timecourse:
+            #    # Generate the multiple views
+            #    tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )
+            #    # Insert counter variable into the filename
+            #    filename = self.get_filename_with_counter(filename) 
+            #    print "Generate timecourse..."
+            #    for tp in tps:
+            #        print "%s" % tp
+            #        graph = generator( pathways, options, self.m.db, analysis=self.m.data.analysis_timecourse[ tp ]) #, layout=self.layout) 
+            #        graph.write(filename % tp, format=options.output, prog='neato')
+            #    return tps
+            #else:
+            print "Generate map for single control:test..."
+            # Build analysis lookup dict; we want a single color for each metabolite
+            sf = utils.calculate_scaling_factor( self.data.i['data'].data, 9) # rdbu9 scale
+            
+            node_colors = {}
+            for n, m in enumerate(self.data.i['data'].entities[1]):
+                if m is not None:
+                    ecol = utils.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
+                    #print xref, ecol
+                    if ecol is not None:
+                        node_colors[ m.id ] = ecol
+            
+            print node_colors
+            graph = generator( pathways, options, self.m.db, analysis=node_colors) #, layout=self.layout) 
+            graph.write(filename, format=options.output, prog='neato')
+            return None
         else:
             graph = generator( pathways, options, self.m.db) #, layout=self.layout) 
             graph.write(filename, format=options.output, prog='neato')
@@ -787,9 +797,10 @@ class MetaVizView(ui.AnalysisView):
 
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
-
+        
         tps = self.generateGraph(filename=filename, format='svg', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
 
+        
         if tps == None:
             svg_source = [ open(filename).read().decode('utf8') ]
             tps = [0]

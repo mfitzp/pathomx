@@ -40,8 +40,8 @@ class gpmlPathwayView(ui.AnalysisView):
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
-        self.browser = ui.QWebViewExtend(self)
-        self.tabs.addTab(self.browser,'View')
+        #self.browser = ui.QWebViewExtend(self)
+        #self.tabs.addTab(self.browser,'View')
 
         #self.data = data.DataManager()
         # Setup data consumer options
@@ -131,34 +131,14 @@ class gpmlPathwayView(ui.AnalysisView):
         if obj is not None:
             return ('MetaCyc %s' % obj.type, obj.id)
     
-    def calculate_scaling_factor(self, minima, maxima, n):
-        # Get limits (we assume we traverse zero
-        #minf = min( abs(minima), abs(maxima) )
-        maxf = max( abs(minima), abs(maxima) )
-        print "Scale max", maxf
-        # Set limits at maxf zero centered (n must be odd)
-        # Find centre point of scale
-        # c = int( np.ceil( n/2 ) )
-        return (n/2) /float( maxf ) #+/-
-    
-    def calculate_rdbu9_color(self, sf, value):
-        # Rescale minima-maxima to range of rdbu9 (9)
-        print ">",value, sf
-        try:
-            rdbu9col = int( np.round( value*sf ) ) + 5
-        except:
-            return None # Fill zero nothing if not known
-        print 'C:',rdbu9col
-        return utils.rdbu9[ rdbu9col ]            
-    
-    
+
     def generate(self):
 
         self.setWorkspaceStatus('active')
 
         # Add our urls to the defaults
         xref_urls = {
-            'MetaCyc compound': 'metapath://db/metabolite/%s/view',
+            'MetaCyc compound': 'metapath://db/compound/%s/view',
             'MetaCyc gene': 'metapath://db/gene/%s/view',
             'MetaCyc protein': 'metapath://db/protein/%s/view',
             'WikiPathways': 'metapath://wikipathway/%s/import',
@@ -166,18 +146,16 @@ class gpmlPathwayView(ui.AnalysisView):
     
         node_colors = {}
         
-        # Calculate maxima and minima for dataset
-        minima, maxima = np.min( self.data.i['data'].data ), np.max( self.data.i['data'].data )
 
-        sf = self.calculate_scaling_factor( minima, maxima, 9) # rdbu9 scale
+        sf = utils.calculate_scaling_factor( self.data.i['data'].data, 9) # rdbu9 scale
         print "Sf %s" % sf
         if self.data.i['data']:
             for n, m in enumerate(self.data.i['data'].entities[1]):
                 xref = self.get_xref( m )
-                ecol = self.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
-                print xref, ecol
+                ecol = utils.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
+                #print xref, ecol
                 if xref is not None and ecol is not None:
-                    node_colors[ xref ] = (ecol, ecol)
+                    node_colors[ xref ] = ecol
                
         print node_colors
         '''    
@@ -216,7 +194,7 @@ class gpmlPathwayView(ui.AnalysisView):
 
     def onLoadGPMLPathway(self):
         """ Open a GPML pathway file """
-        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open GPML pathway file', '')
+        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open GPML pathway file', '','GenMAPP Pathway Markup Language (*.gpml)')
         if filename:
             self.load_gpml_file(filename)
             self.generate()
@@ -263,11 +241,6 @@ class GPML(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(GPML, self).__init__(**kwargs)
-        #self.register_url_handler( self.id, self.url_handler )
-        #self.register_menus( 'pathways', [
-        #    {'title': u'&Load GPML pathway\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway file'},
-        #    {'title': u'&Load GPML pathway via WikiPathways\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway from WikiPathways service'},        
-        #] )
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours

@@ -314,6 +314,8 @@ class DataSet( QObject ):
             self.entities.append( [None] * s )
             self.scales.append( [None] * s )
             self.classes.append( [None] * s ) 
+
+        self.axes = []
         
         self.data = np.zeros( size ) #np.array([]) # Data container  
         
@@ -325,6 +327,8 @@ class DataSet( QObject ):
         self.name = copy(dso.name)
         self.description = copy(dso.description)
         self.type = copy(dso.type)
+
+        self.axes = [x for x in dso.labels]
 
         self.labels = [x for x in dso.labels] 
         self.entities = [copy(x) for x in dso.entities]

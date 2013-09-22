@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import urllib2
+import urllib2#, sip
 
 from optparse import Values
 from collections import defaultdict

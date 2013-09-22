@@ -2,6 +2,8 @@ import re, os, sys
 import csv, codecs, cStringIO
 from collections import defaultdict
 
+import numpy as np
+
 rdbu9 =  [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 
@@ -19,6 +21,30 @@ def sigstars(p):
     else:
         s = 'ns'
     return s
+
+
+def calculate_scaling_factor(data, n):
+    # Get limits (we assume we traverse zero
+    maxima = np.max( abs( data[np.isfinite(data)] ) )
+    median = np.median( abs( np.isfinite(data) ) )
+    
+    # Use median value to set scale (allows useful scale in despite outliers)
+    print 'Median', median
+    print 'Mean', np.mean(data)
+    print "Maxima", maxima
+    # Set limits at maxf zero centered (n must be odd)
+    # Find centre point of scale
+    # c = int( np.ceil( n/2 ) )
+    return (n/2) /float( median ) #+/-
+
+def calculate_rdbu9_color(sf, value):
+    # Rescale minima-maxima to range of rdbu9 (9)
+    try:
+        rdbu9col = max(1, min(9, int( np.round( value*sf ) ) ) )
+    except:
+        return None # Fill zero nothing if not known
+    return ( rdbu9[ rdbu9col ], rdbu9c[ rdbu9col ], rdbu9col)
+
 
 
 def read_metabolite_datafile( filename, options ):

@@ -119,6 +119,7 @@ class QWebViewExtend(QWebView):
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+        self.loadFinished.connect(self._loadFinished)
 
         # Override links for internal link cleverness
         if onNavEvent:
@@ -133,17 +134,15 @@ class QWebViewExtend(QWebView):
         else:
             return super(QWebViewExtend, self).sizeHint()        
     
-    def setHtml(self, *args, **kwargs):
-        super(QWebViewExtend, self).setHtml(*args,**kwargs)  
-        self._loaded = False      
-        self.exposeQtWebView()
-    
-    def exposeQtWebView(self):
+    def _loadFinished(self):
         frame = self.page().mainFrame()
         frame.addToJavaScriptWindowObject("QtWebView", self)
         if self.w:
-            frame.evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s}" % (self.w.size().width()-30, self.w.size().height()-100 ) ) #-50 for tabs (ugh)
-    
+            x = self.w.size().width()-30
+            y = self.w.size().height()-100
+            self.page().setViewportSize( QSize(x,y) ) # Hacky weirdness needed in Qt5 for rendering non-focused tabs
+            frame.evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s}" % (x,y) ) #-magic number for tabs (ugh)
+                
     @pyqtSlot(str)
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
@@ -156,6 +155,7 @@ class QWebViewExtend(QWebView):
             r = RenderPageToFile(filename, self ) 
             while r.finished != True:
                 QCoreApplication.processEvents()
+                
 
 class QWebViewScrollFix(QWebViewExtend):
     
@@ -177,7 +177,7 @@ class DialogDataSource(genericDialog):
         self.v = view
         self.m = view.m
         
-        self.setWindowTitle("Select Data Source")
+        self.setWindowTitle("Select Data Source(s)")
 
         self.lw_sources = QTreeWidget() # Use TreeWidget but flat; for multiple column view
         self.lw_sources.setColumnCount(6)
@@ -304,20 +304,11 @@ class GenericView( QMainWindow ):
         dialog = DialogDataSource(parent=self, view=self)
         ok = dialog.exec_()
         if ok:
-            try:
-                dso = dialog.datasets[ int( dialog.lw_sources.selectedItems()[0].text(0) ) ]
-                # Read dialog consume_data and set to self
-                # consume_data( target, data )
-            except:
-                pass
-            else:
+            for i in dialog.lw_sources.selectedItems():
+                dso = dialog.datasets[ int( i.text(0) ) ]
                 self.data.consume( dso )
-                self.generate()
-                # Update the toolbar dropdown to match
-                #self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
-                #self.generateGraphView(regenerate_suggested=True)        
 
-
+            self.generate()
 
     def addFigureToolBar(self):            
         t = self.addToolBar('Image')
@@ -346,9 +337,9 @@ class DataView(GenericView):
     def __init__(self, plugin, parent, **kwargs):
         super(DataView, self).__init__(plugin, parent, **kwargs)
 
-        self.summary = QWebViewScrollFix(self)
+        self.summary = QWebViewScrollFix(self.tabs)
         self.table = QTableView()
-        self.viewer = QWebViewScrollFix(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
+        self.viewer = QWebViewScrollFix(self.tabs, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
 
         self.tabs.addTab(self.summary, 'Summary')
         self.tabs.addTab(self.table,'Table')
@@ -390,6 +381,8 @@ class DataView(GenericView):
             self.data.o['output'].as_table.refresh()
 
             if float in [type(t) for t in dso.scales[1]]:
+                self.tabs.setTabEnabled( self.viewer_tab_index, True)
+            
                 print "Scale data up top; make a spectra view"
                 metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
             
@@ -412,8 +405,6 @@ class DataView(GenericView):
 
                 template = self.m.templateEngine.get_template('d3/spectra.svg')
                 self.viewer.setHtml(template.render( metadata ),QUrl('~')) 
-        
-                self.tabs.setTabEnabled( self.viewer_tab_index, True)
                 
                 f = open('/Users/mxf793/Desktop/test3.svg','w')
                 f.write( template.render( metadata ) )
@@ -481,14 +472,17 @@ class AnalysisView(GenericView):
         super(AnalysisView, self).__init__(plugin, parent, **kwargs)
 
         self.browser = QWebViewScrollFix( self, onNavEvent=parent.onBrowserNav )
+        self.browser2 = QWebViewScrollFix( self, onNavEvent=parent.onBrowserNav )
         self.tabs.addTab(self.browser, 'View')
+        self.tabs.addTab(self.browser2, 'View2')
     
     def render(self, metadata):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
         template = self.m.templateEngine.get_template('d3/figure.svg')
         self.browser.setHtml(template.render( metadata ),QUrl('~')) 
-        self.browser.exposeQtWebView()
+
+        self.browser2.setHtml(template.render( metadata ),QUrl('~')) 
         
         f = open('/Users/mxf793/Desktop/test.svg','w')
         f.write( template.render( metadata ) )
@@ -572,7 +566,18 @@ class AnalysisView(GenericView):
         t.addWidget(t.cb_test)
     
         self.toolbars['experiment'] = t
-        
+
+    def repopulate_experiment_classes(self):
+        # Empty the toolbar controls
+        self.toolbars['experiment'].cb_control.clear()
+        self.toolbars['experiment'].cb_test.clear()
+        # Data source change; update the experimental control with the data input source
+        self.toolbars['experiment'].cb_control.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+        self.toolbars['experiment'].cb_test.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+
+    def onDataChanged(self):
+        self.repopulate_experiment_classes()
+        self.generate()
         
     def onDefineExperiment(self):
         pass
@@ -590,7 +595,6 @@ class AnalysisD3View(AnalysisView):
         
         template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
         self.browser.setHtml(template.render( metadata ),QUrl('~'))
-        self.browser.exposeQtWebView()
         
         f = open('/Users/mxf793/Desktop/test.svg','w')
         f.write( template.render( metadata ) )
@@ -643,7 +647,6 @@ class D3View(AnalysisView):
         template = self.parent.templateEngine.get_template('d3/force.svg')
 
         self.browser.setHtml(template.render( metadata ),QUrl('~')) 
-        self.browser.exposeQtWebView()
 
         f = open('/Users/mxf793/Desktop/test.html','w')
         f.write( template.render( metadata ) )

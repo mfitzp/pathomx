@@ -310,12 +310,12 @@ class databaseManager():
             deltag = sum_gibbs_in_outs( 'deltaG', ins, outs )
             
             # Swap reaction directions on birectional reactions to match gibbs
-            if r.dir == 'both' and deltag > 0:
-                print r, "swap!"
-                tmtins, tsmtins = r.mtins, r.smtins
-                r.mtins, r.smtins = r.mtouts, r.smtouts
-                r.mtouts, r.smtouts = tmtins, tsmtins
-                deltag = -deltag
+            #if r.dir == 'both' and deltag > 0:
+            #    print r, "swap!"
+            #    tmtins, tsmtins = r.mtins, r.smtins
+            #    r.mtins, r.smtins = r.mtouts, r.smtouts
+            #    r.mtouts, r.smtouts = tmtins, tsmtins
+            #    deltag = -deltag
             
             # Calculate penwidth for deltag viz
             if deltag == 0:

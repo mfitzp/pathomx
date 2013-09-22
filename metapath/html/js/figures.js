@@ -12,7 +12,6 @@ nan = null /* For numpy compatibiltiy */
             x = q.x || w.innerWidth || e.clientWidth || g.clientWidth,
             y = q.y || w.innerHeight|| e.clientHeight|| g.clientHeight;
     
-        console.log([x,y]);
         return [x,y]
     }
     
@@ -91,7 +90,7 @@ function heatmap(id, buckets, scale){
                 //.domain( [d3.min(buckets, function(d) { return d.value; }) , 0, d3.max(buckets, function(d) { return d.value; })] )
                 .range(["#2166ac","#f7f7f7","#b2182b"]);
                 
-    function safez(num){ return isNaN(num) ? '"#ffffff"' : z(num); } 
+    function safez(num){ return isNaN(num) ? "#ffffff" : z(num); } 
 
     // Display the tiles for each non-zero bucket.
     // See http://bl.ocks.org/3074470 for an alternative implementation.
@@ -424,10 +423,7 @@ var s_intensity = [
         Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ), 
         Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ),
         ]
-        
-    console.log( s_intensity) ;
-     
-            
+                    
 var x = d3.scale
             .linear()
             .range([0,width_d])

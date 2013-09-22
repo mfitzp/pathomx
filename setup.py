@@ -19,8 +19,17 @@ sys.path.append('metapath')
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
     packages=[
-        'PySide',
+#        'PyQt5', #.QtGui',
+#        'PyQt5.QtCore',
+#        'PyQt5.QtWebKit',
+#        'PyQt5.QtNetwork',
+#        'PyQt5.QtWidgets',
+#        'PyQt5.QtWebKitWidgets',
+#        'PyQt5.QtPrintSupport',
+#        'PyQt5',
+#        'PySide',
         'numpy',
+#        'sip',
         ],
     includes=[],
     excludes=[
@@ -82,7 +91,7 @@ else:
         base = "Win32GUI"
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
-    executables=Executable("metapath/metapath_gui.py", base=base),
+    executables=[Executable("metapath/metapath.py", base=base)]
 
     # Apply default build options to cx/py2app build targets
     build_exe.update( default_build_options )
@@ -112,6 +121,8 @@ setup(
     },
     exclude_package_data = { '': ['README.txt'] },
 
+    executables = executables,
+
     entry_points = {
         'gui_scripts': [
             'metapath = metapath.metapath:main',
@@ -123,6 +134,7 @@ setup(
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>=0.1.0',
+#            'sip',
 #            'matplotlib>=1.2.1'
             ],
 

@@ -8,7 +8,6 @@ svg {
     margin:0px; padding:0;
     -webkit-user-select: none;
     pointer-events: all;
-
     font-size:8pt;
     font-family:"Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
     font-weight:normal;

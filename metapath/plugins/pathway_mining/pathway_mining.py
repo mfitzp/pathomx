@@ -25,56 +25,19 @@ from db import Compound, Gene, Protein
 
 
 
-class PathwayMiningView( ui.GenericView ):
+class PathwayMiningView( ui.AnalysisView ):
     def __init__(self, plugin, parent, **kwargs):
         super(PathwayMiningView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
-        
-        self.pm_toolbar = self.addToolBar('Experiment')
-        self.pm_toolbar.setIconSize( QSize(16,16) )
-
-        # DATA MENU
-        define_experimentAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') ), 'Define experiment\u2026', self)
-        define_experimentAction.setShortcut('Ctrl+Q')
-        define_experimentAction.setStatusTip('Define experiment control, test and timecourse settings')
-        define_experimentAction.triggered.connect(self.onDefineExperiment)
-        
-        pathway_mining_settingsAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons', 'hard-hat-mine.png') ), 'Pathway mining settings\u2026', self)
-        pathway_mining_settingsAction.setStatusTip('Define pathway mining settings')
-        pathway_mining_settingsAction.triggered.connect(self.onMiningSettings)
-        
-        self.pm_toolbar.addAction(define_experimentAction)
-        
-        self.cb_control = QComboBox()
-        self.cb_control.addItems(['Control'])
-        self.cb_control.currentIndexChanged.connect(self.onModifyExperiment)
-
-        self.cb_test = QComboBox()
-        self.cb_test.addItems(['Test'])
-        self.cb_test.currentIndexChanged.connect(self.onModifyExperiment)
-
-        self.pm_toolbar.addWidget(self.cb_control)
-        self.pm_toolbar.addWidget(self.cb_test)
-
-        self.sb_miningDepth = QSpinBox()
-        self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( self.config.value('/Data/MiningDepth') ) )
-        self.sb_miningDepth.valueChanged.connect(self.onModifyMiningDepth)
-        
-        self.pm_toolbar.addWidget(self.sb_miningDepth)
-        
+        self.addExperimentToolBar()
         
         self.data.addo('output')
-        
-        #t.addAction(load_wikipathwaysAction)
-        self.browser = ui.QWebViewExtend(self, self.m.onBrowserNav)
-        self.setCentralWidget(self.browser)
-
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
-        
+        self.table = QTableView()        
+        self.table.setModel( self.data.o['output'].as_table )
+        self.tabs.addTab(self.table, 'Table')
         # Setup data consumer options
         self.data.consumer_defs.append( 
             data.DataDefinition('input', {
@@ -82,13 +45,13 @@ class PathwayMiningView( ui.GenericView ):
             })
         )
         
+        self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.generate()
 
     def generate(self):
         self.suggest()
+        self.data.o['output'].as_table.refresh()
 
 
     def onMiningSettings(self):
@@ -126,10 +89,10 @@ class PathwayMiningView( ui.GenericView ):
             self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
             self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
             
-            if dialog.le_timecourseRegExp.text() != '':
-                self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
-            elif 'timecourse' in self.experiment:                
-                del(self.experiment['timecourse'])
+            #if dialog.le_timecourseRegExp.text() != '':
+            #    self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
+            #elif 'timecourse' in self.experiment:                
+            #    del(self.experiment['timecourse'])
         
             # Update the toolbar dropdown to match
             self.cb_control.setCurrentIndex( self.cb_control.findText( self.experiment['control'] ) )
@@ -154,11 +117,9 @@ class PathwayMiningView( ui.GenericView ):
     def onModifyExperiment(self):
         """ Change control or test settings from toolbar interaction """
         # Cheat a bit, simply change both - only one will be incorrect
-        if self.update_view_callback_enabled:
-            self.experiment['control'] = self.cb_control.currentText()
-            self.experiment['test'] = self.cb_test.currentText()
-
-        
+        self._experiment_control = self.toolbars['experiment'].cb_control.currentText()
+        self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
+        self.generate()
 
 
     # Generate pathway suggestions from the database based on a given data analysis (use set options)
@@ -181,8 +142,6 @@ class PathwayMiningView( ui.GenericView ):
             if entity == None:
                 continue # Skip
 
-            print "!!"
-            print dsi.data.shape, n
             score = dsi.data[0,n]
             #score = self.analysis[ m_id ]['score']
             

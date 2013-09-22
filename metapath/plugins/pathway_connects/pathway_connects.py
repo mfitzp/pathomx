@@ -20,12 +20,6 @@ class PathwayConnectsView(ui.AnalysisView):
     def __init__(self, plugin, parent, **kwargs):
         super(PathwayConnectsView, self).__init__(plugin, parent, **kwargs)
 
-        #self.browser = ui.QWebViewExtend( self.m.stack, parent.onBrowserNav )
-        #self.tabs.addTab(self.browser, 'Connections')
-        #self.plugin.register_url_handler( self.id, self.url_handler )
-
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, 'Pathway Connections', is_selected=True, icon=self.plugin.workspace_icon ) #, icon = None)
-
         self.addDataToolBar()
         
         # Setup data consumer options
