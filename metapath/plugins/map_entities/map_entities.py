@@ -29,7 +29,7 @@ class MapEntityView( ui.GenericView ):
         self.data.addo('output')
         
         #t.addAction(load_wikipathwaysAction)
-        self.browser = ui.QWebViewExtend(self, self.m.onBrowserNav)
+        self.browser = ui.QWebViewExtend(self.tabs, self.m.onBrowserNav)
         self.tabs.addTab(self.browser, 'Entities')
 
         #self.a = QMainWindow()
@@ -66,7 +66,6 @@ class MapEntityView( ui.GenericView ):
 
         template = self.m.templateEngine.get_template( os.path.join(self.plugin.path, 'entities.html') )
         self.browser.setHtml(template.render( metadata ),QUrl("~")) 
-        self.browser.exposeQtWebView()
         
         self.setWorkspaceStatus('done')
         self.data.refresh_consumers()

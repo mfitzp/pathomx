@@ -90,8 +90,10 @@
                 'label':'@d[2]!s'
                 },
             @endfor
-            ];            
-    nmr_spectra(id, data, compounds, labels);
+            ];      
+        function _metapath_render_trigger(){
+            nmr_spectra(id, data, compounds, labels);
+        }
     </script>
 
 

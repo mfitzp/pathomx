@@ -79,7 +79,9 @@ circle {
                 "@l!s",
             @endfor
             ];
-            circos(id, matrix, labels);
+            function _metapath_render_trigger(){
+                circos(id, matrix, labels);
+            }
             
             
         @elif figure['type'] == 'corrmatrix':
@@ -105,8 +107,9 @@ circle {
             @endfor
             ];
 
-            corrmatrix(id, groups, traits, matrix);
-        
+            function _metapath_render_trigger(){
+                corrmatrix(id, groups, traits, matrix);
+            }        
 
         @endif
 

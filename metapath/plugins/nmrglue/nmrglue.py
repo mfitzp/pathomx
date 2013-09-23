@@ -22,7 +22,7 @@ import numpy as np
 
 import data, ui, db
 
-#import nmrglue
+import nmrglue
 
 class NMRGlueView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):

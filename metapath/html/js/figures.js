@@ -1,17 +1,15 @@
 /* Helper functions */
-QtViewportSize = typeof(QtViewportSize) == 'undefined' ? {'x':false,'y':false} : QtViewportSize;
 nan = null /* For numpy compatibiltiy */
     
     function getWindowSize(){
         var w = window,
             d = document,
             e = d.documentElement,
-            g = d.getElementsByTagName('body')[0],
-            q = QtViewportSize;
-            
+            g = d.getElementsByTagName('svg')[0],
+            q = typeof(QtViewportSize) == 'undefined' ? {'x':false,'y':false} : QtViewportSize;
+
             x = q.x || w.innerWidth || e.clientWidth || g.clientWidth,
             y = q.y || w.innerHeight|| e.clientHeight|| g.clientHeight;
-    
         return [x,y]
     }
     
@@ -460,8 +458,8 @@ var svg = d3.select(id)//.insert("svg",':first-child')
     .attr("width", width)
     .attr("height", height)
     .attr('viewBox','0 0 ' + width + ' ' + height)
-    .attr('preserveAspectRatio','xMidYMid')        
-      .call(zoom)
+    .attr('preserveAspectRatio','xMidYMid')
+    //  .call(zoom)
 
     .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
