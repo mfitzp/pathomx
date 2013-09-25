@@ -16,9 +16,12 @@ from plugins import IdentificationPlugin
 
 import numpy as np
 
-import data, ui, db, utils
+import ui, db, utils
+from data import DataSet
+
 
 class MapEntityView( ui.GenericView ):
+
     def __init__(self, plugin, parent, **kwargs):
         super(MapEntityView, self).__init__(plugin, parent, **kwargs)
 
@@ -26,20 +29,24 @@ class MapEntityView( ui.GenericView ):
                 
         self.addDataToolBar()
         self.addFigureToolBar()
-        self.data.addo('output')
+        self.data.add_interface('output')
         
-        #t.addAction(load_wikipathwaysAction)
         self.browser = ui.QWebViewExtend(self.tabs, self.m.onBrowserNav)
         self.tabs.addTab(self.browser, 'Entities')
+    
+        t = self.addToolBar('Entity Mapping')
+        t.setIconSize( QSize(16,16) )
 
-        #self.a = QMainWindow()
-        #self.a.setCentralWidget(self)
-        #self.a.show()
-        #self.show()
+        load_mappingAction = QAction( QIcon( os.path.join(  self.plugin.path, 'bruker.png' ) ), 'Import manual entity mapping\u2026', self.m)
+        load_mappingAction.setStatusTip('Import manual mapping from names to MetaCyc entities')
+        load_mappingAction.triggered.connect(self.onImportEntities)
+        t.addAction(import_dataAction)        
+        
+        self._entity_mapping_table = {}
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'labels_n':     (None, '>1'),
             'entities_t':   (None, None), 
             })
@@ -50,16 +57,45 @@ class MapEntityView( ui.GenericView ):
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.generate()
 
-        
+    def onImportEntities(self):
+    """ Open a data file"""
+        filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, 'Load CSV mapping for name <> identity', "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)")
+        if filename:
+
+            self._entity_mapping_table = {}
+            # Load metabolite entities mapping from file (csv)
+            reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
+    
+            # Read each row in turn, build link between items on a row (multiway map)
+            # If either can find an entity (via synonyms; make the link)
+            for row in reader:
+                for s in row:
+                    if s in self.m.db.index:
+                        e = self.m.db.index[ s ]
+                        break
+                else:
+                    continue # next row if we find nothing
+                    
+                # break to here if we do
+                for s in row:
+                    self._entity_mapping_table[ s ] = e
+                    
+            
+            print self._entity_mapping_table
+                
     
     def generate(self):
         self.setWorkspaceStatus('active')
     
-        self.data.o['output'].import_data( self.data.i['input'] )
-        self.data.o['output'] = self.translate( self.data.o['output'], self.m.db)
+        dsi = self.data.get('input')
+        #dso = DataSet( size=dsi.shape )
+    
+        dso = self.translate( dsi, self.m.db)
 
+        self.data.put('output', dso)
+        
         metadata = {
-            'entities':zip( self.data.o['output'].labels[1], self.data.o['output'].entities[1] ),
+            'entities':zip( dso.labels[1], dso.entities[1] ),
         
         }
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
@@ -68,7 +104,7 @@ class MapEntityView( ui.GenericView ):
         self.browser.setHtml(template.render( metadata ),QUrl("~")) 
         
         self.setWorkspaceStatus('done')
-        self.data.refresh_consumers()
+
         self.clearWorkspaceStatus()
 
 
@@ -78,8 +114,14 @@ class MapEntityView( ui.GenericView ):
     def translate(self, data, db):
         # Translate loaded data names to metabolite IDs using provided database for lookup
         for n,m in enumerate(data.labels[1]):
-            if m.lower() in db.synrev:
+        
+            # Match first using entity mapping table if set (allows override of defaults)
+            if m in self._entity_mapping_table:
+                data.entities[1][ n ] = db.index[ self._entity_mapping_table[ m ] ]
+
+            elif m.lower() in db.synrev:
                 data.entities[1][ n ] = db.synrev[ m.lower() ]
+                
                 #self.quantities[ transid ] = self.quantities.pop( m )
         #print self.metabolites
         return data

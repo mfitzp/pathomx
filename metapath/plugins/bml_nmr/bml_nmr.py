@@ -18,15 +18,17 @@ import numpy as np
 import zipfile
 import tempfile 
 
-import data, ui, db, utils
+import ui, db, utils
+from data import DataSet
+
 
 class BMLNMRView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(BMLNMRView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.addo('Raw') # Add output slot
-        self.data.addo('PQN') # Add output slot
-        self.data.addo('TSA') # Add output slot
+        self.data.add_interface('Raw') # Add output slot
+        self.data.add_interface('PQN') # Add output slot
+        self.data.add_interface('TSA') # Add output slot
         
         fn = self.onImportData()
         
@@ -96,15 +98,12 @@ class BMLNMRView( ui.DataView ):
         self.set_name( bml_job )
 
         self.setWorkspaceStatus('done')
-        for k, target in fns:
-            self.data.o[ target ].refresh_consumers()
         self.clearWorkspaceStatus()
         
 
-
     def load_bml_datafile( self, data_path, target, name):
-    
-        self.data.o[ target ].empty()
+        
+        dso = DataSet()
 
         # Read in data for the graphing metabolite, with associated value (generate mean)
         reader = csv.reader( utils.nonull( open( data_path, 'rb') ), delimiter='\t', dialect='excel') 
@@ -130,15 +129,16 @@ class BMLNMRView( ui.DataView ):
 
             raw_data.append( [float(i) for i in row[1:-2]] )
 
-        self.data.o[ target ].empty(size=(ydim, xdim))
-        self.data.o[ target ].labels[1] = metabolites
+        dso = DataSet( size=(ydim, xdim) )
+        dso.labels[1] = metabolites
                 
-        self.data.o[ target ].data = np.array( raw_data ).T
+        dso.data = np.array( raw_data ).T
 
-        self.data.o[ target ].name = name
-        self.data.o[ target ].description = 'Imported from FIMA (%s)' % name  
-
-
+        dso.name = name
+        dso.description = 'Imported from FIMA (%s)' % name  
+        
+        self.data.put( target, dso )
+        
 class BMLNMR(DataPlugin):
 
     def __init__(self, **kwargs):

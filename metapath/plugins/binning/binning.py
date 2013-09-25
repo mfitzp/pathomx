@@ -15,7 +15,9 @@ from plugins import ProcessingPlugin
 
 import numpy as np
 
-import data, ui, db, utils
+import ui, db, utils
+from data import DataSet, DataDefinition
+
 
 class BinningView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
@@ -24,7 +26,7 @@ class BinningView( ui.DataView ):
         self.addDataToolBar()
         self.addFigureToolBar()
         
-        self.data.addo('output')
+        self.data.add_interface('output')
         self.table.setModel(self.data.o['output'].as_table)
         self.difference =  ui.QWebViewExtend(self)
 
@@ -33,7 +35,7 @@ class BinningView( ui.DataView ):
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'labels_n':     ('>1', None),
             'entities_t':   (None, None), 
             'scales_t': (None, ['float']),
@@ -74,16 +76,16 @@ class BinningView( ui.DataView ):
         self.generate()
     
     def generate(self):
-        self.data.o['output'] = self.binning( self.data.i['input'] ) #, self._bin_size, self._bin_offset)
+        dso = self.binning( self.data.get('input') ) #, self._bin_size, self._bin_offset)
+        self.data.put('output',dso)
         self.render({})
-        self.data.refresh_consumers()
 
         
 
     def render(self, metadata):
         super(BinningView, self).render({})
-        dsi = self.data.i['input']
-        dso = self.data.o['output']
+        dsi = self.data.get('input')
+        dso = DataSet( size=dsi.shape )
 
         if float in [type(t) for t in dso.scales[1]]:
             print "Difference plot"

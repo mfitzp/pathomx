@@ -17,6 +17,7 @@ from plugins import VisualisationPlugin
 
 import os
 import ui, utils
+from data import DataSet, DataDefinition
 
 
 

@@ -20,7 +20,9 @@ from collections import defaultdict
 
 import numpy as np
 
-import data, ui, db
+import ui, db
+from data import DataSet
+
 
 class ImportTextView( ui.ImportDataView ):
 
@@ -46,21 +48,17 @@ class ImportTextView( ui.ImportDataView ):
             print "Loading... %s" %fe
             self.setWorkspaceStatus('active')
 
-        
-            self.data.o['output'].empty()
+            dso=formats[fe](filename)
 
-            formats[fe](filename)
+            self.set_name( filename )
 
-            self.data.o['output'].name = os.path.basename( filename )
-            self.data.o['output'].description = 'Imported %s file' % fe  
+            dso.name = os.path.basename( filename )
+            dso.description = 'Imported %s file' % fe  
 
-            self.set_name( self.data.o['output'].name )
-            self.render({})
-            
             self.setWorkspaceStatus('done')
-            
-            
-            self.data.o['output'].refresh_consumers()
+            self.data.put('output',dso) 
+            self.render({})
+
             self.clearWorkspaceStatus()
             
         else:
@@ -169,9 +167,9 @@ class ImportTextView( ui.ImportDataView ):
                 #self.statistics['excluded'] += 1
 
         # Build dataset object        
-        #dso = data.DataSet(size=(xdim, ydim) ) #self.add_data('imported_data', data.DataSet(self) )
-        self.data.o['output'].empty(size=(ydim, xdim))
-        self.data.o['output'].labels[1] = metabolites
+        dso = DataSet( size=(xdim, ydim) ) #self.add_data('imported_data', DataSetself) )
+        dso.empty(size=(ydim, xdim))
+        dso.labels[1] = metabolites
         
         scales = []
         for m in metabolites:
@@ -180,11 +178,12 @@ class ImportTextView( ui.ImportDataView ):
             except:
                 scales.append( None )
                 
-        self.data.o['output'].scales[1] = scales
-        self.data.o['output'].labels[0] = samples
-        self.data.o['output'].classes[0] = classes
-        self.data.o['output'].data = np.array( raw_data )
+        dso.scales[1] = scales
+        dso.labels[0] = samples
+        dso.classes[0] = classes
+        dso.data = np.array( raw_data )
    
+        return dso
         
 
 class ImportText(DataPlugin):

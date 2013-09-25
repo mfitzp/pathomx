@@ -11,7 +11,8 @@ from PyQt5.QtPrintSupport import *
 
 from plugins import VisualisationPlugin
 
-import ui, utils, data
+import ui, utils
+from data import DataSet, DataDefinition
 
 
 
@@ -24,7 +25,7 @@ class PathwayConnectsView(ui.AnalysisView):
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'entities_t':   (['Pathway'], None), 
             })
         )
@@ -82,7 +83,7 @@ class PathwayConnectsView(ui.AnalysisView):
 
         pathway_active_reactions = dict()
         pathway_active_compounds = dict()
-        active_pathways = self.data.i['input'].entities[0] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways = self.data.get('input').entities[0] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
         active_pathways_id = []
         
         for p in active_pathways:

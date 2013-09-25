@@ -14,6 +14,7 @@ from PyQt5.QtPrintSupport import *
 import os, sys, re, base64
 import numpy as np
 
+from collections import defaultdict
 import operator
 
 from copy import copy, deepcopy
@@ -33,32 +34,45 @@ class DataManager( QObject ):
         self.consumer_defs = [] # Holds data-consumer definitions 
         self.consumes = [] # Holds list of data objects that are consumed
 
-        self.provides = [] # A list of dataset objects available from this manager
-
-        self.i = {} # Input
+        self.i = {} # Input: dict of 'interface' tuples: (origin,interface)
         self.o = {} # Output
 
+        self.watchers = defaultdict( set ) # List of watchers on each output interface
         
     # Get a dataset through input interface id;
-    # This provides direct access to the object (local link in self.i = {})
-    def get(self, id):
-        pass
+    # This provides indirect access to a copy of the object (local link in self.i = {})
+    def get(self, interface):
+        if interface in self.i:
+            # Add ourselves to the watcher for this interface
+            dso = self.i[interface]
+            dso.manager.watchers[ dso.manager_interface ].add( self )
+            return deepcopy( self.i[interface] )
+        return False
         
+    def unget(self, interface):
+        if interface in self.i:
+            dso = self.i[interface]
+            dso.manager.watchers[ dso.manager_interface ].remove( self )
     
     # Output a dataset through output interface id
     # Advertise object for consumption; needs to handle notification of all consumers
     # independent of the object itself (so can overwrite instead of warping)
-    def put(self, id):
-        pass
-    
-    
-    def addo(self, target, dso=None, provide=True):
-        if dso==None:
-            dso = DataSet( manager=self)
+    def put(self, interface, dso, update_consumers = True):
+        if interface in self.o:
+            self.o[interface].import_data(dso)
+            self.o[interface].manager = self
+            self.o[interface].manager_interface = interface
+            # Update consumers / refresh views
+            self.o[interface].as_table.refresh()            
+            self.notify_watchers(interface)
+            return True
+        return False
             
-        self.o[ target ] = dso
-        if provide:
-            self.provides.append( dso )
+    def add_interface(self, interface, dso=None):
+        if dso==None:
+            dso = DataSet(manager=self)
+            
+        self.o[ interface ] = dso
         
         # If we're in a constructed view we will have a reference to the global data table
         # This feels a bit hacky
@@ -66,13 +80,21 @@ class DataManager( QObject ):
             self.m.datasets.append( dso )
         except:
             pass
+        
+    def remove_interface(self, interface):
+        if interface in self.o:
+            watchers = self.watchers[interface]
+            del self.o[ interface ]
+            self.notify_watchers( interface )
+            del self.watchers[ interface ]            
+            return True
+        return False
+        
             
+    def notify_watchers(self, interface):
+        for manager in self.watchers[interface]:
+            manager.source_updated.emit()
         
-        
-    def remove_data(self, data ):
-        self.stop_providing( data )
-        self.provides.remove( data )
-
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
     def can_consume(self, data):
@@ -129,16 +151,6 @@ class DataManager( QObject ):
 
     def refresh_consumed_data(self):
         self.source_updated.emit() # Trigger recalculation
-
-    def refresh_consumers(self):
-        managers = []
-        [ managers.extend( dso.consumers ) for dso in self.provides ]
-        print managers
-        for manager in set(managers):
-            manager.refresh_consumed_data()
-        # Data object is the object that has refreshed
-        #self.refresh() # Global data recalculate
-
 
 
 # Provider/Consumer classes define data availability and requirements for a given dataManager object.
@@ -282,6 +294,7 @@ class DataSet( QObject ):
 
         # DataSet must be assigned to a data manager for inter-object updates/communication to work
         self.manager = manager
+        self.manager_interface = None
         
         self.consumers = [] # List of managers that consume this data object (access; but dont affect)
     
@@ -300,6 +313,29 @@ class DataSet( QObject ):
         # self.as_table = #
 
         # MetaData derived from data formats, inc. statistics etc. [informational only; not prescribed]
+    
+    # Metaclasses for copying the dataset object; copy is fine as the default implementation
+    # but we need deepcopy that stops at the db boundary.
+    # def __copy__(self):
+
+    def __deepcopy__(self, memo):
+
+        o = DataSet( size=self.shape )
+        o.manager = None # Maintain the manager link
+        o.manager_interface = None # Interface the manager is advertising this on
+        
+        o.name = deepcopy(self.name, memo)
+        o.description = deepcopy(self.description, memo)
+        o.type = deepcopy(self.type, memo)
+
+        o.labels = deepcopy(self.labels, memo)
+        o.entities = self.entities[:] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
+        o.scales = deepcopy(self.scales, memo)
+        o.classes = deepcopy(self.classes, memo)
+
+        o.data = deepcopy(self.data)
+        
+        return o
     
     # Wipes the data and metadata from the object; but does not alter references to it (or name/description)
     def empty(self, size=(0,)):
@@ -328,12 +364,12 @@ class DataSet( QObject ):
         self.description = copy(dso.description)
         self.type = copy(dso.type)
 
-        self.axes = [x for x in dso.labels]
+        self.axes = deepcopy(dso.axes)
 
-        self.labels = [x for x in dso.labels] 
-        self.entities = [copy(x) for x in dso.entities]
-        self.scales = [x for x in dso.scales]
-        self.classes = [x for x in dso.classes]
+        self.labels = deepcopy(dso.labels)
+        self.entities = dso.entities[:]
+        self.scales = deepcopy(dso.scales)
+        self.classes = deepcopy(dso.classes)
 
         self.data  = deepcopy(dso.data)
         
@@ -411,26 +447,7 @@ class DataSet( QObject ):
     @property
     def dimensions(self):
         return len(self.shape)
-    
-    def add_consumer(self, manager):
-        self.consumers.append( manager )
-        
-    def remove_consumer(self, manager):
-        manager.stop_consuming( self )
-        try:
-            del self.consumers[manager]
-        except:
-            pass        
-    
-    def remove_all_consumers(self):
-        for dso in self.consumers:
-            self.remove_consumer( dso.manager )
 
-    def refresh_consumers(self):
-        # Perform calculations again
-        for consumer in self.consumers:
-            consumer.refresh_consumed_data()
-        
     # Return data table np.array containing supplied classes as grouped means
     # classes is a list, d is dimension to collapse
     # FIXME: This function only works for dim = 0

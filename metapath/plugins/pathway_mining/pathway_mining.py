@@ -16,7 +16,8 @@ from collections import defaultdict
 
 import os
 
-import ui, data, utils
+import ui, utils
+from data import DataSet, DataDefinition
 
 import numpy as np
 
@@ -34,13 +35,13 @@ class PathwayMiningView( ui.AnalysisView ):
         self.addDataToolBar()
         self.addExperimentToolBar()
         
-        self.data.addo('output')
+        self.data.add_interface('output')
         self.table = QTableView()        
         self.table.setModel( self.data.o['output'].as_table )
         self.tabs.addTab(self.table, 'Table')
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'entities_t':   (None,['Compound','Gene','Protein']), 
             })
         )
@@ -51,7 +52,6 @@ class PathwayMiningView( ui.AnalysisView ):
 
     def generate(self):
         self.suggest()
-        self.data.o['output'].as_table.refresh()
 
 
     def onMiningSettings(self):
@@ -131,8 +131,8 @@ class PathwayMiningView( ui.AnalysisView ):
         # Sum up, crop and return a list of pathway_ids to display
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
-        dsi = self.data.i['input']        
-        dso = self.data.o['output']        
+        dsi = self.data.get('input')
+        dso = DataSet()       
         db = self.m.db
 
         pathway_scores = defaultdict( int )
@@ -206,8 +206,9 @@ class PathwayMiningView( ui.AnalysisView ):
         dso.labels[0] = [k.name for k,v in keep_pathways]
         dso.data = np.array( [v for k,v in keep_pathways] )
 
+        self.data.put('output',dso)
+
         self.setWorkspaceStatus('done')
-        dso.refresh_consumers()
         self.clearWorkspaceStatus()
         
         

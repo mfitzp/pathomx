@@ -19,7 +19,9 @@ from plugins import IdentificationPlugin
 
 import os, sys, re, math
 
-import ui, utils, data
+import ui, utils
+from data import DataSet, DataDefinition
+
 
 
 
@@ -42,16 +44,12 @@ class MetaboHunterView( ui.DataView ):
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
-        self.data.addo('output')
+        self.data.add_interface('output')
         self.table.setModel(self.data.o['output'].as_table)
-        
-        #t.addAction(load_wikipathwaysAction)
-        #self.browser = ui.QWebViewExtend(self.m.onBrowserNav)
-        #self.w.setCentralWidget(self.browser)
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'scales_t':     (None, ['float']),
             'entities_t':   (None, None), 
             })
@@ -67,8 +65,8 @@ class MetaboHunterView( ui.DataView ):
 
         self.setWorkspaceStatus('active')
     
-        dsi = self.data.i['input']
-        dso = self.data.o['output']
+        dsi = self.data.get('input')
+        dso = DataSet()
 
         parser = OptionParser()
 
@@ -247,13 +245,9 @@ class MetaboHunterView( ui.DataView ):
                     dso.entities[1][n] = self.m.db.unification['HMDB'][ hmdbid ]
 
         self.setWorkspaceStatus('done')
-
-        dso.refresh_consumers()
-
+        self.data.put('output', dso)
         self.render({})
-
         self.clearWorkspaceStatus()
-
 
         print("Done.")
 

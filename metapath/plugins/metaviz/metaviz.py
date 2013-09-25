@@ -25,7 +25,8 @@ import copy
 import operator
 
 # MetaPath classes and handlers
-import ui, utils, db, data
+import ui, utils, db
+from data import DataSet, DataDefinition
 from db import ReactionIntermediate
 
 PRUNE_ALL = lambda a, b, c, d: (a,b,c)
@@ -536,10 +537,10 @@ class MetaVizView(ui.AnalysisView):
         
         # Setup data consumer options
         self.data.consumer_defs.extend([
-            data.DataDefinition('suggested_pathways', {
+            DataDefinition('suggested_pathways', {
             'entities_t':   (['Pathway'], None), 
             }),
-            data.DataDefinition('data', {
+            DataDefinition('data', {
             'entities_t':   (None, ['Compound','Gene','Protein']), 
             })
         ])
@@ -730,8 +731,9 @@ class MetaVizView(ui.AnalysisView):
         })
         
         #pathway_ids = self.config.value('/Pathways/Show').split(',')
-        if 'suggested_pathways' in self.data.i:
-            pathway_ids = [p.id for p in self.data.i['suggested_pathways'].entities[0] ]
+        suggested_pathways = self.data.get('suggested_pathways')
+        if suggested_pathways:
+            pathway_ids = [p.id for p in suggested_pathways.entities[0] ]
         else:
             pathway_ids = []
 
@@ -757,8 +759,8 @@ class MetaVizView(ui.AnalysisView):
         if pathway_ids == []:
             return None        
             
-        if self.data.i['data']:
-            print 'hello!'
+        dsi = self.data.get('data')
+        if dsi:
             #if self.m.data.analysis_timecourse:
             #    # Generate the multiple views
             #    tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )
@@ -773,12 +775,12 @@ class MetaVizView(ui.AnalysisView):
             #else:
             print "Generate map for single control:test..."
             # Build analysis lookup dict; we want a single color for each metabolite
-            sf = utils.calculate_scaling_factor( self.data.i['data'].data, 9) # rdbu9 scale
+            sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
             
             node_colors = {}
-            for n, m in enumerate(self.data.i['data'].entities[1]):
+            for n, m in enumerate(dsi.entities[1]):
                 if m is not None:
-                    ecol = utils.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
+                    ecol = utils.calculate_rdbu9_color( sf, dsi.data[0,n] )
                     #print xref, ecol
                     if ecol is not None:
                         node_colors[ m.id ] = ecol
@@ -861,7 +863,6 @@ class MetaVizView(ui.AnalysisView):
         self.browser.setHtml(html_source) #,"~") 
 
         self.setWorkspaceStatus('done')
-        self.data.refresh_consumers()
         self.clearWorkspaceStatus()
 
 

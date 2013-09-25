@@ -139,6 +139,7 @@ class QWebViewExtend(QWebView):
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         self.loadFinished.connect(self._loadFinished)
+        self._is_svg_with_js = False
         
         # Override links for internal link cleverness
         if onNavEvent:
@@ -154,13 +155,15 @@ class QWebViewExtend(QWebView):
             return super(QWebViewExtend, self).sizeHint()        
 
     def setSVG(self, svg):
-        super(QWebViewExtend, self).setContent(svg, 'image/svg+xml', QUrl('~') )     
+        self._is_svg_with_js = True
+        super(QWebViewExtend, self).setHtml(svg, QUrl('~') )             
         
     def _loadFinished(self, ok):
         sizer = self.sizeHint()   
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
-        self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-50, sizer.height()-100 ) ) #-magic number for scrollbars (ugh)        
-        self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" ) #-magic number for scrollbars (ugh)        
+        if self._is_svg_with_js:
+            self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
+            self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" ) #-magic number for scrollbars (ugh)        
                         
     @pyqtSlot(str)
     def delegateLink(self, url):
@@ -415,7 +418,6 @@ class DataView(GenericView):
         #FIXME: Must be along the top axis 
         if 'output' in self.data.o:
             dso = self.data.o['output']
-            self.data.o['output'].as_table.refresh()
 
             if float in [type(t) for t in dso.scales[1]]:
                 self.tabs.setTabEnabled( self.viewer_tab_index, True)
@@ -424,10 +426,13 @@ class DataView(GenericView):
                 metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
             
                 dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-                
+
+                # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
+                dsot = dso.as_summary(dim=0, match_attribs=['classes'])
+
                 # Copy to sort without affecting original
                 scale = np.array(dso.scales[1])
-                data = np.array(dso.data)
+                data = np.array(dsot.data)
                 
                 # Sort along x axis
                 sp = np.argsort( scale )
@@ -455,11 +460,11 @@ class ImportDataView( DataView ):
     import_type = 'Data'
     import_filename_filter = "All Files (*.*);;"
     import_description =  "Open experimental data from file"
-
+    
     def __init__(self, plugin, parent, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.addo('output') # Add output slot
+        self.data.add_interface('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
         
         t = self.addToolBar('Data Import')
@@ -487,7 +492,7 @@ class ImportDataView( DataView ):
             self.workspace_item.setText(0, os.path.basename(filename))
             
         return False
-        
+
     def onFileChanged(self, file):
         pass
         #self.load_datafile( file )

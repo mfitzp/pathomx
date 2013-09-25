@@ -19,7 +19,8 @@ from gpml2svg import gpml2svg
 from plugins import VisualisationPlugin
 
 import os
-import ui, utils, data
+import ui, utils
+from data import DataSet, DataDefinition
 
 
 
@@ -134,7 +135,7 @@ class HeatmapView(ui.AnalysisHeatmapView):
             
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', {
+            DataDefinition('input', {
             'entities_t':   (None,['Compound']), 
             })
         )

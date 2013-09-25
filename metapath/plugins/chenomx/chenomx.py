@@ -19,13 +19,15 @@ from collections import defaultdict
 
 import numpy as np
 
-import data, ui, db
+import ui, db
+from data import DataSet
+
 
 class ImportDataView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.addo('output') # Add output slot
+        self.data.add_interface('output') # Add output slot
         
         fn = self.onImportData()
         self.table.setModel(self.data.o['output'].as_table)
@@ -78,16 +80,15 @@ class ImportDataView( ui.DataView ):
         if fe in formats.keys():
             print "Loading... %s" %fe
         
-            self.data.o['output'].empty()
 
-            formats[fe](filename)
+            dso = formats[fe](filename)
             
-            self.data.o['output'].name = os.path.basename( filename )
-            self.data.o['output'].description = 'Imported %s file' % fe  
+            dso.name = os.path.basename( filename )
+            dso.description = 'Imported %s file' % fe  
 
-            self.set_name( self.data.o['output'].name )
+            self.set_name( filename )
             
-            self.data.o['output'].refresh_consumers()
+            self.data.put('output',dso)
             
         else:
             print "Unsupported file format."
@@ -193,7 +194,7 @@ class ImportDataView( ui.DataView ):
                 #self.statistics['excluded'] += 1
 
         # Build dataset object        
-        #dso = data.DataSet(size=(xdim, ydim) ) #self.add_data('imported_data', data.DataSet(self) )
+        #dso = DataSetsize=(xdim, ydim) ) #self.add_data('imported_data', DataSetself) )
         self.data.o['output'].empty(size=(xdim, ydim))
         self.data.o['output'].labels[0] = metabolites
         

@@ -19,7 +19,8 @@ from collections import defaultdict
 
 import numpy as np
 
-import data, ui, db
+import ui, db
+from data import DataSet, DataDefinition
 
 class TransformView( ui.DataView ):
 
@@ -29,12 +30,12 @@ class TransformView( ui.DataView ):
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.addo('output') # Add output slot
+        self.data.add_interface('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
                     
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('input', { # Accept anything!
+            DataDefinition('input', { # Accept anything!
             })
         )
         
@@ -65,15 +66,14 @@ class TransformView( ui.DataView ):
     # Data file import handlers (#FIXME probably shouldn't be here)
     def generate(self):
         self.setWorkspaceStatus('active')
-    
-        self.data.o['output'].import_data( self.data.i['input'] )
-        self.data.o['output'] = self.transform_options[ self._apply_transform ]( self.data.o['output'] )
+        
+        dso = self.data.get('input')
+        dso = self.transform_options[ self._apply_transform ]( dso )
 
-        self.data.o['output'].as_table.refresh()
+        self.data.put('output',dso)
         self.render({})
-
+        
         self.setWorkspaceStatus('done')
-        self.data.refresh_consumers()
         self.clearWorkspaceStatus()                
 
     # Apply log2 transform to dataset

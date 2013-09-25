@@ -18,7 +18,9 @@ from gpml2svg import gpml2svg
 from plugins import VisualisationPlugin
 
 import os
-import ui, utils, data
+import ui, utils
+from data import DataSet, DataDefinition
+
 
 import urllib2
 
@@ -46,7 +48,7 @@ class gpmlPathwayView(ui.AnalysisView):
         #self.data = data.DataManager()
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            data.DataDefinition('data', {
+            DataDefinition('data', {
             'entities_t':   (None, ['Compound','Gene']), 
             }),
         )
@@ -145,14 +147,15 @@ class gpmlPathwayView(ui.AnalysisView):
         }
     
         node_colors = {}
-        
 
-        sf = utils.calculate_scaling_factor( self.data.i['data'].data, 9) # rdbu9 scale
-        print "Sf %s" % sf
-        if self.data.i['data']:
-            for n, m in enumerate(self.data.i['data'].entities[1]):
+
+        dsi = self.data.get('data')
+        if dsi:
+            sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
+            print "Sf %s" % sf
+            for n, m in enumerate(dsi.entities[1]):
                 xref = self.get_xref( m )
-                ecol = utils.calculate_rdbu9_color( sf, self.data.i['data'].data[0,n] )
+                ecol = utils.calculate_rdbu9_color( sf, dsi.data[0,n] )
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[ xref ] = ecol
@@ -173,9 +176,9 @@ class gpmlPathwayView(ui.AnalysisView):
             self.render()
         else:
             self.svg = None
-        
+
+    
         self.setWorkspaceStatus('done')
-        self.data.refresh_consumers()
         self.clearWorkspaceStatus()            
         
     def render(self):

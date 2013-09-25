@@ -22,7 +22,9 @@ import base64
 
 import numpy as np
 
-import data, ui, db
+import ui, db
+from data import DataSet
+
 
 class ImportPeakMLView( ui.ImportDataView ):
 
@@ -56,7 +58,7 @@ class ImportPeakMLView( ui.ImportDataView ):
 
     
         #self.data.o['output'].empty()
-        dso = self.data.o['output']
+        dso = DataSet()
 
         # Read data in from peakml format file
         xml = et.parse( filename )
@@ -131,16 +133,14 @@ class ImportPeakMLView( ui.ImportDataView ):
             
                 dso.data[ r,c ] = intensity
 
-        self.data.o['output'].import_data( dso )        
-        self.data.o['output'].name = os.path.basename( filename )
-        self.data.o['output'].description = 'Imported PeakML file'
+        dso.name = os.path.basename( filename )
+        dso.description = 'Imported PeakML file'
 
-        self.set_name( self.data.o['output'].name )
+        self.set_name( filename )
         
         self.setWorkspaceStatus('done')
-        self.data.o['output'].refresh_consumers()
+        self.data.put('output', dso)
 
-        
         self.clearWorkspaceStatus()
         
 

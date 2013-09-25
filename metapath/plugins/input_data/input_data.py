@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from plugins import DataPlugin
 
-import ui, data
+import ui
+from data import DataSet
+
 
 class InputDataView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
