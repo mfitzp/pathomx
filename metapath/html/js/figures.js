@@ -894,14 +894,14 @@ height = margin.top + margin.bottom + ( terms.length * (max_size + 15 ))
 var width_d = width - margin.left - margin.right,
     height_d = height - margin.top - margin.bottom;
 
-var start_year = d3.min(data, function(d) { return d.year; }),
+var start_year = d3.min(data, function(d) { return d.year; }) - 5,
 	end_year = d3.max(data, function(d) { return d.year; });
 	
 
 var min_number = d3.min(data, function(d) { return d.number; });
 var max_number = d3.max(data, function(d) { return d.number; });
 
-var trend = Math.max( Math.abs( d3.min(data, function(d) { return d.trend; }) ), d3.max(data, function(d) { return d.trend; }) )
+var trend = d3.max(data, function(d) { return Math.abs(d.trend); })
 
 var x = d3.scale.linear()
         .range([0, width_d])
@@ -912,8 +912,9 @@ var y = d3.scale.ordinal()
         .domain(terms);
 
 var c = d3.scale.pow()
+        .exponent(0.3)
         .domain([-trend,0,+trend])
-        .range(["#0055ac","#f7f7f7","#b20016"]); //rdbu + intensity
+        .range(["#0055ac","#dddddd","#b20016"]); //rdbu + intensity
         //d3.scale.category20c()
         //.domain( terms );    	      
                 

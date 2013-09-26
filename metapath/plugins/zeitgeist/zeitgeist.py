@@ -47,6 +47,7 @@ class ZeitgeistView( ui.AnalysisView ):
             'Omics':['metabolomics','genomics','transcriptomics','proteomics','metabonomics'],
             'Arthritis':['rheumatoid arthritis','sle','osteoarthritis','juvenile arthritis','reactive arthritis'],
             'Cytokines':['IL-1alpha','IL-1beta','IL-10','IL-10R','IL17','IL-2','IL-3','IL-30','IL-4','IL-5','IL-6','TNFa'],
+            'Viruses':['H1N1','H5N1', 'EBV', 'HIV','HPV','HSV','HPV5','HPV8']
         }
         
         self._show_predefined_geist = 'Omics'
@@ -101,7 +102,7 @@ class ZeitgeistView( ui.AnalysisView ):
         # http://www.ogic.ca/mltrends/?search_type=titles%20and%20abstracts;norm_type=word%20count;graph_scale=log;query=glucose%20AND%20lactate%2C%20glucose%2C%20lactate;Graph%21=Graph%21&DOWNLOAD=1
         values = {
             # Raw data download doesn't pay attention to scaling, etc. boo!
-            'search_type':'titles and abstracts',
+            'search_type':'titles', # and abstracts',
             'norm_type':'none',
             'graph_scale':'linear',
             'DOWNLOAD':'1',
@@ -133,12 +134,9 @@ class ZeitgeistView( ui.AnalysisView ):
             headers = [ h.strip('"') for h in rows[0].split("\t")[1:] ]
             year_cache = dict()
             last_year = None
-            print headers
-            for row in rows[1:-2]:
+            for row in rows[1:-2]: # Skip latest year (-2 for blank line at end)
                 cols = row.split("\t")
-                print cols
                 year = cols[0]
-                print year
                 for n, col in enumerate(cols[1:]):
                     value = int('0'+col)
                     year_data = ( year, headers[n], value )
@@ -147,8 +145,7 @@ class ZeitgeistView( ui.AnalysisView ):
                     if last_year and value > 0:
                         last_year_value = year_cache[ (last_year, headers[n]) ]
                         delta_value = value - last_year_value
-                        figure_data.append( ( year, headers[n], value, delta_value) )   # tuple year, term, count )
-                    
+                        figure_data.append( ( year, headers[n], value, delta_value/float(value)) )   # tuple year, term, count )
                 last_year = year
                 
         metadata = {
