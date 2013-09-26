@@ -1,0 +1,58 @@
+@extends("d3/base.svg")
+@require(htmlbase, figure)
+
+@def styles():
+<style><![CDATA[
+
+.chart {
+
+}
+
+.main text {
+    font: 10px sans-serif;	
+}
+
+.axis line, .axis path {
+    shape-rendering: crispEdges;
+    stroke: black;
+    fill: none;
+}
+
+circle {
+    fill: steelblue;
+}
+
+
+
+
+]]></style>
+@end
+
+        
+@def script():
+<script></script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = 'svg';
+         data = [
+            @for d in figure['data']:
+                {
+                'class':'@d[0]!s', //enumerate this in the js to build groups N for color
+                'x':@d[1]!s,
+                'y':@d[2]!s,
+                },
+            @endfor
+            ];
+          x_axis_label = "@figure['x_axis_label']!s"
+          y_axis_label = "@figure['y_axis_label']!s"
+        function _metapath_render_trigger(){
+            scatter(id, data, x_axis_label, y_axis_label);
+        }
+    </script>
+
+
+@end

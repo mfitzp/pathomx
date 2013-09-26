@@ -38,6 +38,7 @@ class PathwayMiningView( ui.AnalysisView ):
         self.data.add_interface('output')
         self.table = QTableView()        
         self.table.setModel( self.data.o['output'].as_table )
+        
         self.tabs.addTab(self.table, 'Table')
         # Setup data consumer options
         self.data.consumer_defs.append( 
@@ -123,7 +124,7 @@ class PathwayMiningView( ui.AnalysisView ):
 
 
     # Generate pathway suggestions from the database based on a given data analysis (use set options)
-    def suggest(self, mining_type='c', mining_depth=5):
+    def suggest(self, mining_type='c', mining_depth=10):
         self.setWorkspaceStatus('active')
 
         # Iterate all the compounds in the current analysis
@@ -132,7 +133,6 @@ class PathwayMiningView( ui.AnalysisView ):
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
         dsi = self.data.get('input')
-        dso = DataSet()       
         db = self.m.db
 
         pathway_scores = defaultdict( int )
@@ -201,10 +201,12 @@ class PathwayMiningView( ui.AnalysisView ):
         #        self.analysis['mining_ranked_remaining_pathways'].append( p[0] )
 
         #self.analysis_suggested_pathways = [db.pathways[p[0]] for p in pathway_scorest]
-        dso.empty(size=(1, len(keep_pathways)))
-        dso.entities[0] = [k for k,v in keep_pathways]
-        dso.labels[0] = [k.name for k,v in keep_pathways]
-        dso.data = np.array( [v for k,v in keep_pathways] )
+        dso = DataSet( size=(1, len(keep_pathways) )  )
+        dso.entities[1] = [k for k,v in keep_pathways]
+        dso.labels[1] = [k.name for k,v in keep_pathways]
+        dso.data = np.array( [v for k,v in keep_pathways], ndmin=2 )
+    
+        dso.labels[0][0] = "Pathway mining scores"
 
         self.data.put('output',dso)
 

@@ -244,7 +244,8 @@ class QTableInterface(QAbstractTableModel):
         return self.dso.shape[0]
 
     def columnCount(self, parent):
-        return self.dso.shape[1]
+        if len(self.dso.shape)>0:
+            return self.dso.shape[1]
         
     def data(self, index, role):
         if not index.isValid():
@@ -329,7 +330,7 @@ class DataSet( QObject ):
         o.type = deepcopy(self.type, memo)
 
         o.labels = deepcopy(self.labels, memo)
-        o.entities = self.entities[:] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
+        o.entities = [copy(x) for x in self.entities] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
         o.scales = deepcopy(self.scales, memo)
         o.classes = deepcopy(self.classes, memo)
 
@@ -431,14 +432,22 @@ class DataSet( QObject ):
     def scales_r(self):
         return [ (min(s), max(s)) for s in self.scales if s is not None ]
             
-    @property
-    def scales_t(self):
-        return self._t( self.scales )  
-            
-    # Entity types
+    # Types (most useful on entities)
     @property
     def entities_t(self):
         return self._t( self.entities )  
+        
+    @property
+    def scales_t(self):
+        return self._t( self.scales )          
+
+    @property
+    def labels_t(self):
+        return self._t( self.labels )  
+
+    @property
+    def classes_t(self):
+        return self._t( self.classes )  
         
     @property
     def shape(self):
@@ -511,7 +520,7 @@ class DataSet( QObject ):
         # We match only on those specified as match_attribs
         #print "!!", [ dso.__dict__[ma][dim] for ma in match_attribs ]
         identities = [ tuple(o) for o in zip( *[ dso.__dict__[ma][dim] for ma in match_attribs ] )  ]#dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
-        print identities
+
         unique = tuple( set( identities ) )
         
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )

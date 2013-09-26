@@ -136,7 +136,7 @@ class ImportPeakMLView( ui.ImportDataView ):
         dso.name = os.path.basename( filename )
         dso.description = 'Imported PeakML file'
 
-        self.set_name( filename )
+        self.set_name( dso.name )
         
         self.setWorkspaceStatus('done')
         self.data.put('output', dso)

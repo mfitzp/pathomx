@@ -1,9 +1,9 @@
 [Core]
-Name = PCA
-Module = pca
+Name = NET Analysis
+Module = net_analysis
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Principal components analysis using SVD
+Description = Network Embedded Thermodynamic analysis

@@ -65,8 +65,8 @@ class MetaboHunterView( ui.DataView ):
 
         self.setWorkspaceStatus('active')
     
-        dsi = self.data.get('input')
-        dso = DataSet()
+        dso = self.data.get('input')
+        #dso = DataSet()
 
         parser = OptionParser()
 
@@ -102,7 +102,7 @@ class MetaboHunterView( ui.DataView ):
         ### INTEGRATE THIS WITH LOADINGS SPLIT? CAN BUILD *AFTER* SPLITS FOR BETTER RESULTS
         ### OR USE CLASSIFICATION GROUPINGS TO SPLIT (MORE SENSIBLE?) - SEPARATE STEPS
     
-        peaks_list = '\n'.join( [ ' '.join( [str(a), str(b)] ) for a,b in zip( dsi.scales[1], dsi.data[0,:] ) ]  )
+        peaks_list = '\n'.join( [ ' '.join( [str(a), str(b)] ) for a,b in zip( dso.scales[1], dso.data[0,:] ) ]  )
         
         url = 'http://www.nrcbioinformatics.ca/metabohunter/post_handler.php'
 
@@ -232,7 +232,7 @@ class MetaboHunterView( ui.DataView ):
     
     
         # Assign metabolite names to labels (for subsequent entity lookup)
-        dso.import_data( dsi )
+        # dso.import_data( dsi )
         
         # Returned peaks are at 2dp so we need to check if we have a nearish match
         for n,p in enumerate(dso.scales[1]):
@@ -243,6 +243,10 @@ class MetaboHunterView( ui.DataView ):
                 # All in HMDBIDs; if we have it use the entity
                 if hmdbid in self.m.db.unification['HMDB']:
                     dso.entities[1][n] = self.m.db.unification['HMDB'][ hmdbid ]
+
+        # Now remove any data from the object that isn't assigned?
+        #
+        #
 
         self.setWorkspaceStatus('done')
         self.data.put('output', dso)

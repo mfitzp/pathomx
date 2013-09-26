@@ -50,9 +50,9 @@ class ImportTextView( ui.ImportDataView ):
 
             dso=formats[fe](filename)
 
-            self.set_name( filename )
 
             dso.name = os.path.basename( filename )
+            self.set_name( dso.name )
             dso.description = 'Imported %s file' % fe  
 
             self.setWorkspaceStatus('done')

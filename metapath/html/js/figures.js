@@ -1,6 +1,10 @@
 /* Helper functions */
-nan = null /* For numpy compatibiltiy */
-    
+
+/* Constant definitions for numpy -> Javascript compatibility */
+nan = 0; //Number.NaN;
+inf = 0; //Infinity;
+None = 0; //null;
+
     function getWindowSize(){
         var w = window,
             d = document,
@@ -26,6 +30,10 @@ nan = null /* For numpy compatibiltiy */
         }
     }
 
+
+    d3.unique = function(array, f) {
+      return d3.nest().key(f || String).entries(array).map(function(d) { return d.key; });
+    };
     
     
 /* Figure d3 functions */
@@ -738,6 +746,221 @@ var clip = svg.append("svg:clipPath")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis);
 
+
+}
+
+
+
+
+// Scatter plot
+function scatter(id, data, x_axis_label, y_axis_label) {
+
+    idxy = getElementSize(id)
+    var width = idxy[0],
+        height = idxy[1];
+    
+    var size = Math.min( width, height );
+    
+    var margin = {top: 50, right: 50, bottom: 100, left: 100};
+        //width = width - margin.left - margin.right,
+        //height = height - margin.top - margin.bottom;
+    var width_d = size - margin.left - margin.right,
+        height_d = size - margin.top - margin.bottom;
+        
+            
+    var x = d3.scale.linear()
+              .domain([d3.min(data, function(d) { return d.x; }), d3.max(data, function(d) { return d.x; })])
+              .range([ 0, width_d ]);
+    
+    var y = d3.scale.linear()
+    	      .domain([d3.min(data, function(d) { return d.y; }), d3.max(data, function(d) { return d.y; })])
+    	      .range([ height_d, 0 ]);
+    	      
+    var classes = Array()
+    data.forEach( function(d){ classes.push( d.class ) } );
+    var classes = d3.unique( classes ); //.keys();
+
+    console.log(classes);
+    var color = d3.scale.category10();
+        color.domain( classes );    	      
+
+ 
+    var svg = d3.select(id)//.insert("svg",':first-child')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('class', 'chart')
+
+    var main = svg.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .attr('width', width_d)
+        .attr('height', height_d)
+        .attr('class', 'main')   
+        
+    // draw the x axis
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient('bottom');
+
+    main.append('g')
+        .attr('transform', 'translate(0,' + height_d + ')')
+        .attr('class', 'main axis date')
+        .call(xAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("x", width_d)
+            .attr("y", -6)
+            .style("text-anchor", "end")
+            .text(x_axis_label);
+
+    // draw the y axis
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient('left');
+
+    main.append('g')
+        .attr('transform', 'translate( 0,0)')
+        .attr('class', 'main axis date')
+        .call(yAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text(y_axis_label);
+
+    var g = main.append("svg:g"); 
+    
+    g.selectAll("scatter-dots")
+        .data(data)
+        .enter().append("svg:circle")
+            .attr("cx", function (d,i) { return x(d.x); } )
+            .attr("cy", function (d) { return y(d.y); } )
+            .attr("r", 8)
+            .style("fill", function(d) { return color(d.class); })
+            .attr("data-legend",function(d) { return d.class; });
+
+	// add legend   
+	var legend = svg.append("g")
+	  .attr("class", "legend")
+        //.attr("x", w - 65)
+        //.attr("y", 50)
+	  .attr("height", 100)
+	  .attr("width", 100)
+    .attr('transform', 'translate(-20,50)')    
+      
+    
+    legend.selectAll('rect')
+      .data(classes)
+      .enter()
+      .append("rect")
+	  .attr("x", width_d+margin.left+margin.right)
+      .attr("y", function(d, i){ return i *  15;})
+	  .attr("width", 10)
+	  .attr("height", 10)
+	  .style("fill", function(d) { return color(d); })
+      
+    legend.selectAll('text')
+      .data(classes)
+      .enter()
+      .append("text")
+	  .attr("x", width_d+margin.left+margin.right + 12)
+      .attr("y", function(d, i){ return i *  15 + 9;})
+	  .text(function(d) { return d; });
+      
+}
+
+
+
+// Scatter plot
+function zeitgeist(id, data) {
+
+idxy = getElementSize(id)
+var width = idxy[0],
+    height = idxy[1];
+    
+var max_size = 20
+	
+var terms = Array();
+    data.forEach( function(d){ terms.push( d.term ) } );
+    terms = d3.unique( terms );
+
+var margin = {top: 50, right: 200, bottom: 50, left: 50};
+    //width = width - margin.left - margin.right,
+    //height = height - margin.top - margin.bottom;
+
+height = margin.top + margin.bottom + ( terms.length * (max_size + 15 ))
+    
+var width_d = width - margin.left - margin.right,
+    height_d = height - margin.top - margin.bottom;
+
+var start_year = d3.min(data, function(d) { return d.year; }),
+	end_year = d3.max(data, function(d) { return d.year; });
+	
+
+var min_number = d3.min(data, function(d) { return d.number; });
+var max_number = d3.max(data, function(d) { return d.number; });
+
+var trend = Math.max( Math.abs( d3.min(data, function(d) { return d.trend; }) ), d3.max(data, function(d) { return d.trend; }) )
+
+var x = d3.scale.linear()
+        .range([0, width_d])
+        .domain([start_year, end_year]);
+
+var y = d3.scale.ordinal()
+        .rangeBands([max_size, height_d]) //, 10,max_size)
+        .domain(terms);
+
+var c = d3.scale.pow()
+        .domain([-trend,0,+trend])
+        .range(["#0055ac","#f7f7f7","#b20016"]); //rdbu + intensity
+        //d3.scale.category20c()
+        //.domain( terms );    	      
+                
+                
+var r = d3.scale.log()
+    .domain([1, d3.max( [ Math.abs(min_number), max_number] )])
+    .range([1, 10]);
+
+
+var formatYears = d3.format("0000");
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("top")
+	.tickFormat(formatYears);
+
+
+var svg = d3.select(id)//.insert("svg",':first-child')
+    .attr("width", width)
+    .attr("height", height)
+    .attr('viewBox','0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio','xMidYMid')
+
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .call(xAxis);
+
+
+    svg.selectAll(".datac")
+        .data(data)
+        .enter().append("svg:circle")
+            .attr("class","datac")
+            .attr("cx", function(d, i) { return x(d.year); })
+            .attr("cy", function(d, i) { return y(d.term); })
+            .attr("r",  function(d) { return r( Math.abs(d.number) ); })
+            .style("fill", function(d) { return c(d.trend); })
+
+    svg.selectAll(".label")
+        .data(terms)
+        .enter().append('text')
+          .attr("class","label")
+            .attr("x", width_d + max_size )
+            .attr("y", function(d) { return y(d)+3 ; })
+          //.style("fill", function(d) { return c(d); })
+            .text( function(d) { return d; } );
 
 }
 

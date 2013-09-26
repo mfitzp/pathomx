@@ -1,0 +1,50 @@
+@extends("d3/base.svg")
+@require(htmlbase, figure)
+
+@def styles():
+<style><![CDATA[
+
+body{font-family: Arial, sans-serif;font-size:10px;}
+.axis path,.axis line {fill: none;stroke:#b6b6b6;shape-rendering: crispEdges;}
+/*.tick line{fill:none;stroke:none;}*/
+.tick text{fill:#999;}
+g.journal.active{cursor:pointer;}
+text.label{font-size:12px;font-weight:bold;cursor:pointer;}
+text.value{font-size:12px;font-weight:bold;fill:#999;}
+
+text { 
+fill:#999;
+}
+
+
+
+]]></style>
+@end
+
+        
+@def script():
+<script></script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = 'svg';
+         data = [
+            @for d in figure['data']:
+                {
+                'year':@d[0]!s, //enumerate this in the js to build groups N for color
+                'term':'@d[1]!s',
+                'number':@d[2]!s,
+                'trend':@d[3]!s,
+                },
+            @endfor
+            ];
+        function _metapath_render_trigger(){
+            zeitgeist(id, data); 
+        }
+    </script>
+
+
+@end

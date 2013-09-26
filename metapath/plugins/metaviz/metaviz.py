@@ -538,7 +538,7 @@ class MetaVizView(ui.AnalysisView):
         # Setup data consumer options
         self.data.consumer_defs.extend([
             DataDefinition('suggested_pathways', {
-            'entities_t':   (['Pathway'], None), 
+            'entities_t':   (None, ['Pathway']), 
             }),
             DataDefinition('data', {
             'entities_t':   (None, ['Compound','Gene','Protein']), 
@@ -733,7 +733,7 @@ class MetaVizView(ui.AnalysisView):
         #pathway_ids = self.config.value('/Pathways/Show').split(',')
         suggested_pathways = self.data.get('suggested_pathways')
         if suggested_pathways:
-            pathway_ids = [p.id for p in suggested_pathways.entities[0] ]
+            pathway_ids = [p.id for p in suggested_pathways.entities[1] ]
         else:
             pathway_ids = []
 

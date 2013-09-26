@@ -23,19 +23,35 @@ import numpy as np
 import ui, db
 from data import DataSet
 
-class ImportMetabolights( ui.ImportDataView ):
+class ImportMetabolightsView( ui.ImportDataView ):
 
     import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     import_description =  "Open experimental data from Metabolights experimental datasets"
 
     def __init__(self, plugin, parent, **kwargs):
-        super(ImportTextView, self).__init__(plugin, parent, **kwargs)
+        super(ImportMetabolightsView, self).__init__(plugin, parent, **kwargs)
 
        
     # Data file import handlers (#FIXME probably shouldn't be here)
         
     def load_datafile(self, filename):
-        self.load_metabolights()
+        print "Loading... %s" % filename
+        self.setWorkspaceStatus('active')
+
+        dso=self.load_metabolights(filename)
+
+        dso.name = os.path.basename( filename )
+        self.set_name( dso.name )
+        dso.description = 'Imported %s file' % filename  
+
+        self.setWorkspaceStatus('done')
+        self.data.put('output',dso) 
+        self.render({})
+
+        self.clearWorkspaceStatus()
+            
+            
+        
         
     def load_metabolights(self, filename, id_col=0, name_col=4, data_col=18): # Load from csv with experiments in COLUMNS, metabolites in ROWS
         print "Loading Metabolights..."
@@ -43,7 +59,7 @@ class ImportMetabolights( ui.ImportDataView ):
         #sample	1	2	3	4
         #class	ADG10003u_007	ADG10003u_008	ADG10003u_009	ADG10003u_010   ADG19007u_192
         #2-oxoisovalerate	0.3841	0.44603	0.45971	0.40812
-        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
+        reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
     
         # Sample identities from top row ( sample labels )
         hrow = reader.next()
@@ -58,14 +74,14 @@ class ImportMetabolights( ui.ImportDataView ):
         metabolite_data = []
         # Read in metabolite data n.b. can have >1 entry / metabolite so need to allow for this
         for row in reader:
-            metabolites.append( row[0] )
-            metabolite_data.append( row[1:] )
+            if row[0] != '': # Skip empty rows
+                metabolites.append( row[0] )
+                metabolite_data.append( row[1:] )
             
         ydim = len( classes )
         xdim = len( metabolites )
         
-        dso = self.data.o['output']
-        dso.empty(size=(ydim, xdim))
+        dso = DataSet( size=(ydim, xdim) )
 
         dso.labels[0] = sample_ids
         dso.classes[0] = classes 
@@ -74,6 +90,8 @@ class ImportMetabolights( ui.ImportDataView ):
 
         for n,md in enumerate(metabolite_data):
             dso.data[:,n] = np.array(md)
+            
+        return dso
         
 
 class ImportMetabolights(DataPlugin):

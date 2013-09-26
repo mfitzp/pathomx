@@ -26,12 +26,14 @@ default_build_options=dict(
 #        'PyQt5.QtWidgets',
 #        'PyQt5.QtWebKitWidgets',
 #        'PyQt5.QtPrintSupport',
-#        'PyQt5',
+        'PyQt5',
 #        'PySide',
         'numpy',
 #        'sip',
         ],
-    includes=[],
+    includes=[
+        'sip',
+        ],
     excludes=[
         'scipy',
         '_xmlplus',

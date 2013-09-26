@@ -67,8 +67,8 @@ class NMRGlueView( ui.DataView ):
                     
                     if data is not None:
                         label = scan
-                        if 'AUTOPOS' in dic['acqus']:
-                            label = label + " %s" % dic['acqus']['AUTOPOS']
+                        #if 'AUTOPOS' in dic['acqus']:
+                        #    label = label + " %s" % dic['acqus']['AUTOPOS']
                             
                         sample_labels.append( label )
                         nmr_data.append( data  )
@@ -100,17 +100,17 @@ class NMRGlueView( ui.DataView ):
         
             # We now have a list of ft'd Bruker fids; run them into a data object                
             dso = self.process_data_to_dso(nmr_data, nmr_ppms, sample_labels, experiment_name )
+            self.set_name( dso.name )
             self.data.put('output',dso)
             
             self.render({})
-            self.workspace_item.setText(0, experiment_name)
             
         return False
         
     def onFileChanged(self, file):
         self.load_datafile( file )
 
-    def process_data_to_dso(self, nmr_data, nmr_ppms, sample_labels, folder):
+    def process_data_to_dso(self, nmr_data, nmr_ppms, sample_labels, experiment_name):
         
         print "Processing spectra to dso..."
         sample_n = len(sample_labels)
@@ -125,6 +125,7 @@ class NMRGlueView( ui.DataView ):
 
         dso.labels[1] = [str(ppm) for ppm in nmr_ppms]
         dso.scales[1] = [float(ppm) for ppm in nmr_ppms]
+        dso.name = experiment_name
         
         return dso
         

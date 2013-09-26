@@ -26,7 +26,7 @@ class PathwayConnectsView(ui.AnalysisView):
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
-            'entities_t':   (['Pathway'], None), 
+            'entities_t':   (None,['Pathway']), 
             })
         )
         
@@ -83,7 +83,7 @@ class PathwayConnectsView(ui.AnalysisView):
 
         pathway_active_reactions = dict()
         pathway_active_compounds = dict()
-        active_pathways = self.data.get('input').entities[0] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways = self.data.get('input').entities[1] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
         active_pathways_id = []
         
         for p in active_pathways:

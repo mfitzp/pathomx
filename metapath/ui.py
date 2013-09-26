@@ -229,7 +229,8 @@ class DialogDataSource(genericDialog):
                 e = set()
                 for el in dataset.entities_t:
                     e |= set(el) # Add entities to the set
-                e.remove('NoneType')
+                e = e - {'NoneType'} # Remove if it's in there
+                
                 tw.setText(3, ', '.join( e ) )
 
                 tw.setText(4, 'x'.join( [str(s) for s in dataset.shape ] ) )
@@ -512,10 +513,10 @@ class AnalysisView(GenericView):
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
         self.tabs.addTab(self.browser, 'View')
     
-    def render(self, metadata):
+    def render(self, metadata, template='d3/figure.svg'):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
-        template = self.m.templateEngine.get_template('d3/figure.svg')
+        template = self.m.templateEngine.get_template(template)
         self.browser.setSVG(template.render( metadata ))
         
         f = open('/Users/mxf793/Desktop/test.svg','w')
@@ -534,11 +535,8 @@ class AnalysisView(GenericView):
             entities.extend( [ self.m.db.index[id] for id in o if id in self.m.db.index] )
         # Filter for the things we're displaying
         dso = dso.as_filtered( entities=entities)
-        
 
         #data = data.as_class_grouped(classes=classes)
-        print "Objs/classes:", objs, classes
-        
         data = np.zeros( (len(objs), len(classes)) )
 
         for y,obj in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']

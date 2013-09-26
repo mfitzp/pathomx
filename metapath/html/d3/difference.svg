@@ -1,0 +1,82 @@
+@extends("d3/base.svg")
+@require(htmlbase, figure)
+
+@def styles():
+<style><![CDATA[
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1px;
+} 
+
+.identity-line {
+    text-anchor:start;
+    fill:steelblue;
+    stroke:none;
+    opacity:0.1;
+    
+}
+
+.identity-label {
+  fill: steelblue;
+  font-size:7pt;
+}
+
+.label-line {
+    text-anchor:start;
+    fill:steelblue;
+    stroke:none;
+    opacity:0.1;
+}
+
+.label-label {
+  fill:  lightgray;
+  font-size:7pt;
+}
+
+.area.above {
+  fill: rgb(252,141,89);
+}
+
+.area.below {
+  fill: rgb(145,207,96);
+}
+
+
+]]></style>
+@end
+
+        
+@def script():
+<script></script>
+@end
+
+
+@def generate():
+    @#...
+    <script>
+        id = 'svg';
+         data = [
+            @for d in figure['data']:
+                {
+                'ppm':@d[0]!s,
+                    'a':@d[1]!s,
+                    'b':@d[2]!s
+                },
+            @endfor
+            ];
+        function _metapath_render_trigger(){
+            difference(id, data );
+            }
+        </script>
+
+
+@end

@@ -31,9 +31,7 @@ svg {
 <script type="text/javascript"><![CDATA[
     
     //QtViewportSize = false
-    d3.unique = function(array, f) {
-      return d3.nest().key(f || String).entries(array).map(function(d) { return d.key; });
-    };
+
 
     function delegateLink(url){
         QtWebView.delegateLink(url);

@@ -85,7 +85,7 @@ class BinningView( ui.DataView ):
     def render(self, metadata):
         super(BinningView, self).render({})
         dsi = self.data.get('input')
-        dso = DataSet( size=dsi.shape )
+        dso = self.data.o['output']
 
         if float in [type(t) for t in dso.scales[1]]:
             print "Difference plot"

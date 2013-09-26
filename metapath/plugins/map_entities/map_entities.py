@@ -17,7 +17,7 @@ from plugins import IdentificationPlugin
 import numpy as np
 
 import ui, db, utils
-from data import DataSet
+from data import DataSet, DataDefinition
 
 
 class MapEntityView( ui.GenericView ):
@@ -40,7 +40,7 @@ class MapEntityView( ui.GenericView ):
         load_mappingAction = QAction( QIcon( os.path.join(  self.plugin.path, 'bruker.png' ) ), 'Import manual entity mapping\u2026', self.m)
         load_mappingAction.setStatusTip('Import manual mapping from names to MetaCyc entities')
         load_mappingAction.triggered.connect(self.onImportEntities)
-        t.addAction(import_dataAction)        
+        t.addAction(load_mappingAction)        
         
         self._entity_mapping_table = {}
         
@@ -58,7 +58,7 @@ class MapEntityView( ui.GenericView ):
         self.generate()
 
     def onImportEntities(self):
-    """ Open a data file"""
+        """ Open a data file"""
         filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, 'Load CSV mapping for name <> identity', "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)")
         if filename:
 
