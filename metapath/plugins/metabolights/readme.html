@@ -1,0 +1,34 @@
+@extends("base.html")
+@require(htmlbase, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>MetaboLights Import</h1>
+        <span>Import data from the MetaboLights database of metabolomics experiments</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+<p>MetaboLights is a cross-species, cross-technique database of metabolomics experiments and derived information.
+It aims to cover metabolite structures, reference spectra and biological roles, locations and concentrations, together with
+experimental data from metabolomic experiments. It hosts a number of metabolomic datasets which 
+can be freely downloaded for analysis.</p>
+
+<h2>How to use</h2>
+<p>This plugin supports the import of identity-annotated metabolite quantity files only, these are named beginning with 'm_'. Support for other MetaboLights file types and formats
+will be implemented in future. To import the data simply load the file. Metabolite name labels and data quantities will be shown on the 'Table' tab,
+however no automatic mapping to entities is currently supported.</p>
+<h2>References</h2>
+<ol>
+    <li id="ref-1">
+        Kenneth Haug, Reza M. Salek, Pablo Conesa, Janna Hastings, Paula de Matos, Mark Rijnbeek, Tejasvi Mahendrakar, Mark Williams, Steffen Neumann, Philippe Rocca-Serra, Eamonn Maguire, Alejandra González-Beltrán, Susanna-Assunta Sansone, Julian L. Griffin and Christoph Steinbeck.
+        <a href="http://nar.oxfordjournals.org/content/41/D1/D781" class="pubtitle">MetaboLights-- an open-access general-purpose repository for metabolomics studies and associated meta-data.</a>
+        Nucl. Acids Res. (2013) doi: 10.1093/nar/gks1004
+    </li>
+</ol>
+    
+@end

@@ -1,43 +1,7 @@
+@extends("base.html")
 @require(htmlbase)
 
-<html>
-    <head>
-        <title>Welcome to MetaPath</title>
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
-        
-    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
-    <style>
-        .header {
-            margin-bottom:32px;
-        }
-        
-        .header-text {
-            margin-left:72px;
-            margin-top:-82px;
-        }
-        
-            
-        .csv td {
-            border:1px solid eee;
-            padding:5px;
-        }
-        
-        .csv * {
-            font-family:monospace;
-            }
-            
-        .author_list {
-            display:inline-block;
-            padding-top:0.4em;
-            font-style:italic;
-            font-size:0.8em;
-        }
-        
-    </style>
-    <base href="file://@htmlbase/">
-    </head>
-    <body id="mainwindow">
+@def content():
     <div class="header">
         <div class="header-icon"><img src="file://@htmlbase/../static/icon.png" style="width:64px; height:64px;"></div>
         <div class="header-text"><h1>MetaPath</h1>
@@ -107,60 +71,7 @@
                     <a href="http://kanaya.naist.jp/knapsack_jsp/top.html">KNApSAcK</a>.
     </p>
     
-    <h5>Experimental Data</h5>
-    
-    <p>MetaPath also allows display of experimental data on the pathway map to enable visualisation of your metabolomics experiments in context.
-    Data can be sourced from any method including NMR, mass spectrometry or specific-metabolite assays. Save your data as a <code title="Command-separated values">CSV</code> file
-    with the following format:</p>
-    
-    <table class="csv">
-    <tr>
-    <td>Sample/Experiment ID</td>
-    <td>Classification</td>
-    <td>Glucose</td>
-    <td>Citrate</td>
-    <td>Oxaloacetate</td>
-    <td>Pyruvate</td>
-    <td>...N</td>
-    </tr>
-    <tr>
-    <td>1</td>
-    <td>A</td>
-    <td>0.4324</td>
-    <td>0.2343</td>
-    <td>1.2323</td>
-    <td>0.9393</td>
-    <td>0.8823</td>
-    </tr>
-    <tr>
-    <td>2</td>
-    <td>B</td>
-    <td>0.4030</td>
-    <td>0.2675</td>
-    <td>0.5055</td>
-    <td>0.9342</td>
-    <td>0.8393</td>
-    </tr>
-    <tr>
-    <td>3</td>
-    <td>B</td>
-    <td>0.4342</td>
-    <td>0.3565</td>
-    <td>0.5552</td>
-    <td>0.9787</td>
-    <td>0.8454</td>
-    </tr>
-    <tr>
-    <td>...</td>
-    <td>...</td>
-    <td>...</td>
-    <td>...</td>
-    <td>...</td>
-    <td>...</td>
-    <td>...</td>
-    </tr>
 
-    </table>
 
     <p>MetaPath will automatically adjust the visualisation color-scales to suit the data using linear or logN representation. Summary statistics about the dataset and 
     information on current scaling is displayed in the sidebar when loading data. This can also be accessed at any time via the <strong>?</strong> on the toolbar.
@@ -244,5 +155,4 @@
     B15 2WB,
     United Kingdom
     </p>
-    </body>
-</html>
+@end

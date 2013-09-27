@@ -1,0 +1,189 @@
+@require(htmlbase, title, object, data, current_pathways)
+
+<html>
+    <head>
+        <title>@title</title>
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+
+    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
+    <base href="file://@htmlbase/">
+    </head>
+    <style>
+    body {
+        background-color:#f5f5f5;
+    }
+    </style>
+    <body id="db">
+    <h1>@title</h1>
+    @if hasattr(object, 'synonym_str') and object.synonyms:
+        <span class="synonyms">@object.synonym_str()</span>
+    @end
+        
+    @def figure():
+    @end
+    @figure()
+    
+    @def thermodynamics():
+        <div id="thermodynamics">
+        @if hasattr(object,'gibbs'):
+            <table>
+            <tr><th style="text-align:left;">&Delta;G 37&deg;C</th><td>@object.gibbs['deltaG_bio']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
+            <tr><th style="text-align:left;">&Delta;G°</th><td>@object.gibbs['deltaG']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
+            <tr><th style="text-align:left;">Charge</th><td>@object.gibbs['charge']!s</td></tr>
+            </table>
+        @end
+        </div>
+    @end
+    @thermodynamics()
+
+    
+    @if hasattr(object, 'pathways') and object.pathways:
+        <h2>Pathways <small>(@str(len(object.pathways)))</small></h2>
+        <ul>
+            @for p in object.pathways:
+                <li>
+                <a href="metapath://db/pathway/@p.id/view">@p.name</a>
+
+                @if p.id not in current_pathways:
+                    <a href="metapath://db/pathway/@p.id/add"><img src="file://@htmlbase/img/icon_addlink.png"></a>
+                @else:
+                    <a href="metapath://db/pathway/@p.id/remove"><img src="file://@htmlbase/img/icon_deletelink.png"></a>
+                @end
+
+                </li>
+            @end
+        </ul>
+    @end
+    
+    @if hasattr(object, 'reactions') and object.reactions:
+        <h2>Reactions <small>(@str(len(object.reactions)))</small></h2>
+        <ul>
+            @for r in object.reactions:
+                <li><a href="metapath://db/reaction/@r.id/view">@r.name</a></li>
+            @end
+        </ul>
+    @end
+
+    @if hasattr(object, 'compounds') and object.compounds:
+        <h2>Compounds <small>(@str(len(object.compounds)))</small></h2>
+        <ul>
+            @for m in object.compounds:
+                <li>
+                    @if data and data.analysis and m.id in data.analysis:
+                        <div class="datasq rdbu9-@data.analysis[m.id]['color']!s"></div>
+                    @else:
+                        <div class="datasq"></div>
+                    @end
+                    <a href="metapath://db/compound/@m.id/view">@m.name</a>
+                </li>
+            @end
+        </ul>
+    @end
+    
+    @if hasattr(object, 'secondary_compounds') and object.secondary_compounds:
+        <h2>2&deg; Compounds <small>(@str(len(object.secondary_compounds)))</small></h2>
+        <ul>
+            @for m in object.secondary_compounds:
+                <li>
+                    @if data and data.analysis and m.id in data.analysis:
+                        <div class="datasq rdbu9-@data.analysis[m.id]['color']!s"></div>
+                    @else:
+                        <div class="datasq"></div>
+                    @end
+                    <a href="metapath://db/compound/@m.id/view">@m.name</a>
+                </li>
+            @end
+        </ul>
+    @end
+    
+    @if hasattr(object, 'proteins') and object.proteins:
+        <h2>Proteins / Enzymes <small>(@str(len(object.proteins)))</small></h2>
+        <ul>
+            @for p in object.proteins:
+                <li>
+                @if data and data.analysis:
+                    @if p.id in data.analysis:
+                        <div class="datasq rdbu9-@data.analysis[p.id]['color']!s">
+                    @else:
+                        <div class="datasq">
+                    @endif
+                    @for g in p.genes:
+                        @if g.id in data.analysis:
+                            <span class="text-rdbu9-@data.analysis[g.id]['color']!s">&#x25cf;</span>
+                        @endif
+                    @endfor
+                @else:
+                    <div class="datasq">
+                @endif
+                </div>
+                <a href="metapath://db/protein/@p.id/view">@p.name</a></li>
+            @end
+        </ul>
+    @end
+
+    
+    @if hasattr(object, 'genes') and object.genes:
+        <h2>Genes <small>(@str(len(object.genes)))</small></h2>
+        <ul>
+            @for g in object.genes:
+                <li>
+                @if data and data.analysis and g.id in data.analysis:
+                    <div class="datasq rdbu9-@data.analysis[g.id]['color']!s"></div>
+                @else:
+                    <div class="datasq"></div>
+                @end
+                <a href="metapath://db/gene/@g.id/view">@g.name</a></li>
+            @end
+        </ul>
+    @end
+
+
+    
+    @if hasattr(object, 'id'):
+    <h2>Databases</h2>
+    <ul>
+        <li><a href="http://www.humancyc.org/HUMAN/NEW-IMAGE?object=@object.id">MetaCyc @object.id</a></li>
+
+    @if hasattr(object, 'databases') and object.databases:
+        @for dbkey,dbid in object.databases.items():
+            <li>
+
+            @if dbkey == 'CAS':
+                <a href="http://www.commonchemistry.org/ChemicalDetail.aspx?ref=@dbid">CAS @dbid</a>
+            @elif dbkey == 'NCBI-TAXONOMY-DB':
+                <a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=@dbid">NCBI @dbid</a>
+            @elif dbkey == 'CHEBI':
+                <a href="http://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:@dbid">CHEBI @dbid</a>
+            @elif dbkey == 'LIGAND-CPD' or dbkey =='KEGG':
+                <a href="http://www.genome.ad.jp/dbget-bin/www_bget?@dbid">KEGG Compound @dbid</a>
+            @elif dbkey == 'PUBCHEM':
+                <a href="http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi?cid=@dbid">PubChem @dbid</a>
+            @elif dbkey == 'KNAPSACK':
+                <a href="http://kanaya.naist.jp/knapsack_jsp/information.jsp?sname=C_ID&word=@dbid">KNApSAcK @dbid</a>
+            @elif dbkey == 'HMDB':
+                <a href="http://www.hmdb.ca/compounds/@dbid">HMDB @dbid</a>
+            @elif dbkey =='BIOPATH':
+                <a href="http://www.molecular-networks.com/biopath3/biopath/mols/@dbid">BIOPATH @dbid</a>
+            @else:
+                @dbkey @dbid</a>
+            @end
+
+            </li>
+        @end
+    @end
+        </ul>
+
+    @end
+
+
+    </div>
+    
+    
+    <div id="actions">
+        @def actions():
+        @end
+        @actions()
+    </div>
+    </body>
+</html>

@@ -8,11 +8,18 @@ from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
 # Yapsy classes
-
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManager import PluginManagerSingleton
 
+# wheezy templating engine
+from wheezy.template.engine import Engine
+from wheezy.template.ext.core import CoreExtension
+from wheezy.template.ext.code import CodeExtension
+from wheezy.template.loader import FileLoader
+
+
 import os, inspect
+import utils
 
 class BasePlugin(IPlugin):
 
@@ -27,6 +34,21 @@ class BasePlugin(IPlugin):
         self.name = "%s %s " % (self.default_workspace_category, "Plugin")
         
         self.path = os.path.dirname( inspect.getfile(self.__class__) )
+        
+        # Plugin personal template engine
+        self.templateEngine = Engine(
+            loader=FileLoader( [self.path, os.path.join( utils.scriptdir,'html')] ),
+            extensions=[CoreExtension(),CodeExtension()]
+        )
+        
+        help_path = os.path.join( self.path, 'readme.html' )
+        if os.path.exists( help_path ):
+            print 'yes!'
+            self.help_tab_html_filename = 'readme.html'
+        else:
+            self.help_tab_html_filename = None
+        
+        
 
     @property
     def icon(self):

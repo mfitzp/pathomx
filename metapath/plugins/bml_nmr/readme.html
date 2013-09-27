@@ -1,0 +1,37 @@
+@extends("base.html")
+@require(htmlbase, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>BML-NMR Quantified/Identified Data Import</h1>
+        <span>Import data from the BML-NMR 2D JRES NMR identification platform</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+<p>The Birmingham Metabolite Library is a collection of 3328 experimental 1D and 2D J-resolved NMR spectra of 208 metabolite standards.
+Established by <a href="http://www.birmingham.ac.uk">University of Birmingham</a> researchers and funded by the <a href="http://www.bbsrc.ac.uk/">BBSRC</a></p>
+<p>The BML contains raw data (FIDs), 1D and 2D spectra, and quantified peak lists, alongside metadata compliant with the 
+Metabolomics Standards Initiative endorsed reporting requirements <a href="#ref-1" class="ref">[1]</a>. All data in the library is made freely available to the scientific community. However, it requests that use of the library is acknowledged 
+by reference to: <a href="http://dx.doi.org/10.1007/s11306-011-0347-7">C. Ludwig, J.M. Easton, A. Lodi, S. Tiziani, S. Manzoor, A.D. Southam, J.J. Byrne, L.M. Bishop, S. He, T.N. Arvanitis, U.L. Günther, and M.R. Viant. Birmingham Metabolite Library: A publicly accessible database of 1-D <sup>1</sup>H and 2-D <sup>1</sup>H J-resolved NMR spectra of authentic metabolite standards (BML-NMR). <i>Metabolomics</i> 8(1), 8-18 (2012).</a></p>
+
+<p>The library also forms the core of a data mining algorithm for the automated identification and quantification of metabolites in 2D J-resolved
+datasets available for registered users of the site</p>
+
+<h2>How to use</h2>
+<p>J-resolved NMR spectra should be submitted to the BML-NMR for identification as described <a href="http://www.bml-nmr.org/NMRDB.jsf">here</a>.
+Once the identification job has completed the resulting dataset can be downloaded from the site as a .zip file. To import the data into MetaPath
+simply load this zip file directly through this plugin. Metabolite names and quantities will be shown on the Table view.</p>
+
+<h2>References</h2>
+<ol>
+<li id="ref-1">D.V. Rubtsov, H. Jenkins, C. Ludwig, J. Easton, M.R. Viant, U.L. Günther, J.L. Griffin, and N. Hardy. <a href="http://www.springerlink.com/content/l774n76k4m86kj25/">Proposed reporting requirements for the description of NMR-based metabolomics experiments</a>. <i>Metabolomics</i> 3(3), 223-229 (2007).</a></li>
+</ol>
+
+    
+    
+@end

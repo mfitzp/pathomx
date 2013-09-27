@@ -250,6 +250,9 @@ class DialogDataSource(genericDialog):
 
 # Overload this to provide some better size hinting to the inside tabs
 class QTabWidgetExtend( QTabWidget ):
+
+    auto_unfocus_tabs = ['?']
+
     def __init__(self, parent, **kwargs):
         super(QTabWidgetExtend, self).__init__(parent, **kwargs)
         self.w = parent
@@ -257,15 +260,26 @@ class QTabWidgetExtend( QTabWidget ):
     
     def sizeHint(self):
         return self.w.size()
-        
-    def addTab(self, widget, name, **kwargs):
+    
+    # A few wrappers to 
+    def addTab(self, widget, name, focused=True, try_to_keep_unfocused=False, **kwargs):
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        return super(QTabWidgetExtend, self).addTab(widget, name, **kwargs)
+        t = super(QTabWidgetExtend, self).addTab(widget, name, **kwargs)
+
+        # Automagically unfocus the help (+any other equivalent) tabs if were' adding a second
+        # tab to the widget. Not after, as must be selected intentionally
+        if self.count() == 2 and self.tabText(0) in self.auto_unfocus_tabs: # 
+            self.setCurrentIndex( t )
+        
+        return t
         
 
 
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
 class GenericView( QMainWindow ):
+
+    help_tab_html_filename = None
+
     def __init__(self, plugin, parent, **kwargs):
         super(GenericView, self).__init__(parent, **kwargs)
     
@@ -279,11 +293,16 @@ class GenericView( QMainWindow ):
 
         #self.w = QMainWindow()
         self.tabs = QTabWidgetExtend(self)
-        print self.tabs.sizeHint()
-        print self.tabs.minimumSizeHint()
         self.tabs.setDocumentMode(True)
         self.tabs.setTabsClosable(False)
         self.tabs.setTabPosition( QTabWidget.South )
+        self.tabs.setMovable(True)
+        
+        if self.plugin.help_tab_html_filename:
+            self.help = QWebViewExtend(self)
+            self.tabs.addTab(self.help,'?')            
+            template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
+            self.help.setHtml( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'pluginbase': self.plugin.path} ), QUrl("~") )
         
         self.toolbars = {}
         self.controls = defaultdict( dict ) # Store accessible controls

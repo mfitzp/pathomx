@@ -363,31 +363,31 @@ class MainWindow(ui.MainWindowUI):
                 if action == 'view':
                     if kind == 'pathway' and id in self.db.pathways:
                         pathway = self.db.pathways[id]
-                        self.generatedbBrowserView(template='pathway.html', data={
+                        self.generatedbBrowserView(template='db/pathway.html', data={
                             'title': pathway.name,
                             'object': pathway,
                             })
                     elif kind == 'reaction' and id in self.db.reactions:
                         reaction = self.db.reactions[id]
-                        self.generatedbBrowserView(template='reaction.html', data={
+                        self.generatedbBrowserView(template='db/reaction.html', data={
                             'title': reaction.name,
                             'object': reaction,
                             })
                     elif kind == 'compound' and id in self.db.compounds:
                         compound = self.db.compounds[id]
-                        self.generatedbBrowserView(template='compound.html', data={
+                        self.generatedbBrowserView(template='db/compound.html', data={
                             'title': compound.name,
                             'object': compound,
                             })
                     elif kind == 'protein' and id in self.db.proteins:
                         protein = self.db.proteins[id]
-                        self.generatedbBrowserView(template='protein.html', data={
+                        self.generatedbBrowserView(template='db/protein.html', data={
                             'title': protein.name,
                             'object': protein,
                             })
                     elif kind == 'gene' and id in self.db.gene:
                         gene = self.db.genes[id]
-                        self.generatedbBrowserView(template='gene.html', data={
+                        self.generatedbBrowserView(template='db/gene.html', data={
                             'title': gene.name,
                             'object': gene,
                             })

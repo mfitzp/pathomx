@@ -23,6 +23,7 @@ from data import DataSet, DataDefinition
 
 
 class FoldChangeView( ui.AnalysisView ):
+    
     def __init__(self, plugin, parent, **kwargs):
         super(FoldChangeView, self).__init__(plugin, parent, **kwargs)
 

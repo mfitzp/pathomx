@@ -10,7 +10,7 @@ body {
     -webkit-user-select: none;
 } 
 
-#sidebar {
+#db {
     margin: 20px;
     background-color:#fff;
 }
@@ -60,11 +60,14 @@ a {
     color:#1f78b4;
     }
 
-ul {
-    list-style: none;
+ul,ol {
     margin-left: 0;
     padding-left: 1em;
     }
+
+#db ul {
+    list-style: none;
+}
 
  li {
     vertical-align:absmiddle;
@@ -248,4 +251,9 @@ code {
 
 div.row {
    width:100%; 
+}
+
+.ref {
+    vertical-align:super;
+    font-size:0.8em;
 }
