@@ -4,32 +4,58 @@
 @def content():
     <div class="header">
         <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
-        <div class="header-text"><h1>BML-NMR Quantified/Identified Data Import</h1>
-        <span>Import data from the BML-NMR 2D JRES NMR identification platform</span><br />
+        <div class="header-text"><h1>MetaViz</h1>
+        <span>Metabolic pathway visualisation and analysis powered by GraphViz</span><br />
         <span class="author_list">
             <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
         </span>    
         </div>
     </div>
     
+    
 <h2>Introduction</h2>
-<p>The Birmingham Metabolite Library is a collection of 3328 experimental 1D and 2D J-resolved NMR spectra of 208 metabolite standards.
-Established by <a href="http://www.birmingham.ac.uk">University of Birmingham</a> researchers and funded by the <a href="http://www.bbsrc.ac.uk/">BBSRC</a></p>
-<p>The BML contains raw data (FIDs), 1D and 2D spectra, and quantified peak lists, alongside metadata compliant with the 
-Metabolomics Standards Initiative endorsed reporting requirements <a href="#ref-1" class="ref">[1]</a>. All data in the library is made freely available to the scientific community. However, it requests that use of the library is acknowledged 
-by reference to: <a href="http://dx.doi.org/10.1007/s11306-011-0347-7">C. Ludwig, J.M. Easton, A. Lodi, S. Tiziani, S. Manzoor, A.D. Southam, J.J. Byrne, L.M. Bishop, S. He, T.N. Arvanitis, U.L. Günther, and M.R. Viant. Birmingham Metabolite Library: A publicly accessible database of 1-D <sup>1</sup>H and 2-D <sup>1</sup>H J-resolved NMR spectra of authentic metabolite standards (BML-NMR). <i>Metabolomics</i> 8(1), 8-18 (2012).</a></p>
 
-<p>The library also forms the core of a data mining algorithm for the automated identification and quantification of metabolites in 2D J-resolved
-datasets available for registered users of the site</p>
+<h5>Pathway Explorer</h5>
+<p>To start simply select 'Pathways' from the menu bar and select to 'Show Selected Pathways...'</p>
+<img src="file://@htmlbase/img/help-select-pathways.png">
+<p>This displays the pathway selection dialog where you can opt to show any pathways currently in the local database. You can select individual 
+pathways by clicking, or select multiple pathways with Option-click (Mac) or Ctrl-click (Windows).
+You can also bulk add/remove pathways using the search box beneath. This optionally supports regular expressions allowing for specific matching of complex names.</p></p>
+<p>You can also opt to hide specific pathways from view. Pathways selected in this dialog will not be displayed (even if specifically requested in 
+the show pathway box. You may find this useful if you are working on cells or organisms that do not feature particular pathways.</p>
+<img src="file://@htmlbase/img/help-select-pathways-show.png">
+<img src="file://@htmlbase/img/help-select-pathways-map.png">
+<p>Back on the 'Pathways' menu you can also opt to 'Highlight Reaction Pathways' to color pathways by colour and to 'Show Links to Hidden Pathways' which shows links from metabolites
+to currently invisible pathways. This can be useful to see currently hidden links between metabolites.
+<em>Note: This can sometimes take a while to complete, particularly on large maps.</em>
+Pathway nodes can be clicked to access database metadata.
+</p>
+<img src="file://@htmlbase/img/help-select-pathways-map-hidden.png">
+<img src="file://@htmlbase/img/help-select-pathways-map-hidden-info.png">
+<p>You can also simplify/further annotation the pathway map using the View menu including adding 2&deg; metabolites, enzymes/reaction names, and pathway-analysis hints showing 
+metabolite connectivity.</p>
+
+
+<p>MetaPath will automatically adjust the visualisation color-scales to suit the data using linear or logN representation. Summary statistics about the dataset and 
+information on current scaling is displayed in the sidebar when loading data. This can also be accessed at any time via the <strong>?</strong> on the toolbar.
+<br /><em>Note: MetaPath's choices for color-scale may be overridden if required from the data menu.</em></p>
+
+<img src="file://@htmlbase/img/help-data-menu.png">
+<img src="file://@htmlbase/img/help-data-define-experiment.png">
+<img src="file://@htmlbase/img/help-data-colours.png">
+
+<p>Metabolite concentration delta (difference between control and test) is shown on the metabolic pathway map by colour scale with blue indicating down and red up. This
+information is also shown in the sidebar when browsing the database. You can change the experiment currently displayed using the data toolbar.</p>
+
+<img src="file://@htmlbase/img/help-data-toolbar.png">
+    
+    
+    
 
 <h2>How to use</h2>
-<p>J-resolved NMR spectra should be submitted to the BML-NMR for identification as described <a href="http://www.bml-nmr.org/NMRDB.jsf">here</a>.
-Once the identification job has completed the resulting dataset can be downloaded from the site as a .zip file. To import the data into MetaPath
-simply load this zip file directly through this plugin. Metabolite names and quantities will be shown on the Table view.</p>
 
 <h2>References</h2>
 <ol>
-<li id="ref-1"><a href="http://www.springerlink.com/content/l774n76k4m86kj25/">D.V. Rubtsov, H. Jenkins, C. Ludwig, J. Easton, M.R. Viant, U.L. Günther, J.L. Griffin, and N. Hardy. Proposed reporting requirements for the description of NMR-based metabolomics experiments. <i>Metabolomics</i> 3(3), 223-229 (2007).</a></li>
 </ol>
 
     

@@ -299,7 +299,7 @@ class GenericView( QMainWindow ):
         self.tabs.setMovable(True)
         
         if self.plugin.help_tab_html_filename:
-            self.help = QWebViewExtend(self)
+            self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
             self.tabs.addTab(self.help,'?')            
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
             self.help.setHtml( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'pluginbase': self.plugin.path} ), QUrl("~") )
@@ -401,10 +401,10 @@ class DataView(GenericView):
         self.table = QTableView()
         self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
 
-        self.tabs.addTab(self.summary, 'Summary')
         self.tabs.addTab(self.table,'Table')
         self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
+        #self.tabs.addTab(self.summary, 'Summary')
     
     def _build_entity_cmp(self,s,e,l):
         return e == None

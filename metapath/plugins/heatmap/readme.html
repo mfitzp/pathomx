@@ -1,0 +1,31 @@
+@extends("base.html")
+@require(htmlbase, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>Heatmaps</h1>
+    <span>Visualise metabolite, protein and gene data on color heatmaps</span><br />
+    <span class="author_list">
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p>Heatmaps are a common graphical representation of data where relative values are representation as colors on a graduated scale.
+In a biological context they are commonly used to show up and down-regulation of genes.</p>
+
+<p>This plugin allows for visualisation of both raw concentration and transformed fold-change or log2 data for genes, proteins, metabolites and
+any other measured entity. Pre-defined maps are offered, built on the incorporated MetaCyc database to address broad questions. Alternatively,
+custom maps may be built by adding/removing entities or defining classification groups. Entities can also be fed in from other 
+analysis (e.g. the output of the data mining plugin).</p>
+
+<p>Alternate scales are provided for convenience showing change on a low:high scale with blue:red or red:green.</p>
+
+<h2>How to use</h2>
+
+<p>Source data must be provided to generate a heatmap. Multiple data types are supported including raw data or processed/analysed data outputs.
+The data source can be selected through the <img src="file://@htmlbase/../icons/database-import.png"> data input interface. Using the same
+interface you can also optionally select a set of entities to visualise, or select them manually from the primary data source.
+
+@end

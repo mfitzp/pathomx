@@ -1,0 +1,35 @@
+@extends("base.html")
+@require(htmlbase, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>MetaboHunter</h1>
+        <span>Automated identification from NMR spectra via the MetaboHunter web service</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+<p>MetaboHunter<sup><a href="#ref-1">1</a>,<a href="#ref-1">2</a></sup> is a web service for automated assignment of 1D raw, bucketed or
+peak picked NMR spectra. Identification is performed in comparison to two publicly available databases
+(<a href="http://www.hmdb.ca">HMDB</a>, <a href="http://mmcd.nmrfam.wisc.edu/">MMCD</a>) of NMR standard measurements. This plugin
+offers an interface to all the options available through the web service on loaded data.</p>
+
+<h2>How to use</h2>
+<p>Select a dataset as source data to import and set the data submission parameters. Submission takes ~30seconds depending on the size of the
+dataset for analysis. The resulting labels and annotations are shown in the table, with a spectra view showing mappings overlaid on the 
+spectra. Where entities are known in the internal database these are mapped automatically, otherwise the HMDB label is shown.</p>
+    
+<h2>Notes</h2>
+<p>MetaboHunter makes use of 867 HMDB and 448 MMCD NMR spectra. All spectra have been manually curated.</p>
+    
+<h2>References</h2>
+<ol>
+<li id="ref-1">Tulpan, D., Leger, S., Belliveau, L., Culf, A., Cuperlovic-Culf, M. (2011). <a href="http://www.biomedcentral.com/1471-2105/12/400">MetaboHunter: semi-automatic identification of 1H-NMR metabolite spectra in complex mixtures</a>. BMC Bioinformatics 2011, 12:400</li>
+<li id="ref-2"><a href="http://www.nrcbioinformatics.ca/metabohunter/">MetaboHunter web service</a>
+</ol>
+    
+@end

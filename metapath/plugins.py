@@ -43,7 +43,6 @@ class BasePlugin(IPlugin):
         
         help_path = os.path.join( self.path, 'readme.html' )
         if os.path.exists( help_path ):
-            print 'yes!'
             self.help_tab_html_filename = 'readme.html'
         else:
             self.help_tab_html_filename = None

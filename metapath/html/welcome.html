@@ -33,27 +33,7 @@
     Kanehisa, M. and Goto, S.; KEGG: Kyoto Encyclopedia of Genes and Genomes. Nucleic Acids Res. 28, 27-30 (2000).</p>
     <h2>Publications</h2>
     <p>tbc.</p>
-    
-    <h2>Getting Started</h2>
-    <h5>Pathway Explorer</h5>
-    <p>To start simply select 'Pathways' from the menu bar and select to 'Show Selected Pathways...'</p>
-    <img src="file://@htmlbase/img/help-select-pathways.png">
-    <p>This displays the pathway selection dialog where you can opt to show any pathways currently in the local database. You can select individual 
-    pathways by clicking, or select multiple pathways with Option-click (Mac) or Ctrl-click (Windows).
-    You can also bulk add/remove pathways using the search box beneath. This optionally supports regular expressions allowing for specific matching of complex names.</p></p>
-    <p>You can also opt to hide specific pathways from view. Pathways selected in this dialog will not be displayed (even if specifically requested in 
-    the show pathway box. You may find this useful if you are working on cells or organisms that do not feature particular pathways.</p>
-    <img src="file://@htmlbase/img/help-select-pathways-show.png">
-    <img src="file://@htmlbase/img/help-select-pathways-map.png">
-    <p>Back on the 'Pathways' menu you can also opt to 'Highlight Reaction Pathways' to color pathways by colour and to 'Show Links to Hidden Pathways' which shows links from metabolites
-    to currently invisible pathways. This can be useful to see currently hidden links between metabolites.
-    <em>Note: This can sometimes take a while to complete, particularly on large maps.</em>
-    Pathway nodes can be clicked to access database metadata.
-    </p>
-    <img src="file://@htmlbase/img/help-select-pathways-map-hidden.png">
-    <img src="file://@htmlbase/img/help-select-pathways-map-hidden-info.png">
-    <p>You can also simplify/further annotation the pathway map using the View menu including adding 2&deg; metabolites, enzymes/reaction names, and pathway-analysis hints showing 
-    metabolite connectivity.</p>
+
 
     <h5>Database</h5>
     <p>All map objects are accessible in the same way, including metabolites, reactions and pathways. Click on any item (pathways can also be selected by the light-grey bounding box)
@@ -71,40 +51,6 @@
                     <a href="http://kanaya.naist.jp/knapsack_jsp/top.html">KNApSAcK</a>.
     </p>
     
-
-
-    <p>MetaPath will automatically adjust the visualisation color-scales to suit the data using linear or logN representation. Summary statistics about the dataset and 
-    information on current scaling is displayed in the sidebar when loading data. This can also be accessed at any time via the <strong>?</strong> on the toolbar.
-    <br /><em>Note: MetaPath's choices for color-scale may be overridden if required from the data menu.</em></p>
-
-    <img src="file://@htmlbase/img/help-data-menu.png">
-    <img src="file://@htmlbase/img/help-data-define-experiment.png">
-    <img src="file://@htmlbase/img/help-data-colours.png">
-    
-    <p>Metabolite concentration delta (difference between control and test) is shown on the metabolic pathway map by colour scale with blue indicating down and red up. This
-    information is also shown in the sidebar when browsing the database. You can change the experiment currently displayed using the data toolbar.</p>
-
-    <img src="file://@htmlbase/img/help-data-toolbar.png">
-    
-    <h5>Pathway Pruning</h5>
-    <p>In untargeted metabolic studies it is often useful to determine the key areas of metabolic regulation within a system.
-    MetaPath supports pathway-based mining of experimental data, using a number of different scoring algorithms, which has the added 
-    benefit of proving context for the identified change.</p>
-    <p>To enable pathway pruning, simply load data as above then enable pruning via the menubar.</p>  
-    <img src="file://@htmlbase/img/help-data-menu-pruning.png">
-    <p>Starting with the entire network of metabolic pathways in the database, each pathway will be scored according to the chosen method
-    and lower-scoring pathways removed from the view up to the set pruning threshold. The remaining pathways are displayed, giving an overview
-    of the key pathways in the system. Note that pruning obeys the 'Show Selected Pathways...' settings which can be useful to link disparate pathways into a regulated whole.</p>
-    <img src="file://@htmlbase/img/help-data-pruning-settings.png">
-    <img src="file://@htmlbase/img/help-data-pruning-map.png">
-    <p>The scoring algorithm can be altered from the 'Pruning settings...' dialog. Scoring can be based on upregulation, downregulation, overall change and by the number of identified metabolites in the sample. Adjusting scores
-    relative to the number of metabolites in a pathway removes the bias towards larger pathways (although this is often preferable for interpretation).
-    You can adjust the pruning threshold from the data toolbar.</p>
-    <p>
-
-
-    
-    </p>
     
     <h5>Saving Your Work & Finishing Up</h5>
     <p>Generated pathway maps can be saved to multiple formats including <code>tif</code>, <code>eps</code>, <code>fig</code>, <code>gif</code>, <code>jpeg</code>, <code>pdf</code>, <code>png</code>, <code>ps</code>, <code>svg</code>, <code>dot</code> and <code>bmp</code>.

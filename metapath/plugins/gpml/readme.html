@@ -1,0 +1,38 @@
+@extends("base.html")
+@require(htmlbase, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>WikiPathways & GPML</h1>
+        <span>Visualise data on GPML pathway maps loaded from file or the WikiPathways web service</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+
+<p>WikiPathways<sup><a href="#ref-1">1</a></sup> is a open, collaborative pathway wiki for the exchange, development and maintenance of pathway information by the biological community.
+Pathways are stored in GenMAPP Pathway Markup Language (GPML)<sup><a href="#ref-2">2</a></sup> format used by the GenMAPP software and 
+the PathVisio pathway layout software.</p>
+
+<p>This plugin allows the import of GPML pathways from saved files (e.g. exported from PathVisio) or alternatively directly from WikiPathways via
+the WikiPathways web service<sup><a href="#ref-3">3</a></sup>
+
+<h2>How to use</h2>
+<p>Pathways can be <img src="file://@htmlbase/../icons/disk--arrow.png"> loaded from local .gpml files or from the web service available via the <img src="file://@pluginbase/icon-16.png"> WikiPathways button on the toolbar.
+Metabolite, gene or protein annotations and identities are loaded from the GPML file and mapped to known database entities (e.g. HMDB, CAS) 
+where they exist in the current database.</p>
+<p>If a data source is connected to the visualisation the relative metabolite concentrations will be shown with an adapted scale. Scaling and colour schemes 
+can be altered using the scaling toolbar.</p>
+
+<h2>References</h2>
+<ol>
+<li id="ref-1">Kelder T, van Iersel MP, Hanspers K, Kutmon M, Conklin BR, Evelo C, Pico AR. (2011) <a href="http://nar.oxfordjournals.org/content/early/2011/11/16/nar.gkr1074.abstract">WikiPathways: building research communities on biological pathways</a>. NAR <a href="http://dx.doi.org/10.1093/nar/gkr1074">doi:10.1093/nar/gkr1074</a>
+<li id="ref-2">Dahlquist KD, Salomonis N, Vranizan K, Lawlor SC & Conklin BR <a href="http://www.nature.com/ng/journal/v31/n1/full/ng0502-19.html">GenMAPP, a new tool for viewing and analyzing microarray data on biological pathways</a> Nature Genetics  31, 19 - 20 (2002) <a href="http://dx.doi.org/10.1038/ng0502-19">doi:10.1038/ng0502-19</a></li>
+<li id="ref-3">Kelder T, Pico AR, Hanspers K, van Iersel MP, Evelo C, Conklin BR. <a href="http://www.plosone.org/article/info:doi/10.1371/journal.pone.0006447">Mining Biological Pathways Using WikiPathways Web Services</a>. (2009) PLoS ONE 4(7): <a href="http://dx.doi.org/doi:10.1371/journal.pone.0006447">doi:10.1371/journal.pone.0006447</a></li>
+</ol>
+    
+@end
