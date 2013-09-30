@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
 <div class="header">
@@ -19,7 +19,7 @@ data is replaced with a representative value, e.g. a mean, median or central val
 <p>It is important to remember that binning results in a loss of data, and may introduce artefacts. This plugin attempts to 
 mitigate some of these problems by providing information on data loss, and offering adaptive binning approaches.</p>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 
 <p>This plugin can bin any data in 1 dimension, e.g. NMR spectra. Simply select the data source and the data will be automatically binned.
 You can adjust the bin size using the toolbar, together with a bin offset. You can view the result of the binning a tabular, or 

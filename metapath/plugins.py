@@ -70,8 +70,8 @@ class BasePlugin(IPlugin):
     def register_app_launcher(self, app_launcher):
         self.m.app_launchers[ self.id ] = app_launcher
 
-    def register_url_handler(self, identifier, url_handler):
-        self.m.url_handlers[ identifier ] = url_handler
+    def register_url_handler(self, url_handler):
+        self.m.register_url_handler( self.id, url_handler )
 
     def register_menus(self, menu, entries):
         

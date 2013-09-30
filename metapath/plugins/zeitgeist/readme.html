@@ -1,0 +1,22 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>Zeitgeist</h1>
+    <span>See your data in the context of published literature</span><br />
+    <span class="author_list">
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p>Seeing your data in the context of existing publications can help clarify the implications of what you've found.
+This plugin queries a number of popular open data sources and visualises the findings.</p>
+
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> and 
+and select the services to visualise.</p>
+
+@end

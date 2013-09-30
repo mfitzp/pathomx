@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -21,7 +21,7 @@ the PathVisio pathway layout software.</p>
 <p>This plugin allows the import of GPML pathways from saved files (e.g. exported from PathVisio) or alternatively directly from WikiPathways via
 the WikiPathways web service<sup><a href="#ref-3">3</a></sup>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 <p>Pathways can be <img src="file://@htmlbase/../icons/disk--arrow.png"> loaded from local .gpml files or from the web service available via the <img src="file://@pluginbase/icon-16.png"> WikiPathways button on the toolbar.
 Metabolite, gene or protein annotations and identities are loaded from the GPML file and mapped to known database entities (e.g. HMDB, CAS) 
 where they exist in the current database.</p>

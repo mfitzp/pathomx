@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
 <div class="header">
@@ -11,6 +11,17 @@
     </span>    
     </div>
 </div>
+<h2>Introduction</h2>
+<p>Fold change is a useful measure to describe changes from an initial to final value, for example between control and test subjects in an experiment.</p>
 
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> input and enter the experimental comparison on the 
+experimental toolbar (control:test classification from the source data). The resulting values will be shown in the output table.</p>
+<p>The plugin can auto-generate a minima value for your dataset, using half the smallest value detected. This allows fold changes to be 
+calculated for data where the initial value was zero (which will otherwise give a divide-by-zero error).</p>
+
+<h2>Notes</h2>
+<p>There are a number of ways to calculate fold change. This plugin represents downward values as a negative fold, rather than a proportion < 1. For
+example a value falling from 2 to 1 is given as a -2 fold change. This is more practical for representing the change visually on linear coloured scales.</p>
 
 @end

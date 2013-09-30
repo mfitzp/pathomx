@@ -97,13 +97,24 @@ class DataManager( QObject ):
         
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
-    def can_consume(self, data):
+    def can_consume(self, data, consumer_defs=None):
         if data.manager == self:
             return False
-        for consumer_def in self.consumer_defs:
+
+        if consumer_defs == None:
+            consumer_defs = self.consumer_defs
+
+        for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
                 return True
         return False
+        
+    def can_consume_which_of(self, datalist, consumer_defs=None):
+        which = []
+        for data in datalist:
+            if self.can_consume(data, consumer_defs):
+                which.append(data)
+        return which
         
     # Check if a manager has a consumable data object
     def has_consumable(self, manager):
@@ -112,13 +123,17 @@ class DataManager( QObject ):
                 return True
         return False
         
-    def _consume(self, data):
+    def _consume(self, data, consumer_defs=None):
         # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
         # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
         # Register this as an attribute in the current object
         if data.manager == self:
             return False
-        for consumer_def in self.consumer_defs:
+        
+        if consumer_defs == None:
+            consumer_defs = self.consumer_defs
+            
+        for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
                 self.i[ consumer_def.target ] = data
                 self.consumes.append( data )
@@ -136,13 +151,20 @@ class DataManager( QObject ):
             if self._consume(dso):
                 self.source_updated.emit()
                 return True
+                
+    def consume_with(self, data, consumer_def):
+        if self._consume(data, [consumer_def]):
+            self.source_updated.emit()
+            return True
+        
             
     def provide(self, target):
         self.provides.append( self.o[target] )
                 
     def stop_consuming(self, target ):
-        self.consumes.remove( self.i[ target ])
-        del self.i[ target ]
+        if target in self.i:
+            self.consumes.remove( self.i[ target ])
+            del self.i[ target ]
 
     def stop_providing(self, data):
         data.remove_all_consumers()
@@ -172,15 +194,16 @@ class DataDefinition( QObject ):
         'aloeic': at_least_one_element_in_common,
     }
     
-    def __init__(self, target, definition,*args, **kwargs):
+    def __init__(self, target, definition, title=None, *args, **kwargs):
         super(DataDefinition, self).__init__(*args, **kwargs)
     
         # Store consumer/provider description as entity entries from dict
         self.target = target # Target attribute for imported data - stored under this in dataManager
                              # When assigning data; should check if pre-existing and warn to overwrite (or provide options)
         self.definition = definition
-
-
+        
+        self.title = title if title else target
+            
     def get_cmp_fn(self,s):
         if type( s ) == list:
             return self.cmp_map['aloeic'], s

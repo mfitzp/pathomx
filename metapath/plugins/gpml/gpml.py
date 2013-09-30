@@ -50,7 +50,7 @@ class gpmlPathwayView(ui.AnalysisView):
         self.data.consumer_defs.append( 
             DataDefinition('data', {
             'entities_t':   (None, ['Compound','Gene']), 
-            }),
+            },'Relative concentration data'),
         )
 
 

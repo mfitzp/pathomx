@@ -1,0 +1,24 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>Annotate</h1>
+    <span>Add external class and label annotations to your dataset</span><br />
+    <span class="author_list">
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p>Some data input sources do not allow inclusion of sample classes or labels required for subsequent analysis. Using this plugin you can 
+load both types of data from external files (.csv) and map them onto an existing internal dataset.</p>
+
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> and 
+then open an annotation mapping file. This plugin will identify matching dimensions on which to map the data and present
+you with the resulting options. Select the correct mapping for your purposes and save.</p>
+<p>The annotated data will be available to further analysis.</p>
+
+@end

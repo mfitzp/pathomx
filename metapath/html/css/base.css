@@ -77,28 +77,34 @@ ul,ol {
     text-align:justify;
  }  
 
-.button {
+.btn {
     display: inline-block;
     outline: none;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    font: 14px/100% sans-serif;
-    padding: .5em 1em .55em;
-    text-shadow: 0 1px 1px rgba(0,0,0,.3);
-    -webkit-border-radius: .5em; 
-    -moz-border-radius: .5em;
-    border-radius: .5em;
+
+    padding: 0.2em 0.5em 0.2em;
+    font-size: 0.6875em;
+ 
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
     color:ButtonText;
     border:1px solid ButtonFace;
     background:url('../img/nav-bg.gif');
 }
-.button:hover {
+.btn:hover {
+    color:ButtonText;
     text-decoration: none;
+    background:url('../img/nav-bg-lighter.gif');
 }
-.button:active {
+.btn:active {
+    color:ButtonText;
+    text-decoration: none;
     background:url('../img/nav-bg-reverse.gif');
 }
+
 .synonyms {
     font-size:0.9em;
     color:GrayText;

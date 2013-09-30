@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -18,8 +18,8 @@ peak picked NMR spectra. Identification is performed in comparison to two public
 (<a href="http://www.hmdb.ca">HMDB</a>, <a href="http://mmcd.nmrfam.wisc.edu/">MMCD</a>) of NMR standard measurements. This plugin
 offers an interface to all the options available through the web service on loaded data.</p>
 
-<h2>How to use</h2>
-<p>Select a dataset as source data to import and set the data submission parameters. Submission takes ~30seconds depending on the size of the
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> to import and set the data submission parameters. Submission takes ~30seconds depending on the size of the
 dataset for analysis. The resulting labels and annotations are shown in the table, with a spectra view showing mappings overlaid on the 
 spectra. Where entities are known in the internal database these are mapped automatically, otherwise the HMDB label is shown.</p>
     

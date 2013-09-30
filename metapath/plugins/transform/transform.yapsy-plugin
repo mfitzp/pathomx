@@ -6,4 +6,4 @@ Module = transform
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Mathematical data transformations including ㏒2 and ㏒10
+Description = Mathematical data transformations including log2 and log10

@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -19,7 +19,7 @@
 small tools covering common processing tasks for LC/MS data. The mzMatch environment was based entirely on the PeakML file format and core library, which provides a common framework for all the tools.</p>
 <p>The PeakML format allows mzMatch to export and share data with other software. This plugin allows for importing of PeakML into MetaPath.</p>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 <p>This plugin imports data, annotations and identities from the PeakML file. Identities marked with HMDB identities will be directly mapped to internal 
 metabolites where they exist in the current database. Sample classes are loaded by number. Scale ppm is also loaded and can be viewed under the View tab.</p>
 

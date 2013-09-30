@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -18,7 +18,7 @@ It aims to cover metabolite structures, reference spectra and biological roles, 
 experimental data from metabolomic experiments. It hosts a number of metabolomic datasets which 
 can be freely downloaded for analysis.</p>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 <p>This plugin supports the import of identity-annotated metabolite quantity files only, these are named beginning with 'm_'. Support for other MetaboLights file types and formats
 will be implemented in future. To import the data simply load the file. Metabolite name labels and data quantities will be shown on the 'Table' tab,
 however no automatic mapping to entities is currently supported.</p>

@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -72,7 +72,7 @@ and saving the file as CSV. Loading is semi-intelligent and will attempt to dete
 <p>Note: This layout can be transposed (i.e. with rows as columns and vice versa) if required to 
 fit within the limits of Excel. The correct orientation will be detected and imported data transposed back if neccessary.</p>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 <p>Arrange data in the correct layout format within Excel and export as CSV. Load the file using this plugin and the data will be displayed on
 the 'Table' tab. If your data appears to have a continuous scale (e.g. a spectra) a visualisation of this will be shown. If the data
 cannot be loaded/interpreted correctly an error message will be displayed to try and help.</p>

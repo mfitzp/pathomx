@@ -1,0 +1,22 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>Transforms</h1>
+    <span>Apply simple data transforms to prepare data for analysis</span><br />
+    <span class="author_list">
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p>Transformation of data can be an important step in preparation for analysis. This simple plugin offers a number of basic transformations
+that you can apply to data.</p>
+
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> and 
+set the configuration options for transformations. The transformed data will be available for subsequent analysis.</p>
+
+@end

@@ -38,6 +38,8 @@ class FoldChangeView( ui.AnalysisView ):
         
         self.tabs.addTab(self.table,'Table')
         
+        self.register_url_handler(self.url_handler)
+        
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -378,7 +380,20 @@ class FoldChangeView( ui.AnalysisView ):
         return analysis
 
 
-        '''        
+        '''      
+        
+    def url_handler(self, url):
+
+        kind, id, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames           
+        
+        # url is Qurl kind
+        # Add an object to the current view
+        if kind == "_readme":
+            
+            # FIXME: Hacky test of an idea
+            if action == 'add' and id == 'data_source':
+                # Add the pathway and regenerate
+                self.onSelectDataSource()
 
 class FoldChange(AnalysisPlugin):
 

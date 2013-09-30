@@ -539,10 +539,10 @@ class MetaVizView(ui.AnalysisView):
         self.data.consumer_defs.extend([
             DataDefinition('suggested_pathways', {
             'entities_t':   (None, ['Pathway']), 
-            }),
+            },'Show pathways'),
             DataDefinition('data', {
             'entities_t':   (None, ['Compound','Gene','Protein']), 
-            })
+            },'Relative concentration data')
         ])
         
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards

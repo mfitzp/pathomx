@@ -185,39 +185,7 @@ class dialogPathwaysShow(ui.genericDialog):
         self.dialogFinalise()
 
 
-  
-        
-class dialogMiningSettings(ui.genericDialog):
 
-    def __init__(self, parent=None, **kwargs):
-        super(dialogMiningSettings, self).__init__(parent, **kwargs)        
-        
-        self.setWindowTitle("Setup for Data-based Pathway Mining")
-        self.parent = parent
-
-        self.cb_miningType = QComboBox()
-        self.cb_miningType.addItems( METAPATH_MINING_TYPE_TEXT )
-        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( parent.config.value('/Data/MiningType') ) )
-
-        self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
-        self.xb_miningRelative.setChecked( bool(parent.config.value('/Data/MiningRelative') ) )
-
-        self.xb_miningShared = QCheckBox('Share compound scores between pathways') 
-        self.xb_miningShared.setChecked( bool(parent.config.value('/Data/MiningShared') ) )
-                        
-
-        self.sb_miningDepth = QSpinBox()
-        self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( parent.config.value('/Data/MiningDepth') ) )
-        
-        self.layout.addWidget(self.cb_miningType)
-        self.layout.addWidget(self.xb_miningRelative)
-        self.layout.addWidget(self.xb_miningShared)
-        self.layout.addWidget(self.sb_miningDepth)
-        
-        # Stack it all up, with extra buttons
-        self.dialogFinalise()
-         
 class MainWindow(ui.MainWindowUI):
 
     def __init__(self, app):
@@ -237,7 +205,7 @@ class MainWindow(ui.MainWindowUI):
         # The following holds tabs & pathway objects for gpml imported pathways
         self.gpmlpathways = [] 
         self.tab_handlers = []
-        self.url_handlers = {}
+        self.url_handlers = defaultdict(list)
         self.app_launchers = {}
 
         # Create templating engine
@@ -400,10 +368,11 @@ class MainWindow(ui.MainWindowUI):
 
             #metaviz/compound/%s/view            
             elif app in self.url_handlers:
-                self.url_handlers[app]( url.path().strip('/') )
+                for handler in self.url_handlers[app]:
+                    handler( url.path().strip('/') )
 
-                # Store URL so we can reload the sidebar later
-                self.dbBrowser_CurrentURL = url
+            # Store URL so we can reload the sidebar later
+            self.dbBrowser_CurrentURL = url
 
         else:
             # It's an URL open in default browser

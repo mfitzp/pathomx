@@ -30,14 +30,22 @@ import data
 
 # Generic configuration dialog handling class
 class genericDialog(QDialog):
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, buttons = ['ok','cancel'], **kwargs):
         super(genericDialog, self).__init__(parent, **kwargs)        
 
         self.sizer = QVBoxLayout()
         self.layout = QVBoxLayout()
         
+        QButtons = {
+            'ok':QDialogButtonBox.Ok,
+            'cancel':QDialogButtonBox.Cancel,
+        }
+        Qbtn = 0
+        for k in buttons:
+            Qbtn = Qbtn | QButtons[k]
+        
         # Setup default button configurations etc.
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(Qbtn)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
                 
@@ -186,12 +194,12 @@ class QWebViewScrollFix(QWebViewExtend):
 
         
 
-#We ran into the same issue. We worked around the problem by overriding QWebView::wheelEvent, and doing the following:
-#When a wheelEvent comes in, we start a 25 ms single-shot timer and process the wheelEvent. For any future wheelEvent's that come in while the timer is active, we just accumulate the event->delta( )'s (and pos & globalPos values, too). When the timer finally fires, the accumulated deltas are packaged into a QWheelEvent and delivered to QWebView::wheelEvent. (One further refinement is that we only do this for wheelEvents that have NoButton and NoModifier.)
-
-
 # View Dialogs
 
+# Source data selection dialog
+# Present a list of widgets (drop-downs) for each of the interfaces available on this plugin
+# in each list show the data sources that can potentially file that slot. 
+# Select the currently used 
 class DialogDataSource(genericDialog):
     def __init__(self, parent=None, view=None, **kwargs):
         super(DialogDataSource, self).__init__(parent, **kwargs)        
@@ -201,8 +209,58 @@ class DialogDataSource(genericDialog):
         
         self.setWindowTitle("Select Data Source(s)")
 
+        # Build a list of dicts containing the widget
+        # with target data in there
+        self.lw_consumeri = list()
+        for n,cd in enumerate(self.v.data.consumer_defs):
+            
+            self.lw_consumeri.append( QComboBox() )
+            cdw = self.lw_consumeri[n] # Shorthand
+            datasets = self.v.data.can_consume_which_of(self.m.datasets, [cd])
+            
+            cdw.addItem('No input')
+            
+            for nd, dataset in enumerate(datasets):
+
+                e = set()
+                for el in dataset.entities_t:
+                    e |= set(el) # Add entities to the set
+                e = e - {'NoneType'} # Remove if it's in there
+            
+                entities = ', '.join( e )
+                dimensions = 'x'.join( [str(s) for s in dataset.shape ] )
+
+                cdw.addItem( QIcon(dataset.manager.v.plugin.workspace_icon),'%s %s %s (%s)' % (dataset.name, dataset.manager.v.name, entities, dimensions) )
+
+                # If this is the currently used data source for this interface, set it active
+                if cd.target in self.v.data.i and dataset == self.v.data.i[cd.target]:
+                    cdw.setCurrentIndex(nd+1) #nd+1 because of the None we've inserted at the front
+
+            cdw.consumer_def = cd
+            cdw.datasets = [None] + datasets
+            
+            self.layout.addWidget( QLabel( "%s:" % cd.title  ) )
+            self.layout.addWidget(cdw)
+            
+        self.setMinimumSize( QSize(600,100) )
+        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
+        
+        # Build dialog layout
+        self.dialogFinalise()
+        
+        
+
+class DialogDataOutput(genericDialog):
+    def __init__(self, parent=None, view=None, **kwargs):
+        super(DialogDataOutput, self).__init__(parent, buttons=['ok'], **kwargs)        
+        
+        self.v = view
+        self.m = view.m
+
+        self.setWindowTitle("Data Output(s)")
+
         self.lw_sources = QTreeWidget() # Use TreeWidget but flat; for multiple column view
-        self.lw_sources.setColumnCount(6)
+        self.lw_sources.setColumnCount(5)
         self.lw_sources.setHeaderLabels(['','Source','Data','Entities', 'Size']) #,'#'])
         self.lw_sources.setUniformRowHeights(True)
         self.lw_sources.rootIsDecorated()
@@ -211,31 +269,27 @@ class DialogDataSource(genericDialog):
         datasets = self.m.datasets # Get a list of dataset objects to test
         self.datasets = []
         
-        print "Datasets:", self.m.datasets
-        for dataset in datasets:
-            if self.v.data.can_consume(dataset):
-                self.datasets.append( dataset )
-                
-                print "+", dataset
-                #QListWidgetItem(dataset.name, self.lw_sources)
-                tw = QTreeWidgetItem()
+        for k,dataset in self.v.data.o.items():
+            
+            #QListWidgetItem(dataset.name, self.lw_sources)
+            tw = QTreeWidgetItem()
 
-                tw.setText(0, str( len(self.datasets)-1) ) # Store index
-                tw.setText(1, dataset.manager.v.name )
-                if dataset.manager.v.plugin.workspace_icon:
-                    tw.setIcon(1, dataset.manager.v.plugin.workspace_icon )
+            tw.setText(0, str( len(self.datasets)-1) ) # Store index
+            tw.setText(1, dataset.manager.v.name )
+            if dataset.manager.v.plugin.workspace_icon:
+                tw.setIcon(1, dataset.manager.v.plugin.workspace_icon )
 
-                tw.setText(2, dataset.name)
-                e = set()
-                for el in dataset.entities_t:
-                    e |= set(el) # Add entities to the set
-                e = e - {'NoneType'} # Remove if it's in there
-                
-                tw.setText(3, ', '.join( e ) )
+            tw.setText(2, dataset.name)
+            e = set()
+            for el in dataset.entities_t:
+                e |= set(el) # Add entities to the set
+            e = e - {'NoneType'} # Remove if it's in there
+            
+            tw.setText(3, ', '.join( e ) )
 
-                tw.setText(4, 'x'.join( [str(s) for s in dataset.shape ] ) )
-                
-                self.lw_sources.addTopLevelItem(tw) 
+            tw.setText(4, 'x'.join( [str(s) for s in dataset.shape ] ) )
+            
+            self.lw_sources.addTopLevelItem(tw) 
 
         for c in range(5):
             self.lw_sources.resizeColumnToContents(c)
@@ -245,7 +299,7 @@ class DialogDataSource(genericDialog):
         self.layout.setSizeConstraint(QLayout.SetMinimumSize)
         
         # Build dialog layout
-        self.dialogFinalise()
+        self.dialogFinalise()        
 
 
 # Overload this to provide some better size hinting to the inside tabs
@@ -302,17 +356,26 @@ class GenericView( QMainWindow ):
             self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
             self.tabs.addTab(self.help,'?')            
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
-            self.help.setHtml( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'pluginbase': self.plugin.path} ), QUrl("~") )
+            self.help.setHtml( template.render( {
+                        'htmlbase': os.path.join( utils.scriptdir,'html'),
+                        'pluginbase': self.plugin.path,
+                        'view': self,                        
+                        } ), QUrl("~") 
+                        )
         
         self.toolbars = {}
         self.controls = defaultdict( dict ) # Store accessible controls
+        
+        self.register_url_handler( self.default_url_handler )
 
         self.setCentralWidget(self.tabs)
         
         self.config = QSettings()
         
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
-        
+
+    def register_url_handler(self, url_handler):
+        self.m.register_url_handler( self.id, url_handler ) 
 
     def render(self, metadata):
         return
@@ -345,7 +408,7 @@ class GenericView( QMainWindow ):
         t = self.addToolBar('Data')
         t.setIconSize( QSize(16,16) )
 
-        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'database-import.png' ) ), 'Select a data source\u2026', self.m)
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-source.png' ) ), 'Select a data source\u2026', self.m)
         select_dataAction.setStatusTip('Select a compatible data source')
         select_dataAction.triggered.connect(self.onSelectDataSource)
         t.addAction(select_dataAction)
@@ -353,6 +416,11 @@ class GenericView( QMainWindow ):
         select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'arrow-circle-double.png' ) ), 'Recalculate', self.m)
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
+        t.addAction(select_dataAction)
+
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-output.png' ) ), 'View resulting data\u2026', self.m)
+        select_dataAction.setStatusTip('View resulting data output from this plugin')
+        select_dataAction.triggered.connect(self.onViewDataOutput)
         t.addAction(select_dataAction)
         
         self.toolbars['image'] = t        
@@ -364,11 +432,24 @@ class GenericView( QMainWindow ):
         dialog = DialogDataSource(parent=self, view=self)
         ok = dialog.exec_()
         if ok:
-            for i in dialog.lw_sources.selectedItems():
-                dso = dialog.datasets[ int( i.text(0) ) ]
-                self.data.consume( dso )
+            for cb in dialog.lw_consumeri: # Get list of comboboxes
+                i = cb.currentIndex() # Get selected item
+                consumer_def = cb.consumer_def
+                print consumer_def.target, i, len(cb.datasets)
+                if i > 0: # Something in the list (-1) and not 'No data'
+                    dso = cb.datasets[i]
+                    self.data.consume_with(dso, consumer_def)  
+                    
+                else: # Stop consuming through this interface
+                    self.data.stop_consuming( consumer_def.target )
 
             self.generate()
+            
+    def onViewDataOutput(self):
+        # Basic add data source dialog. Extend later for multiple data sources etc.
+        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
+        dialog = DialogDataOutput(parent=self, view=self)        
+        dialog.exec_()
 
     def addFigureToolBar(self):            
         t = self.addToolBar('Image')
@@ -389,6 +470,20 @@ class GenericView( QMainWindow ):
     def onRecalculate(self):
         self.generate()
 
+    # Url handler for all default plugin-related actions; making these accessible to all plugins
+    # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
+    def default_url_handler(self, url):
+
+        kind, id, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames           
+        
+        # url is Qurl kind
+        # Add an object to the current view
+        if kind == "default_actions":
+            
+            if action == 'add' and id == 'data_source':
+                # Add the pathway and regenerate
+                self.onSelectDataSource()        
+
 
 
 # Data view prototypes
@@ -405,7 +500,7 @@ class DataView(GenericView):
         self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
         #self.tabs.addTab(self.summary, 'Summary')
-    
+        
     def _build_entity_cmp(self,s,e,l):
         return e == None
 
@@ -467,11 +562,9 @@ class DataView(GenericView):
 
                 template = self.m.templateEngine.get_template('d3/spectra.svg')
                 self.viewer.setSVG(template.render( metadata ))
-                f = open('/Users/mxf793/Desktop/test3.svg','w')
-                f.write( template.render( metadata ) )
-                f.close()
             
         return
+        
 
 # Import Data viewer
 
@@ -537,10 +630,6 @@ class AnalysisView(GenericView):
 
         template = self.m.templateEngine.get_template(template)
         self.browser.setSVG(template.render( metadata ))
-        
-        f = open('/Users/mxf793/Desktop/test.svg','w')
-        f.write( template.render( metadata ) )
-        f.close()
         
     #self.build_log2_change_table_of_classtypes( self.phosphate, labelsX )
     def build_log2_change_table_of_classtypes(self, objs, classes):
@@ -646,11 +735,6 @@ class AnalysisD3View(AnalysisView):
         
         template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
         self.browser.setSVG(template.render( metadata ))
-        
-        f = open('/Users/mxf793/Desktop/test.svg','w')
-        f.write( template.render( metadata ) )
-        f.close()        
-
                     
         
 # Class for analysis views, using graph-based visualisations of defined datasets
@@ -698,10 +782,6 @@ class D3View(AnalysisView):
         template = self.parent.templateEngine.get_template('d3/force.svg')
 
         self.browser.setSVG(template.render( metadata ))
-
-        f = open('/Users/mxf793/Desktop/test.html','w')
-        f.write( template.render( metadata ) )
-        f.close()
       
 
 # Class for analysis views, using graph-based visualisations of defined datasets
@@ -1002,8 +1082,8 @@ class MainWindowUI(QMainWindow):
         self.setToolButtonStyle( Qt.ToolButtonFollowStyle ) #Qt.ToolButtonTextUnderIcon
         self.setIconSize( QSize(16,16) )
         #self.setUnifiedTitleAndToolBarOnMac( True )
+        '''
         self.fileToolbar = self.addToolBar('File')
-
 
         self.fileToolbar.addAction(openAction)
         self.fileToolbar.addAction(saveAction)
@@ -1018,7 +1098,8 @@ class MainWindowUI(QMainWindow):
         self.viewToolbar.addAction(refreshAction)
         
         self.addToolBarBreak()
-
+        '''
+        
         QNetworkProxyFactory.setUseSystemConfiguration( True )
 
         QWebSettings.setMaximumPagesInCache( 0 )
@@ -1205,4 +1286,6 @@ class MainWindowUI(QMainWindow):
         self.config.setValue( '/Data/MiningActive', checked)
         self.generateGraphView()
 
+    def register_url_handler( self, identifier, url_handler ):
+        self.url_handlers[ identifier ].append( url_handler )
 

@@ -1,5 +1,5 @@
 @extends("base.html")
-@require(htmlbase, pluginbase)
+@require(htmlbase, view, pluginbase)
 
 @def content():
     <div class="header">
@@ -17,7 +17,7 @@
 MetaPath supports pathway-based mining of experimental data, using a number of different scoring algorithms, which has the added 
 benefit of proving context for the identified change.</p>
 
-<h2>How to use</h2>
+<h2>Quick start</h2>
 <p>To enable pathway pruning, simply load data as above then enable pruning via the menubar.</p>  
 <img src="file://@htmlbase/img/help-data-menu-pruning.png">
 <p>Starting with the entire network of metabolic pathways in the database, each pathway will be scored according to the chosen method

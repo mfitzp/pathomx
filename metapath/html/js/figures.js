@@ -836,7 +836,7 @@ function scatter(id, data, x_axis_label, y_axis_label) {
         .enter().append("svg:circle")
             .attr("cx", function (d,i) { return x(d.x); } )
             .attr("cy", function (d) { return y(d.y); } )
-            .attr("r", 8)
+            .attr("r", 4)
             .style("fill", function(d) { return color(d.class); })
             .attr("data-legend",function(d) { return d.class; });
 
