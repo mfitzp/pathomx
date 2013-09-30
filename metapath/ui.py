@@ -443,7 +443,7 @@ class GenericView( QMainWindow ):
                 else: # Stop consuming through this interface
                     self.data.stop_consuming( consumer_def.target )
 
-            self.generate()
+            #self.generate() automatic
             
     def onViewDataOutput(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.
