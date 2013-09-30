@@ -1,0 +1,9 @@
+[Core]
+Name = Zeitgeist
+Module = zeitgeist
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = See your findings in the literature. Powered by MLTrends.
