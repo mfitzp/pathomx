@@ -630,7 +630,7 @@ class DataSet( QObject ):
 
         final_shape = list( self.data.shape )
         for d, s in enumerate( shape ):
-            if s<len(self.labels[d]): # Only allow crop
+            if s<self.data.shape[d]: # Only allow crop
                 self.labels[d] = self.labels[d][:s]
                 self.entities[d] = self.entities[d][:s]
                 self.scales[d] = self.scales[d][:s]
