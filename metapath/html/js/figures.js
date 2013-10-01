@@ -91,7 +91,8 @@ function heatmap(id, buckets, scale){
                 .domain(ylabels)
                 .rangeBands([0, ylabels.length*cellh]),
         z = d3.scale
-                .linear()
+                .pow()
+                .exponent(.5)
                 .domain( [-r , 0, +r] )
                 //.domain( [d3.min(buckets, function(d) { return d.value; }) , 0, d3.max(buckets, function(d) { return d.value; })] )
                 .range(["#2166ac","#f7f7f7","#b2182b"]);
@@ -159,7 +160,6 @@ function heatmap(id, buckets, scale){
             .attr('style','cursor:pointer;')
             .on("click",function(d){ delegateLink('metapath://db/metabolite/'+d+'/view'); });
     });
-
 
 };
 
@@ -408,6 +408,195 @@ function corrmatrix(id, groups, traits, data){
 
 }
 
+/*
+
+LINE plot 
+
+*/
+
+
+function lineplot(id, data, identities, labels) {
+
+idxy = getElementSize(id)
+var width = idxy[0],
+    height = idxy[1];
+    
+
+var margin = {top: 120, right: 50, bottom: 80, left: 50};
+    //width = width - margin.left - margin.right,
+    //height = height - margin.top - margin.bottom;
+var width_d = width - margin.left - margin.right,
+    height_d = height - margin.top - margin.bottom;
+    
+var s_x = d3.extent(data, function(d) { return d.x; } )
+
+var s_y = [
+    d3.min(data, function(d) { return Math.min.apply(Math, Object.keys(d.y).map(function(key){ return d.y[key]; }) ); } ),
+    d3.max(data, function(d) { return Math.max.apply(Math, Object.keys(d.y).map(function(key){ return d.y[key]; }) ); } ),
+  ];
+                 
+console.log(s_y);
+                    
+var x = d3.scale
+            .linear()
+            .range([0,width_d])
+            .domain( s_x);
+            
+            
+var y = d3.scale
+            .linear()
+            .range([height_d,0])
+            .domain( s_y);
+            
+/*var zoom = d3.behavior.zoom()
+    .x(x)
+    //.y(y)
+    .on("zoom", zoomed);            */
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line = d3.svg.line()
+    //.interpolate("basis")
+    .x(function(d) { return x(d.x); })
+    .y(function(d) { return y(d.y); });
+    
+
+var svg = d3.select(id)//.insert("svg",':first-child')
+    .attr("width", width)
+    .attr("height", height)
+    .attr('viewBox','0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio','xMidYMid')
+    //  .call(zoom)
+
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    color.domain( d3.keys( data[0].y ) );
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height_d + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('ppm');
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text('Rel');
+      
+      
+var clip = svg.append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width - (margin.left + margin.right))
+    .attr("height", height);
+
+
+  var plotline = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {x: d.x, y: +d.y[name]};
+      })
+    };
+  });
+
+  var aline = svg.selectAll(".line")
+      .data(plotline)
+      
+    .enter().append("g")
+      .attr("clip-path", "url(#clip)")
+      .attr("class", "line");
+    
+  aline.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+
+
+    var rect = {
+        'x':(function(d) { return x(d.x); }),
+        'y':(function(d) { return y(s_y[1]); }),
+        'width':(function(d) { return x( d.x_end) - x(d.x); }),
+        'height':(function(d) { return y( 0) - y(s_y[1]); }),
+        }
+        
+    var label_position_transform = function(d,i){ return "translate(" +  x( (d.x+d.x_end)/2 )  +"," + y( s_y[1] )+ ") rotate(-60)"; }
+
+    var identity = svg.selectAll(".identity")
+          .data(identities)
+          .enter();
+          
+        identity.append("svg:rect")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+                .attr("class","identity-line")
+
+        identity.append("text")
+            .attr("transform", label_position_transform)
+                .style("text-anchor", "start")
+                .attr("dx", ".1em")     
+                .attr("class","identity-label")
+          .text(function(d,i) { return d.entity.name; })
+            .attr('style','cursor:pointer;')
+            .on("click",function(d){ delegateLink( d.entity.url); });          
+            
+    // Labels         
+            
+    var label = svg.selectAll(".labels")
+          .data(labels)
+          .enter();
+          
+        label.append("svg:rect")
+                .attr("x", rect.x)
+                .attr("y", rect.y)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+            .attr("class","label-line");
+
+        label.append("text")
+            .attr("transform", label_position_transform)
+                .style("text-anchor", "start")
+                .attr("dx", ".1em")     
+                .attr("class","label-label")
+            
+          .text(function(d){ return d.label; });
+    
+
+
+}
+
+
+
+
+/*
+
+NMR SPECTRA plot
+Specific line plot for NMR spectra vis
+
+*/
 
 function nmr_spectra(id, data, identities, labels) {
 
@@ -767,13 +956,20 @@ function scatter(id, data, x_axis_label, y_axis_label) {
     var width_d = size - margin.left - margin.right,
         height_d = size - margin.top - margin.bottom;
         
+        
+    xmin = d3.min(data, function(d) { return d.x; });
+    xmax = d3.max(data, function(d) { return d.x; });
+
+    ymax = d3.max(data, function(d) { return d.y; });
+    ymin = d3.min(data, function(d) { return d.y; });
+    
             
     var x = d3.scale.linear()
-              .domain([d3.min(data, function(d) { return d.x; }), d3.max(data, function(d) { return d.x; })])
+              .domain([xmin, xmax])
               .range([ 0, width_d ]);
     
     var y = d3.scale.linear()
-    	      .domain([d3.min(data, function(d) { return d.y; }), d3.max(data, function(d) { return d.y; })])
+    	      .domain([ymin, ymax])
     	      .range([ height_d, 0 ]);
     	      
     var classes = Array()
@@ -867,12 +1063,32 @@ function scatter(id, data, x_axis_label, y_axis_label) {
 	  .attr("x", width_d+margin.left+margin.right + 12)
       .attr("y", function(d, i){ return i *  15 + 9;})
 	  .text(function(d) { return d; });
+  
+  
+    g.append("line")
+            .attr(
+            {
+                "x1" : x(0),
+                "x2" : x(0),
+                "y1" : y(ymin),
+                "y2" : y(ymax),
+                "class":'zerogrid',
+            });
+    g.append("line")
+            .attr(
+            {
+                "x1" : x(xmin),
+                "x2" : x(xmax),
+                "y1" : y(0),
+                "y2" : y(0),
+                "class":'zerogrid',
+            });
       
 }
 
 
 
-// Scatter plot
+// Zeitgeist
 function zeitgeist(id, data) {
 
 idxy = getElementSize(id)
@@ -962,6 +1178,7 @@ var svg = d3.select(id)//.insert("svg",':first-child')
             .attr("y", function(d) { return y(d)+3 ; })
           //.style("fill", function(d) { return c(d); })
             .text( function(d) { return d; } );
+        
 
 }
 

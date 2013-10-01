@@ -22,7 +22,11 @@ circle {
     fill: steelblue;
 }
 
-
+.zerogrid {
+    stroke:#dddddd;
+    stroke-dasharray:5,5;
+    stroke-width:0.5pt;
+}
 
 
 ]]></style>

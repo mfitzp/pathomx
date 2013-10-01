@@ -7,6 +7,7 @@ Usage:
     python setup.py py2app
 """
 import sys
+from copy import copy
 import distribute_setup
 distribute_setup.use_setuptools()
 
@@ -29,18 +30,25 @@ default_build_options=dict(
         'PyQt5',
 #        'PySide',
         'numpy',
+        'scipy',
+        'nmrglue',
+        'gpml2svg',
+        'pydot',
+        'poster.encode',
+        'sklearn',
+#        'fileiobase',
 #        'sip',
         ],
     includes=[
         'sip',
         ],
     excludes=[
-        'scipy',
         '_xmlplus',
         'IPython',
         'test',
         'networkx',
         'wx',
+        'matplotlib',
         ],
     )
 
@@ -85,8 +93,21 @@ else:
     base = None
     exceutables = None
 
-    build_exe = dict()
-    build_mac = dict()
+    build_all = dict()
+
+    build_all['include_files']=[
+        ('metapath/static', 'static'),
+        ('metapath/database', 'database'),
+        ('metapath/plugins', 'plugins'),
+        ('metapath/identities', 'identities'),
+        ('metapath/html', 'html'),
+        ('metapath/icons', 'icons'),
+        ]
+
+    build_exe = copy(build_all)
+    build_mac = copy(build_all)
+    
+    build_mac['iconfile'] = 'metapath/static/icon.icns'
     
     base = None
     if sys.platform == "win32":
@@ -99,11 +120,10 @@ else:
     build_exe.update( default_build_options )
     build_mac.update( default_build_options )
     
-    
 
 setup(
 
-    name='metapath',
+    name='MetaPath',
     version=version_string,
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',

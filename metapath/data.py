@@ -637,8 +637,38 @@ class DataSet( QObject ):
                 final_shape[d] = shape[d]
                 
         self.data.resize( final_shape )
+
+
+    # DESTRUCTIVE remove invalid data from this dataset object
+    # Any inf/Nan values (any dimension) will be cleared; and labels/scales/entities/etc.
+    # updated to keep consistent
+    def remove_invalid_data(self, axis=1):   
         
-    
+        if type(axis) != type(list):
+            axis = [axis]
+          
+        # Filter each dimension in turn as specified (order affects results!)
+        for d in axis:  
+            if d == 0: #FIXME; how to do this properly?
+                dax = 1
+            else:
+                dax = 0
+                
+            mask = np.isfinite( np.mean( self.data, axis=dax ) )
+
+            self.labels[d]   = [ l for l,y in zip( self.labels[d], mask) if y ]
+            self.entities[d] = [ l for l,y in zip( self.entities[d], mask) if y ]
+            self.scales[d]   = [ l for l,y in zip( self.scales[d], mask) if y ]
+            self.classes[d]  = [ l for l,y in zip( self.classes[d], mask) if y ]
+
+            if d == 0:
+                self.data = self.data[ mask,: ]            
+            if d == 1:
+                self.data = self.data[ :,mask ]            
+
+        print self.labels
+                    
+        
     
     
     

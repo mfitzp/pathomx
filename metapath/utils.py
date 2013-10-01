@@ -192,7 +192,7 @@ pkg = find_packager()
 if pkg == None:
     scriptdir = os.path.realpath(__file__).rpartition('/')[0]
 elif pkg == True:
-    scriptdir = os.path.join( os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding( ))), 'metapath' )
+    scriptdir = os.path.dirname(sys.executable)
 elif pkg == 'py2app':
     #'/Applications/MetaPath.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']

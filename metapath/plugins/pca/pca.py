@@ -18,7 +18,7 @@ import os
 from copy import copy
 
 import numpy as np
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 
 import ui, db, utils
 from data import DataSet, DataDefinition
@@ -32,6 +32,9 @@ class PCAView( ui.AnalysisView ):
         
         self.addDataToolBar()
         self.addFigureToolBar()
+        
+        self.weights = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
+        self.tabs.addTab(self.weights,'Weights')
         
         self.data.add_interface('scores')
         self.data.add_interface('weights')
@@ -61,12 +64,15 @@ class PCAView( ui.AnalysisView ):
         
         pca = PCA(n_components=2)
         pca.fit(data.T) # Transpose it, as vars need to along the top
-
+        
+        weights = pca.transform(data.T) # Get weights?
+        
         print pca.explained_variance_ratio_
         print pca.explained_variance_
         print pca.components_.shape
         
         # Build a list object of class, x, y
+        
         
         figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
         metadata = {
@@ -78,6 +84,31 @@ class PCAView( ui.AnalysisView ):
         }
         
         self.render(metadata, template='d3/pca.svg')
+
+        if 'NoneType' in dso.scales_t[1]:
+            dso.scales[1] = range(0, len( dso.scales[1] ) )
+        
+        # Label up the top 10 (the values are retained; just for clarity)
+        wmx = np.amax( np.absolute( weights), axis=1 )
+
+        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-20:] # Top 20
+        
+        dso_z = [x for x, wmx in dso_z ]    
+        
+        metadata = {
+            'figure':{
+                'data': zip( dso.scales[1], weights ),  
+                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
+                'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
+            }
+        }
+        print weights.shape
+        
+        
+        self.render(metadata, template='d3/line.svg', target=self.weights)
+        
+        # Do the weights plot
         
                 
 

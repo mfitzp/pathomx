@@ -484,22 +484,6 @@ class GenericView( QMainWindow ):
                 # Add the pathway and regenerate
                 self.onSelectDataSource()        
 
-
-
-# Data view prototypes
-
-class DataView(GenericView):
-    def __init__(self, plugin, parent, **kwargs):
-        super(DataView, self).__init__(plugin, parent, **kwargs)
-
-        self.summary = QWebViewExtend(self)
-        self.table = QTableView()
-        self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
-
-        self.tabs.addTab(self.table,'Table')
-        self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
-        self.tabs.setTabEnabled( self.viewer_tab_index, False)
-        #self.tabs.addTab(self.summary, 'Summary')
         
     def _build_entity_cmp(self,s,e,l):
         return e == None
@@ -526,7 +510,22 @@ class DataView(GenericView):
         
         print "%s reduced to %s" % ( no, len(accumulator) ) 
         return accumulator
-        
+
+
+# Data view prototypes
+
+class DataView(GenericView):
+    def __init__(self, plugin, parent, **kwargs):
+        super(DataView, self).__init__(plugin, parent, **kwargs)
+
+        self.summary = QWebViewExtend(self)
+        self.table = QTableView()
+        self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
+
+        self.tabs.addTab(self.table,'Table')
+        self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
+        self.tabs.setTabEnabled( self.viewer_tab_index, False)
+        #self.tabs.addTab(self.summary, 'Summary')
 
     def render(self, metadata):
         # If we have scale data, enable and render the Viewer tab
@@ -562,7 +561,7 @@ class DataView(GenericView):
 
                 template = self.m.templateEngine.get_template('d3/spectra.svg')
                 self.viewer.setSVG(template.render( metadata ))
-            
+
         return
         
 
@@ -625,15 +624,51 @@ class AnalysisView(GenericView):
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
         self.tabs.addTab(self.browser, 'View')
     
-    def render(self, metadata, template='d3/figure.svg'):
+    def render(self, metadata, template='d3/figure.svg', target=None):
+        if target == None:
+            target = self.browser
+            
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
         template = self.m.templateEngine.get_template(template)
-        self.browser.setSVG(template.render( metadata ))
+        target.setSVG(template.render( metadata ))
         
-    #self.build_log2_change_table_of_classtypes( self.phosphate, labelsX )
-    def build_log2_change_table_of_classtypes(self, objs, classes):
-        dso = self.data.i['input']
+                
+        f = open("/Users/mxf793/Desktop/test.svg","w")
+        f.write(template.render( metadata ))
+        f.close()                
+        
+        
+    # Build change table 
+    def build_change_table_of_classes(self, dso, objs, classes):
+        
+        # Reduce dimensionality; combine all class/entity objects via np.mean()
+        dso = dso.as_summary()
+        
+        #FIXME: Need to allow entities to be passed in and use entity / labels
+        #entities = []
+        #for o in objs:
+        #    entities.extend( [ self.m.db.index[id] for id in o if id in self.m.db.index] )
+         
+           
+        # Filter for the things we're displaying
+        dso = dso.as_filtered( labels=objs)
+
+        #data = data.as_class_grouped(classes=classes)
+        data = np.zeros( (len(objs), len(classes)) )
+
+        for y,l in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
+            for x,c in enumerate(classes):
+                try:
+                    #e = self.m.db.index[o] # Get entity for lookup
+                    data[y,x] = dso.data[ dso.classes[0].index(c), dso.labels[1].index(l) ]
+                except: # Can't find it
+                    pass
+                
+        return data
+  
+  
+    def build_change_table_of_entitytypes(self, dso, objs, entityt):
         
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
@@ -645,7 +680,7 @@ class AnalysisView(GenericView):
         dso = dso.as_filtered( entities=entities)
 
         #data = data.as_class_grouped(classes=classes)
-        data = np.zeros( (len(objs), len(classes)) )
+        data = np.zeros( (len(objs), len(entityt)) )
 
         for y,obj in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
             for x,o in enumerate(obj):
@@ -735,7 +770,11 @@ class AnalysisD3View(AnalysisView):
         
         template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
         self.browser.setSVG(template.render( metadata ))
-                    
+
+                
+        f = open("/Users/mxf793/Desktop/test.svg","w")
+        f.write(template.render( metadata ))
+        f.close()                
         
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
@@ -782,7 +821,8 @@ class D3View(AnalysisView):
         template = self.parent.templateEngine.get_template('d3/force.svg')
 
         self.browser.setSVG(template.render( metadata ))
-      
+
+          
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis

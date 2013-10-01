@@ -218,6 +218,7 @@ class gpmlPathwayView(ui.AnalysisView):
                 self.generate()
                 
                 self.set_name( self.metadata['Name'] )
+                
 
 
 

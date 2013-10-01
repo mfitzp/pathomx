@@ -47,6 +47,9 @@ class TransformView( ui.DataView ):
             'log2':self._log2,
             'log10':self._log10,
             'Zero baseline':self._zero_baseline,
+            'Mean center':self._mean_center,
+            'Auto minima':self._zero_minima,
+            'Remove invalid data':self._remove_invalid_data,
         }
         
         self.hm_control.addItems( [h for h in self.transform_options.keys()] )
@@ -61,6 +64,7 @@ class TransformView( ui.DataView ):
     
     def onChangeTransform(self):
         self._apply_transform = self.hm_control.currentText()
+        self.set_name( self._apply_transform )
         self.generate()
                
     # Data file import handlers (#FIXME probably shouldn't be here)
@@ -90,7 +94,24 @@ class TransformView( ui.DataView ):
         minima = np.min( dso.data )
         dso.data = dso.data + -minima
         return dso
+
+    def _zero_minima(self,dso):
+        minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
+        # Get the dso filtered by class
+        dso.data[ dso.data <= 0] = minima
+        return dso
         
+    def _mean_center(self, dso):
+        center = np.mean( dso.data, axis=0) # Assume it
+        dso.data = dso.data -center
+        return dso
+        
+    def _remove_invalid_data(self,dso):
+        # Remove invalid data (Nan/inf) from the data
+        # and adjust rest of the data object to fit
+        dso.remove_invalid_data()
+        return dso
+                
         
     def _transpose(self, dso):
         pass

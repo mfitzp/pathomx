@@ -40,18 +40,33 @@ class NMRPeakPickingView( ui.DataView ):
             })
         )
         
-        self._peak_threshold = 0.001
+        self._peak_threshold = 0.05
             
         th = self.addToolBar('Peak Picking')
         self.threshold_spin = QDoubleSpinBox()
         self.threshold_spin.setDecimals(3)
-        self.threshold_spin.setRange(0.001,1)
+        self.threshold_spin.setRange(0.005,1)
         self.threshold_spin.setSuffix('rel')
-        self.threshold_spin.setSingleStep(0.001)
+        self.threshold_spin.setSingleStep(0.005)
+        self.threshold_spin.setValue(self._peak_threshold)
         self.threshold_spin.valueChanged.connect(self.onChangePeakParameters)
         tl = QLabel('Threshold')
         th.addWidget(tl)
         th.addWidget(self.threshold_spin)
+
+        self._peak_separation = 0.5
+            
+        self.separation_spin = QDoubleSpinBox()
+        self.separation_spin.setDecimals(1)
+        self.separation_spin.setRange(0,5)
+        self.separation_spin.setSingleStep(0.5)
+        self.separation_spin.setValue(self._peak_separation)
+        self.separation_spin.valueChanged.connect(self.onChangePeakParameters)
+        tl = QLabel('Separation')
+        tl.setIndent(5)
+        th.addWidget(tl)
+        th.addWidget(self.separation_spin)
+
 
         self._peak_algorithm = 'Threshold'
 
@@ -82,6 +97,7 @@ class NMRPeakPickingView( ui.DataView ):
 
     def onChangePeakParameters(self):
         self._peak_threshold = float( self.threshold_spin.value() )
+        self._peak_separation = float( self.separation_spin.value() )
         self._peak_algorithm = self.algorithm_cb.currentText()
         self.generate()
 
@@ -99,7 +115,7 @@ class NMRPeakPickingView( ui.DataView ):
         
         threshold = self._peak_threshold
         algorithm = self.algorithms[self._peak_algorithm]
-        msep = (1,)
+        msep = (self._peak_separation,)
         
         # Take input dataset and flatten in first dimension (average spectra)
         data_avg = np.mean( dsi.data, axis=0)

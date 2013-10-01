@@ -60,8 +60,8 @@
          data = [
             @for d in figure['data']:
                 {
-                'ppm':@d[0]!s,
-                'intensity':{
+                'x':@d[0]!s,
+                'y':{
                 @for n,i in enumerate( d[1] ):
                     "@n!s": @i!s,
                 @endfor
@@ -69,30 +69,34 @@
                 },
             @endfor
             ];
-         compounds = [
-            @for d in figure['compounds']:
-                {
-                'ppm':@d[0]!s,
-                'ppm_end':@d[1]!s,
-                'compound':{
-                    'id':'@d[2].id!s',
-                    'name':"@d[2].name!s",
-                    'url':"@d[2].url!s",
-                    }
-                },
+         entities = [
+            @for d in figure['entities']:
+                @if d[2]:
+                    {
+                    'x':@d[0]!s,
+                    'x_end':@d[1]!s,
+                    'entity':{
+                        'id':'@d[2].id!s',
+                        'name':"@d[2].name!s",
+                        'url':"@d[2].url!s",
+                        }
+                    },
+                @endif
             @endfor
             ];
              labels = [
             @for d in figure['labels']:
-                {
-                'ppm':@d[0]!s,
-                'ppm_end':@d[1]!s,
-                'label':"@d[2]!s"
-                },
+                @if d[2]:
+                    {
+                    'x':@d[0]!s,
+                    'x_end':@d[1]!s,
+                    'label':"@d[2]!s"
+                    },
+                @endif
             @endfor
             ];      
         function _metapath_render_trigger(){
-            nmr_spectra(id, data, compounds, labels);
+            lineplot(id, data, entities, labels);
         }
     </script>
 
