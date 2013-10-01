@@ -109,8 +109,6 @@ class ImportTextView( ui.ImportDataView ):
                         c = 0
                     quants.append(c)
             # Add the data to the data array; transposed
-            print data.shape
-            print np.array(quants).shape
             data = np.hstack( [data, np.reshape( np.array(quants), newshape=(len(quants),1) ) ] )
         
         xdim = len( quants )
@@ -159,8 +157,12 @@ class ImportTextView( ui.ImportDataView ):
                 samples.append( row[0] )
                 classes.append( row[1] )  
                 data_row = []
-                for i in row[2:]: # in self.metabolites:
-                    data_row.append( float(i) )
+                for c in row[2:]: # in self.metabolites:
+                    try:
+                        c = float(c)
+                    except:
+                        c = 0
+                    data_row.append( c )
                     
                 raw_data.append( data_row ) 
                     #metabolite_column = hrow.index( metabolite )   

@@ -91,11 +91,12 @@ function heatmap(id, buckets, scale){
                 .domain(ylabels)
                 .rangeBands([0, ylabels.length*cellh]),
         z = d3.scale
-                .pow()
-                .exponent(.5)
+                    .linear()
+//                .pow()
+//                .exponent(.5)
                 .domain( [-r , 0, +r] )
                 //.domain( [d3.min(buckets, function(d) { return d.value; }) , 0, d3.max(buckets, function(d) { return d.value; })] )
-                .range(["#2166ac","#f7f7f7","#b2182b"]);
+                .range(["#2166ac","#f5f5f5","#b2182b"]);
                 
     function safez(num){ return isNaN(num) ? "#ffffff" : z(num); } 
 

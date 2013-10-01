@@ -63,7 +63,8 @@ class DataManager( QObject ):
             self.o[interface].manager = self
             self.o[interface].manager_interface = interface
             # Update consumers / refresh views
-            self.o[interface].as_table.refresh()            
+            self.o[interface].as_table.refresh()    
+            self.o[interface].previously_managed_by.append(self)
             self.notify_watchers(interface)
             return True
         return False
@@ -98,11 +99,18 @@ class DataManager( QObject ):
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
     def can_consume(self, data, consumer_defs=None):
-        if data.manager == self:
-            return False
 
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
+
+        # Don't add data from self manager (infinite loop trigger)
+        if data.manager == self:
+            return False
+            
+        # Don't add data which belongs to a child
+        if self in data.previously_managed_by:
+            print data.previously_managed_by
+            return False
 
         for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
@@ -127,11 +135,15 @@ class DataManager( QObject ):
         # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
         # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
         # Register this as an attribute in the current object
-        if data.manager == self:
-            return False
-        
+        #if data.manager == self:
+        #    return False
+        #
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
+        
+        # Check whether this is allow (checks manager, checks hierarchy (infinite loopage) )
+        if not self.can_consume( data, consumer_defs):
+            return False
             
         for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
@@ -319,6 +331,7 @@ class DataSet( QObject ):
         # DataSet must be assigned to a data manager for inter-object updates/communication to work
         self.manager = manager
         self.manager_interface = None
+        self.previously_managed_by = []
         
         self.consumers = [] # List of managers that consume this data object (access; but dont affect)
     
@@ -359,6 +372,8 @@ class DataSet( QObject ):
 
         o.data = deepcopy(self.data)
         
+        o.previously_managed_by = [n for n in self.previously_managed_by]
+        
         return o
     
     # Wipes the data and metadata from the object; but does not alter references to it (or name/description)
@@ -391,13 +406,15 @@ class DataSet( QObject ):
         self.axes = deepcopy(dso.axes)
 
         self.labels = deepcopy(dso.labels)
-        self.entities = dso.entities[:]
+        self.entities = [copy(e) for e in dso.entities]
         self.scales = deepcopy(dso.scales)
         self.classes = deepcopy(dso.classes)
 
         self.data  = deepcopy(dso.data)
-        
+    
+        self.previously_managed_by = [n for n in dso.previously_managed_by]
 
+    
     def register_interface(self, interface_name, interface):
         self.__dict__[ interface_name ] = interface
         self.interfaces.append( interface )        
