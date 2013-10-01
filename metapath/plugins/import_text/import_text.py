@@ -41,7 +41,6 @@ class ImportTextView( ui.ImportDataView ):
         fn, fe = os.path.splitext(filename)
         formats = { # Run specific loading function for different source data types
                 '.csv': self.load_csv,
-                '': self.load_txt,
             }
             
         if fe in formats.keys():
@@ -80,51 +79,61 @@ class ImportTextView( ui.ImportDataView ):
                 return self.load_csv_C(filename)
 
 
-    def load_txt(self, filename):
-        # Wrapper function to allow loading from alternative format txt files
-        # Currently only supports Metabolights format files
-        reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
-        hrow = reader.next() # Get top row
-        
-        if hrow[0].lower() == 'database_identifier': # M format metabolights
-            return self.load_metabolights(filename)
-
-        if hrow[0].lower() == 'identifier': # A format metabolights
-            return self.load_metabolights(filename, id_col=0, name_col=2, data_col=19)
-
-
 ###### LOAD HANDLERS
 
     def load_csv_C(self, filename): # Load from csv with experiments in COLUMNS, metabolites in ROWS
-        
+        print "WAY!"
         # Read in data for the graphing metabolite, with associated value (generate mean)
         reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
         
         hrow = reader.next() # Discard top row (sample no's)
+        samples = hrow[1:]
+
         hrow = reader.next() # Get 2nd row
-        classes = hrow[1:]
+        classesa = hrow[1:]
+        classes = [c for c in classesa if c != '.' ]
+
         metabolites = []
         
+        data = np.zeros( shape=(len(classes), 0) )
         
-        for row in reader:
+        for n,row in enumerate(reader):
             metabolite = row[0]
             metabolites.append( row[0] )
-            quantities[ metabolite ] = defaultdict(list)
-
+            quants = []
             for n, c in enumerate(row[1:]):
-                if self.classes[n] != '.':
+                if classesa[n] != '.':
                     try:
                         c = float(c)
                     except:
                         c = 0
-                    
-                    quantities[metabolite][ self.classes[n] ].append( c )
-                    #self.statistics['ymin'] = min( self.statistics['ymin'], c )
-                    #self.statistics['ymax'] = max( self.statistics['ymax'], c )
-
-        #self.statistics['excluded'] = self.classes.count('.')
-        classes = set( [c for c in self.classes if c != '.' ] )
+                    quants.append(c)
+            # Add the data to the data array; transposed
+            print data.shape
+            print np.array(quants).shape
+            data = np.hstack( [data, np.reshape( np.array(quants), newshape=(len(quants),1) ) ] )
         
+        xdim = len( quants )
+        ydim = len( classes )
+
+        # Build dataset object        
+        dso = DataSet( size=(xdim, ydim) ) #self.add_data('imported_data', DataSetself) )
+        dso.empty(size=(ydim, xdim))
+        dso.labels[1] = metabolites
+        
+        scales = []
+        for m in metabolites:
+            try:
+                scales.append( float(m) )
+            except:
+                scales.append( None )
+                
+        dso.scales[1] = scales
+        dso.labels[0] = samples
+        dso.classes[0] = classes
+        dso.data = data
+   
+        return dso
                 
     def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
        
