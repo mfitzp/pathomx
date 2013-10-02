@@ -344,13 +344,17 @@ class GenericView( QMainWindow ):
         self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-
+        
         #self.w = QMainWindow()
         self.tabs = QTabWidgetExtend(self)
         self.tabs.setDocumentMode(True)
         self.tabs.setTabsClosable(False)
         self.tabs.setTabPosition( QTabWidget.South )
         self.tabs.setMovable(True)
+        
+        self.file_watcher = QFileSystemWatcher()            
+        self.file_watcher.fileChanged.connect( self.onFileChanged )
+        
         
         if self.plugin.help_tab_html_filename:
             self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
@@ -380,7 +384,16 @@ class GenericView( QMainWindow ):
     def render(self, metadata):
         return
     
+    def autogenerate(self, *args, **kwargs):
+        print "WAH!"
+        if self._pause_analysis_flag:
+            self.setWorkspaceStatus('paused')
+            return False
+            
+        self.generate(*args, **kwargs)
+    
     def generate(self):
+        print "eh"
         return
     
     
@@ -404,7 +417,7 @@ class GenericView( QMainWindow ):
         self.m.clearWorkspaceStatus( self.workspace_item )
 
 
-    def addDataToolBar(self):            
+    def addDataToolBar(self, default_pause_analysis=False):            
         t = self.addToolBar('Data')
         t.setIconSize( QSize(16,16) )
 
@@ -417,6 +430,14 @@ class GenericView( QMainWindow ):
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
+        
+        pause_analysisAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'control-pause.png' ) ), 'Pause automatic analysis\u2026', self.m)
+        pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
+        pause_analysisAction.setCheckable(True)
+        pause_analysisAction.setChecked(default_pause_analysis)
+        pause_analysisAction.toggled.connect(self.onAutoAnalysisToggle)
+        t.addAction(pause_analysisAction)        
+        self._pause_analysis_flag = default_pause_analysis
 
         select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-output.png' ) ), 'View resulting data\u2026', self.m)
         select_dataAction.setStatusTip('View resulting data output from this plugin')
@@ -451,17 +472,45 @@ class GenericView( QMainWindow ):
         dialog = DialogDataOutput(parent=self, view=self)        
         dialog.exec_()
 
+    def getCreatedToolbar(self, name, id):
+        if id not in self.toolbars:       
+            self.toolbars[id] = self.addToolBar(name)
+            self.toolbars[id].setIconSize( QSize(16,16) )
+
+        return self.toolbars[id] 
+
     def addFigureToolBar(self):            
-        t = self.addToolBar('Image')
-        t.setIconSize( QSize(16,16) )
+        t = self.getCreatedToolbar('Figures','figure')
 
         export_imageAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'image-export.png' ) ), 'Export current figure as image\u2026', self.m)
         export_imageAction.setStatusTip('Export figure to image')
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
-        
-        self.toolbars['image'] = t
 
+    def addExternalDataToolbar(self):     
+        t = self.getCreatedToolbar('External Data','external-data')
+        
+        watch_fileAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'eye--exclamation.png' ) ), 'Watch data file(s) for changes\u2026', self.m)
+        watch_fileAction.setStatusTip('Watch external data file(s) for changes and automatically refresh')
+        watch_fileAction.triggered.connect(self.onWatchSourceDataToggle)
+        watch_fileAction.setCheckable(True)
+        watch_fileAction.setChecked(False)
+        t.addAction(watch_fileAction)
+        self._autoload_source_files_on_change = False
+
+
+    
+    def onWatchSourceDataToggle(self, checked):
+        self._autoload_source_files_on_change = checked
+
+    def onAutoAnalysisToggle(self, checked):
+        self._pause_analysis_flag = checked
+        
+    def onFileChanged(self, file):
+        if self._autoload_source_files_on_change:
+            self.load_datafile( file )
+    
+    
     def onSaveImage(self):
         # Get currently selected webview
         self.tabs.currentWidget().saveAsImage('/Users/mxf793/Desktop/test.tiff')        
@@ -579,16 +628,8 @@ class ImportDataView( DataView ):
         self.data.add_interface('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
         
-        t = self.addToolBar('Data Import')
-        t.setIconSize( QSize(16,16) )
-
-        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import from file\u2026', self.m)
-        import_dataAction.setStatusTip('Import from a compatible file source')
-        import_dataAction.triggered.connect(self.onImportData)
-        t.addAction(import_dataAction)
+        self.addImportDataToolbar()
         
-        self.toolbars['data_import'] = t
-
         fn = self.onImportData()
 
     def onImportData(self):
@@ -609,6 +650,15 @@ class ImportDataView( DataView ):
         pass
         #self.load_datafile( file )
 
+    def addImportDataToolbar(self):   
+        t = self.getCreatedToolbar('External Data','external-data')
+        
+        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import %s file\u2026' % self.import_type, self.m)
+        import_dataAction.setStatusTip(self.import_description)
+        import_dataAction.triggered.connect(self.onImportData)
+        t.addAction(import_dataAction)
+    
+        self.addExternalDataToolbar()
 
 
 
@@ -1308,13 +1358,14 @@ class MainWindowUI(QMainWindow):
             'active':   QIcon( os.path.join( utils.scriptdir,'icons','flag-green.png' ) ),
             'waiting':  QIcon( os.path.join( utils.scriptdir,'icons','flag-yellow.png' ) ),
             'error':    QIcon( os.path.join( utils.scriptdir,'icons','flag-red.png' ) ),
+            'paused':  QIcon( os.path.join( utils.scriptdir,'icons','flag-white.png' ) ),
             'done':     QIcon( os.path.join( utils.scriptdir,'icons','flag-checker.png' ) ),
             'clear':    QIcon(None)
         }
-
+            
         if status not in status_icons.keys():
             status = 'clear'
-            
+
         workspace_item.setIcon(3, status_icons[status] )
         self.workspace.update( self.workspace.indexFromItem( workspace_item ) )
         self.app.processEvents()

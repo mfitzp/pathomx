@@ -61,67 +61,6 @@ class AnalysisMetaboliteView(ui.AnalysisHeatmapView):
         
 
 
-
-class analysisEnergyWasteView(ui.AnalysisHeatmapView):
-
-    def generate(self):
-        # Standard energy sources (CHO)
-        m_energy = ['GLC','GLN',
-        # Standard energy modulators (co-factors, carriers, etc.)
-                    'CARNITINE',
-        # Standard waste metabolites
-                    'L-LACTATE',]
-
-        # Build table of metabolic endpoints
-        # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)
-        endpoints = []
-        for k,m in self.parent.db.metabolites.items():
-            if m.type == 'compound':
-                for r in m.reactions:
-                    if m in r.mtins or r.dir == 'both':
-                        break    
-                else:
-                    # Only if we find no reactions
-                    endpoints.append(m.id)
-
-
-        labelsY = endpoints
-        labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() ) 
-        endpoint_data = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
-
-        labelsY = m_energy
-        energy_data = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
-
-        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
-                   # Buckets is an array x,y,value x = class, y metabolite, value 
-                    'figures': [[
-                                {
-                                    'type':'heatmap',
-                                    'data':endpoint_data,
-                                    'legend':('Relative change in concentration of metabolic endpoints vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                              'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down. Metabolic endpoint in this context refers to \
-                                              metabolites for which there exists no onward reaction in the database.'),
-                                    'scale':'Δlog2',
-                                    'n':1,
-                                    
-                                },
-                                {
-                                    'type':'heatmap',
-                                    'data':energy_data,
-                                    'legend':('Relative change in concentration of common energy sources, carriers and sinks vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                              'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
-                                    'scale':'Δlog2',
-                                    'n':2,
-                                }                    
-                               ]],                   
-                    }                   
-
-        self.render(metadata)
-        
-        
-        
-        
-        
         
 
 # Class for data visualisations using GPML formatted pathways
@@ -149,10 +88,8 @@ class HeatmapView(ui.AnalysisHeatmapView):
         t.addWidget(t.hm_control)
         self.toolbars['heatmap'] = t
         
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
 
     def equilibrium_table_builder(self, objs):
         result = []
@@ -193,7 +130,21 @@ class HeatmapView(ui.AnalysisHeatmapView):
                                 result.append( [mtin.id, mtout.id] )  
 
         return result
+    
 
+    # Build table of metabolic endpoints
+    # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)    
+    def endpoint_table_builder(self):
+        endpoints = []
+        for k,m in self.m.db.compounds.items():
+            if m.type == 'compound':
+                for r in m.reactions:
+                    if m in r.mtins or r.dir == 'both':
+                        break    
+                else:
+                    # Only if we find no reactions
+                    endpoints.append(m.id)   
+        return endpoints
 
     # Build lookup tables for pre-defined views (saves regenerating on view)
     def initialise_predefined_views(self):
@@ -205,10 +156,12 @@ class HeatmapView(ui.AnalysisHeatmapView):
             'Phosphate balance': self._phosphate_balance,
             'Redox': self._redox,
             'Proton Balance': self._proton_balance,
-            'Energy/Waste': self._energy_waste,
+            #'Metabolic endpoints': self._endpoints,
+            #'Energy/Waste': self._energy_waste,
             'Top Metabolites': self._top_metabolites,
             'Top Metabolites (+)': self._top_metabolites_up,
             'Top Metabolites (-)': self._top_metabolites_down,
+            
             }
 
 
@@ -269,8 +222,15 @@ class HeatmapView(ui.AnalysisHeatmapView):
             #---
             'NADP':1, 'NADPH':1,
             }
-                
-
+            
+        # Standard energy sources (CHO)
+        self.energy = ['GLC','GLN',
+        # Standard energy modulators (co-factors, carriers, etc.)
+                    'CARNITINE',
+        # Standard waste metabolites
+                    'L-LACTATE',]
+         
+        self.endpoints = self.endpoint_table_builder()
         # Build redox reaction table
         # Iterate database, find any reactions with a PROTON in left/right reaction
         # - or NAD->NADH or, or, or
@@ -297,7 +257,15 @@ class HeatmapView(ui.AnalysisHeatmapView):
     
     def _energy_waste(self):
         dso = self.data.get('input')
-        return non
+        labelsY = self.energy
+        labelsX = dso.classes[0]
+        return self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
+
+    def _endpoints(self):
+        dso = self.data.get('input')
+        labelsY = self.endpoints
+        labelsX = dso.classes[0]
+        return self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
 
     def _top_metabolites(self, fn=abs):
         dso = self.data.get('input')
@@ -311,9 +279,6 @@ class HeatmapView(ui.AnalysisHeatmapView):
         labelsX = dso.classes[0]
 
         return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), remove_empty_rows=True, sort_data=True)
-
-        #return self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
-        #data2 = self.build_heatmap_buckets( labelsX, labelsY, self.build_raw_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
     
     def _top_metabolites_up(self):
         fn = lambda x: x if x>0 else 0

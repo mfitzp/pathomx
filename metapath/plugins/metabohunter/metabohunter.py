@@ -43,7 +43,8 @@ class MetaboHunterView( ui.DataView ):
 
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
-        self.addDataToolBar()
+        self.addDataToolBar(default_pause_analysis=True)
+        
         self.data.add_interface('output')
         self.table.setModel(self.data.o['output'].as_table)
         
@@ -55,10 +56,9 @@ class MetaboHunterView( ui.DataView ):
             })
         )
         
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
 
         
     def generate(self):

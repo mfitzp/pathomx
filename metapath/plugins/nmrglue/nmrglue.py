@@ -31,8 +31,7 @@ class NMRGlueView( ui.DataView ):
         self.data.add_interface('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
         
-        t = self.addToolBar('NMR Import')
-        t.setIconSize( QSize(16,16) )
+        t = self.getCreatedToolbar('NMR Import','nmr-import')
 
         import_dataAction = QAction( QIcon( os.path.join(  self.plugin.path, 'bruker.png' ) ), 'Import spectra from Bruker spectra\u2026', self.m)
         import_dataAction.setStatusTip('Import spectra from Bruker format')
@@ -107,8 +106,6 @@ class NMRGlueView( ui.DataView ):
             
         return False
         
-    def onFileChanged(self, file):
-        self.load_datafile( file )
 
     def process_data_to_dso(self, nmr_data, nmr_ppms, sample_labels, experiment_name):
         

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -12,6 +12,7 @@ from PyQt5.QtPrintSupport import *
 
 import os, copy
 
+from utils import UnicodeReader, UnicodeWriter
 from plugins import IdentificationPlugin
 
 import numpy as np
@@ -34,13 +35,16 @@ class MapEntityView( ui.GenericView ):
         self.browser = ui.QWebViewExtend(self.tabs, self.m.onBrowserNav)
         self.tabs.addTab(self.browser, 'Entities')
     
-        t = self.addToolBar('Entity Mapping')
-        t.setIconSize( QSize(16,16) )
+        t = self.getCreatedToolbar('Entity mapping','external-data')
 
-        load_mappingAction = QAction( QIcon( os.path.join(  self.plugin.path, 'bruker.png' ) ), 'Import manual entity mapping\u2026', self.m)
-        load_mappingAction.setStatusTip('Import manual mapping from names to MetaCyc entities')
-        load_mappingAction.triggered.connect(self.onImportEntities)
-        t.addAction(load_mappingAction)        
+        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Load annotations from file\u2026', self.m)
+        import_dataAction.setStatusTip('Load annotations from .csv. file')
+        import_dataAction.triggered.connect(self.onImportEntities)
+        t.addAction(import_dataAction)
+
+        self.addExternalDataToolbar() # Add standard source data options
+
+     
         
         self._entity_mapping_table = {}
         
@@ -52,43 +56,46 @@ class MapEntityView( ui.GenericView ):
             })
         )
         
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
 
     def onImportEntities(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, 'Load CSV mapping for name <> identity', "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)")
+        filename, _ = QFileDialog.getOpenFileName(self.m, 'Load entity mapping from file', 'Load CSV mapping for name <> identity', "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)")
         if filename:
-
-            self._entity_mapping_table = {}
-            # Load metabolite entities mapping from file (csv)
-            reader = csv.reader( open( filename, 'rU'), delimiter='\t', dialect='excel')
-    
-            # Read each row in turn, build link between items on a row (multiway map)
-            # If either can find an entity (via synonyms; make the link)
-            for row in reader:
-                for s in row:
-                    if s in self.m.db.index:
-                        e = self.m.db.index[ s ]
-                        break
-                else:
-                    continue # next row if we find nothing
-                    
-                # break to here if we do
-                for s in row:
-                    self._entity_mapping_table[ s ] = e
-                    
-            
-            print self._entity_mapping_table
+            self.load_datafile(filename)
                 
+    def load_datafile(self,filename):
+
+        self._entity_mapping_table = {}
+        # Load metabolite entities mapping from file (csv)
+        reader = UnicodeReader( open( filename, 'rU'), delimiter=',', dialect='excel')
+
+        # Read each row in turn, build link between items on a row (multiway map)
+        # If either can find an entity (via synonyms; make the link)
+        for row in reader:
+            for s in row:
+                if s in self.m.db.index:
+                    e = self.m.db.index[ s ]
+                    break
+            else:
+                continue # next row if we find nothing
+                
+            # break to here if we do
+            for s in row:
+                self._entity_mapping_table[ s ] = e
+        
+            self.generate()
+        
     
     def generate(self):
         self.setWorkspaceStatus('active')
     
         dsi = self.data.get('input')
-        #dso = DataSet( size=dsi.shape )
+        if dsi == False:
+            self.setWorkspaceStatus('error')
+            return False
     
         dso = self.translate( dsi, self.m.db)
 
@@ -117,8 +124,9 @@ class MapEntityView( ui.GenericView ):
         
             # Match first using entity mapping table if set (allows override of defaults)
             if m in self._entity_mapping_table:
-                data.entities[1][ n ] = db.index[ self._entity_mapping_table[ m ] ]
+                data.entities[1][ n ] = self._entity_mapping_table[ m ]
 
+            # Use the internal database identities
             elif m.lower() in db.synrev:
                 data.entities[1][ n ] = db.synrev[ m.lower() ]
                 

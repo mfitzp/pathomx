@@ -165,6 +165,10 @@ class PathwayMiningView( ui.AnalysisView ):
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
         dsi = self.data.get('input')
+        if dsi == False:
+            self.setWorkspaceStatus('error')
+            return False
+            
         db = self.m.db
 
         pathway_scores = defaultdict( int )
