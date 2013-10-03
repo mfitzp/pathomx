@@ -24,6 +24,15 @@ import numpy as np
 from db import Compound, Gene, Protein
 
 
+METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
+METAPATH_MINING_TYPE_TEXT = (
+    'Compound change scores for pathway',
+    'Compound up-regulation scores for pathway', 
+    'Compound down-regulation scores for pathway',
+    'Number compounds with data per pathway',
+)
+
+
     
 class dialogMiningSettings(ui.genericDialog):
 

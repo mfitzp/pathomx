@@ -44,14 +44,14 @@ class BinningView( ui.DataView ):
 
         self._bin_size = 0.01
             
-        th = self.addToolBar('Binning')
+        th = self.addToolBar( self.tr('Binning') )
         self.binsize_spin = QDoubleSpinBox()
         self.binsize_spin.setDecimals(3)
         self.binsize_spin.setRange(0.005,0.5)
         self.binsize_spin.setSuffix('ppm')
         self.binsize_spin.setSingleStep(0.005)
         self.binsize_spin.valueChanged.connect(self.onChangeBinParameters)
-        tl = QLabel('Size')
+        tl = QLabel( self.tr('Size') )
         th.addWidget(tl)
         th.addWidget(self.binsize_spin)
 
@@ -63,7 +63,7 @@ class BinningView( ui.DataView ):
         self.binoffset_spin.setSuffix('ppm')
         self.binoffset_spin.setSingleStep(0.001)
         self.binoffset_spin.valueChanged.connect(self.onChangeBinParameters)
-        tl = QLabel('Offset')
+        tl = QLabel( self.tr('Offset') )
         tl.setIndent(5)
         th.addWidget(tl)
         th.addWidget(self.binoffset_spin)

@@ -25,6 +25,8 @@ import numpy as np
 
 import data
 
+# Translation (@default context)
+from translate import tr
 
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
@@ -207,7 +209,7 @@ class DialogDataSource(genericDialog):
         self.v = view
         self.m = view.m
         
-        self.setWindowTitle("Select Data Source(s)")
+        self.setWindowTitle( tr("Select Data Source(s)") )
 
         # Build a list of dicts containing the widget
         # with target data in there
@@ -385,7 +387,6 @@ class GenericView( QMainWindow ):
         return
     
     def autogenerate(self, *args, **kwargs):
-        print "WAH!"
         if self._pause_analysis_flag:
             self.setWorkspaceStatus('paused')
             return False
@@ -393,15 +394,8 @@ class GenericView( QMainWindow ):
         self.generate(*args, **kwargs)
     
     def generate(self):
-        print "eh"
         return
     
-    
-        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), u'&Print\u2026', self)
-        printAction.setShortcut('Ctrl+P')
-        printAction.setStatusTip('Print current metabolic pathway')
-        printAction.triggered.connect(self.onPrint)
-        self.menuBar['file'].addAction(printAction)
         
     def set_name(self, name):
         self.name = name
@@ -421,17 +415,17 @@ class GenericView( QMainWindow ):
         t = self.addToolBar('Data')
         t.setIconSize( QSize(16,16) )
 
-        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-source.png' ) ), 'Select a data source\u2026', self.m)
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-source.png' ) ), tr('Select a data source…'), self.m)
         select_dataAction.setStatusTip('Select a compatible data source')
         select_dataAction.triggered.connect(self.onSelectDataSource)
         t.addAction(select_dataAction)
 
-        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'arrow-circle-double.png' ) ), 'Recalculate', self.m)
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'arrow-circle-double.png' ) ), tr('Recalculate'), self.m)
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
         
-        pause_analysisAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'control-pause.png' ) ), 'Pause automatic analysis\u2026', self.m)
+        pause_analysisAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'control-pause.png' ) ), tr('Pause automatic analysis'), self.m)
         pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
         pause_analysisAction.setCheckable(True)
         pause_analysisAction.setChecked(default_pause_analysis)
@@ -439,7 +433,7 @@ class GenericView( QMainWindow ):
         t.addAction(pause_analysisAction)        
         self._pause_analysis_flag = default_pause_analysis
 
-        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-output.png' ) ), 'View resulting data\u2026', self.m)
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'data-output.png' ) ), tr('View resulting data…'), self.m)
         select_dataAction.setStatusTip('View resulting data output from this plugin')
         select_dataAction.triggered.connect(self.onViewDataOutput)
         t.addAction(select_dataAction)
@@ -480,18 +474,37 @@ class GenericView( QMainWindow ):
         return self.toolbars[id] 
 
     def addFigureToolBar(self):            
-        t = self.getCreatedToolbar('Figures','figure')
+        t = self.getCreatedToolbar(tr('Figures'),'figure')
 
-        export_imageAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'image-export.png' ) ), 'Export current figure as image\u2026', self.m)
-        export_imageAction.setStatusTip('Export figure to image')
+        export_imageAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'image-export.png' ) ), tr('Export current figure as image…'), self.m)
+        export_imageAction.setStatusTip( tr('Export figure to image') )
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
 
+        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
+        printAction.setShortcut('Ctrl+P')
+        printAction.setStatusTip( tr('Print current figure') )
+        #printAction.triggered.connect(self.onPrint)
+        t.addAction(printAction)        
+                        
+        zoominAction = QAction(QIcon.fromTheme("zoom-in", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-in.png') )), tr('&Zoom in'), self)
+        zoominAction.setShortcut('Ctrl++')
+        zoominAction.setStatusTip( tr('Zoom in') )
+        #zoominAction.triggered.connect(self.onZoomIn)
+        t.addAction(zoominAction)
+
+        zoomoutAction = QAction(QIcon.fromTheme("zoom-out", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-out.png') )), tr('&Zoom out'), self)
+        zoomoutAction.setShortcut('Ctrl+-')
+        zoomoutAction.setStatusTip( tr('Zoom out') )
+        #zoomoutAction.triggered.connect(self.onZoomOut)
+        t.addAction(zoomoutAction)
+
+
     def addExternalDataToolbar(self):     
-        t = self.getCreatedToolbar('External Data','external-data')
+        t = self.getCreatedToolbar( tr('External Data'),'external-data')
         
-        watch_fileAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'eye--exclamation.png' ) ), 'Watch data file(s) for changes\u2026', self.m)
-        watch_fileAction.setStatusTip('Watch external data file(s) for changes and automatically refresh')
+        watch_fileAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'eye--exclamation.png' ) ), tr('Watch data file(s) for changes…'), self.m)
+        watch_fileAction.setStatusTip( tr('Watch external data file(s) for changes and automatically refresh') )
         watch_fileAction.triggered.connect(self.onWatchSourceDataToggle)
         watch_fileAction.setCheckable(True)
         watch_fileAction.setChecked(False)
@@ -571,8 +584,8 @@ class DataView(GenericView):
         self.table = QTableView()
         self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
 
-        self.tabs.addTab(self.table,'Table')
-        self.viewer_tab_index = self.tabs.addTab(self.viewer,'View')
+        self.tabs.addTab(self.table, tr('Table') )
+        self.viewer_tab_index = self.tabs.addTab(self.viewer, tr('View'))
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
         #self.tabs.addTab(self.summary, 'Summary')
 
@@ -618,9 +631,9 @@ class DataView(GenericView):
 
 class ImportDataView( DataView ):
 
-    import_type = 'Data'
-    import_filename_filter = "All Files (*.*);;"
-    import_description =  "Open experimental data from file"
+    import_type = tr('Data')
+    import_filename_filter = tr("All Files") + " (*.*);;"
+    import_description =  tr("Open experimental data from file")
     
     def __init__(self, plugin, parent, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
@@ -651,9 +664,9 @@ class ImportDataView( DataView ):
         #self.load_datafile( file )
 
     def addImportDataToolbar(self):   
-        t = self.getCreatedToolbar('External Data','external-data')
+        t = self.getCreatedToolbar( tr('External Data'),'external-data')
         
-        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import %s file\u2026' % self.import_type, self.m)
+        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import %s file…' % self.import_type, self.m)
         import_dataAction.setStatusTip(self.import_description)
         import_dataAction.triggered.connect(self.onImportData)
         t.addAction(import_dataAction)
@@ -672,7 +685,7 @@ class AnalysisView(GenericView):
         super(AnalysisView, self).__init__(plugin, parent, **kwargs)
 
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
-        self.tabs.addTab(self.browser, 'View')
+        self.tabs.addTab(self.browser, tr('View') )
     
     def render(self, metadata, template='d3/figure.svg', target=None):
         if target == None:
@@ -768,13 +781,13 @@ class AnalysisView(GenericView):
 
     def addExperimentToolBar(self):
 
-        t = self.addToolBar('Experiment')
+        t = self.addToolBar( tr('Experiment') )
         t.setIconSize( QSize(16,16) )
 
         # DATA MENU
-        define_experimentAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') ), 'Define experiment\u2026', self)
+        define_experimentAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','layout-design.png') ), tr('Define experiment…'), self)
         define_experimentAction.setShortcut('Ctrl+Q')
-        define_experimentAction.setStatusTip('Define experiment control, test and timecourse settings')
+        define_experimentAction.setStatusTip( tr('Define experiment control, test and timecourse settings') )
         define_experimentAction.triggered.connect(self.onDefineExperiment)
 
         t.addAction(define_experimentAction)
@@ -1061,135 +1074,76 @@ class MainWindowUI(QMainWindow):
 
         menubar = self.menuBar()
         self.menuBar = {
-            'file': menubar.addMenu('&File'),
-            'pathways': menubar.addMenu('&Pathways'),
-            'data': menubar.addMenu('&Data'),
-            'view': menubar.addMenu('&View'),
-            'database': menubar.addMenu('&Database'),
+            'file': menubar.addMenu( tr('&File') ),
+            'plugins': menubar.addMenu( tr('&Plugins') ),
+            'database': menubar.addMenu( tr('&Database') ),
         }
 
         # FILE MENU 
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'About', self)
-        aboutAction.setStatusTip('About MetaPath')
+        aboutAction.setStatusTip( tr('About MetaPath') )
         aboutAction.triggered.connect(self.onAbout)
         self.menuBar['file'].addAction(aboutAction)
 
-        newAction = QAction(QIcon.fromTheme("new-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-new.png') )), u'&New Blank Workspace', self)
-        newAction.setShortcut('Ctrl+O')
-        newAction.setStatusTip('Create new blank workspace')
+        newAction = QAction(QIcon.fromTheme("new-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-new.png') )), tr('&New Blank Workspace'), self)
+        newAction.setShortcut('Ctrl+N')
+        newAction.setStatusTip( tr('Create new blank workspace') )
         newAction.triggered.connect(self.onSaveAs)
         self.menuBar['file'].addAction(newAction)
         
 
-        openAction = QAction(QIcon.fromTheme("open-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') )), u'&Open\u2026', self)
+        openAction = QAction(QIcon.fromTheme("open-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') )), tr('&Open…'), self)
         openAction.setShortcut('Ctrl+O')
-        openAction.setStatusTip('Open previous analysis workspace')
+        openAction.setStatusTip( tr('Open previous analysis workspace') )
         openAction.triggered.connect(self.onSaveAs)
         self.menuBar['file'].addAction(openAction)
 
         self.menuBar['file'].addSeparator()
                 
-        saveAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') )), u'&Save', self)
+        saveAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') )), tr('&Save'), self)
         saveAction.setShortcut('Ctrl+S')
-        saveAction.setStatusTip('Save current workspace for future use')
+        saveAction.setStatusTip( tr('Save current workspace for future use') )
         saveAction.triggered.connect(self.onSaveAs)
         self.menuBar['file'].addAction(saveAction)
 
-        saveAsAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), u'Save &As\u2026', self)
+        saveAsAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
-        saveAsAction.setStatusTip('Save current workspace for future use')
+        saveAsAction.setStatusTip( tr('Save current workspace for future use') )
         saveAsAction.triggered.connect(self.onSaveAs)
         self.menuBar['file'].addAction(saveAsAction)
 
         self.menuBar['file'].addSeparator()        
 
-        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), u'&Print\u2026', self)
+        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
         printAction.setShortcut('Ctrl+P')
-        printAction.setStatusTip('Print current metabolic pathway')
+        printAction.setStatusTip( tr('Print current figure') )
         printAction.triggered.connect(self.onPrint)
         self.menuBar['file'].addAction(printAction)
 
         self.menuBar['file'].addSeparator()        
 
-        exportImagesAction = QAction(QIcon.fromTheme("image-export", QIcon( os.path.join( utils.scriptdir, 'icons', 'image-export.png') )), u'&Export figures\u2026', self)
-        exportImagesAction.setShortcut('Ctrl+E')
-        exportImagesAction.setStatusTip('Save current metabolic pathway map in multiple formats')
-        exportImagesAction.triggered.connect(self.onSaveAs)
-        self.menuBar['file'].addAction(exportImagesAction)
+        #exportImagesAction = QAction(QIcon.fromTheme("image-export", QIcon( os.path.join( utils.scriptdir, 'icons', 'image-export.png') )), tr('&Export figures…'), self)
+        #exportImagesAction.setShortcut('Ctrl+E')
+        #exportImagesAction.setStatusTip( tr('Save current figure') )
+        #exportImagesAction.triggered.connect(self.onSaveCurrentFigure)
+        #self.menuBar['file'].addAction(exportImagesAction)
 
-
-        resetAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','system-restart-panel.png') )), u'&Reset configuration', self)
-        resetAction.setStatusTip('Reset config to systm defaults')
-        resetAction.triggered.connect(self.onResetConfig)
-        self.menuBar['file'].addAction(resetAction)
-
-        #fileMenu.addAction(exitAction)
-
-        # PATHWAY MENU
-        show_pathwaysAction = QAction(QIcon.fromTheme("document-open", QIcon( os.path.join( utils.scriptdir,'icons','document-open.png') )), '&Show Selected Pathways\u2026', self)
-        show_pathwaysAction.setStatusTip('Show and hide specific metabolic pathways')
-        show_pathwaysAction.triggered.connect(self.onPathwaysShow)
-        self.menuBar['pathways'].addAction(show_pathwaysAction)
-
-
-
-        # VIEW MENU 
-        refreshAction = QAction(QIcon.fromTheme("view-refresh", QIcon( os.path.join( utils.scriptdir,'icons', 'refresh.png') )), u'&Refresh', self)
-        refreshAction.setShortcut('Ctrl+R')
-        refreshAction.setStatusTip('Refresh metabolic pathway map')
-        refreshAction.triggered.connect(self.onRefresh)
-        self.menuBar['view'].addAction(refreshAction)
-        
-        zoominAction = QAction(QIcon.fromTheme("zoom-in", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-in.png') )), u'&Zoom in', self)
-        zoominAction.setShortcut('Ctrl++')
-        zoominAction.setStatusTip('Zoom in')
-        zoominAction.triggered.connect(self.onZoomIn)
-        self.menuBar['view'].addAction(zoominAction)
-
-        zoomoutAction = QAction(QIcon.fromTheme("zoom-out", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-out.png') )), u'&Zoom out', self)
-        zoomoutAction.setShortcut('Ctrl+-')
-        zoomoutAction.setStatusTip('Zoom out')
-        zoomoutAction.triggered.connect(self.onZoomOut)
-        self.menuBar['view'].addAction(zoomoutAction)
-        
         
         # DATABASE MENU
-        load_identitiesAction = QAction(QIcon.fromTheme("document-import", QIcon( os.path.join( utils.scriptdir,'icons','database-import.png') )), u'&Load metabolite identities\u2026', self)
-        load_identitiesAction.setStatusTip('Load additional metabolite identities/synonyms')
+        load_identitiesAction = QAction(QIcon.fromTheme("document-import", QIcon( os.path.join( utils.scriptdir,'icons','database-import.png') )), tr('&Load database unification…'), self)
+        load_identitiesAction.setStatusTip('Load additional unification mappings into database')
         load_identitiesAction.triggered.connect(self.onLoadIdentities)
         self.menuBar['database'].addAction(load_identitiesAction)
         
         self.menuBar['database'].addSeparator()
         
-        reload_databaseAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','exclamation-red.png') )), u'&Reload database', self)
+        reload_databaseAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','exclamation-red.png') )), tr('&Reload database'), self)
         reload_databaseAction.setStatusTip('Reload pathway & metabolite database')
         reload_databaseAction.triggered.connect(self.onReloadDB)
         self.menuBar['database'].addAction(reload_databaseAction)
         
         
-        
-        # TOOLBARS
-        self.setToolButtonStyle( Qt.ToolButtonFollowStyle ) #Qt.ToolButtonTextUnderIcon
-        self.setIconSize( QSize(16,16) )
-        #self.setUnifiedTitleAndToolBarOnMac( True )
-        '''
-        self.fileToolbar = self.addToolBar('File')
-
-        self.fileToolbar.addAction(openAction)
-        self.fileToolbar.addAction(saveAction)
-        self.fileToolbar.addAction(exportImagesAction)
-        self.fileToolbar.addAction(printAction)
-        self.fileToolbar.addAction(printAction)
-        
-        self.viewToolbar = self.addToolBar('View')
-        self.viewToolbar.addAction(zoominAction)
-
-        self.viewToolbar.addAction(zoomoutAction)
-        self.viewToolbar.addAction(refreshAction)
-        
-        self.addToolBarBreak()
-        '''
-        
+        # GLOBAL WEB SETTINGS
         QNetworkProxyFactory.setUseSystemConfiguration( True )
 
         QWebSettings.setMaximumPagesInCache( 0 )
@@ -1209,18 +1163,19 @@ class MainWindowUI(QMainWindow):
         self.pluginManager.m = self
         
         self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
-        self.pluginManager.setCategoriesFilter({
+        categories_filter = {
                "Data" : plugins.DataPlugin,
                "Processing" : plugins.ProcessingPlugin,
                "Identification": plugins.IdentificationPlugin,
                "Analysis" : plugins.AnalysisPlugin,
                "Visualisation" : plugins.VisualisationPlugin,
-               "Output" : plugins.OutputPlugin,
-               "Misc" : plugins.MiscPlugin,
-               })
+#               tr("Output") : plugins.OutputPlugin,
+#               tr("Misc") : plugins.MiscPlugin,
+               }
+        self.pluginManager.setCategoriesFilter(categories_filter)
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ['Data','Processing','Identification','Analysis','Visualisation']
+        plugin_categories = ["Data","Processing","Identification","Analysis","Visualisation"] #categories_filter.keys()
         apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
@@ -1241,7 +1196,7 @@ class MainWindowUI(QMainWindow):
                     'description': plugin.description,
                 })
 
-        self.dataDock = QDockWidget('Database')
+        self.dataDock = QDockWidget( tr('Database') )
 
         self.dbBrowser = QWebViewExtend( self.dataDock, onNavEvent=self.onBrowserNav )
         # Display a list of supporting orgs
@@ -1275,11 +1230,11 @@ class MainWindowUI(QMainWindow):
         self.addWorkspaceItem( self.mainBrowser, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
         
         app_category_icons = {
-               "Data" : QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
-               "Processing" : QIcon.fromTheme("processing", QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ) ),
-               "Identification" : QIcon.fromTheme("identification", QIcon( os.path.join( utils.scriptdir,'icons','target.png' ) ) ),
-               "Analysis" : QIcon.fromTheme("analysis", QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ) ),
-               "Visualisation" : QIcon.fromTheme("visualisation", QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ) ),
+               "Data": QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
+               "Processing": QIcon.fromTheme("processing", QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ) ),
+               "Identification": QIcon.fromTheme("identification", QIcon( os.path.join( utils.scriptdir,'icons','target.png' ) ) ),
+               "Analysis": QIcon.fromTheme("analysis", QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ) ),
+               "Visualisation": QIcon.fromTheme("visualisation", QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ) ),
                }
     
         template = self.templateEngine.get_template('apps.html')
@@ -1288,7 +1243,7 @@ class MainWindowUI(QMainWindow):
             self.appBrowsers[ category ].setHtml(template.render( 
                 {
                 'htmlbase': os.path.join( utils.scriptdir,'html'),
-                'category':category,
+                'category': tr(category),
                 'apps':apps[ category ],
                 }                
              ),QUrl('~')) 
@@ -1308,7 +1263,7 @@ class MainWindowUI(QMainWindow):
         #QObject.connect(self.workspace, SIGNAL("itemActivated()"),
         #self.stack, SLOT("setCurrentIndex(int)"))
 
-        self.workspaceDock = QDockWidget('Workspace')
+        self.workspaceDock = QDockWidget( tr('Workspace') )
         self.workspaceDock.setWidget(self.workspace)
         self.workspace.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
         self.workspace.setColumnWidth(0, 298-25*2) 
@@ -1333,7 +1288,7 @@ class MainWindowUI(QMainWindow):
         stack_index = self.stack.addWidget( widget )
         
         tw = QTreeWidgetItem()
-        tw.setText(0, title)
+        tw.setText(0, tr(title) )
         tw.setText(1, str( stack_index ) )
         
         if icon:

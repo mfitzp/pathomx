@@ -42,17 +42,9 @@ except ImportError:
 import db, data, utils, ui # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
 import plugins # plugin helper/manager
 
-METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
-METAPATH_MINING_TYPE_TEXT = (
-    'Compound change scores for pathway',
-    'Compound up-regulation scores for pathway', 
-    'Compound down-regulation scores for pathway',
-    'Number compounds with data per pathway',
-)
+# Translation (@default context)
+from translate import tr
 
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
 class dialogDefineExperiment(ui.genericDialog):
     
@@ -143,7 +135,7 @@ class dialogPathwaysShow(ui.genericDialog):
         self.tab[tab]['lw_regExp'] = QLineEdit()
 
         vbox.addWidget(self.tab[tab]['lw_pathways'])
-        vbox.addWidget( QLabel('Select/deselect matching pathways by name:') )   
+        vbox.addWidget( QLabel( tr('Select/deselect matching pathways by name:') ) )   
         vboxh = QHBoxLayout()
         vboxh.addWidget(self.tab[tab]['lw_regExp'])
         addfr = QPushButton('-')
@@ -164,7 +156,7 @@ class dialogPathwaysShow(ui.genericDialog):
     def __init__(self, parent, **kwargs):
         super(dialogPathwaysShow, self).__init__(parent, **kwargs)
         
-        self.setWindowTitle("Select Pathways to Display")
+        self.setWindowTitle( tr("Select Pathways to Display") )
 
         #all_pathways = parent.db.pathways.keys()
         self.all_pathways = sorted( [p.name for p in parent.db.pathways.values()] )
@@ -176,8 +168,8 @@ class dialogPathwaysShow(ui.genericDialog):
         selected_pathways = str( parent.config.value('/Pathways/Hide') ).split(',')
         page2 = self.setupTabPage('hide', selected_pathways=[p.name for p in parent.db.pathways.values() if p.id in selected_pathways] )
 
-        self.tabs.addTab(page1, 'Show')
-        self.tabs.addTab(page2, 'Hide')
+        self.tabs.addTab(page1, tr('Show') )
+        self.tabs.addTab(page2, tr('Hide') )
 
         self.layout.addWidget(self.tabs)
         
@@ -242,8 +234,8 @@ class MainWindow(ui.MainWindowUI):
         #self.tabs.addTab( analysisc.browser, '&Circo' )
 
 
-        self.setWindowTitle('MetaPath: Metabolic pathway visualisation and analysis')
-        self.statusBar().showMessage('Ready')
+        self.setWindowTitle( tr('MetaPath: Metabolic pathway visualisation and analysis') )
+        self.statusBar().showMessage( tr('Ready') )
 
 
         self.showMaximized()
@@ -393,7 +385,6 @@ class MainWindow(ui.MainWindowUI):
                 self.data.translate(self.db)
                 self.generateGraphView(regenerate_analysis=True)                
 
-               
     def onLoadDataFile(self):
         """ Open a data file"""
         filename, _ = QFileDialog.getOpenFileName(self, 'Open experimental compound data file', '')
@@ -403,18 +394,6 @@ class MainWindow(ui.MainWindowUI):
             self.data.translate(self.db)
             self.setWindowTitle('MetaPath: %s' % self.data.filename)
             self.onDefineExperiment()
-
-
-    def onLoadLayoutFile(self):
-        """ Open a layout file e.g. in KGML format"""
-        # e.g. www.genome.jp/kegg-bin/download?entry=hsa00010&format=kgml
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open layout file (KEGG, etc.)', '')
-        if filename:
-            self.layout = layout.layoutManager(filename)
-            # Re-translate the datafile
-            self.layout.translate(self.db)
-            # Regenerate the graph view
-            self.generateGraphView()            
     
     def onSaveAs(self):
         """ Save a copy of the graph as one of the supported formats"""
@@ -431,24 +410,20 @@ class MainWindow(ui.MainWindowUI):
                 pass
 
     def onAbout(self):
-        QMessageBox.about(self,'About MetaPath', 
-            'A visualisation and analysis tool for metabolomics data in the context of metabolic pathways.')
+        QMessageBox.about(self, tr('About MetaPath'), 
+            tr('A visualisation and analysis tool for metabolomics data in the context of metabolic pathways.') )
 
     def onExit(self):
         self.Close(True)  # Close the frame.
 
     def onReloadDB(self):
         self.db=db.databaseManager()
-        self.generateGraphView()
 
     def onRefresh(self):
         self.generateGraphView()
  
  
- 
- 
     def generatedbBrowserView(self, template='base.html', data={'title':'', 'object':{}, 'data':{} }):
-        
         metadata = {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
             # Current state data
@@ -468,6 +443,27 @@ def main():
     app.setOrganizationName("Martin Fitzpatrick")
     app.setOrganizationDomain("martinfitzpatrick.name")
     app.setApplicationName("MetaPath")
+
+    locale = QLocale.system().name()
+    #locale = 'nl'
+    
+    # Load base QT translations from the normal place (does not include _nl, or _it)
+    translator_qt = QTranslator()
+    if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
+        print "Loaded Qt translations for locale: %s" % locale
+        app.installTranslator(translator_qt)  
+          
+    # See if we've got a default copy for _nl, _it or others
+    elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir,'translations')):
+        print "Loaded Qt (self) translations for locale: %s" % locale
+        app.installTranslator(translator_qt)    
+        
+    # Load MetaPath specific translations
+    translator_mp = QTranslator()
+    if translator_mp.load( "metapath_%s" % locale,  ):
+        print "Loaded MetaPath translations for locale: %s" % locale
+    app.installTranslator(translator_mp)    
+
     window = MainWindow(app)
     app.exec_()
     # Enter Qt application main loop
