@@ -28,7 +28,6 @@
         <div id="thermodynamics">
         @if hasattr(object,'gibbs'):
             <table>
-            <tr><th style="text-align:left;">&Delta;G 37&deg;C</th><td>@object.gibbs['deltaG_bio']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
             <tr><th style="text-align:left;">&Delta;G°</th><td>@object.gibbs['deltaG']!s &plusmn; @object.gibbs['uncertainty']!s</td></tr>
             <tr><th style="text-align:left;">Charge</th><td>@object.gibbs['charge']!s</td></tr>
             </table>
@@ -39,7 +38,7 @@
 
     
     @if hasattr(object, 'pathways') and object.pathways:
-        <h2>Pathways <small>(@str(len(object.pathways)))</small></h2>
+        <h2>@tr('Pathways') <small>(@str(len(object.pathways)))</small></h2>
         <ul>
             @for p in object.pathways:
                 <li>
@@ -57,7 +56,7 @@
     @end
     
     @if hasattr(object, 'reactions') and object.reactions:
-        <h2>Reactions <small>(@str(len(object.reactions)))</small></h2>
+        <h2>@tr('Reactions') <small>(@str(len(object.reactions)))</small></h2>
         <ul>
             @for r in object.reactions:
                 <li><a href="metapath://db/reaction/@r.id/view">@r.name</a></li>
@@ -66,7 +65,7 @@
     @end
 
     @if hasattr(object, 'compounds') and object.compounds:
-        <h2>Compounds <small>(@str(len(object.compounds)))</small></h2>
+        <h2>@tr('Compounds') <small>(@str(len(object.compounds)))</small></h2>
         <ul>
             @for m in object.compounds:
                 <li>
@@ -82,7 +81,7 @@
     @end
     
     @if hasattr(object, 'secondary_compounds') and object.secondary_compounds:
-        <h2>2&deg; Compounds <small>(@str(len(object.secondary_compounds)))</small></h2>
+        <h2>2&deg; @tr('Compounds') <small>(@str(len(object.secondary_compounds)))</small></h2>
         <ul>
             @for m in object.secondary_compounds:
                 <li>
@@ -98,7 +97,7 @@
     @end
     
     @if hasattr(object, 'proteins') and object.proteins:
-        <h2>Proteins / Enzymes <small>(@str(len(object.proteins)))</small></h2>
+        <h2>@tr('Proteins') / @tr('Enzymes') <small>(@str(len(object.proteins)))</small></h2>
         <ul>
             @for p in object.proteins:
                 <li>
@@ -124,7 +123,7 @@
 
     
     @if hasattr(object, 'genes') and object.genes:
-        <h2>Genes <small>(@str(len(object.genes)))</small></h2>
+        <h2>@tr('Genes') <small>(@str(len(object.genes)))</small></h2>
         <ul>
             @for g in object.genes:
                 <li>
@@ -141,7 +140,7 @@
 
     
     @if hasattr(object, 'id'):
-    <h2>Databases</h2>
+    <h2>@tr('Databases')</h2>
     <ul>
         <li><a href="http://www.humancyc.org/HUMAN/NEW-IMAGE?object=@object.id">MetaCyc @object.id</a></li>
 

@@ -11,6 +11,8 @@ from collections import defaultdict
 import utils
 import numpy as np
 
+from translate import tr
+
 # Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
     'UCSC', 'ENSEMBL', 'HMDB', 'CAS',
@@ -62,6 +64,7 @@ class _MetaPathObject(object):
 # Dummy wrapper classes for readability
 class Compound(_MetaPathObject):
     type = 'compound'
+    type_name = tr('Compound')
     def as_csv(self):
         return [
             self.id,
@@ -74,6 +77,7 @@ class Compound(_MetaPathObject):
 
 class Pathway(_MetaPathObject):
     type = 'pathway'
+    type_name = tr('Pathway')    
     def as_csv(self):
         return [
             self.id,
@@ -85,6 +89,7 @@ class Pathway(_MetaPathObject):
 
 class Reaction(_MetaPathObject):
     type = 'reaction'
+    type_name = tr('Reaction')        
     def as_csv(self):
         return [
             self.id,
@@ -112,6 +117,7 @@ class Reaction(_MetaPathObject):
         
 class Protein(_MetaPathObject):
     type = 'protein'
+    type_name = tr('Protein')    
     def as_csv(self):
         return [
             self.id,
@@ -126,6 +132,7 @@ class Protein(_MetaPathObject):
 
 class Gene(_MetaPathObject):
     type = 'gene'
+    type_name = tr('Gene')        
     def as_csv(self):
         return [
             self.id,
@@ -142,6 +149,7 @@ class Gene(_MetaPathObject):
 class ReactionIntermediate(_MetaPathObject):
     # Standard values
     type = 'dummy'
+    type_name = 'n/a'
     name = 'n/a'
 
 class databaseManager():

@@ -48,7 +48,8 @@ class TransformView( ui.DataView ):
             'log10':self._log10,
             'Zero baseline':self._zero_baseline,
             'Mean center':self._mean_center,
-            'Auto minima':self._zero_minima,
+            'Global minima':self._global_minima,
+            'Local minima':self._local_minima,
             'Remove invalid data':self._remove_invalid_data,
         }
         
@@ -95,10 +96,18 @@ class TransformView( ui.DataView ):
         dso.data = dso.data + -minima
         return dso
 
-    def _zero_minima(self,dso):
+    def _global_minima(self,dso):
         minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
         # Get the dso filtered by class
         dso.data[ dso.data <= 0] = minima
+        return dso
+
+    # Minima on column by column basis (should have optional axis here)
+    def _local_minima(self,dso):
+        #dso.data[dso.data==0] = np.nan
+        dmin = np.ma.masked_less_equal(dso.data,0).min(0)/2
+        inds = np.where( np.logical_and( dso.data==0, np.logical_not( np.ma.getmask(dmin) ) ) )
+        dso.data[inds]=np.take(dmin,inds[1])
         return dso
         
     def _mean_center(self, dso):

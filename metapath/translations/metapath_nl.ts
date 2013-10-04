@@ -6,7 +6,7 @@
     <message>
         <location filename="ui.py" line="1077"/>
         <source>&amp;File</source>
-        <translation>&amp;Vijl</translation>
+        <translation>&amp;Bestand</translation>
     </message>
     <message>
         <location filename="ui.py" line="634"/>
@@ -34,14 +34,14 @@
         <translation>Visualisatie</translation>
     </message>
     <message>
-        <location filename="metapath.py" line="237"/>
+        <location filename="metapath.py" line="238"/>
         <source>MetaPath: Metabolic pathway visualisation and analysis</source>
         <translation>MetaPath: Metabole route visualisatie en analyse</translation>
     </message>
     <message>
-        <location filename="metapath.py" line="238"/>
+        <location filename="metapath.py" line="239"/>
         <source>Ready</source>
-        <translation type="unfinished">Klaar</translation>
+        <translation>Klaar</translation>
     </message>
     <message>
         <location filename="ui.py" line="1084"/>
@@ -49,14 +49,14 @@
         <translation>Over MetaPath</translation>
     </message>
     <message>
-        <location filename="metapath.py" line="413"/>
+        <location filename="metapath.py" line="414"/>
         <source>A visualisation and analysis tool for metabolomics data in the context of metabolic pathways.</source>
         <translation>Een visualisatie en analyse tool voor metabolomics gegevens in het kader van de metabole routes.</translation>
     </message>
     <message>
         <location filename="ui.py" line="212"/>
         <source>Select Data Source(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecteer gegevensbron(nen)</translation>
     </message>
     <message>
         <location filename="ui.py" line="477"/>
@@ -86,7 +86,7 @@
     <message>
         <location filename="ui.py" line="1079"/>
         <source>&amp;Database</source>
-        <translation type="unfinished">&amp;Databank</translation>
+        <translation>&amp;Databank</translation>
     </message>
     <message>
         <location filename="metapath.py" line="138"/>
@@ -136,12 +136,12 @@
     <message>
         <location filename="ui.py" line="490"/>
         <source>&amp;Zoom in</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Inzoomen</translation>
     </message>
     <message>
         <location filename="ui.py" line="496"/>
         <source>&amp;Zoom out</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Uitzoomen</translation>
     </message>
     <message>
         <location filename="ui.py" line="1140"/>
@@ -149,48 +149,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="1095"/>
-        <source>&amp;Open…</source>
-        <translation>&amp;Openen…</translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="1109"/>
-        <source>Save &amp;Asâ¦</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="1117"/>
-        <source>&amp;Printâ¦</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="1133"/>
-        <source>&amp;Load metabolite identitiesâ¦</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="418"/>
-        <source>Select a data sourceâ¦</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="ui.py" line="423"/>
         <source>Recalculate</source>
-        <translation type="unfinished"></translation>
+        <translation>Herberekenen</translation>
     </message>
     <message>
         <location filename="ui.py" line="428"/>
         <source>Pause automatic analysis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="436"/>
-        <source>View resulting dataâ¦</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="479"/>
-        <source>Export current figure as imageâ¦</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -206,21 +171,16 @@
     <message>
         <location filename="ui.py" line="492"/>
         <source>Zoom in</source>
-        <translation type="unfinished"></translation>
+        <translation>Inzoomen</translation>
     </message>
     <message>
         <location filename="ui.py" line="498"/>
         <source>Zoom out</source>
-        <translation type="unfinished"></translation>
+        <translation>Uitzoomen</translation>
     </message>
     <message>
         <location filename="ui.py" line="667"/>
         <source>External Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="506"/>
-        <source>Watch data file(s) for changesâ¦</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -236,12 +196,12 @@
     <message>
         <location filename="ui.py" line="688"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Zien</translation>
     </message>
     <message>
         <location filename="ui.py" line="635"/>
         <source>All Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle bestanden</translation>
     </message>
     <message>
         <location filename="ui.py" line="636"/>
@@ -264,9 +224,104 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="ui.py" line="418"/>
+        <source>Select a data sourceâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="436"/>
+        <source>View resulting dataâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="479"/>
+        <source>Export current figure as imageâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="1117"/>
+        <source>&amp;Printâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="506"/>
+        <source>Watch data file(s) for changesâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="ui.py" line="788"/>
         <source>Define experimentâ¦</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="1109"/>
+        <source>Save &amp;Asâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="1133"/>
+        <source>&amp;Load database unificationâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="1095"/>
+        <source>&amp;Openâ¦</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="db.py" line="67"/>
+        <source>Compound</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="db.py" line="80"/>
+        <source>Pathway</source>
+        <translation>Route</translation>
+    </message>
+    <message>
+        <location filename="db.py" line="92"/>
+        <source>Reaction</source>
+        <translation>Reactie</translation>
+    </message>
+    <message>
+        <location filename="db.py" line="120"/>
+        <source>Protein</source>
+        <translation>Eiwitten</translation>
+    </message>
+    <message>
+        <location filename="db.py" line="135"/>
+        <source>Gene</source>
+        <translation>Gen</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="30"/>
+        <source>Compounds</source>
+        <translation>Verbindingen</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="31"/>
+        <source>Pathways</source>
+        <translation>Routes</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="27"/>
+        <source>Genes</source>
+        <translation>Genen</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="28"/>
+        <source>Proteins</source>
+        <translation>Eiwittens</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="32"/>
+        <source>Databases</source>
+        <translation>Databanken</translation>
+    </message>
+    <message>
+        <location filename="translate.py" line="29"/>
+        <source>Enzymes</source>
+        <translation>Enzymen</translation>
     </message>
 </context>
 </TS>

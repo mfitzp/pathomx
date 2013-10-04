@@ -156,8 +156,8 @@ class HeatmapView(ui.AnalysisHeatmapView):
             'Phosphate balance': self._phosphate_balance,
             'Redox': self._redox,
             'Proton Balance': self._proton_balance,
-            #'Metabolic endpoints': self._endpoints,
-            #'Energy/Waste': self._energy_waste,
+            'Metabolic endpoints': self._endpoints,
+            'Energy/Waste': self._energy_waste,
             'Top Metabolites': self._top_metabolites,
             'Top Metabolites (+)': self._top_metabolites_up,
             'Top Metabolites (-)': self._top_metabolites_down,
@@ -259,13 +259,13 @@ class HeatmapView(ui.AnalysisHeatmapView):
         dso = self.data.get('input')
         labelsY = self.energy
         labelsX = dso.classes[0]
-        return self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
+        return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
     def _endpoints(self):
         dso = self.data.get('input')
         labelsY = self.endpoints
         labelsX = dso.classes[0]
-        return self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi( labelsY, labelsX), sort_data=True )
+        return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
     def _top_metabolites(self, fn=abs):
         dso = self.data.get('input')

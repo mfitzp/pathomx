@@ -811,6 +811,7 @@ class AnalysisView(GenericView):
         self.toolbars['experiment'].cb_test.clear()
         # Data source change; update the experimental control with the data input source
         self.toolbars['experiment'].cb_control.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+        self.toolbars['experiment'].cb_test.addItem("*")
         self.toolbars['experiment'].cb_test.addItems( [i for i in self.data.i['input'].classes_l[0]] )
 
     def onDataChanged(self):
@@ -821,8 +822,11 @@ class AnalysisView(GenericView):
         pass
 
     def onModifyExperiment(self):
-        pass
-
+        """ Update the experimental settings for analysis then regenerate """    
+        self._experiment_control = self.toolbars['experiment'].cb_control.currentText()
+        self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
+        self.generate()
+    
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class AnalysisD3View(AnalysisView):

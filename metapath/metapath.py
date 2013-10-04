@@ -45,6 +45,8 @@ import plugins # plugin helper/manager
 # Translation (@default context)
 from translate import tr
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 class dialogDefineExperiment(ui.genericDialog):
     
@@ -205,6 +207,7 @@ class MainWindow(ui.MainWindowUI):
             loader=FileLoader( [os.path.join( utils.scriptdir,'html')] ),
             extensions=[CoreExtension(),CodeExtension()]
         )
+        self.templateEngine.global_vars.update({'tr': tr})
 
         self.update_view_callback_enabled = True
 

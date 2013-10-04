@@ -587,14 +587,17 @@ class DataSet( QObject ):
                 summarised_data = fn( data, axis=dim) #, keepdims=True )
                 dso.data[:,n] = summarised_data
 
-            # Fix existing class markers
+            # Fix existing class/label/etc markers
             for mn, ma in enumerate(match_attribs):
                 dso.__dict__[ma][dim][n] = unique[n][ mn ]
-
+                
             # Wipe out compressed attributes
             for ma in set(match_attribs) - set(available_match_attribs):
                 dso.__dict__[ma][dim] = [None]*new_shape[dim]
-            
+    
+        
+        for mn, ma in enumerate(match_attribs):
+            dso.__dict__[ma][dim] = dso.__dict__[ma][dim][:new_shape[dim]]
 
         return dso
     

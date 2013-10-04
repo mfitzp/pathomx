@@ -81,6 +81,10 @@ function heatmap(id, buckets, scale){
             Math.abs( d3.min(buckets, function(d) { return d.value; } ) ), 
             Math.abs( d3.max(buckets, function(d) { return d.value; } ) )
             )
+            
+    // r is data extreme; but outliers can diminish scales to uselessness
+    // Need to rescale to cover majority of data; stdev when implemented in d3;
+    // may be better to pass scale in from main app (allow config/etc.)
     
     var x = d3.scale
                 .ordinal()
@@ -90,12 +94,12 @@ function heatmap(id, buckets, scale){
                 .ordinal()
                 .domain(ylabels)
                 .rangeBands([0, ylabels.length*cellh]),
+            
         z = d3.scale
-                    .linear()
-//                .pow()
-//                .exponent(.5)
+            .pow()
+            .exponent(.5)
+//              .linear()
                 .domain( [-r , 0, +r] )
-                //.domain( [d3.min(buckets, function(d) { return d.value; }) , 0, d3.max(buckets, function(d) { return d.value; })] )
                 .range(["#2166ac","#f5f5f5","#b2182b"]);
                 
     function safez(num){ return isNaN(num) ? "#ffffff" : z(num); } 

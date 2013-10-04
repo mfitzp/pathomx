@@ -95,7 +95,7 @@ class FoldChangeView( ui.AnalysisView ):
     def generate(self):
         self.setWorkspaceStatus('active')
     
-        control_class, test_class = self.toolbars['experiment'].cb_control.currentText(), self.toolbars['experiment'].cb_test.currentText()
+        self._experiment_control, self._experiment_test = self.toolbars['experiment'].cb_control.currentText(), self.toolbars['experiment'].cb_test.currentText()
         
         dsi = self.data.get('input')
         dso = self.analyse( dsi )
@@ -110,53 +110,69 @@ class FoldChangeView( ui.AnalysisView ):
     
     def analyse(self, dso):
     
-        control, test = self._experiment_control, self._experiment_test        
-        minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
-        # Get the dso filtered by class
-        dsoc = dso.as_filtered(dim=0, classes=[self._experiment_control, self._experiment_test])
+        # Get the dso filtered by class if we're not doing a global match
+        if self._experiment_test != "*":
+            dso = dso.as_filtered(dim=0, classes=[self._experiment_control, self._experiment_test])
         
         # Replace zero values with minima (if setting)
         if self._use_baseline_minima:
-            dsoc.data[ dsoc.data <= 0] = minima
-            print 'Fold change minima', np.min(dsoc.data)
+            #minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
+            #dsoc.data[ dsoc.data <= 0] = minima
+            #print 'Fold change minima', np.min(dsoc.data)
+
+            # Get all columns where at least 1 row != 0
+            #nzmask = (dsoc.data > 0).sum(0)
+            #mdata = dsoc.data[ :, nzmask != 0] # Get all non-zero columns
+            # Get copy, set zeros to Nan
+            #dso.data[dso.data==0] = np.nan
+            dmin = np.ma.masked_less_equal(dso.data,0).min(0)/2
+            inds = np.where( np.logical_and( dso.data==0, np.logical_not( np.ma.getmask(dmin) ) ) )
+            dso.data[inds]=np.take(dmin,inds[1])
+
+            #minima = np.amin( dso.data[ dso.data > 0 ], axis=0 ) / 2 # Half the smallest value (in each column) by default
+
 
         # Compress to extract the two rows identified by class control and test
-        dsoc = dsoc.as_summary(dim=0, match_attribs=['classes'])
+        dso = dso.as_summary(dim=0, match_attribs=['classes'])
         
         # We have a dso with two rows, one for each class
         # Process by calculating the fold change from row 1 to row 2
         # Output: delta log2, deltalog10, fold change (optionally calculate)
-        data = copy(dsoc.data)
-        ci = dsoc.classes[0].index( self._experiment_control )
-        ti = dsoc.classes[0].index( self._experiment_test )
+        data = copy(dso.data)
+        ci = dso.classes[0].index( self._experiment_control )
+        if self._experiment_test == "*": # Do all comparisons vs. control
+            tests = sorted([t for t in dso.classes[0] if t != self._experiment_control])
+        else:
+            tests = [self._experiment_test]
+        
+        for n, test in enumerate(tests):
+            print dso.classes[0]
+            ti = dso.classes[0].index( test )
 
-        print 'Indices for fold change;',ci,ti
+            print 'Indices for fold change;',ci,ti
+            # Fold change is performed to give negative values for reductions
+            # May make this optional in future?
+            # i.e. t > c  fc =  t/c;   t < c    fc = -c/t
 
-        # Fold change is performed to give negative values for reductions
-        # May make this optional in future?
-        # i.e. b > a   fc =  b/a;   b < a    fc = -a/b
-        print dsoc.data.shape
-        print data.shape
-        t = data[ti,:]
-        c = data[ci,:]
+            c = data[ci,:]
+            t = data[ti,:]
         
-        dsoc.data[0, c>t ] = np.array(c/t)[c>t]
-        dsoc.data[0, c<t ] = - np.array(t/c)[c<t]
-        dsoc.data[0, c==t ] = 0
+            dso.data[n, t>c ] = np.array(t/c)[t>c]
+            dso.data[n, t<c ] = - np.array(c/t)[t<c]
+            dso.data[n, c==t ] = 0
         
-        
+
         #dsoc.data[0,:] = data[ci,:] / data[ti,:]
 
-        final_shape = list(dsoc.data.shape)
-        final_shape[0]=1 # 1 dimensional (final change value)
+        final_shape = list(dso.data.shape)
+        final_shape[0]=len(tests) # 1 dimensional (final change value)
 
-        dsoc.crop(final_shape)
-        dsoc.labels[0]=['Fold change %s>%s' % ( self._experiment_control, self._experiment_test )]
-        dsoc.entities[0]=[None]
-        dsoc.classes[0]=[None]
+        for n,test in enumerate(tests):
+            dso.labels[0][n]='fc %s:%s' % ( self._experiment_control, test )
+            dso.entities[0][n]=None
+            dso.classes[0][n]='%s' % (test)
 
         dso.crop(final_shape)
-        dso.import_data(dsoc)
 
         return dso        
 
