@@ -46,6 +46,8 @@ class DataManager( QObject ):
             # Add ourselves to the watcher for this interface
             dso = self.i[interface]
             dso.manager.watchers[ dso.manager_interface ].add( self )
+            print "WATCHERS %s (%s) on '%s': %s / %s" % (dso, dso.name, dso.manager_interface, dso.manager.watchers[ dso.manager_interface ], self)
+            print "TOTAL WATCHERS: %s" % len(dso.manager.watchers[ dso.manager_interface ])
             return deepcopy( self.i[interface] )
         return False
         
@@ -132,12 +134,6 @@ class DataManager( QObject ):
         return False
         
     def _consume(self, data, consumer_defs=None):
-        # Handle import/hook building for this consumable object (need interface logic here; standardise)# Handle import/hook building for this consumable object (need interface logic here; standardise)
-        # FIXME: Handle possibility that >1 consumer definition will match; provide options OR first only (unless pre-existing?!)
-        # Register this as an attribute in the current object
-        #if data.manager == self:
-        #    return False
-        #
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
         
@@ -147,6 +143,9 @@ class DataManager( QObject ):
             
         for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
+                # Remove existing data object link (stop watching)
+                if consumer_def.target in self.i:
+                    self.unget(consumer_def.target) 
                 self.i[ consumer_def.target ] = data
                 self.consumes.append( data )
                 data.consumers.append( self )

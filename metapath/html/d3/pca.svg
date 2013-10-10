@@ -24,10 +24,15 @@ circle {
 
 .zerogrid {
     stroke:#dddddd;
-    stroke-dasharray:5,5;
+    stroke-dasharray:5pt,5pt;
     stroke-width:0.5pt;
 }
 
+.region {
+    stroke-width:0.5pt;
+    stroke-dasharray:5pt,5pt;
+    fill: none;
+}
 
 ]]></style>
 @end
@@ -51,10 +56,23 @@ circle {
                 },
             @endfor
             ];
+
+         regions = [
+            @for d in figure['regions']:
+                {
+                'class':'@d[0]!s', //enumerate this in the js to build groups N for color
+                'cx':@d[1]!s,
+                'cy':@d[2]!s,
+                'rx':@d[3]!s,
+                'ry':@d[4]!s,
+                },
+            @endfor
+            ];
+
           x_axis_label = "@figure['x_axis_label']!s"
           y_axis_label = "@figure['y_axis_label']!s"
         function _metapath_render_trigger(){
-            scatter(id, data, x_axis_label, y_axis_label);
+            scatter(id, data, regions, x_axis_label, y_axis_label);
         }
     </script>
 

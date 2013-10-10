@@ -947,7 +947,7 @@ var clip = svg.append("svg:clipPath")
 
 
 // Scatter plot
-function scatter(id, data, x_axis_label, y_axis_label) {
+function scatter(id, data, regions, x_axis_label, y_axis_label) {
 
     idxy = getElementSize(id)
     var width = idxy[0],
@@ -1032,7 +1032,7 @@ function scatter(id, data, x_axis_label, y_axis_label) {
 
     var g = main.append("svg:g"); 
     
-    g.selectAll("scatter-dots")
+    g.selectAll(".scatter-dots")
         .data(data)
         .enter().append("svg:circle")
             .attr("cx", function (d,i) { return x(d.x); } )
@@ -1040,6 +1040,18 @@ function scatter(id, data, x_axis_label, y_axis_label) {
             .attr("r", 4)
             .style("fill", function(d) { return color(d.class); })
             .attr("data-legend",function(d) { return d.class; });
+
+    var g = main.append("svg:g"); 
+
+    g.selectAll(".region")
+        .data(regions)
+        .enter().append("svg:ellipse")
+            .attr("class", "region")
+            .attr("cx", function (d) { return x(d.cx); } )
+            .attr("cy", function (d) { return y(d.cy); } )
+            .attr("rx", function (d) { return x(d.rx); })
+            .attr("ry", function (d) { return y(d.ry); })
+            .style("stroke", function(d) { return color(d.class); });
 
 	// add legend   
 	var legend = svg.append("g")
@@ -1187,3 +1199,118 @@ var svg = d3.select(id)//.insert("svg",':first-child')
 
 }
 
+
+
+
+// Scatter plot
+function bar(id, data, y_axis_label) {
+
+    idxy = getElementSize(id)
+    var width_c = idxy[0],
+        height_c = idxy[1];
+    
+    var margin = {top: 50, right: 50, bottom: 80, left: 50};
+    var width = width_c - margin.left - margin.right,
+        height = height_c - margin.top - margin.bottom;
+        
+    var x0 = d3.scale.ordinal()
+        .rangeRoundBands([0, width], .1);
+
+    var x1 = d3.scale.ordinal();
+
+    var y = d3.scale.linear()
+        .nice()
+        .range([height, 0]);
+
+    var color = d3.scale.ordinal()
+        .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+    var color = d3.scale.category10();
+
+    var xAxis = d3.svg.axis()
+        .scale(x0)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .tickFormat(d3.format(".2s"));
+
+    var svg = d3.select(id)//.insert("svg",':first-child')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    samples = d3.keys( data[0].value ) 
+
+    var s_value_range = [
+            Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key]; }); return values; } ) ), 
+            1.1*Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key]; }); return values; } ) ),
+            /* Add 10% to max value */
+            ]
+
+    x0.domain(data.map(function(d) { return d.group; }));
+    x1.domain(samples).rangeRoundBands([0, x0.rangeBand()]);
+    y.domain(s_value_range);
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+            /*.selectAll("text")  
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-60) translate(-10,0)")
+            ;*/
+
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+    .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text(y_axis_label);
+
+    var state = svg.selectAll(".groups")
+        .data(data)
+    .enter().append("g")
+        .attr("class", "g")
+        .attr("transform", function(d) { return "translate(" + x0(d.group) + ",0)"; });
+
+    state.selectAll("rect")
+        .data(function(d) { return Object.keys(d.value).map(function(key) {
+            return {"name" : key, "value" : d.value[key] }
+            })
+    })
+    .enter().append("rect")
+        .attr("width", x1.rangeBand())
+        .attr("x", function(d) { return x1(d.name); })
+        .attr("y", function(d) { return y(d.value); })
+        .attr("height", function(d) { return height - y(d.value); })
+        .style("fill", function(d) { return color(d.name); });
+
+    var legend = svg.selectAll(".legend")
+        .data(samples.slice().reverse())
+    .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+    legend.append("rect")
+        .attr("x", width - 18)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+    legend.append("text")
+        .attr("x", width - 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "end")
+        .text(function(d) { return d; });
+          
+}

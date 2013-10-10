@@ -11,7 +11,7 @@
     <message>
         <location filename="ui.py" line="634"/>
         <source>Data</source>
-        <translation>Gegevens</translation>
+        <translation>Data</translation>
     </message>
     <message>
         <location filename="translate.py" line="21"/>
@@ -36,7 +36,7 @@
     <message>
         <location filename="metapath.py" line="238"/>
         <source>MetaPath: Metabolic pathway visualisation and analysis</source>
-        <translation>MetaPath: Metabole route visualisatie en analyse</translation>
+        <translation>MetaPath: Visualisatie en analyse van metabole pathways</translation>
     </message>
     <message>
         <location filename="metapath.py" line="239"/>
@@ -51,17 +51,18 @@
     <message>
         <location filename="metapath.py" line="414"/>
         <source>A visualisation and analysis tool for metabolomics data in the context of metabolic pathways.</source>
-        <translation>Een visualisatie en analyse tool voor metabolomics gegevens in het kader van de metabole routes.</translation>
+        <translatorcomment>Pfff hard scentence to translate!</translatorcomment>
+        <translation>Een hulpmiddel voor  visualisatie en analyse van metabolomische data, in de context van  metabole pathways.</translation>
     </message>
     <message>
         <location filename="ui.py" line="212"/>
         <source>Select Data Source(s)</source>
-        <translation>Selecteer gegevensbron(nen)</translation>
+        <translation type="unfinished">Selecteer Databron(nen)</translation>
     </message>
     <message>
         <location filename="ui.py" line="477"/>
         <source>Figures</source>
-        <translation type="unfinished"></translation>
+        <translation>Figuren</translation>
     </message>
     <message>
         <location filename="ui.py" line="1067"/>
@@ -76,12 +77,13 @@
     <message>
         <location filename="translate.py" line="19"/>
         <source>Home</source>
-        <translation>Huis</translation>
+        <translation>Home</translation>
     </message>
     <message>
         <location filename="ui.py" line="1266"/>
         <source>Workspace</source>
-        <translation>Werkruimte</translation>
+        <translatorcomment>Not sure if it shouldnt be werkruimte , but I dont think ive ever seen that in software... its always &apos;werkblad&apos;</translatorcomment>
+        <translation type="unfinished">Werkblad</translation>
     </message>
     <message>
         <location filename="ui.py" line="1079"/>
@@ -91,47 +93,48 @@
     <message>
         <location filename="metapath.py" line="138"/>
         <source>Select/deselect matching pathways by name:</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??</translatorcomment>
+        <translation>Selecteer/deselecteer overeenkomstige pathways op naam</translation>
     </message>
     <message>
         <location filename="metapath.py" line="159"/>
         <source>Select Pathways to Display</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selecteer pathway om weer te geven</translation>
     </message>
     <message>
         <location filename="metapath.py" line="171"/>
         <source>Show</source>
-        <translation type="unfinished"></translation>
+        <translation>Laat zien</translation>
     </message>
     <message>
         <location filename="metapath.py" line="172"/>
         <source>Hide</source>
-        <translation type="unfinished"></translation>
+        <translation>Verstop</translation>
     </message>
     <message>
         <location filename="ui.py" line="1088"/>
         <source>&amp;New Blank Workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieuw werkblad</translation>
     </message>
     <message>
         <location filename="ui.py" line="1090"/>
         <source>Create new blank workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieuw werkblad aanmaken</translation>
     </message>
     <message>
         <location filename="ui.py" line="1097"/>
         <source>Open previous analysis workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>Open vorig analysewerkblad</translation>
     </message>
     <message>
         <location filename="ui.py" line="1103"/>
         <source>&amp;Save</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Opslaan</translation>
     </message>
     <message>
         <location filename="ui.py" line="1111"/>
         <source>Save current workspace for future use</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sla huidig werkblad op voor toekomstig gebruik</translation>
     </message>
     <message>
         <location filename="ui.py" line="490"/>
@@ -146,7 +149,7 @@
     <message>
         <location filename="ui.py" line="1140"/>
         <source>&amp;Reload database</source>
-        <translation type="unfinished"></translation>
+        <translation>Herlaad database</translation>
     </message>
     <message>
         <location filename="ui.py" line="423"/>
@@ -156,17 +159,17 @@
     <message>
         <location filename="ui.py" line="428"/>
         <source>Pause automatic analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>Pauzeer automatische analyse</translation>
     </message>
     <message>
         <location filename="ui.py" line="480"/>
         <source>Export figure to image</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporteer figuur naar afbeelding</translation>
     </message>
     <message>
         <location filename="ui.py" line="1119"/>
         <source>Print current figure</source>
-        <translation type="unfinished"></translation>
+        <translation>Print huidig figuur</translation>
     </message>
     <message>
         <location filename="ui.py" line="492"/>
@@ -181,22 +184,23 @@
     <message>
         <location filename="ui.py" line="667"/>
         <source>External Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Externe data</translation>
     </message>
     <message>
         <location filename="ui.py" line="507"/>
         <source>Watch external data file(s) for changes and automatically refresh</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??</translatorcomment>
+        <translation>Doorzoek externe databestand(en) op veranderingen en refresh automatisch</translation>
     </message>
     <message>
         <location filename="ui.py" line="587"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation>Tabel</translation>
     </message>
     <message>
         <location filename="ui.py" line="688"/>
         <source>View</source>
-        <translation>Zien</translation>
+        <translation>Bekijk</translation>
     </message>
     <message>
         <location filename="ui.py" line="635"/>
@@ -206,77 +210,82 @@
     <message>
         <location filename="ui.py" line="636"/>
         <source>Open experimental data from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Open experimentele data uit bestand</translation>
     </message>
     <message>
         <location filename="ui.py" line="784"/>
         <source>Experiment</source>
-        <translation type="unfinished"></translation>
+        <translation>Experiment</translation>
     </message>
     <message>
         <location filename="ui.py" line="790"/>
         <source>Define experiment control, test and timecourse settings</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Dont know exactly what you want to say here... </translatorcomment>
+        <translation>Kies instellingen voor experimentcontrole, test en tijdsbeloop </translation>
     </message>
     <message>
         <location filename="ui.py" line="1078"/>
         <source>&amp;Plugins</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugins</translation>
     </message>
     <message>
         <location filename="ui.py" line="418"/>
         <source>Select a data sourceâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kies een databron</translation>
     </message>
     <message>
         <location filename="ui.py" line="436"/>
         <source>View resulting dataâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation>Bekijk resulterende data</translation>
     </message>
     <message>
         <location filename="ui.py" line="479"/>
         <source>Export current figure as imageâ¦</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Does &apos;current&apos; really matter? If so, it should be exporteer huidig figuur als afbeelding, but in dutch it basicaly means the same and without huidig sounds better....</translatorcomment>
+        <translation>Exporteer figuur als afbeelding</translation>
     </message>
     <message>
         <location filename="ui.py" line="1117"/>
         <source>&amp;Printâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation>Print</translation>
     </message>
     <message>
         <location filename="ui.py" line="506"/>
         <source>Watch data file(s) for changesâ¦</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??</translatorcomment>
+        <translation>Doorzoek databestand(en) op veranderingen</translation>
     </message>
     <message>
         <location filename="ui.py" line="788"/>
         <source>Define experimentâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation>Kies experiment</translation>
     </message>
     <message>
         <location filename="ui.py" line="1109"/>
         <source>Save &amp;Asâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation>Opslaan als</translation>
     </message>
     <message>
         <location filename="ui.py" line="1133"/>
         <source>&amp;Load database unificationâ¦</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Do you mean you can merge different databases?</translatorcomment>
+        <translation type="unfinished">Laad samengevoegde database </translation>
     </message>
     <message>
         <location filename="ui.py" line="1095"/>
         <source>&amp;Openâ¦</source>
-        <translation type="unfinished"></translation>
+        <translation>Openen</translation>
     </message>
     <message>
         <location filename="db.py" line="67"/>
         <source>Compound</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Not sure about translation, depends on context, might also be &apos;samenstelling&apos;</translatorcomment>
+        <translation>Verbinding</translation>
     </message>
     <message>
         <location filename="db.py" line="80"/>
         <source>Pathway</source>
-        <translation>Route</translation>
+        <translation type="unfinished">Pathway</translation>
     </message>
     <message>
         <location filename="db.py" line="92"/>
@@ -286,7 +295,7 @@
     <message>
         <location filename="db.py" line="120"/>
         <source>Protein</source>
-        <translation>Eiwitten</translation>
+        <translation type="unfinished">Eiwit</translation>
     </message>
     <message>
         <location filename="db.py" line="135"/>
@@ -301,7 +310,7 @@
     <message>
         <location filename="translate.py" line="31"/>
         <source>Pathways</source>
-        <translation>Routes</translation>
+        <translation type="unfinished">Pathways</translation>
     </message>
     <message>
         <location filename="translate.py" line="27"/>
@@ -311,7 +320,7 @@
     <message>
         <location filename="translate.py" line="28"/>
         <source>Proteins</source>
-        <translation>Eiwittens</translation>
+        <translation type="unfinished">Eiwitten</translation>
     </message>
     <message>
         <location filename="translate.py" line="32"/>

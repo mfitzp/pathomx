@@ -78,6 +78,7 @@ class PCAView( ui.AnalysisView ):
         metadata = {
             'figure':{
                 'data':figure_data,
+                'regions': [],
                 'x_axis_label': 'Principal Component 1 (%0.2f%%)' % (pca.explained_variance_ratio_[0] * 100.),
                 'y_axis_label': 'Principal Component 2 (%0.2f%%)' % (pca.explained_variance_ratio_[1] * 100.),
                 },
