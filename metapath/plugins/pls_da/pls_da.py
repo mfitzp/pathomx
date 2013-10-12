@@ -18,19 +18,20 @@ import os
 from copy import copy
 
 import numpy as np
-from sklearn.decomposition import PCA, KernelPCA
+from sklearn.cross_decomposition import PLSRegression
 
 import ui, db, utils
 from data import DataSet, DataDefinition
 
 
-class PCAView( ui.AnalysisView ):
+class PLSDAView( ui.AnalysisView ):
     def __init__(self, plugin, parent, **kwargs):
-        super(PCAView, self).__init__(plugin, parent, **kwargs)
+        super(PLSDAView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
+        self.addExperimentToolBar()
         self.addFigureToolBar()
         
         self.weights = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
@@ -51,9 +52,6 @@ class PCAView( ui.AnalysisView ):
         self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
-
-    def onDataChanged(self):
-        self.generate()
         
     # Do the PCA analysis
     def generate(self):    
@@ -62,25 +60,63 @@ class PCAView( ui.AnalysisView ):
         
         data = dso.data
         
-        pca = PCA(n_components=2)
-        pca.fit(data.T) # Transpose it, as vars need to along the top
+        plsr = PLSRegression(n_components=2)
+        Y = np.array([0 if c == self._experiment_control else 1 for c in dso.classes[0] ])
+        #Y = Y.reshape( (len(dso.classes[0]),1) )
         
-        weights = pca.transform(data.T) # Get weights?
+        print data.shape
+        print data.T.shape
+        print Y.shape
         
-        print pca.explained_variance_ratio_
-        print pca.explained_variance_
-        print pca.components_.shape
+        plsr.fit(data, Y) # Transpose it, as vars need to along the top
+        
+        #weights = pca.transform(data.T) # Get weights?
         
         # Build a list object of class, x, y
+        print 'Xs',plsr.x_scores_[:,0]
+        print plsr.x_scores_.shape
+        print 'Ys',plsr.y_scores_[0]
+        print plsr.y_scores_.shape
         
+        print 'Xw',plsr.x_weights_[0]
+        print plsr.x_weights_.shape
+        print 'Yw',plsr.y_weights_[0]
+        print plsr.y_weights_.shape
         
-        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
+        figure_data = zip( dso.classes[0], plsr.x_scores_[:,0], plsr.x_scores_[:,1])
+        
+        # PLS-DA regions; mean +- 95% confidence in each axis for each cluster
+        cw_x = defaultdict(list)
+        cw_y = defaultdict(list)
+        figure_regions = []
+        for c,x,y in figure_data:
+            cw_x[c].append( x )
+            cw_y[c].append( y )
+            
+        for c in cw_x.keys():
+            # Calculate mean point
+            cx = np.mean( cw_x[c] )
+            cy = np.mean( cw_y[c] )
+            
+            # Calculate 95% CI
+            rx = np.std( cw_x[c] ) *2 # 2sd = 95% #1.95 * ( / srn) # 1.95 * SEM => 95% confidence
+            ry = np.std( cw_y[c] ) *2 #1.95 * ( / srn)
+            
+            # Calculate 95% CI
+            #srn = np.sqrt( len( cw_x[c] ) ) # Sample numbers sqrt
+            #rx = 1.95*(np.std( cw_x[c] )/srn ) # 2sd = 95% #1.95 * ( / srn) # 1.95 * SEM => 95% confidence
+            #ry = 1.95*(np.std( cw_y[c] )/srn ) #1.95 * ( / srn)
+            
+            figure_regions.append( 
+                (c, cx, cy, rx, ry)
+            )
+        
         metadata = {
             'figure':{
                 'data':figure_data,
-                'regions': [],
-                'x_axis_label': 'Principal Component 1 (%0.2f%%)' % (pca.explained_variance_ratio_[0] * 100.),
-                'y_axis_label': 'Principal Component 2 (%0.2f%%)' % (pca.explained_variance_ratio_[1] * 100.),
+                'regions': figure_regions,
+                'x_axis_label': 'Latent Variable 1 (%0.2f%%)' % (plsr.y_weights_[0][0]*100),
+                'y_axis_label': 'Latent Variable 2 (%0.2f%%)' % (plsr.y_weights_[0][1]*100),
                 },
         }
         
@@ -88,6 +124,8 @@ class PCAView( ui.AnalysisView ):
 
         if 'NoneType' in dso.scales_t[1]:
             dso.scales[1] = range(0, len( dso.scales[1] ) )
+            
+        weights = plsr.x_weights_
         
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( weights), axis=1 )
@@ -103,24 +141,20 @@ class PCAView( ui.AnalysisView ):
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
-        }
-        print weights.shape
-        
+        }        
         
         self.render(metadata, template='d3/line.svg', target=self.weights)
         
-        # Do the weights plot
-        
                 
 
-class PCAPlugin(AnalysisPlugin):
+class PLSDAPlugin(AnalysisPlugin):
 
     def __init__(self, **kwargs):
-        super(PCAPlugin, self).__init__(**kwargs)
+        super(PLSDAPlugin, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
         #self.load_data_file()
-        self.instances.append( PCAView( self, self.m ) ) 
+        self.instances.append( PLSDAView( self, self.m ) ) 
         
         

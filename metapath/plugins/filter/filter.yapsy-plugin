@@ -1,0 +1,9 @@
+[Core]
+Name = Filter
+Module = filter
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Filter datasets by class, label or other features

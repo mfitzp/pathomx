@@ -1,0 +1,9 @@
+[Core]
+Name = Correlation Matrix
+Module = corrmatrix
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = View multiple inter-entity correlations simultaneously

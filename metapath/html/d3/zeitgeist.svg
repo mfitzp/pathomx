@@ -23,7 +23,103 @@ fill:#999;
 
         
 @def script():
-<script></script>
+<script>
+
+
+// Zeitgeist
+function zeitgeist(id, data) {
+
+idxy = getElementSize(id)
+var width = idxy[0],
+    height = idxy[1];
+    
+var max_size = 20
+	
+var terms = Array();
+    data.forEach( function(d){ terms.push( d.term ) } );
+    terms = d3.unique( terms );
+
+var margin = {top: 50, right: 200, bottom: 50, left: 50};
+    //width = width - margin.left - margin.right,
+    //height = height - margin.top - margin.bottom;
+
+height = margin.top + margin.bottom + ( terms.length * (max_size + 15 ))
+    
+var width_d = width - margin.left - margin.right,
+    height_d = height - margin.top - margin.bottom;
+
+var start_year = d3.min(data, function(d) { return d.year; }) - 5,
+	end_year = d3.max(data, function(d) { return d.year; });
+	
+
+var min_number = d3.min(data, function(d) { return d.number; });
+var max_number = d3.max(data, function(d) { return d.number; });
+
+var trend = d3.max(data, function(d) { return Math.abs(d.trend); })
+
+var x = d3.scale.linear()
+        .range([0, width_d])
+        .domain([start_year, end_year]);
+
+var y = d3.scale.ordinal()
+        .rangeBands([max_size, height_d]) //, 10,max_size)
+        .domain(terms);
+
+var c = d3.scale.pow()
+        .exponent(0.3)
+        .domain([-trend,0,+trend])
+        .range(["#0055ac","#dddddd","#b20016"]); //rdbu + intensity
+        //d3.scale.category20c()
+        //.domain( terms );    	      
+                
+                
+var r = d3.scale.log()
+    .domain([1, d3.max( [ Math.abs(min_number), max_number] )])
+    .range([1, 10]);
+
+
+var formatYears = d3.format("0000");
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("top")
+	.tickFormat(formatYears);
+
+
+var svg = d3.select(id)//.insert("svg",':first-child')
+    .attr("width", width)
+    .attr("height", height)
+    .attr('viewBox','0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio','xMidYMid')
+
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .call(xAxis);
+
+
+    svg.selectAll(".datac")
+        .data(data)
+        .enter().append("svg:circle")
+            .attr("class","datac")
+            .attr("cx", function(d, i) { return x(d.year); })
+            .attr("cy", function(d, i) { return y(d.term); })
+            .attr("r",  function(d) { return r( Math.abs(d.number) ); })
+            .style("fill", function(d) { return c(d.trend); })
+
+    svg.selectAll(".label")
+        .data(terms)
+        .enter().append('text')
+          .attr("class","label")
+            .attr("x", width_d + max_size )
+            .attr("y", function(d) { return y(d)+3 ; })
+          //.style("fill", function(d) { return c(d); })
+            .text( function(d) { return d; } );
+        
+
+}
+</script>
 @end
 
 

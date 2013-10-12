@@ -84,33 +84,6 @@ circle {
             }
             
             
-        @elif figure['type'] == 'corrmatrix':
-            var traits = [
-            @for l in figure['traits']:
-                "@l!s",
-            @endfor
-            ];
-              
-            var groups = [
-            @for l in figure['groups']:
-                "@l!s",
-            @endfor
-            ];                      
-                                
-            var data = [
-            @for row in figure['data']:
-                {
-                    @for k,v in row.items():
-                        '@k!s':'@v!s',
-                    @endfor
-                },
-            @endfor
-            ];
-
-            function _metapath_render_trigger(){
-                corrmatrix(id, groups, traits, matrix);
-            }        
-
         @endif
 
     </script>

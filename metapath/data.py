@@ -46,8 +46,6 @@ class DataManager( QObject ):
             # Add ourselves to the watcher for this interface
             dso = self.i[interface]
             dso.manager.watchers[ dso.manager_interface ].add( self )
-            print "WATCHERS %s (%s) on '%s': %s / %s" % (dso, dso.name, dso.manager_interface, dso.manager.watchers[ dso.manager_interface ], self)
-            print "TOTAL WATCHERS: %s" % len(dso.manager.watchers[ dso.manager_interface ])
             return deepcopy( self.i[interface] )
         return False
         
