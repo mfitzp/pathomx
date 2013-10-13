@@ -815,52 +815,8 @@ class MetaVizView(ui.AnalysisView):
                 
         # Add file:// refs to image links (Graphviz bug?)
         svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
-        
-        #self.overview.load(filename)
 
-        scale = ''
-        if self.m.data:
-            scalet, scaleb = u'', u''
-            for n,s in enumerate(self.m.data.scale):
-                scalet = scalet + '<td><div class="datasq rdbu9-%d"></div></td>' % (9-n)
-                scaleb = scaleb + '<td>%d</td>' % (s)
-            scale = '<table><tr><td></td>' + scalet + '</tr><tr><td class="scale-type">%s</td>' % self.m.data.scale_type + scaleb + '</tr></table>'
-        else:
-            n = 1
-
-        html_source = '''<html>
-        <script>
-            current_svg = 1;
-            previous_svg = 2;
-        
-            function init(){
-                increment_view();
-                window.setInterval('increment_view();',2000);
-            }
-        
-            function increment_view(){
-                if (current_svg > %d ){ current_svg = 1; return; }
-                            
-                document.getElementById('svg' + current_svg).classList.add('visible');
-                document.getElementById('svg' + current_svg).classList.remove('hidden');
-                
-                document.getElementById('svg' + previous_svg).classList.add('hidden');
-                document.getElementById('svg' + previous_svg).classList.remove('visible');
-                
-                previous_svg = current_svg
-                current_svg += 1;
-            }
-        </script>
-        <link rel="stylesheet" href="file://%s/css/base.css">''' % (n, str( os.path.join( utils.scriptdir,'html') ) ) + '''
-        <body onload="init();">
-            <div class="scalebar scalebar-inset">''' + scale + '''</div>'''
-        
-        for n, svg in enumerate( svg_source ):   
-            html_source += '''<div id="svg%d" class="svg"><div class="svgno"><span data-icon="&#xe000;" aria-hidden="true"></span> %s''' % (n+1, tps[n])  + '''</div>''' + svg + '''</div>'''
-
-        html_source += '''</body></html>'''
-        
-        self.browser.setHtml(html_source) #,"~") 
+        self.browser.setSVG(svg_source[0]) #,"~") 
 
         self.setWorkspaceStatus('done')
         self.clearWorkspaceStatus()

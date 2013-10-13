@@ -375,8 +375,9 @@ class MainWindow(ui.MainWindowUI):
              
     def onBrowserLoadDone(self, ok):
         # Reload the sidebar on main window refresh: this is only bound to the main window so no need to check for action
-        if isinstance(self.dbBrowser_CurrentURL, QUrl): # We've got an url, reload
-            self.onBrowserNav(self.dbBrowser_CurrentURL)
+        pass
+        #if isinstance(self.dbBrowser_CurrentURL, QUrl): # We've got an url, reload
+        #    self.onBrowserNav(self.dbBrowser_CurrentURL)
 
     def onLoadIdentities(self):
         """ Open a data file"""

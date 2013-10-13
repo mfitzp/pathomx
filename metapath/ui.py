@@ -324,8 +324,8 @@ class QTabWidgetExtend( QTabWidget ):
 
         # Automagically unfocus the help (+any other equivalent) tabs if were' adding a second
         # tab to the widget. Not after, as must be selected intentionally
-        if self.count() == 2 and self.tabText(0) in self.auto_unfocus_tabs: # 
-            self.setCurrentIndex( t )
+        #if self.count() == 2 and self.tabText(0) in self.auto_unfocus_tabs: # 
+        #    self.setCurrentIndex( t )
         
         return t
         
@@ -341,6 +341,8 @@ class GenericView( QMainWindow ):
     
         self.plugin = plugin
         self.m = parent
+        self.m.views.append( self )
+        
         self.id = str( id( self ) )
         self.data = data.DataManager(self.m, self)
         self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
@@ -356,8 +358,7 @@ class GenericView( QMainWindow ):
         
         self.file_watcher = QFileSystemWatcher()            
         self.file_watcher.fileChanged.connect( self.onFileChanged )
-        
-        
+
         if self.plugin.help_tab_html_filename:
             self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
             self.tabs.addTab(self.help,'?')            
@@ -457,7 +458,10 @@ class GenericView( QMainWindow ):
                     
                 else: # Stop consuming through this interface
                     self.data.stop_consuming( consumer_def.target )
-
+             
+            # Trigger notification for data source change; re-render inheritance map        
+            #self.m.onDataInheritanceChanged()
+            
             #self.generate() automatic
             
     def onViewDataOutput(self):
@@ -573,6 +577,71 @@ class GenericView( QMainWindow ):
         print "%s reduced to %s" % ( no, len(accumulator) ) 
         return accumulator
 
+# Workspace overview (Home) class
+
+class HomeView( GenericView ):
+
+    def __init__(self, parent, **kwargs):
+        super(GenericView, self).__init__(parent, **kwargs) # We're overriding all of the GenericView Init, so super it
+    
+        self.plugin = None
+        self.m = parent
+        
+        self.id = str( id( self ) )
+        self.name = "Home"
+
+        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+        
+        #self.w = QMainWindow()
+        self.tabs = QTabWidgetExtend(self)
+        self.tabs.setDocumentMode(True)
+        self.tabs.setTabsClosable(False)
+        self.tabs.setTabPosition( QTabWidget.South )
+        self.tabs.setMovable(True)
+        
+        # Display welcome file
+        self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
+        self.tabs.addTab(self.help,'?')            
+        template = self.m.templateEngine.get_template('welcome.html')
+        self.help.setHtml( template.render( {
+                    'htmlbase': os.path.join( utils.scriptdir,'html'),
+                    } ), QUrl("~") 
+                    )
+
+        self.workspace = QWebViewExtend( None, onNavEvent=self.m.onBrowserNav )
+        self.tabs.addTab(self.workspace,'Workspace')
+
+        self.toolbars = {}
+        self.controls = defaultdict( dict ) # Store accessible controls
+        
+        self.register_url_handler( self.default_url_handler )
+        self.setCentralWidget(self.tabs)
+        
+        self.config = QSettings()
+        
+        self.addFigureToolBar()
+        
+        self.workspace_item = self.m.addWorkspaceItem(self, None, self.name, is_selected=True, icon=QIcon( os.path.join( utils.scriptdir,'icons','home.png' )) )#, icon = None)
+
+    def render(self):
+        objects = []
+        for v in self.m.views:
+            objects.append( (v.id, v.name) )
+
+        inheritance = []
+        for v in self.m.views:
+            # v.id = origin
+            for i,ws in v.data.watchers.items():
+                for w in ws:
+                    inheritance.append( (v.id, w.v.id) ) # watcher->view->id
+
+        template = self.m.templateEngine.get_template('d3/workspace.svg')
+        self.workspace.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
+
+        f = open("/Users/mxf793/Desktop/workspace.svg",'w')
+        f.write( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} ) ) 
+        f.close()
+    
 
 # Data view prototypes
 
@@ -696,6 +765,7 @@ class AnalysisView(GenericView):
         template = self.m.templateEngine.get_template(template)
         target.setSVG(template.render( metadata ))
         
+        self.m.workspace_updated.emit()
                 
         f = open("/Users/mxf793/Desktop/test.svg","w")
         f.write(template.render( metadata ))
@@ -838,6 +908,7 @@ class AnalysisD3View(AnalysisView):
         template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
         self.browser.setSVG(template.render( metadata ))
 
+        self.m.workspace_updated.emit()
                 
         f = open("/Users/mxf793/Desktop/test.svg","w")
         f.write(template.render( metadata ))
@@ -1072,6 +1143,8 @@ class remoteQueryDialog(genericDialog):
 
 class MainWindowUI(QMainWindow):
 
+    workspace_updated = pyqtSignal()
+
     def __init__(self):
 
         super(MainWindowUI, self).__init__()
@@ -1153,15 +1226,9 @@ class MainWindowUI(QMainWindow):
         QWebSettings.setMaximumPagesInCache( 0 )
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
-        
-        self.mainBrowser = QWebViewExtend( None, onNavEvent=self.onBrowserNav )
-        
-        self.dbBrowser_CurrentURL = None
 
         # Display a introductory helpfile 
-        template = self.templateEngine.get_template('welcome.html')
-        self.mainBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),QUrl('~')) 
-        self.mainBrowser.loadFinished.connect( self.onBrowserLoadDone )
+        self.mainBrowser = QWebViewExtend( None, onNavEvent=self.onBrowserNav )
         
         self.pluginManager = PluginManagerSingleton.get()
         self.pluginManager.m = self
@@ -1214,6 +1281,7 @@ class MainWindowUI(QMainWindow):
         #self.dataDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
         self.stack = QStackedWidget()
+        self.views = []
         #self.stack.addWidget(self.mainBrowser)
         
         self.setCentralWidget(self.stack)
@@ -1231,7 +1299,12 @@ class MainWindowUI(QMainWindow):
         self.workspace.hideColumn(1)
         
 
-        self.addWorkspaceItem( self.mainBrowser, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
+        self.home = HomeView(self)
+        # Signals
+        self.workspace_updated.connect( self.home.render )
+        
+
+        #self.addWorkspaceItem( self.home, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
         
         app_category_icons = {
                "Data": QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
@@ -1300,6 +1373,7 @@ class MainWindowUI(QMainWindow):
         
         if section:
             self.workspace_parents[ section ].addChild(tw)
+            self.workspace_updated.emit() # Notify change to workspace layout        
         else:
             self.workspace.addTopLevelItem(tw) 
             self.workspace_parents[ title ] = tw
@@ -1308,6 +1382,7 @@ class MainWindowUI(QMainWindow):
             if section:
                 self.workspace_parents[ section ].setExpanded(True)
             self.workspace.setCurrentItem(tw)
+
 
         return tw
 
@@ -1336,6 +1411,9 @@ class MainWindowUI(QMainWindow):
         self.config.setValue( '/Data/MiningActive', checked)
         self.generateGraphView()
 
+
     def register_url_handler( self, identifier, url_handler ):
         self.url_handlers[ identifier ].append( url_handler )
+        
 
+    

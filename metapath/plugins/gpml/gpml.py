@@ -72,7 +72,7 @@ class gpmlPathwayView(ui.AnalysisView):
         t.addAction(load_wikipathwaysAction)
          
         #self.o.show() 
-        self.plugin.register_url_handler( self.id, self.url_handler )
+        self.plugin.register_url_handler( self.url_handler )
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] )

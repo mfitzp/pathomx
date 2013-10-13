@@ -46,6 +46,12 @@ class DataManager( QObject ):
             # Add ourselves to the watcher for this interface
             dso = self.i[interface]
             dso.manager.watchers[ dso.manager_interface ].add( self )
+            
+            try: # Notify the mainview of the workspace change
+                self.m.workspace_updated.emit()            
+            except:
+                pass
+
             return deepcopy( self.i[interface] )
         return False
         
