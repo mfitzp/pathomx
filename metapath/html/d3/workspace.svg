@@ -1,5 +1,21 @@
 @extends("d3/base.svg")
 @require(htmlbase, objects, inheritance)
+@def header():
+    <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="url(#smallGrid)"/>
+      <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1"/>
+    </pattern>
+<rect fill="url(#largeGrid)" width="100%" height="100%" />
+
+<marker id="circlemark" markerWidth="10" markerHeight="10"
+        orient="auto" refX="5" refY="5">
+  <circle cx="5" cy="5" r="5"/>
+</marker>
+
+@end
 
 @def styles():
 <style><![CDATA[
@@ -13,6 +29,14 @@
     stroke:#000;
 }
 
+
+.node-type-data             { fill:#aec7e8; }
+.node-type-processing       { fill:#ffbb78; }
+.node-type-identification   { fill:#98df8a; }
+.node-type-analysis         { fill:#c5b0d5; }
+.node-type-visualisation    { fill:#dbdb8d; }
+
+
 text {
     stroke:none;
     fill:#000;
@@ -22,6 +46,28 @@ text {
     stroke:#000;
     fill:none;
 }
+
+.input {
+    stroke:#000;
+    fill: #ff7f0e;
+}
+
+.output {
+    stroke:#000;
+    fill: #ffd80e;
+}
+
+.input:hover, .output:hover {
+    stroke-width:2px;
+}
+
+
+.connector {
+    stroke:#000; 
+    stroke-dasharray: 5,5;       
+    fill: none;
+}
+
 
 ]]></style>
 @end
@@ -34,16 +80,22 @@ text {
 <script type="text/javascript" xlink:href="file://@htmlbase/js/dagre-d3.min.js"></script>
 <script>
 
-function workspace(id, nodes, edges){
+function workspace(nodes, edges){
 // Create a new directed graph
 var g = new dagre.Digraph();
 
 // Add nodes to the graph. The first argument is the node id. The second is
 // metadata about the node. In this case we're going to add labels to each of
 // our nodes.
-nodes.forEach(function(d) { 
-    g.addNode(d.id,    { label: d.name,  width: 144, height: 100 });
+//nodes.forEach(function(d) { 
+//    g.addNode(d.id,    { label: d.name,  width: 144, height: 100 });
+//})
+
+d3.entries(nodes).forEach( function(d){
+    g.addNode(d.key, { label: d.value.name,  width: 144, height: 100 });
 })
+
+
 
 // Add edges to the graph. The first argument is the edge id. Here we use null
 // to indicate that an arbitrary edge id can be assigned automatically. The
@@ -54,29 +106,120 @@ inheritance.forEach(function(d) {
 })
 
 
-    idxy = getElementSize(id)
+    idxy = getElementSize('svg')
     var width_c = idxy[0],
         height_c = idxy[1];
     
     var margin = {top: 50, right: 50, bottom: 80, left: 50};
     var width = width_c - margin.left - margin.right,
         height = height_c - margin.top - margin.bottom;
-        
 
-var svg = d3.select(id)
+
+
+var svg = d3.select('svg')
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
+
+
 var renderer = new dagreD3.Renderer();
+var ranksep = 50;
 
 
 var layout = dagreD3.layout()
                     .nodeSep(20)
-                    .rankDir("LR");
+                    .rankSep(ranksep) 
+                    .rankDir("TB");
 renderer.layout(layout).run(g, svg); 
+
+var drag = d3.behavior.drag()
+    .on("dragstart", dragstart)
+    .on("drag", draghandle)
+    .on("dragend", dragend);
+
+function interface_x_pos(n, i, y){
+    o = [];
+    i.forEach( function(d){
+        o.push( {
+            'node':n,
+            'interface':d,
+            'x':o.length*12-6*(i.length-1),
+            'y':17,
+            } ); 
+    })
+    return o
+}
+
+d3.selectAll('.node')
+    .each(function(d) {
+        node = d3.select(this)
+            .attr('id', function(d){ return 'node'+d; })       
+            .attr('class',function(d){ return 'node node-type-' + nodes[d].type; })        
+            .attr('style','cursor:pointer;');
+            //works but needs tweaking .on("click",function(d){ delegateLink('metapath://home/view/'+ d + '/view'); });
+
+        node.selectAll('.input')
+            .data( interface_x_pos( nodes[d], nodes[d].inputs ) )
+            .enter()
+              .append('g')
+              .append("circle")
+                .attr("class","input")
+                .attr("cx", function(d){ return d.x; })
+                .attr("cy", function(d){ return -d.y; })
+                .attr("r","5")
+                .attr('title', function(d){ return d.interface; });
+
+        node.selectAll('.output')
+            .data( interface_x_pos( nodes[d], nodes[d].outputs))
+            .enter()
+              .append('g')
+              .append("circle")
+                .attr("class","output")
+                .attr("cx", function(d){ return d.x; })
+                .attr("cy", function(d){ return d.y; })
+                .attr("r","5")
+                .attr('title', function(d){ return d.interface; })
+                .call(drag);
+                
+        })
+
+
+function dragstart(d) {
+    d3.select(this.parentNode).append('path')
+        .attr('class','connector connector-inactive')
+        .attr('marker-start','url(#circlemark)')
+        .attr('marker-end','url(#circlemark)')
+        
+}
+
+function draghandle(d) {
+  c = d3.selectAll('.connector')
+        .attr('class','connector connector-active')
+        .attr("d", "M " + d.x + " " + d.y + "C " + d.x + " " + (d.y+(ranksep)) + " " + d3.event.x + " " + (d3.event.y-(ranksep)) + " " + d3.event.x + " " + d3.event.y)
+        
+/*      .attr("x1", d.x)
+      .attr("y1", d.y)
+      .attr("x2", d3.event.x)
+      .attr("y2", d3.event.y) */
+}
+
+function dragend(d){
+
+    d3.selectAll('.connector')
+        .remove();
+    
+    t = document.elementFromPoint(d3.event.sourceEvent.clientX, d3.event.sourceEvent.clientY);
+    t = d3.select(t)[0][0].__data__            // '.input:hover'
+    // origin, target = d.interface, d.node; t[0].interface: t[0].node
+
+    delegateLink('metapath://home/view/' + d.node.id +':' + d.interface + ','+ t.node.id +':'+ t.interface + '/connect' );
+        
+}
+
+
 }
 </script>
 
@@ -86,16 +229,26 @@ renderer.layout(layout).run(g, svg);
 @def generate():
     @#...
     <script>
-        id = 'svg';
-
-         objects = [
-            @for d in objects:
-                {
-                'id':'@d[0]!s',
-                'name':'@d[1]!s',
-                },
+         objects = {
+            @for id,v in objects:
+                '@id!s':
+                    {
+                    'id':'@id!s',
+                    'name':'@v.name!s',
+                    'type':'@v.plugin.default_workspace_category.lower()!s',
+                    'inputs':[
+                        @for i in v.data.i.keys():
+                            '@i!s',
+                        @endfor 
+                        ],
+                    'outputs':[
+                        @for o in v.data.o.keys():
+                            '@o!s',
+                        @endfor 
+                        ],
+                    },
             @endfor
-            ];
+            };
             
          inheritance = [
             @for d in inheritance:
@@ -107,7 +260,7 @@ renderer.layout(layout).run(g, svg);
             ];
 
         function _metapath_render_trigger(){
-            workspace(id, objects, inheritance );
+            workspace(objects, inheritance );
         }
         </script>
 

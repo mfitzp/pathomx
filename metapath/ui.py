@@ -167,6 +167,7 @@ class QWebViewExtend(QWebView):
     def setSVG(self, svg):
         self._is_svg_with_js = True
         super(QWebViewExtend, self).setHtml(svg, QUrl('~') )             
+        #super(QWebViewExtend, self).setContent(svg, "image/svg+xml") <- this would be preferable but has encoding issues
         
     def _loadFinished(self, ok):
         sizer = self.sizeHint()   
@@ -405,6 +406,11 @@ class GenericView( QMainWindow ):
         except:
             pass
 
+        try: # Notify the mainview of the workspace change
+            self.m.workspace_updated.emit()            
+        except:
+            pass
+
     def setWorkspaceStatus(self, status):
         self.m.setWorkspaceStatus( self.workspace_item, status)
 
@@ -587,7 +593,7 @@ class HomeView( GenericView ):
         self.plugin = None
         self.m = parent
         
-        self.id = str( id( self ) )
+        self.id = 'home' #str( id( self ) )
         self.name = "Home"
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
@@ -608,13 +614,13 @@ class HomeView( GenericView ):
                     } ), QUrl("~") 
                     )
 
-        self.workspace = QWebViewExtend( None, onNavEvent=self.m.onBrowserNav )
+        self.workspace = QWebViewExtend( self, onNavEvent=self.m.onBrowserNav )
         self.tabs.addTab(self.workspace,'Workspace')
 
         self.toolbars = {}
         self.controls = defaultdict( dict ) # Store accessible controls
         
-        self.register_url_handler( self.default_url_handler )
+        self.register_url_handler( self.workspace_url_handler )
         self.setCentralWidget(self.tabs)
         
         self.config = QSettings()
@@ -626,7 +632,7 @@ class HomeView( GenericView ):
     def render(self):
         objects = []
         for v in self.m.views:
-            objects.append( (v.id, v.name) )
+            objects.append( (v.id, v) )
 
         inheritance = []
         for v in self.m.views:
@@ -634,14 +640,57 @@ class HomeView( GenericView ):
             for i,ws in v.data.watchers.items():
                 for w in ws:
                     inheritance.append( (v.id, w.v.id) ) # watcher->view->id
-
+        print "************ REGENERATE *************"
         template = self.m.templateEngine.get_template('d3/workspace.svg')
         self.workspace.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
 
         f = open("/Users/mxf793/Desktop/workspace.svg",'w')
         f.write( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} ) ) 
         f.close()
-    
+        
+    # Url handler for all default plugin-related actions; making these accessible to all plugins
+    # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
+    def workspace_url_handler(self, url):
+
+        kind, id, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames           
+        print "Workspace handler: %s" % url
+        # url is Qurl kind
+        # Add an object to the current view
+        if kind == "view":
+            if action == 'view':
+                for v in self.m.views:
+                    if v.id == id:
+                        # We've got the view object; find index in the stack
+                        si = self.m.stack.indexOf(v)
+                        if si:
+                            self.m.stack.setCurrentIndex(si)
+                        break      
+
+            elif action == "connect":
+                #"metapath://home/view/4545179728:scores,4545247392:input/connect"                          
+                #id = origin:int,dest:int
+                origin, dest = [o.split(':') for o in id.split(',')]
+                #o/d[0] == view, [1] == interface
+                # We have the view ids; so find the real things
+                for v in self.m.views:
+                    if v.id == origin[0]:
+                        origin[0] = v
+                        break
+
+                for v in self.m.views:
+                    if v.id == dest[0]:
+                        dest[0] = v
+                        break
+                
+                # Get the origin data
+                source_data = origin[0].data.o[origin[1]]
+                
+                # We now have the two views
+                for d in dest[0].data.consumer_defs:
+                    if d.target == dest[1]:
+                        dest[0].data.consume_with(source_data, d)
+                        break
+                                    
 
 # Data view prototypes
 
@@ -764,8 +813,6 @@ class AnalysisView(GenericView):
 
         template = self.m.templateEngine.get_template(template)
         target.setSVG(template.render( metadata ))
-        
-        self.m.workspace_updated.emit()
                 
         f = open("/Users/mxf793/Desktop/test.svg","w")
         f.write(template.render( metadata ))

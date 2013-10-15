@@ -38,27 +38,23 @@ class DataManager( QObject ):
         self.o = {} # Output
 
         self.watchers = defaultdict( set ) # List of watchers on each output interface
-        
+                
     # Get a dataset through input interface id;
     # This provides indirect access to a copy of the object (local link in self.i = {})
     def get(self, interface):
         if interface in self.i:
             # Add ourselves to the watcher for this interface
             dso = self.i[interface]
-            dso.manager.watchers[ dso.manager_interface ].add( self )
-            
-            try: # Notify the mainview of the workspace change
-                self.m.workspace_updated.emit()            
-            except:
-                pass
-
-            return deepcopy( self.i[interface] )
+            dso.log.append('Retrieved by %s on interface %s' % (self, interface) )
+            #dso.manager.watchers[ dso.manager_interface ].add( self )
+            return deepcopy( dso )
+                
         return False
         
     def unget(self, interface):
         if interface in self.i:
-            dso = self.i[interface]
-            dso.manager.watchers[ dso.manager_interface ].remove( self )
+            self.i[ interface ] = None
+            #dso = self.i[interface]
     
     # Output a dataset through output interface id
     # Advertise object for consumption; needs to handle notification of all consumers
@@ -66,6 +62,7 @@ class DataManager( QObject ):
     def put(self, interface, dso, update_consumers = True):
         if interface in self.o:
             self.o[interface].import_data(dso)
+            self.o[interface].log.append('Output by %s on interface %s' % (self, interface) )
             self.o[interface].manager = self
             self.o[interface].manager_interface = interface
             # Update consumers / refresh views
@@ -78,8 +75,10 @@ class DataManager( QObject ):
     def add_interface(self, interface, dso=None):
         if dso==None:
             dso = DataSet(manager=self)
-            
-        self.o[ interface ] = dso
+        
+        self.o[interface] = dso
+        self.o[interface].manager = self
+        self.o[interface].manager_interface = interface
         
         # If we're in a constructed view we will have a reference to the global data table
         # This feels a bit hacky
@@ -137,6 +136,15 @@ class DataManager( QObject ):
                 return True
         return False
         
+    def _unconsume(self, data):
+        if self in data.manager.watchers[ data.manager_interface ]:
+            data.manager.watchers[ data.manager_interface ].remove( self )
+            # Implement some way to stop the double-hit here (when called from _consume)
+            #try: # Notify the mainview of the workspace change
+            #    self.m.workspace_updated.emit()            
+            #except:
+            #    pass
+                        
     def _consume(self, data, consumer_defs=None):
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
@@ -149,10 +157,18 @@ class DataManager( QObject ):
             if consumer_def.can_consume(data):
                 # Remove existing data object link (stop watching)
                 if consumer_def.target in self.i:
-                    self.unget(consumer_def.target) 
+                    self._unconsume(self.i[consumer_def.target]) 
+
                 self.i[ consumer_def.target ] = data
+                data.manager.watchers[ data.manager_interface ].add( self )
+
                 self.consumes.append( data )
                 data.consumers.append( self )
+                try: # Notify the mainview of the workspace change
+                    self.m.workspace_updated.emit()   
+                    print "_consume ACTION ---"         
+                except:
+                    pass
                 return True    
         
     def consume(self, data):
@@ -353,6 +369,7 @@ class DataSet( QObject ):
         # self.as_table = #
 
         # MetaData derived from data formats, inc. statistics etc. [informational only; not prescribed]
+        self.log = [] # Log of processing
     
     # Metaclasses for copying the dataset object; copy is fine as the default implementation
     # but we need deepcopy that stops at the db boundary.
@@ -374,6 +391,8 @@ class DataSet( QObject ):
         o.classes = deepcopy(self.classes, memo)
 
         o.data = deepcopy(self.data)
+
+        o.log = deepcopy(self.log)
         
         o.previously_managed_by = [n for n in self.previously_managed_by]
         

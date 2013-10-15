@@ -132,16 +132,11 @@ class MetaboHunterView( ui.DataView ):
         data = urllib.urlencode(values)
         request = urllib2.Request(url, data)
 
-
         try:
             response = urllib2.urlopen(request)
         except urllib2.HTTPError, e:
             print e
-            sys.exit()
-
-        except urllib2.URLError, e:
-            print e
-            sys.exit()
+            return
 
 
         html = response.read()
@@ -195,14 +190,7 @@ class MetaboHunterView( ui.DataView ):
             response = urllib2.urlopen(request)
         except urllib2.HTTPError, e:
             print e
-
-            sys.exit()
-
-        except urllib2.URLError, e:
-
-            print e
-            sys.exit()
-
+            return
 
         matched_peaks_text = response.read()
         self.setWorkspaceStatus('active')

@@ -1,0 +1,9 @@
+[Core]
+Name = KEGG
+Module = kegg
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Visualise data on KEGG pathways

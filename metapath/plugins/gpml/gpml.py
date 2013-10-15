@@ -65,6 +65,7 @@ class gpmlPathwayView(ui.AnalysisView):
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
 
         self.addDataToolBar()
+        self.addFigureToolBar()
 
         t = self.addToolBar('GPML')
         t.setIconSize( QSize(16,16) )

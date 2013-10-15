@@ -4,6 +4,10 @@
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg"
 xmlns:xlink="http://www.w3.org/1999/xlink">
+@def header():
+@end
+@header()
+
 <style><![CDATA[
 svg {
     margin:0px; padding:0;
@@ -44,4 +48,7 @@ svg {
 @def generate():
 @end
 @generate()
+@def footer():
+@end
+@footer()
 </svg>

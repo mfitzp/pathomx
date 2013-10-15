@@ -24,13 +24,13 @@ circle {
 
 .zerogrid {
     stroke:#dddddd;
-    stroke-dasharray:5pt,5pt;
+    stroke-dasharray: 5,5;
     stroke-width:0.5pt;
 }
 
 .region {
     stroke-width:0.5pt;
-    stroke-dasharray:5pt,5pt;
+    stroke-dasharray: 5,5;
     fill: none;
 }
 

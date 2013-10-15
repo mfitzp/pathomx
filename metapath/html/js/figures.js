@@ -702,6 +702,14 @@ function scatter(id, data, regions, x_axis_label, y_axis_label) {
         .attr('width', width)
         .attr('height', height)
         .attr('class', 'chart')
+        
+    var clip = svg.append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", width_d)
+        .attr("height", height_d);        
 
     var main = svg.append('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
@@ -753,7 +761,8 @@ function scatter(id, data, regions, x_axis_label, y_axis_label) {
             .style("fill", function(d) { return color(d.class); })
             .attr("data-legend",function(d) { return d.class; });
 
-    var g = main.append("svg:g"); 
+    var g = main.append("svg:g")
+              .attr("clip-path", "url(#clip)");
 
     g.selectAll(".region")
         .data(regions)
