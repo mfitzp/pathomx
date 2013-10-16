@@ -344,6 +344,8 @@ class GenericView( QMainWindow ):
         self.m = parent
         self.m.views.append( self )
         
+        self._floating = False
+        
         self.id = str( id( self ) )
         self.data = data.DataManager(self.m, self)
         self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
@@ -372,6 +374,8 @@ class GenericView( QMainWindow ):
                         )
         
         self.toolbars = {}
+        self.addSelfToolBar() # Everything has one
+        
         self.controls = defaultdict( dict ) # Store accessible controls
         
         self.register_url_handler( self.default_url_handler )
@@ -417,6 +421,44 @@ class GenericView( QMainWindow ):
     def clearWorkspaceStatus(self):
         self.m.clearWorkspaceStatus( self.workspace_item )
 
+    def onDeleteSelf(self):
+        pass
+    
+    def onPopOutToggle(self, status):
+        if status:
+            #stack_index = self.m.stack.addWidget( self )
+            self._parent = self.parent()
+            self._floating = True
+            self._placeholder = QWidget()
+            self.m.stack.insertWidget(self._stack_index, self._placeholder ) # Keep space in the stack
+            self.m.stack.setCurrentIndex(self._stack_index)
+            self.setParent(self.m, Qt.Window)
+            self.show()
+            # Pop us out
+        else:
+            # Pop us in
+            self._floating = False
+            self.m.stack.insertWidget(self._stack_index,self)
+            self.m.stack.removeWidget(self._placeholder)
+            #self.setParent(self._parent, Qt.Window)
+
+    def addSelfToolBar(self):            
+        t = self.addToolBar('App')
+        t.setIconSize( QSize(16,16) )
+
+        delete_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'cross.png' ) ), tr('Delete this app…'), self.m)
+        delete_selfAction.setStatusTip('Delete this app')
+        delete_selfAction.triggered.connect(self.onDeleteSelf)
+        t.addAction(delete_selfAction)
+
+        popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
+        popout_selfAction.setStatusTip('Open this app in a separate window')
+        popout_selfAction.setCheckable(True)
+        popout_selfAction.setChecked(False)
+        popout_selfAction.toggled.connect(self.onPopOutToggle)
+        t.addAction(popout_selfAction)
+        
+        self.toolbars['self'] = t        
 
     def addDataToolBar(self, default_pause_analysis=False):            
         t = self.addToolBar('Data')
@@ -1405,11 +1447,13 @@ class MainWindowUI(QMainWindow):
         self.workspaceDock.raise_()
 
     def onWorkspaceStackChange(self, item, previous):
-        self.stack.setCurrentIndex( int( item.text(1) ) )
+        i = int( item.text(1) )
+        self.stack.setCurrentIndex( i )
 
     def addWorkspaceItem(self, widget, section, title, icon = None, is_selected=None):
         
         stack_index = self.stack.addWidget( widget )
+        widget._stack_index = stack_index
         
         tw = QTreeWidgetItem()
         tw.setText(0, tr(title) )

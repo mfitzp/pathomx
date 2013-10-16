@@ -153,6 +153,7 @@ function interface_x_pos(n, i, y){
     return o
 }
 
+
 d3.selectAll('.node')
     .each(function(d) {
         node = d3.select(this)
@@ -170,7 +171,8 @@ d3.selectAll('.node')
                 .attr("cx", function(d){ return d.x; })
                 .attr("cy", function(d){ return -d.y; })
                 .attr("r","5")
-                .attr('title', function(d){ return d.interface; });
+                .append('title')
+                    .text(function(d){ return d.interface; });
 
         node.selectAll('.output')
             .data( interface_x_pos( nodes[d], nodes[d].outputs))
@@ -181,10 +183,12 @@ d3.selectAll('.node')
                 .attr("cx", function(d){ return d.x; })
                 .attr("cy", function(d){ return d.y; })
                 .attr("r","5")
-                .attr('title', function(d){ return d.interface; })
-                .call(drag);
+                .call(drag)
+                    .append('title')
+                        .text(function(d){ return d.interface; });
                 
         })
+
 
 
 function dragstart(d) {
@@ -192,6 +196,7 @@ function dragstart(d) {
         .attr('class','connector connector-inactive')
         .attr('marker-start','url(#circlemark)')
         .attr('marker-end','url(#circlemark)')
+        .style("pointer-events", "none");
         
 }
 
