@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 import ui
 from data import DataSet
@@ -9,7 +9,7 @@ class InputDataView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(InputDataView, self).__init__(plugin, parent, **kwargs)
 
-class InputData(DataPlugin):
+class InputData(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(InputData, self).__init__(**kwargs)

@@ -122,7 +122,7 @@ class BinningView( ui.DataView ):
         # Calculate the number of bins at binsize across range
         dso = self.data.o['output']
         dso.import_data( dsi )
-        
+        print dsi.entities_n        
         r = dsi.scales_r[1]
         print "Binsize/offset:",self._bin_size,self._bin_offset
 

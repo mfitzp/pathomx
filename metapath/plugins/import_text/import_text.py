@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -128,7 +128,11 @@ class ImportTextView( ui.ImportDataView ):
                 
         dso.scales[1] = scales
         dso.labels[0] = samples
-        dso.classes[0] = classes
+        dso.classes[0] = classes        
+
+        dso.entities[0] = [None] * len(samples)
+        dso.entities[1] = [None] * len(scales)
+
         dso.data = data
    
         return dso
@@ -192,12 +196,16 @@ class ImportTextView( ui.ImportDataView ):
         dso.scales[1] = scales
         dso.labels[0] = samples
         dso.classes[0] = classes
+
+        dso.entities[0] = [None] * len(samples)
+        dso.entities[1] = [None] * len(scales)
+
         dso.data = np.array( raw_data )
    
         return dso
         
 
-class ImportText(DataPlugin):
+class ImportText(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportText, self).__init__(**kwargs)

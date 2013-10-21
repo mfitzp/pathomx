@@ -345,6 +345,7 @@ class GenericView( QMainWindow ):
         self.m.views.append( self )
         
         self._floating = False
+        self._pause_analysis_flag = False
         
         self.id = str( id( self ) )
         self.data = data.DataManager(self.m, self)
@@ -783,6 +784,10 @@ class DataView(GenericView):
 
                 template = self.m.templateEngine.get_template('d3/spectra.svg')
                 self.viewer.setSVG(template.render( metadata ))
+                
+                f = open('/Users/mxf793/Desktop/test3.svg','w')
+                f.write( template.render( metadata ) )
+                f.close()
 
         return
         
@@ -1324,18 +1329,17 @@ class MainWindowUI(QMainWindow):
         
         self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
         categories_filter = {
-               "Data" : plugins.DataPlugin,
+               "Import" : plugins.ImportPlugin,
                "Processing" : plugins.ProcessingPlugin,
                "Identification": plugins.IdentificationPlugin,
                "Analysis" : plugins.AnalysisPlugin,
                "Visualisation" : plugins.VisualisationPlugin,
-#               tr("Output") : plugins.OutputPlugin,
-#               tr("Misc") : plugins.MiscPlugin,
+               "Export" : plugins.ExportPlugin,
                }
         self.pluginManager.setCategoriesFilter(categories_filter)
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ["Data","Processing","Identification","Analysis","Visualisation"] #categories_filter.keys()
+        plugin_categories = ["Import","Processing","Identification","Analysis","Visualisation","Export"] #categories_filter.keys()
         apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
@@ -1396,11 +1400,12 @@ class MainWindowUI(QMainWindow):
         #self.addWorkspaceItem( self.home, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
         
         app_category_icons = {
-               "Data": QIcon.fromTheme("data", QIcon( os.path.join( utils.scriptdir,'icons','ruler.png' ) ) ),
-               "Processing": QIcon.fromTheme("processing", QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ) ),
-               "Identification": QIcon.fromTheme("identification", QIcon( os.path.join( utils.scriptdir,'icons','target.png' ) ) ),
-               "Analysis": QIcon.fromTheme("analysis", QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ) ),
-               "Visualisation": QIcon.fromTheme("visualisation", QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ) ),
+               "Import": QIcon( os.path.join( utils.scriptdir,'icons','disk--arrow.png' ) ),
+               "Processing": QIcon( os.path.join( utils.scriptdir,'icons','ruler-triangle.png' ) ),
+               "Identification": QIcon( os.path.join( utils.scriptdir,'icons','target.png' ) ),
+               "Analysis": QIcon( os.path.join( utils.scriptdir,'icons','calculator.png' ) ),
+               "Visualisation": QIcon( os.path.join( utils.scriptdir,'icons','star.png' ) ),
+               "Export": QIcon( os.path.join( utils.scriptdir,'icons','disk--pencil.png' ) ),
                }
     
         template = self.templateEngine.get_template('apps.html')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -139,7 +139,7 @@ class BMLNMRView( ui.DataView ):
         
         self.data.put( target, dso )
         
-class BMLNMR(DataPlugin):
+class BMLNMR(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(BMLNMR, self).__init__(**kwargs)

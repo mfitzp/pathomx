@@ -221,7 +221,6 @@ class MetaboHunterView( ui.DataView ):
     
         # Assign metabolite names to labels (for subsequent entity lookup)
         # dso.import_data( dsi )
-        
         # Returned peaks are at 2dp so we need to check if we have a nearish match
         for n,p in enumerate(dso.scales[1]):
             sp2 = str( round(p,2) )

@@ -1,6 +1,6 @@
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
-class ImportExcel(DataPlugin):
+class ImportExcel(ImportPlugin):
 
     id = "importexcel"
 

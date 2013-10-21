@@ -83,8 +83,8 @@ var s_ppm = d3.extent(data, function(d) { return d.ppm; } )
 var s_ppm = [ s_ppm[1], s_ppm[0] ]
 
 var s_intensity = [
-    d3.min(data, function(d) { return Math.min(d.a, d.b); }),
-    d3.max(data, function(d) { return Math.max(d.a, d.b); })
+    d3.min(data, function(d) { return d3.min([d.a, d.b]); }),
+    d3.max(data, function(d) { return d3.max([d.a, d.b]); })
   ];
 
 var x = d3.scale

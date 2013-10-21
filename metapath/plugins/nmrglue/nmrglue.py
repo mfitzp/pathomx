@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from plugins import DataPlugin
+from plugins import ImportPlugin
 #import nmrglue as ng
 
 # Import PyQt5 classes
@@ -153,7 +153,7 @@ class NMRGlueView( ui.DataView ):
             data = data / 10000000.
             return dic, data
         
-class NMRGlue(DataPlugin):
+class NMRGlue(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(NMRGlue, self).__init__(**kwargs)

@@ -1,0 +1,32 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>Merge datasets</h1>
+    <span>Merge multiple datasets into a single object using various filters</span><br />
+    <span class="author_list">
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p>Experimental systems can often be measured by multiple means, and a method for the re-integration of these data is essential. This plugin
+offers a simple method to merge quantified data from different sources. </p>
+
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> 
+and merging will be applied automatically. Entities are added from each dataset in turn <em>providing they are not already present</em> in the preceding datasets.
+In this way you can combine multiple measures in order of confidence. Ranking is performed in order of connection, e.g. a data source on connector 1 will be
+ranked above one on connector 2. </p>
+
+<p>The resulting dataset may contain >1 entry/entity (e.g. two measurements for a given metabolite). You may wish to subsequently 
+filter this, e.g. by getting a mean per-metabolite summary.</p>
+
+<h2>Notes</h2>
+<p>You will probably want to scale your source data by a similar metric (e.g. unit variance, TMSP) before merging or you may find data from 
+different sources are weighted differently in subsequent analysis.</p>
+
+
+@end

@@ -33,8 +33,11 @@ class PCAView( ui.AnalysisView ):
         self.addDataToolBar()
         self.addFigureToolBar()
         
-        self.weights = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.weights,'Weights')
+        self.pc1 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
+        self.tabs.addTab(self.weights,'PC1')
+
+        self.pc2 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
+        self.tabs.addTab(self.weights,'PC2')
         
         self.data.add_interface('scores')
         self.data.add_interface('weights')
@@ -99,15 +102,23 @@ class PCAView( ui.AnalysisView ):
         
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], weights ),  
+                'data': zip( dso.scales[1], weights[0:1] ),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
         }
-        print weights.shape
         
+        self.render(metadata, template='d3/line.svg', target=self.pc1)
+
+        metadata = {
+            'figure':{
+                'data': zip( dso.scales[1], weights[:,1:2] ),  
+                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
+                'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
+            }
+        }
         
-        self.render(metadata, template='d3/line.svg', target=self.weights)
+        self.render(metadata, template='d3/line.svg', target=self.pc2)
         
         # Do the weights plot
         

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -94,7 +94,7 @@ class ImportMetabolightsView( ui.ImportDataView ):
         return dso
         
 
-class ImportMetabolights(DataPlugin):
+class ImportMetabolights(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportMetabolights, self).__init__(**kwargs)

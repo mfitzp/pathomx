@@ -68,7 +68,7 @@ graph = {
   ],
   "links":[
     @for r in reactions:
-        {"source":@r[0]!s,"target":@r[1]!s, "value":1, "group":1},
+        {"source":@r[0]!s,"target":@r[1]!s, "value":1},
     @end
   ]
 };
@@ -136,7 +136,6 @@ function rclicknode(d) {
         .attr("y", function(d) { return d.y = Math.max(0, Math.min(h, d.y)); });
   });
 
-}
 
 
 </script>

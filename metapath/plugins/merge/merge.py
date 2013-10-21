@@ -1,0 +1,160 @@
+# -*- coding: utf-8 -*-
+#from __future__ import unicode_literals
+
+# Import PyQt5 classes
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKit import *
+from PyQt5.QtNetwork import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtPrintSupport import *
+
+import os, copy
+
+from utils import UnicodeReader, UnicodeWriter
+from plugins import ProcessingPlugin
+
+import numpy as np
+
+import ui, db, utils
+from data import DataSet, DataDefinition
+
+
+class MergeView( ui.DataView ):
+
+    def __init__(self, plugin, parent, **kwargs):
+        super(MergeView, self).__init__(plugin, parent, **kwargs)
+
+        self.addDataToolBar()
+        self.data.add_interface('output') # Add output slot
+        self.table.setModel(self.data.o['output'].as_table)
+
+        # Setup data consumer options
+        self.data.consumer_defs.extend([ 
+            DataDefinition('1', {
+            'labels_n':     (None, '>1'),
+            'entities_t':   (None, None), 
+            }),
+            DataDefinition('2', {
+            'labels_n':     (None, '>1'),
+            'entities_t':   (None, None), 
+            }),
+            DataDefinition('3', {
+            'labels_n':     (None, '>1'),
+            'entities_t':   (None, None), 
+            }),
+            DataDefinition('4', {
+            'labels_n':     (None, '>1'),
+            'entities_t':   (None, None), 
+            }),
+            DataDefinition('5', {
+            'labels_n':     (None, '>1'),
+            'entities_t':   (None, None), 
+            }),
+            ]
+        )
+        
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+
+
+    def generate(self):
+        self.setWorkspaceStatus('active')
+    
+        dsos = []
+        for n in self.data.i:
+            dsi = self.data.get( n )
+            if dsi:
+                dsos.append(dsi)
+                
+        if len(dsos) == 0:
+            self.setWorkspaceStatus('error')
+            return False
+
+        # We now have a list of dsos to work on
+        # Take the first one as the basis; then iterate the remainder
+        # check for existence of each available entity (label)
+        # If it is not in the current working model add all columns for it to the end and continue
+        # NOTE: NEED TO CHECK DIMENSIONALITY & SAMPLE IDs 
+        
+        dsw = dsos[0]
+        for dso in dsos[1:]:
+            print dso.name
+            # Check if we have sample ids; if yes then build index to the working dso
+            if dso.labels_n[0] != dso.shape[0]: # Need labels for everything
+                self.setWorkspaceStatus('error')
+                print "Shape/label failure..."
+                continue
+            
+            eos = dso.entities_l[1] # List of entities
+            for eo in eos:
+                print eo
+                if eo not in dsw.entities[1] and eo != None:
+                    print "..."
+                    # We found something not in the base dataset; add it
+                    # Get mask
+                    mask = np.array(dso.entities[1]) == eo
+                    anno = [(e,l,s) for e,l,s in zip(dso.entities[1], dso.labels[1], dso.scales[1]) if e == eo]
+                    
+                    # Add the annotations for these things
+                    for e,l,s in anno:
+                        dsw.entities[1].append(e)
+                        dsw.labels[1].append(l)
+                        dsw.scales[1].append(s)
+
+
+                    # Check we match the reverse (will need to delete rows- optional?)
+                    idx_r_bool = np.array([True if l in dso.labels[0] else False for l in dsw.labels[0] ])
+                    dsw.data = dsw.data[idx_r_bool, :]
+                    dsw.classes[0]=list( np.array( dsw.classes[0] )[ idx_r_bool ] )
+                    dsw.labels[0]=list( np.array( dsw.labels[0] )[ idx_r_bool ] )
+                    dsw.entities[0]=list( np.array( dsw.entities[0] )[ idx_r_bool ] )
+                    dsw.scales[0]=list( np.array( dsw.scales[0] )[ idx_r_bool ] )
+
+                    # Build vertical mask using sample labels
+                    idx_bool = np.array([True if l in dsw.labels[0] else False for l in dso.labels[0] ])
+                    idx = np.array([dsw.labels[0].index(l) for l in dso.labels[0] if l in dsw.labels[0] ])
+                    
+                    print 'idx_bool', idx_bool.shape
+                    print idx_bool
+                    print 'mask', mask.shape
+                    print mask[mask==True]
+                    print 'dsw.data', dsw.data.shape
+                    print 'dso.data', dso.data.shape
+                    
+                    data = dso.data[ idx_bool, :] # 2 step if mask disagrees
+                    data = data[:, mask]
+                    data = np.reshape(data, ( data.shape[0], data.shape[1] if len(data.shape) > 1 else 1) ) 
+                    
+                    # Build nans the size of the working dataset
+                    new_data = np.empty( (dsw.shape[0], data.shape[1]) )
+                    new_data[:] = np.nan
+                    np.set_printoptions(threshold='nan')
+
+
+                    # Apply the data into this shape (will match) using indexes
+                    new_data[idx,:] = data
+                    print new_data
+                    # Append data to the end of the dsw
+                    dsw.data = np.concatenate( (dsw.data, new_data), axis=1)
+
+            
+        self.data.put('output', dsw)
+        
+        self.setWorkspaceStatus('done')
+
+        self.clearWorkspaceStatus()
+
+
+
+ 
+class Merge(ProcessingPlugin):
+
+    def __init__(self, **kwargs):
+        super(Merge, self).__init__(**kwargs)
+        self.register_app_launcher( self.app_launcher )
+
+    def app_launcher(self):
+        #self.load_data_file()
+        self.instances.append( MergeView( self, self.m ) ) 

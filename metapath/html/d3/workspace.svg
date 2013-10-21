@@ -30,11 +30,12 @@
 }
 
 
-.node-type-data             { fill:#aec7e8; }
+.node-type-import           { fill:#aec7e8; }
 .node-type-processing       { fill:#ffbb78; }
 .node-type-identification   { fill:#98df8a; }
 .node-type-analysis         { fill:#c5b0d5; }
 .node-type-visualisation    { fill:#dbdb8d; }
+.node-type-export           { fill:#aec7e8; }
 
 
 text {

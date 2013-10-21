@@ -85,8 +85,8 @@ class BasePlugin(IPlugin):
                 menuAction.triggered.connect( entry['action'] )
                 self.m.menuBar[ menu ].addAction( menuAction )
 
-class DataPlugin(BasePlugin):
-    default_workspace_category = 'Data'
+class ImportPlugin(BasePlugin):
+    default_workspace_category = 'Import'
     pass
 
 class ProcessingPlugin(BasePlugin):
@@ -105,8 +105,8 @@ class VisualisationPlugin(BasePlugin):
     default_workspace_category = 'Visualisation'
     pass
 
-class OutputPlugin(BasePlugin):
-    default_workspace_category = 'Output'
+class ExportPlugin(BasePlugin):
+    default_workspace_category = 'Export'
     pass
 
 class MiscPlugin(BasePlugin):

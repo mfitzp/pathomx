@@ -470,8 +470,8 @@ var s_ppm = d3.extent(data, function(d) { return d.ppm; } )
 var s_ppm = [ s_ppm[1], s_ppm[0] ]
 
 var s_intensity = [
-        Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ), 
-        Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return values; } ) ),
+        d3.min(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return d3.min(values); } ), 
+        d3.max(data, function(d) { var values = Object.keys(d.intensity).map(function(key){ return d.intensity[key]; }); return d3.min(values); } ),
         ]
                     
 var x = d3.scale

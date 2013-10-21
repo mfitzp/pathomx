@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -147,7 +147,7 @@ class ImportPeakMLView( ui.ImportDataView ):
 
         
 
-class ImportPeakML(DataPlugin):
+class ImportPeakML(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportPeakML, self).__init__(**kwargs)

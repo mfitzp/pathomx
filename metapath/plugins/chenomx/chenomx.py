@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import DataPlugin
+from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -282,7 +282,7 @@ class ImportDataView( ui.DataView ):
 
         
 
-class ImportText(DataPlugin):
+class ImportText(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportText, self).__init__(**kwargs)

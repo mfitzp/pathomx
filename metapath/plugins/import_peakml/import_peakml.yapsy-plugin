@@ -1,5 +1,5 @@
 [Core]
-Name = Import PeakML
+Name = PeakML
 Module = import_peakml
 
 [Documentation]

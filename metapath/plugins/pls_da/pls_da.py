@@ -34,8 +34,10 @@ class PLSDAView( ui.AnalysisView ):
         self.addExperimentToolBar()
         self.addFigureToolBar()
         
-        self.weights = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.weights,'Weights')
+        self.lv1 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
+        self.lv2 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
+        self.tabs.addTab(self.lv1,'1')
+        self.tabs.addTab(self.lv2,'2')
         
         self.data.add_interface('scores')
         self.data.add_interface('weights')
@@ -129,21 +131,29 @@ class PLSDAView( ui.AnalysisView ):
         
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( weights), axis=1 )
-
         dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
-        
         dso_z = [x for x, wmx in dso_z ]    
-        
+
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], weights ),  
+                'data': zip( dso.scales[1], weights[:,0:1] ),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
         }        
         
-        self.render(metadata, template='d3/line.svg', target=self.weights)
+        self.render(metadata, template='d3/line.svg', target=self.lv1)
+
+        metadata = {
+            'figure':{
+                'data': zip( dso.scales[1], weights[:,1:2] ),  
+                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
+                'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
+            }
+        }        
+        
+        self.render(metadata, template='d3/line.svg', target=self.lv2)
         
                 
 
