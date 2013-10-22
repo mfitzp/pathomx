@@ -340,6 +340,8 @@ class GenericView( QMainWindow ):
     def __init__(self, plugin, parent, **kwargs):
         super(GenericView, self).__init__(parent, **kwargs)
     
+        self.id = str( id( self ) )
+
         self.plugin = plugin
         self.m = parent
         self.m.views.append( self )
@@ -347,7 +349,6 @@ class GenericView( QMainWindow ):
         self._floating = False
         self._pause_analysis_flag = False
         
-        self.id = str( id( self ) )
         self.data = data.DataManager(self.m, self)
         self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
 
@@ -439,19 +440,18 @@ class GenericView( QMainWindow ):
             
     def onPopOutToggle(self, status):
         if status:
+            # Pop us out
             #stack_index = self.m.stack.addWidget( self )
             self._parent = self.parent()
             self._floating = True
             self._placeholder = QWidget()
-            self.m.stack.insertWidget(self._stack_index, self._placeholder ) # Keep space in the stack
-            self.m.stack.setCurrentIndex(self._stack_index)
+            self.m.stack.insertWidget(self.m.stack.currentIndex(), self._placeholder ) # Keep space in the stack prevent flow-over
             self.setParent(self.m, Qt.Window)
             self.show()
-            # Pop us out
         else:
             # Pop us in
             self._floating = False
-            self.m.stack.insertWidget(self._stack_index,self)
+            self.m.stack.addWidget(self)
             self.m.stack.removeWidget(self._placeholder)
             #self.setParent(self._parent, Qt.Window)
 
@@ -530,6 +530,10 @@ class GenericView( QMainWindow ):
         """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
         dialog = DialogDataOutput(parent=self, view=self)        
         dialog.exec_()
+
+    def closeEvent(self, event):
+        self.onPopOutToggle(False)
+        event.ignore()
 
     def getCreatedToolbar(self, name, id):
         if id not in self.toolbars:       
@@ -1396,9 +1400,10 @@ class MainWindowUI(QMainWindow):
         self.setCentralWidget(self.stack)
 
         self.stack.setCurrentIndex(0)
-
+        
         self.workspace_count = 0 # Auto-increment
         self.workspace_parents = {}
+        self.workspace_index = {} # id -> obj
         
         self.workspace = QTreeWidget()
         self.workspace.setColumnCount(4)
@@ -1406,7 +1411,6 @@ class MainWindowUI(QMainWindow):
         self.workspace.setHeaderLabels(['','ID',' ◎',' ⚑']) #,'#'])
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
-        
 
         self.home = HomeView(self)
         # Signals
@@ -1468,17 +1472,24 @@ class MainWindowUI(QMainWindow):
         self.workspaceDock.raise_()
 
     def onWorkspaceStackChange(self, item, previous):
-        i = int( item.text(1) )
-        self.stack.setCurrentIndex( i )
+        widget = self.workspace_index[ item.text(1) ]
+        if hasattr(widget,'_floating') and widget._floating:
+            widget.raise_()
+        else:
+            self.stack.setCurrentWidget( self.workspace_index[ item.text(1) ] )
 
     def addWorkspaceItem(self, widget, section, title, icon = None, is_selected=None):
         
-        stack_index = self.stack.addWidget( widget )
-        widget._stack_index = stack_index
+        self.stack.addWidget( widget )
+        #widget._stack_index = stack_index
+        wid = str( id( widget ) )
+        widget._workspace_index = wid
         
         tw = QTreeWidgetItem()
         tw.setText(0, tr(title) )
-        tw.setText(1, str( stack_index ) )
+        tw.setText(1, wid )
+        
+        self.workspace_index[ wid ] = widget
         
         if icon:
             tw.setIcon(0, icon )
@@ -1501,6 +1512,7 @@ class MainWindowUI(QMainWindow):
         
     def removeWorkspaceItem(self, widget):
         self.stack.removeWidget( widget )
+        del self.workspace_index[ widget._workspace_index ] 
         widget._workspace_section.removeChild( widget._workspace_tree_widget )
 
     
