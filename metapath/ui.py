@@ -16,14 +16,14 @@ from collections import defaultdict
 from yapsy.PluginManager import PluginManager, PluginManagerSingleton
 import plugins
 
-import os, urllib, urllib2, copy, re
+import os, urllib, urllib2, copy, re, json
 
 # MetaPath classes
 import utils
 
 import numpy as np
 
-import data
+import data, config
 
 # Translation (@default context)
 from translate import tr
@@ -181,7 +181,7 @@ class QWebViewExtend(QWebView):
         self.onNavEvent( QUrl(url) )
         return True
 
-    def saveAsImage(self, fn):
+    def saveAsImage(self):
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
         if filename:
@@ -383,7 +383,7 @@ class GenericView( QMainWindow ):
 
         self.setCentralWidget(self.tabs)
         
-        self.config = QSettings()
+        self.config = config.ConfigManager() # Configuration manager object; handle all get/setting, defaults etc.
         
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
 
@@ -392,6 +392,18 @@ class GenericView( QMainWindow ):
 
     def render(self, metadata):
         return
+        
+    def delete(self):
+        self.m.removeWorkspaceItem(self)
+        # Tear down the config and data objects
+        self.data.reset()
+        self.config.reset()
+        # Close the window obj
+        self.m.views.remove( self )
+        # Trigger notification for state change
+        self.m.workspace_updated.emit()
+        self.close()
+
     
     def autogenerate(self, *args, **kwargs):
         if self._pause_analysis_flag:
@@ -422,9 +434,9 @@ class GenericView( QMainWindow ):
     def clearWorkspaceStatus(self):
         self.m.clearWorkspaceStatus( self.workspace_item )
 
-    def onDeleteSelf(self):
-        pass
-    
+    def onDelete(self):
+        self.delete()
+            
     def onPopOutToggle(self, status):
         if status:
             #stack_index = self.m.stack.addWidget( self )
@@ -449,7 +461,7 @@ class GenericView( QMainWindow ):
 
         delete_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'cross.png' ) ), tr('Delete this app…'), self.m)
         delete_selfAction.setStatusTip('Delete this app')
-        delete_selfAction.triggered.connect(self.onDeleteSelf)
+        delete_selfAction.triggered.connect(self.onDelete)
         t.addAction(delete_selfAction)
 
         popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
@@ -575,11 +587,11 @@ class GenericView( QMainWindow ):
     def onFileChanged(self, file):
         if self._autoload_source_files_on_change:
             self.load_datafile( file )
-    
+
     
     def onSaveImage(self):
         # Get currently selected webview
-        self.tabs.currentWidget().saveAsImage('/Users/mxf793/Desktop/test.tiff')        
+        self.tabs.currentWidget().saveAsImage()        
 
 
     def onRecalculate(self):
@@ -674,16 +686,20 @@ class HomeView( GenericView ):
 
     def render(self):
         objects = []
+        print self.m.views
         for v in self.m.views:
             objects.append( (v.id, v) )
 
-        inheritance = []
+        inheritance = [] # Inter datasetmanager links; used for view hierarchy
         for v in self.m.views:
             # v.id = origin
             for i,ws in v.data.watchers.items():
                 for w in ws:
                     inheritance.append( (v.id, w.v.id) ) # watcher->view->id
-        print "************ REGENERATE *************"
+                    
+        links = [] # Links inputs -> outputs (dso links)
+        
+
         template = self.m.templateEngine.get_template('d3/workspace.svg')
         self.workspace.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
 
@@ -803,7 +819,7 @@ class ImportDataView( DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.add_interface('output') # Add output slot
+        self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
         
         self.addImportDataToolbar()
@@ -1259,14 +1275,14 @@ class MainWindowUI(QMainWindow):
         newAction = QAction(QIcon.fromTheme("new-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-new.png') )), tr('&New Blank Workspace'), self)
         newAction.setShortcut('Ctrl+N')
         newAction.setStatusTip( tr('Create new blank workspace') )
-        newAction.triggered.connect(self.onSaveAs)
+        newAction.triggered.connect(self.onClearWorkspace)
         self.menuBar['file'].addAction(newAction)
         
 
         openAction = QAction(QIcon.fromTheme("open-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') )), tr('&Open…'), self)
         openAction.setShortcut('Ctrl+O')
         openAction.setStatusTip( tr('Open previous analysis workspace') )
-        openAction.triggered.connect(self.onSaveAs)
+        openAction.triggered.connect(self.onOpenWorkspace)
         self.menuBar['file'].addAction(openAction)
 
         self.menuBar['file'].addSeparator()
@@ -1274,13 +1290,13 @@ class MainWindowUI(QMainWindow):
         saveAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') )), tr('&Save'), self)
         saveAction.setShortcut('Ctrl+S')
         saveAction.setStatusTip( tr('Save current workspace for future use') )
-        saveAction.triggered.connect(self.onSaveAs)
+        saveAction.triggered.connect(self.onSaveWorkspace)
         self.menuBar['file'].addAction(saveAction)
 
         saveAsAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
         saveAsAction.setStatusTip( tr('Save current workspace for future use') )
-        saveAsAction.triggered.connect(self.onSaveAs)
+        saveAsAction.triggered.connect(self.onSaveWorkspaceAs)
         self.menuBar['file'].addAction(saveAsAction)
 
         self.menuBar['file'].addSeparator()        
@@ -1469,7 +1485,8 @@ class MainWindowUI(QMainWindow):
         
         if section:
             self.workspace_parents[ section ].addChild(tw)
-            self.workspace_updated.emit() # Notify change to workspace layout        
+            widget._workspace_section = self.workspace_parents[ section ]
+            widget._workspace_tree_widget = tw
         else:
             self.workspace.addTopLevelItem(tw) 
             self.workspace_parents[ title ] = tw
@@ -1481,6 +1498,10 @@ class MainWindowUI(QMainWindow):
 
 
         return tw
+        
+    def removeWorkspaceItem(self, widget):
+        self.stack.removeWidget( widget )
+        widget._workspace_section.removeChild( widget._workspace_tree_widget )
 
     
     def setWorkspaceStatus(self, workspace_item, status):
@@ -1499,7 +1520,8 @@ class MainWindowUI(QMainWindow):
         workspace_item.setIcon(3, status_icons[status] )
         self.workspace.update( self.workspace.indexFromItem( workspace_item ) )
         self.app.processEvents()
-
+        
+        
     def clearWorkspaceStatus(self, workspace_item):
         self.setWorkspaceStatus(workspace_item, 'clear')        
         
@@ -1511,5 +1533,61 @@ class MainWindowUI(QMainWindow):
     def register_url_handler( self, identifier, url_handler ):
         self.url_handlers[ identifier ].append( url_handler )
         
+    def onSaveWorkspace(self):
+        self.saveWorkspace('/Users/mxf793/Desktop/test.mpw')
 
+    def onSaveWorkspaceAs(self):
+        self.saveWorkspace('/Users/mxf793/Desktop/test.mpw')
+    
+    def saveWorkspace(self, fn):
+        # Build a JSONable object representing the entire current workspace and write it to file
+        jsond = {
+            'metadata':{},
+            'apps':{},
+        }
+        for v in self.views:
+            
+            viewobj = {
+                'type': v.__class__.__name__,
+                'name': v.name,
+                'config': v.config.config, #.json_dumps(),
+            }
+            
+            jsond['apps'][v.id] = viewobj
+
+        s = json.dumps(jsond)
+        print s
+        f = open(fn, 'w')
+        f.write(s)
+        f.close()
+        
+    def onOpenWorkspace(self):
+        self.openWorkspace('/Users/mxf793/Desktop/test.mpw')
+        
+    def openWorkspace(self, fn):
+        # Wipe existing workspace
+        self.clearWorkspace()
+        f = open(fn, 'r')
+        s = f.read()
+        f.close()
+        # Load from file 
+        jsond = json.loads(s)
+        for v,d in jsond['apps'].items():
+            print v,d
+        
+    
+    
+    def onClearWorkspace(self):
+        self.clearWorkspace()
+    
+    def clearWorkspace(self):
+        
+        for v in self.views:
+            v.delete()
+
+        # Delete from the views object
+        self.views = []
+            
+        
+        self.workspace_updated.emit()
     

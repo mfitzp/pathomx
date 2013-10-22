@@ -26,7 +26,8 @@ class BinningView( ui.DataView ):
         self.addDataToolBar()
         self.addFigureToolBar()
         
-        self.data.add_interface('output')
+        self.data.add_input('input') # Add input slot        
+        self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
         self.difference =  ui.QWebViewExtend(self)
 

@@ -160,8 +160,9 @@ d3.selectAll('.node')
         node = d3.select(this)
             .attr('id', function(d){ return 'node'+d; })       
             .attr('class',function(d){ return 'node node-type-' + nodes[d].type; })        
-            .attr('style','cursor:pointer;');
-            //works but needs tweaking .on("click",function(d){ delegateLink('metapath://home/view/'+ d + '/view'); });
+            .attr('style','cursor:pointer;')
+                .on("click",function(d){ delegateLink('metapath://home/view/'+ d + '/view'); });
+            //works but needs tweaking 
 
         node.selectAll('.input')
             .data( interface_x_pos( nodes[d], nodes[d].inputs ) )

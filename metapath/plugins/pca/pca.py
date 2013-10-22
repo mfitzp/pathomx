@@ -34,21 +34,21 @@ class PCAView( ui.AnalysisView ):
         self.addFigureToolBar()
         
         self.pc1 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.weights,'PC1')
+        self.tabs.addTab(self.pc1,'PC1')
 
         self.pc2 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.weights,'PC2')
+        self.tabs.addTab(self.pc2,'PC2')
         
-        self.data.add_interface('scores')
-        self.data.add_interface('weights')
+        self.data.add_input('input') # Add input slot
         
-        #self.table = QTableView()
-        #self.table.setModel(self.data.o['output'].as_table)
-        #self.tabs.addTab(self.table,'Table')
+        self.data.add_output('scores')
+        self.data.add_output('weights')
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            DataDefinition('input', {})
+            DataDefinition('input', {
+#            'labels_n':   (None,['Pathway']), 
+            })
         )
 
         self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified

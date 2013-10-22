@@ -75,8 +75,9 @@ class PathwayMiningView( ui.AnalysisView ):
         
         self.addDataToolBar()
         self.addExperimentToolBar()
-        
-        self.data.add_interface('output')
+
+        self.data.add_input('input') # Add input slot        
+        self.data.add_output('output')
         self.table = QTableView()        
         self.table.setModel( self.data.o['output'].as_table )
         

@@ -26,9 +26,9 @@ class BMLNMRView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(BMLNMRView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.add_interface('Raw') # Add output slot
-        self.data.add_interface('PQN') # Add output slot
-        self.data.add_interface('TSA') # Add output slot
+        self.data.add_output('Raw') # Add output slot
+        self.data.add_output('PQN') # Add output slot
+        self.data.add_output('TSA') # Add output slot
         
         fn = self.onImportData()
         

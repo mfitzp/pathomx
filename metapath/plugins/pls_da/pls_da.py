@@ -39,12 +39,10 @@ class PLSDAView( ui.AnalysisView ):
         self.tabs.addTab(self.lv1,'1')
         self.tabs.addTab(self.lv2,'2')
         
-        self.data.add_interface('scores')
-        self.data.add_interface('weights')
+        self.data.add_output('scores')
+        self.data.add_output('weights')
         
-        #self.table = QTableView()
-        #self.table.setModel(self.data.o['output'].as_table)
-        #self.tabs.addTab(self.table,'Table')
+        self.data.add_input('input') # Add input slot
         
         # Setup data consumer options
         self.data.consumer_defs.append( 

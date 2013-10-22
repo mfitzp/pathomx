@@ -45,10 +45,10 @@ class gpmlPathwayView(ui.AnalysisView):
         #self.browser = ui.QWebViewExtend(self)
         #self.tabs.addTab(self.browser,'View')
 
-        #self.data = data.DataManager()
+        self.data.add_input('input') # Add input slot
         # Setup data consumer options
         self.data.consumer_defs.append( 
-            DataDefinition('data', {
+            DataDefinition('input', {
             'entities_t':   (None, ['Compound','Gene']), 
             },'Relative concentration data'),
         )
@@ -150,7 +150,7 @@ class gpmlPathwayView(ui.AnalysisView):
         node_colors = {}
 
 
-        dsi = self.data.get('data')
+        dsi = self.data.get('input')
         if dsi:
             sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
             print "Sf %s" % sf

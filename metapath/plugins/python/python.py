@@ -86,7 +86,8 @@ class PythonView( ui.GenericView ):
 
         self.addDataToolBar()
 
-        self.data.add_interface('output') # Add output slot
+        self.data.add_input('input') # Add input slot
+        self.data.add_output('output') # Add output slot
         # We need an input filter for this type; accepting *anything*
         self.data.consumer_defs.append( 
             DataDefinition('input', {

@@ -30,7 +30,8 @@ class MapEntityView( ui.GenericView ):
                 
         self.addDataToolBar()
         self.addFigureToolBar()
-        self.data.add_interface('output')
+        self.data.add_input('input') # Add input slot        
+        self.data.add_output('output')
         
         self.browser = ui.QWebViewExtend(self.tabs, self.m.onBrowserNav)
         self.tabs.addTab(self.browser, 'Entities')

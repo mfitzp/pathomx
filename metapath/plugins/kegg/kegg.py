@@ -50,7 +50,7 @@ class gpmlPathwayView(ui.AnalysisView):
         #self.browser = ui.QWebViewExtend(self)
         #self.tabs.addTab(self.browser,'View')
 
-        #self.data = data.DataManager()
+        self.data.add_input('input') # Add input slot
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {

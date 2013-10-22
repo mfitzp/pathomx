@@ -317,8 +317,11 @@ class MainWindow(ui.MainWindowUI):
             if app == 'app-manager':
                 app, action = url.path().strip('/').split('/')
                 if action == 'add':
-
                     self.app_launchers[ app ]()
+                
+                # Update workspace viewer
+                self.workspace_updated.emit() # Notify change to workspace layout        
+                        
 
             elif app == 'db':
                 kind, id, action = url.path().strip('/').split('/')
@@ -357,9 +360,6 @@ class MainWindow(ui.MainWindowUI):
                             
                     # Focus the database dock
                     self.dataDock.raise_()
-
-            
-            
 
             #metaviz/compound/%s/view            
             elif app in self.url_handlers:

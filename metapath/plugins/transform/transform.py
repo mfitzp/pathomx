@@ -30,7 +30,8 @@ class TransformView( ui.DataView ):
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_interface('output') # Add output slot
+        self.data.add_input('input') # Add input slot
+        self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
                     
         # Setup data consumer options
@@ -54,26 +55,30 @@ class TransformView( ui.DataView ):
         }
         
         self.hm_control.addItems( [h for h in self.transform_options.keys()] )
-        self._apply_transform = self.transform_options.keys()[0]
-        self.hm_control.currentIndexChanged.connect(self.onChangeTransform)
-        
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        #self.hm_control.currentIndexChanged.connect(self.onChangeTransform)
 
+        self.config.add_handler('apply_transform', self.hm_control)
+        self.config.set_defaults({
+            'apply_transform': self.transform_options.keys()[0],
+        })
+        
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
     
+        self.config.updated.connect( self.generate ) # Auto-regenerate if the configuration is changed
+
     
     def onChangeTransform(self):
-        self._apply_transform = self.hm_control.currentText()
-        self.set_name( self._apply_transform )
+        self.set_name( self.hm_control.currentText() )
         self.generate()
+        #self.config.set('apply_transform', self.hm_control.currentText())
                
     # Data file import handlers (#FIXME probably shouldn't be here)
     def generate(self):
         self.setWorkspaceStatus('active')
         
         dso = self.data.get('input')
-        dso = self.transform_options[ self._apply_transform ]( dso )
+        dso = self.transform_options[ self.config.get('apply_transform') ]( dso )
 
         self.data.put('output',dso)
         self.render({})
@@ -130,8 +135,5 @@ class Transform(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Transform, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
+        self.register_app_launcher( lambda: self.instances.append( TransformView( self, self.m ) ) )
 
-    def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( TransformView( self, self.m ) )

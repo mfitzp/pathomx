@@ -32,7 +32,7 @@ class FoldChangeView( ui.AnalysisView ):
         self.addDataToolBar()
         self.addExperimentToolBar()
         
-        self.data.add_interface('output')
+        self.data.add_output('output')
         self.table = QTableView()
         self.table.setModel(self.data.o['output'].as_table)
         
@@ -40,6 +40,7 @@ class FoldChangeView( ui.AnalysisView ):
         
         self.register_url_handler(self.url_handler)
         
+        self.data.add_input('input') # Add input slot
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -47,24 +48,28 @@ class FoldChangeView( ui.AnalysisView ):
             })
         )
 
-        self._use_baseline_minima = True
+        self.config.set_defaults({
+            'use_baseline_minima':True,
+        })
+
         t = self.addToolBar('Fold change')
         t.cb_baseline_minima = QCheckBox('Auto minima')
+        self.config.add_handler('use_baseline_minima', t.cb_baseline_minima )
         t.cb_baseline_minima.setStatusTip('Replace zero values with half of the smallest value')
-        t.cb_baseline_minima.stateChanged.connect(self.onModifyExperiment)
         t.addWidget( t.cb_baseline_minima)
         self.toolbars['fold_change'] = t
+
 
         self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
+        self.config.updated.connect( self.generate ) # Auto-regenerate if the configuration is changed
+
+
     def onModifyExperiment(self):
         """ Update the experimental settings for analysis then regenerate """    
-        self._experiment_control = self.toolbars['experiment'].cb_control.currentText()
-        self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
-
-        self._use_baseline_minima = self.toolbars['fold_change'].cb_baseline_minima.isChecked()
-        self.generate()
+        self.config.set('experiment_control', self.toolbars['experiment'].cb_control.currentText() )
+        self.config.set('experiment_test', self.toolbars['experiment'].cb_test.currentText() )
             
     def onDefineExperiment(self):
         """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
@@ -95,7 +100,8 @@ class FoldChangeView( ui.AnalysisView ):
     def generate(self):
         self.setWorkspaceStatus('active')
     
-        self._experiment_control, self._experiment_test = self.toolbars['experiment'].cb_control.currentText(), self.toolbars['experiment'].cb_test.currentText()
+        self._experiment_control = self.config.get('experiment_control')
+        self._experiment_test = self.config.get('experiment_test')
         
         dsi = self.data.get('input')
         dso = self.analyse( dsi )
@@ -110,12 +116,18 @@ class FoldChangeView( ui.AnalysisView ):
     
     def analyse(self, dso):
     
+        # Get config (convenience)
+        _experiment_test = self.config.get('experiment_test')
+        _experiment_control = self.config.get('experiment_control')
+        _use_baseline_minima = self.config.get('use_baseline_minima')
+        
+        
         # Get the dso filtered by class if we're not doing a global match
-        if self._experiment_test != "*":
-            dso = dso.as_filtered(dim=0, classes=[self._experiment_control, self._experiment_test])
+        if _experiment_test != "*":
+            dso = dso.as_filtered(dim=0, classes=[_experiment_control, _experiment_test])
         
         # Replace zero values with minima (if setting)
-        if self._use_baseline_minima:
+        if _use_baseline_minima:
             #minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
             #dsoc.data[ dsoc.data <= 0] = minima
             #print 'Fold change minima', np.min(dsoc.data)
@@ -139,11 +151,11 @@ class FoldChangeView( ui.AnalysisView ):
         # Process by calculating the fold change from row 1 to row 2
         # Output: delta log2, deltalog10, fold change (optionally calculate)
         data = copy(dso.data)
-        ci = dso.classes[0].index( self._experiment_control )
-        if self._experiment_test == "*": # Do all comparisons vs. control
-            tests = sorted([t for t in dso.classes[0] if t != self._experiment_control])
+        ci = dso.classes[0].index( _experiment_control )
+        if _experiment_test == "*": # Do all comparisons vs. control
+            tests = sorted([t for t in dso.classes[0] if t != _experiment_control])
         else:
-            tests = [self._experiment_test]
+            tests = [_experiment_test]
         
         for n, test in enumerate(tests):
             print dso.classes[0]
@@ -168,7 +180,7 @@ class FoldChangeView( ui.AnalysisView ):
         final_shape[0]=len(tests) # 1 dimensional (final change value)
 
         for n,test in enumerate(tests):
-            dso.labels[0][n]='fc %s:%s' % ( self._experiment_control, test )
+            dso.labels[0][n]='fc %s:%s' % ( _experiment_control, test )
             dso.entities[0][n]=None
             dso.classes[0][n]='%s' % (test)
 

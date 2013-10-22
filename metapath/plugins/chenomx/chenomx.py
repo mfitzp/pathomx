@@ -27,7 +27,7 @@ class ImportDataView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.add_interface('output') # Add output slot
+        self.data.add_output('output') # Add output slot
         
         fn = self.onImportData()
         self.table.setModel(self.data.o['output'].as_table)

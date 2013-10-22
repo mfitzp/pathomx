@@ -88,7 +88,8 @@ class FilterView( ui.DataView ):
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_interface('output') # Add output slot
+        self.data.add_input('input') # Add input slot
+        self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
                     
         # Setup data consumer options

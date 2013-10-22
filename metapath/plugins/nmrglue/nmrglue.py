@@ -28,7 +28,7 @@ class NMRGlueView( ui.DataView ):
     def __init__(self, plugin, parent, **kwargs):
         super(NMRGlueView, self).__init__(plugin, parent, **kwargs)
     
-        self.data.add_interface('output') # Add output slot
+        self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
         
         t = self.getCreatedToolbar('NMR Import','nmr-import')

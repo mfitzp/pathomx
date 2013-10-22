@@ -27,7 +27,8 @@ class MergeView( ui.DataView ):
         super(MergeView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
-        self.data.add_interface('output') # Add output slot
+        self.data.add_input('input') # Add input slot        
+        self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
 
         # Setup data consumer options

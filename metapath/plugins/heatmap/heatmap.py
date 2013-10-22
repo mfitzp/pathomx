@@ -72,6 +72,7 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.addDataToolBar()
         self.addFigureToolBar()
             
+        self.data.add_input('input') # Add input slot            
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 # Import PyQt5 classes
@@ -23,6 +24,7 @@ class PathwayConnectsView(ui.AnalysisView):
 
         self.addDataToolBar()
         
+        self.data.add_input('input') # Add input slot        
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -30,10 +32,8 @@ class PathwayConnectsView(ui.AnalysisView):
             })
         )
         
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
 
     def url_handler(self, url):

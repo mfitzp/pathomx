@@ -535,6 +535,9 @@ class MetaVizView(ui.AnalysisView):
 
         self.addDataToolBar()
         
+        self.data.add_input('suggested_pathways') # Add input slot
+        self.data.add_input('data') # Add input slot
+        
         # Setup data consumer options
         self.data.consumer_defs.extend([
             DataDefinition('suggested_pathways', {
@@ -545,7 +548,6 @@ class MetaVizView(ui.AnalysisView):
             },'Relative concentration data')
         ])
         
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         
         show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
@@ -594,10 +596,6 @@ class MetaVizView(ui.AnalysisView):
         self.cluster_control.addItems(['pathway','compartment'])
         self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
 
-        #self.o = QMainWindow(self.m)
-        #self.o.setCentralWidget( self.gpmlpathway.browser )
-        #self.o.setWindowTitle('GPML')
-        #o.add( gpmlpathway.browser )
         t = self.addToolBar('MetaViz')
         self.setIconSize( QSize(16,16) )
 
@@ -615,7 +613,7 @@ class MetaVizView(ui.AnalysisView):
         #self.tabs.addTab(self.overview,'Overview')
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
+        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
           
 
     def url_handler(self, url):

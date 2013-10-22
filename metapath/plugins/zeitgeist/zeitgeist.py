@@ -39,6 +39,8 @@ class ZeitgeistView( ui.AnalysisView ):
         self.addDataToolBar()
         self.addFigureToolBar()
         
+        self.data.add_input('input') # Add input slot
+        
         #self.table = QTableView()
         #self.table.setModel(self.data.o['output'].as_table)
         #self.tabs.addTab(self.table,'Table')

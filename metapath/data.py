@@ -45,7 +45,7 @@ class DataManager( QObject ):
         if interface in self.i:
             # Add ourselves to the watcher for this interface
             dso = self.i[interface]
-            dso.log.append('Retrieved by %s on interface %s' % (self, interface) )
+            #dso.log.append('Retrieved by %s on interface %s' % (self, interface) )
             #dso.manager.watchers[ dso.manager_interface ].add( self )
             return deepcopy( dso )
                 
@@ -53,6 +53,7 @@ class DataManager( QObject ):
         
     def unget(self, interface):
         if interface in self.i:
+            self._unconsume( self.i[ interface ] )
             self.i[ interface ] = None
             #dso = self.i[interface]
     
@@ -62,7 +63,7 @@ class DataManager( QObject ):
     def put(self, interface, dso, update_consumers = True):
         if interface in self.o:
             self.o[interface].import_data(dso)
-            self.o[interface].log.append('Output by %s on interface %s' % (self, interface) )
+            #self.o[interface].log.append('Output by %s on interface %s' % (self, interface) )
             self.o[interface].manager = self
             self.o[interface].manager_interface = interface
             # Update consumers / refresh views
@@ -71,8 +72,12 @@ class DataManager( QObject ):
             self.notify_watchers(interface)
             return True
         return False
+        
+    def unput(self, interface):
+        self.watchers[interface] = {}
+        self.o[interface] = DataSet(manager=self) # Empty dso (temp; replace with None later?)
             
-    def add_interface(self, interface, dso=None):
+    def add_output(self, interface, dso=None):
         if dso==None:
             dso = DataSet(manager=self)
         
@@ -87,7 +92,7 @@ class DataManager( QObject ):
         except:
             pass
         
-    def remove_interface(self, interface):
+    def remove_output(self, interface):
         if interface in self.o:
             watchers = self.watchers[interface]
             del self.o[ interface ]
@@ -95,6 +100,21 @@ class DataManager( QObject ):
             del self.watchers[ interface ]            
             return True
         return False
+        
+
+    def add_input(self, interface):
+        if interface not in self.i:
+            self.i[interface] = None
+            return True
+        else:
+            return False
+                
+    def remove_input(self, interface):
+        if interface in self.i:
+            self._unconsume( self.i[interface] )
+            del self.i[interface]
+            return True
+        return False        
         
             
     def notify_watchers(self, interface):
@@ -137,7 +157,7 @@ class DataManager( QObject ):
         return False
         
     def _unconsume(self, data):
-        if self in data.manager.watchers[ data.manager_interface ]:
+        if data and self in data.manager.watchers[ data.manager_interface ]:
             data.manager.watchers[ data.manager_interface ].remove( self )
             # Implement some way to stop the double-hit here (when called from _consume)
             #try: # Notify the mainview of the workspace change
@@ -204,6 +224,18 @@ class DataManager( QObject ):
 
     def refresh_consumed_data(self):
         self.source_updated.emit() # Trigger recalculation
+
+
+
+    def reset(self):
+        for i in self.i.keys():
+            self.unget(i)
+        
+        for i in self.o.keys():
+            self.unput(i)
+            
+            
+        
 
 
 # Provider/Consumer classes define data availability and requirements for a given dataManager object.
@@ -370,6 +402,7 @@ class DataSet( QObject ):
 
         # MetaData derived from data formats, inc. statistics etc. [informational only; not prescribed]
         self.log = [] # Log of processing
+                      # a list of dicts containing the 
     
     # Metaclasses for copying the dataset object; copy is fine as the default implementation
     # but we need deepcopy that stops at the db boundary.
@@ -549,7 +582,7 @@ class DataSet( QObject ):
 
         return dso        
 
-    def as_filtereXXd(self, d=0, classes=None, labels=None, scales=None ):
+    def as_filtered(self, d=0, classes=None, labels=None, scales=None ):
 
         dso = DataSet()
         dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
@@ -710,7 +743,14 @@ class DataSet( QObject ):
 
         print self.labels
                     
-        
+    # JSON
     
+    #def json_dumps(self):
+    #    # Build JSONable structure for output
+    #    return json.dumps( self.config ) 
+    
+    #def json_loads(self, json):
+    #    # Reonstruct the object from the json input
+    #    self.config = json.loads( json )
     
     

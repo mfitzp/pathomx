@@ -45,7 +45,8 @@ class MetaboHunterView( ui.DataView ):
         
         self.addDataToolBar(default_pause_analysis=True)
         
-        self.data.add_interface('output')
+        self.data.add_input('input') # Add input slot        
+        self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
         
         # Setup data consumer options
