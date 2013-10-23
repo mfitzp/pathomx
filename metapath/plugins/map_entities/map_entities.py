@@ -144,5 +144,4 @@ class MapEntity(IdentificationPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( MapEntityView( self, self.m ) ) 
+        return MapEntityView( self, self.m ) 

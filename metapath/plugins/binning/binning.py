@@ -72,13 +72,14 @@ class BinningView( ui.DataView ):
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified        
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.generate()
     
     def generate(self):
         dso = self.binning( self.data.get('input') ) #, self._bin_size, self._bin_offset)
-        self.data.put('output',dso)
-        self.render({})
+        if dso:
+            self.data.put('output',dso)
+            self.render({})
+        else:
+            self.m.setWorkspaceStatus('error')
 
         
 
@@ -160,5 +161,4 @@ class Binning(ProcessingPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( BinningView( self, self.m ) ) 
+        return BinningView( self, self.m )

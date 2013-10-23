@@ -320,7 +320,7 @@ class Heatmap(VisualisationPlugin):
     
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        self.instances.append( HeatmapView( self, self.m ) )
+        return HeatmapView( self, self.m )
         
 
                      

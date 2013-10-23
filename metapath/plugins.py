@@ -30,7 +30,10 @@ class BasePlugin(IPlugin):
         manager = PluginManagerSingleton.get()
         self.m = manager.m
         self.instances = []
-        self.id = self.__module__
+        self.id = self.__class__.__name__ #self.__module__
+        self.module = self.__module__
+        self.m.plugins[ self.id ] = self
+
         self.name = "%s %s " % (self.default_workspace_category, "Plugin")
         
         self.path = os.path.dirname( inspect.getfile(self.__class__) )

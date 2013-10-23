@@ -167,7 +167,6 @@ class Zeitgeist(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( ZeitgeistView( self, self.m ) ) 
+        return ZeitgeistView( self, self.m )
         
         

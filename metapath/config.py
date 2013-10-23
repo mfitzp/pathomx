@@ -42,7 +42,7 @@ class ConfigManager( QObject ):
         else:
             return None
 
-    def set(self, key, value):
+    def set(self, key, value, trigger_update=True):
         # Set value    
         self.config[key] = value
         
@@ -53,7 +53,8 @@ class ConfigManager( QObject ):
                 fn( self.config[key], value )
         
         # Trigger update notification
-        self.updated.emit()
+        if trigger_update:
+            self.updated.emit()
         
     # Defaults are used in absence of a set value (use for base settings)    
     def set_default(self, key, value):
@@ -71,7 +72,15 @@ class ConfigManager( QObject ):
     # Completely replace current config (wipe all other settings)
             
     def replace(self, keyvalues):
-        self.config = keyvalues
+        self.config = []
+        self.set_multiple( keyvalues )
+
+    def set_many(self, keyvalues):
+        for k,v in keyvalues.items():
+            self.set(k, v, trigger_update=False)
+            
+        self.updated.emit()             
+
 
     # HANDLERS
 

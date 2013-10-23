@@ -146,5 +146,4 @@ class BMLNMR(ImportPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( BMLNMRView( self, self.m ) )
+        return BMLNMRView( self, self.m )

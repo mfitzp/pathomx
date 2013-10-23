@@ -160,5 +160,4 @@ class NMRGlue(ImportPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( NMRGlueView( self, self.m ) )
+        return NMRGlueView( self, self.m )

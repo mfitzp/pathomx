@@ -267,5 +267,4 @@ class PathwayMining(AnalysisPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( PathwayMiningView( self, self.m ) ) 
+        return PathwayMiningView( self, self.m ) 

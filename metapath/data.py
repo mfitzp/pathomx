@@ -30,6 +30,8 @@ class DataManager( QObject ):
 
         self.m = parent
         self.v = view
+        
+        self.id = self.v.id # Data manager id == that of parent (simplicity; one manager per view)
 
         self.consumer_defs = [] # Holds data-consumer definitions 
         self.consumes = [] # Holds list of data objects that are consumed
@@ -74,7 +76,7 @@ class DataManager( QObject ):
         return False
         
     def unput(self, interface):
-        self.watchers[interface] = {}
+        self.watchers[interface] = set()
         self.o[interface] = DataSet(manager=self) # Empty dso (temp; replace with None later?)
             
     def add_output(self, interface, dso=None):
@@ -164,7 +166,16 @@ class DataManager( QObject ):
             #    self.m.workspace_updated.emit()            
             #except:
             #    pass
-                        
+            
+    # This is an unchecked consume action; for loading mainly
+    def _consume_action(self, interface, data):
+        self.i[ interface ] = data
+        data.manager.watchers[ data.manager_interface ].add( self )
+
+        self.consumes.append( data )
+        data.consumers.append( self )
+  
+    # Check if we can consume some data, then do it                      
     def _consume(self, data, consumer_defs=None):
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
@@ -179,11 +190,11 @@ class DataManager( QObject ):
                 if consumer_def.target in self.i:
                     self._unconsume(self.i[consumer_def.target]) 
 
-                self.i[ consumer_def.target ] = data
-                data.manager.watchers[ data.manager_interface ].add( self )
-
-                self.consumes.append( data )
-                data.consumers.append( self )
+                self._consume_action( consumer_def.target, data )
+                #self.i[ consumer_def.target ] = data
+                #data.manager.watchers[ data.manager_interface ].add( self )
+                #self.consumes.append( data )
+                #data.consumers.append( self )
                 try: # Notify the mainview of the workspace change
                     self.m.workspace_updated.emit()   
                     print "_consume ACTION ---"         
@@ -330,8 +341,10 @@ class QTableInterface(QAbstractTableModel):
         return self.dso.shape[0]
 
     def columnCount(self, parent):
-        if len(self.dso.shape)>0:
+        if len(self.dso.shape)>1:
             return self.dso.shape[1]
+        else:
+            return 0
         
     def data(self, index, role):
         if not index.isValid():

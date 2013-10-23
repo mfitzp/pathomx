@@ -172,5 +172,4 @@ class NMRPeakPicking(ProcessingPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( NMRPeakPickingView( self, self.m ) ) 
+        return NMRPeakPickingView( self, self.m )

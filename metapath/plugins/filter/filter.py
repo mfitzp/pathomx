@@ -180,5 +180,4 @@ class Filter(ProcessingPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( FilterView( self, self.m ) )
+        return FilterView( self, self.m )

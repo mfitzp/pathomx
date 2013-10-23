@@ -162,7 +162,6 @@ class PLSDAPlugin(AnalysisPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( PLSDAView( self, self.m ) ) 
+        return PLSDAView( self, self.m )
         
         

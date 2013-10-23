@@ -138,7 +138,7 @@ class PathwayConnects(VisualisationPlugin):
 
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        self.instances.append( PathwayConnectsView( self, self.m ) )
+        return PathwayConnectsView( self, self.m )
 
                      
         

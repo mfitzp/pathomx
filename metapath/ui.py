@@ -16,7 +16,7 @@ from collections import defaultdict
 from yapsy.PluginManager import PluginManager, PluginManagerSingleton
 import plugins
 
-import os, urllib, urllib2, copy, re, json
+import os, urllib, urllib2, copy, re, json, importlib
 
 # MetaPath classes
 import utils
@@ -439,7 +439,7 @@ class GenericView( QMainWindow ):
         self.delete()
             
     def onPopOutToggle(self, status):
-        if status:
+        if status and not self._floating: # Only pop out if in
             # Pop us out
             #stack_index = self.m.stack.addWidget( self )
             self._parent = self.parent()
@@ -448,7 +448,7 @@ class GenericView( QMainWindow ):
             self.m.stack.insertWidget(self.m.stack.currentIndex(), self._placeholder ) # Keep space in the stack prevent flow-over
             self.setParent(self.m, Qt.Window)
             self.show()
-        else:
+        elif self._floating: # Only pop in if out
             # Pop us in
             self._floating = False
             self.m.stack.addWidget(self)
@@ -1344,6 +1344,7 @@ class MainWindowUI(QMainWindow):
         # Display a introductory helpfile 
         self.mainBrowser = QWebViewExtend( None, onNavEvent=self.onBrowserNav )
         
+        self.plugins = {} # Dict of plugin name references to objs (for load/save)
         self.pluginManager = PluginManagerSingleton.get()
         self.pluginManager.m = self
         
@@ -1374,7 +1375,7 @@ class MainWindowUI(QMainWindow):
                     plugin_image = None
                 
                 apps[category].append({
-                    'id': plugin.plugin_object.__module__, 
+                    'id': plugin.plugin_object.__class__.__name__, #__module__, 
                     'image': plugin_image,          
                     'name': plugin.name,
                     'description': plugin.description,
@@ -1413,11 +1414,9 @@ class MainWindowUI(QMainWindow):
         self.workspace.hideColumn(1)
 
         self.home = HomeView(self)
+
         # Signals
         self.workspace_updated.connect( self.home.render )
-        
-
-        #self.addWorkspaceItem( self.home, None, 'Home', QIcon( os.path.join( utils.scriptdir,'icons','home.png' ) )   )
         
         app_category_icons = {
                "Import": QIcon( os.path.join( utils.scriptdir,'icons','disk--arrow.png' ) ),
@@ -1443,16 +1442,9 @@ class MainWindowUI(QMainWindow):
                 
             self.addWorkspaceItem( self.appBrowsers[ category ], None, category, app_category_icons[category]   )
 
-
-        #self.addWorkspaceItem( self.mainBrowser, 'Visualisation', "Hs_Glycolysis_and_Gluconeogenesis_WP534_51732",QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') ))  )
-        #self.addWorkspaceItem( self.mainBrowser, 'Visualisation', "Hs_Glycolysis_and_Gluconeogenesis_WP534_51732",QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') ))  )
-
         self.workspace.setSelectionMode( QAbstractItemView.SingleSelection )
 
         self.workspace.currentItemChanged.connect( self.onWorkspaceStackChange)
-        
-        #QObject.connect(self.workspace, SIGNAL("itemActivated()"),
-        #self.stack, SLOT("setCurrentIndex(int)"))
 
         self.workspaceDock = QDockWidget( tr('Workspace') )
         self.workspaceDock.setWidget(self.workspace)
@@ -1462,7 +1454,6 @@ class MainWindowUI(QMainWindow):
         self.workspace.setColumnWidth(3, 24) 
         self.workspaceDock.setMinimumWidth(300)
         self.workspaceDock.setMaximumWidth(300)
-        #self.workspaceDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dataDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
@@ -1558,16 +1549,27 @@ class MainWindowUI(QMainWindow):
             'apps':{},
         }
         for v in self.views:
-            
+
             viewobj = {
-                'type': v.__class__.__name__,
+                'plugin': v.plugin.__class__.__name__,
+                'plugin_module': v.__class__.__module__,
+                'app': v.__class__.__name__,
                 'name': v.name,
                 'config': v.config.config, #.json_dumps(),
             }
-            
+
+            # Build data inputs table (outputs are pre-specified by the object; this == links)
+            inputs = {}
+            for k,i in v.data.i.items():
+                print i
+                if i: # Something on this interface
+                    inputs[k] = ( i.manager.id, i.manager_interface )
+        
+            viewobj['data'] = { 'inputs': inputs }
+                
             jsond['apps'][v.id] = viewobj
 
-        s = json.dumps(jsond)
+        s = json.dumps(jsond, indent=4)
         print s
         f = open(fn, 'w')
         f.write(s)
@@ -1584,21 +1586,38 @@ class MainWindowUI(QMainWindow):
         f.close()
         # Load from file 
         jsond = json.loads(s)
-        for v,d in jsond['apps'].items():
-            print v,d
-        
+        appref = {}
+        print "LOAD APPS"
+        for app_id,d in jsond['apps'].items():
+            # Launch the app; keep a reference for subsequent processing
+            app = self.app_launchers[ d['plugin'] ]()
+            app.config.set_many( d['config'] )
+            appref[ app_id ] = app         
+
+        print "BUILD OBJECT LINKS"
+        # Now build the links between objects; we need to force these as data is not present
+        for app_id,d in jsond['apps'].items():
+            app = appref[ app_id]
+            for i,idef in d['data']['inputs'].items():
+                source_app_id, manager_port = idef
+                app.data._consume_action( i, appref[ source_app_id ].data.o[ manager_port ] )
+            
+        print "RESULT!", self.views
+        self.workspace_updated.emit()
     
     
     def onClearWorkspace(self):
-        self.clearWorkspace()
+        reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
+                            QMessageBox.Yes|QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.clearWorkspace()
     
     def clearWorkspace(self):
-        
-        for v in self.views:
+        for v in self.views[:]: # Copy as delete modifies the list
             v.delete()
 
         # Delete from the views object
-        self.views = []
+        # self.views = []
             
         
         self.workspace_updated.emit()

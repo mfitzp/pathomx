@@ -135,5 +135,8 @@ class Transform(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Transform, self).__init__(**kwargs)
-        self.register_app_launcher( lambda: self.instances.append( TransformView( self, self.m ) ) )
+        self.register_app_launcher( self.app_launcher )
 
+
+    def app_launcher(self):
+        return TransformView( self, self.m )

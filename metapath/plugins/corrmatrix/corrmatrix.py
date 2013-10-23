@@ -96,4 +96,4 @@ class CorrMatrix(VisualisationPlugin):
     
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        self.instances.append( CorrMatrixView( self, self.m ) )
+        return CorrMatrixView( self, self.m )

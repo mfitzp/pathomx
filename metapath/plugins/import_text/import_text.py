@@ -212,5 +212,4 @@ class ImportText(ImportPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( ImportTextView( self, self.m ) )
+        return ImportTextView( self, self.m )

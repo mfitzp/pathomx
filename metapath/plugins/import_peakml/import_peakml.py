@@ -154,5 +154,4 @@ class ImportPeakML(ImportPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( ImportPeakMLView( self, self.m ) )
+        return self.instances.append( ImportPeakMLView( self, self.m ) )

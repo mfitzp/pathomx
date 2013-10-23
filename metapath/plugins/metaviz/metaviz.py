@@ -829,6 +829,6 @@ class MetaViz(VisualisationPlugin):
 
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        self.instances.append( MetaVizView( self, self.m ) )
+        return MetaVizView( self, self.m )
 
                      

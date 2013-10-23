@@ -16,5 +16,4 @@ class InputData(ImportPlugin):
         self.register_app_launcher( self.app_launcher )
 
     def app_launcher(self):
-        #self.load_data_file()
-        self.instances.append( InputDataView( self, self.m ) )
+        return InputDataView( self, self.m )

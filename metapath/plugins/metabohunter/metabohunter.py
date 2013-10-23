@@ -258,5 +258,5 @@ class MetaboHunter(IdentificationPlugin):
     
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        self.instances.append( MetaboHunterView( self, self.m ) )
+        return MetaboHunterView( self, self.m )
 
