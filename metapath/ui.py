@@ -828,7 +828,7 @@ class ImportDataView( DataView ):
         
         self.addImportDataToolbar()
         
-        fn = self.onImportData()
+        #fn = self.onImportData()
 
     def onImportData(self):
         """ Open a data file"""
@@ -1276,36 +1276,47 @@ class MainWindowUI(QMainWindow):
         aboutAction.triggered.connect(self.onAbout)
         self.menuBar['file'].addAction(aboutAction)
 
-        newAction = QAction(QIcon.fromTheme("new-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-new.png') )), tr('&New Blank Workspace'), self)
+        newAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'document.png') ), tr('&New Blank Workspace'), self)
         newAction.setShortcut('Ctrl+N')
         newAction.setStatusTip( tr('Create new blank workspace') )
         newAction.triggered.connect(self.onClearWorkspace)
         self.menuBar['file'].addAction(newAction)
         
 
-        openAction = QAction(QIcon.fromTheme("open-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') )), tr('&Open…'), self)
+        openAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') ), tr('&Open…'), self)
         openAction.setShortcut('Ctrl+O')
         openAction.setStatusTip( tr('Open previous analysis workspace') )
         openAction.triggered.connect(self.onOpenWorkspace)
         self.menuBar['file'].addAction(openAction)
 
+        openAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') ), tr('&Open Workflow…'), self)
+        openAction.setStatusTip( tr('Open an analysis workflow') )
+        openAction.triggered.connect(self.onOpenWorkflow)
+        self.menuBar['file'].addAction(openAction)
+
         self.menuBar['file'].addSeparator()
                 
-        saveAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') )), tr('&Save'), self)
+        saveAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'disk.png') ), tr('&Save'), self)
         saveAction.setShortcut('Ctrl+S')
         saveAction.setStatusTip( tr('Save current workspace for future use') )
         saveAction.triggered.connect(self.onSaveWorkspace)
         self.menuBar['file'].addAction(saveAction)
 
-        saveAsAction = QAction(QIcon.fromTheme("save-workspace", QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') )), tr('Save &As…'), self)
+        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') ), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
         saveAsAction.setStatusTip( tr('Save current workspace for future use') )
         saveAsAction.triggered.connect(self.onSaveWorkspaceAs)
         self.menuBar['file'].addAction(saveAsAction)
 
+        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') ), tr('Save Workflow As…'), self)
+        saveAsAction.setStatusTip( tr('Save current workflow for future use') )
+        saveAsAction.triggered.connect(self.onSaveWorkflowAs)
+        self.menuBar['file'].addAction(saveAsAction)
+
+
         self.menuBar['file'].addSeparator()        
 
-        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
+        printAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') ), tr('&Print…'), self)
         printAction.setShortcut('Ctrl+P')
         printAction.setStatusTip( tr('Print current figure') )
         printAction.triggered.connect(self.onPrint)
@@ -1321,14 +1332,14 @@ class MainWindowUI(QMainWindow):
 
         
         # DATABASE MENU
-        load_identitiesAction = QAction(QIcon.fromTheme("document-import", QIcon( os.path.join( utils.scriptdir,'icons','database-import.png') )), tr('&Load database unification…'), self)
+        load_identitiesAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','database-import.png') ), tr('&Load database unification…'), self)
         load_identitiesAction.setStatusTip('Load additional unification mappings into database')
         load_identitiesAction.triggered.connect(self.onLoadIdentities)
         self.menuBar['database'].addAction(load_identitiesAction)
         
         self.menuBar['database'].addSeparator()
         
-        reload_databaseAction = QAction(QIcon.fromTheme("system-restart-panel", QIcon( os.path.join( utils.scriptdir,'icons','exclamation-red.png') )), tr('&Reload database'), self)
+        reload_databaseAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','exclamation-red.png') ), tr('&Reload database'), self)
         reload_databaseAction.setStatusTip('Reload pathway & metabolite database')
         reload_databaseAction.triggered.connect(self.onReloadDB)
         self.menuBar['database'].addAction(reload_databaseAction)
@@ -1462,6 +1473,10 @@ class MainWindowUI(QMainWindow):
         self.tabifyDockWidget( self.workspaceDock, self.dataDock ) 
         self.workspaceDock.raise_()
 
+    def goWorkspaceHome(self):
+        home = self.workspace_parents[ 'Home' ]
+        self.onWorkspaceStackChange( home, None)
+    
     def onWorkspaceStackChange(self, item, previous):
         widget = self.workspace_index[ item.text(1) ]
         if hasattr(widget,'_floating') and widget._floating:
@@ -1536,6 +1551,14 @@ class MainWindowUI(QMainWindow):
     def register_url_handler( self, identifier, url_handler ):
         self.url_handlers[ identifier ].append( url_handler )
         
+    ### OPEN/SAVE WORKSPACE
+            
+    def onOpenWorkspace(self):
+        self.openWorkspace('/Users/mxf793/Desktop/test.mpw')
+        
+    def openWorkspace(self):
+        pass        
+        
     def onSaveWorkspace(self):
         self.saveWorkspace('/Users/mxf793/Desktop/test.mpw')
 
@@ -1543,6 +1566,30 @@ class MainWindowUI(QMainWindow):
         self.saveWorkspace('/Users/mxf793/Desktop/test.mpw')
     
     def saveWorkspace(self, fn):
+        pass
+        
+    ### RESET WORKSPACE
+    
+    def onClearWorkspace(self):
+        reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
+                            QMessageBox.Yes|QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.clearWorkspace()
+    
+    def clearWorkspace(self):
+        for v in self.views[:]: # Copy as v.delete modifies the self.views list
+            v.delete()
+
+        self.workspace_updated.emit()    
+
+    ### OPEN/SAVE WORKFLOWS
+
+    def onSaveWorkflowAs(self):
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current workflow', '',  "MetaPath Workflow Format (*.mpf)")
+        if filename:
+            self.saveWorkflow(filename)
+        
+    def saveWorkflow(self, fn):
         # Build a JSONable object representing the entire current workspace and write it to file
         jsond = {
             'metadata':{},
@@ -1575,10 +1622,15 @@ class MainWindowUI(QMainWindow):
         f.write(s)
         f.close()
         
-    def onOpenWorkspace(self):
-        self.openWorkspace('/Users/mxf793/Desktop/test.mpw')
         
-    def openWorkspace(self, fn):
+    def onOpenWorkflow(self):
+        """ Open a data file"""
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open new workflow', '',  "MetaPath Workflow Format (*.mpf)")
+        if filename:
+            self.openWorkflow(filename)
+
+        
+    def openWorkflow(self, fn):
         # Wipe existing workspace
         self.clearWorkspace()
         f = open(fn, 'r')
@@ -1587,6 +1639,7 @@ class MainWindowUI(QMainWindow):
         # Load from file 
         jsond = json.loads(s)
         appref = {}
+        print "Loading..."
         print "LOAD APPS"
         for app_id,d in jsond['apps'].items():
             # Launch the app; keep a reference for subsequent processing
@@ -1602,23 +1655,11 @@ class MainWindowUI(QMainWindow):
                 source_app_id, manager_port = idef
                 app.data._consume_action( i, appref[ source_app_id ].data.o[ manager_port ] )
             
-        print "RESULT!", self.views
+        print "Load complete.", self.views
+        # Focus the home tab & refresh the view
+        self.goWorkspaceHome()
         self.workspace_updated.emit()
     
     
-    def onClearWorkspace(self):
-        reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
-                            QMessageBox.Yes|QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.clearWorkspace()
-    
-    def clearWorkspace(self):
-        for v in self.views[:]: # Copy as delete modifies the list
-            v.delete()
 
-        # Delete from the views object
-        # self.views = []
-            
-        
-        self.workspace_updated.emit()
     

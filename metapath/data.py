@@ -169,6 +169,9 @@ class DataManager( QObject ):
             
     # This is an unchecked consume action; for loading mainly
     def _consume_action(self, interface, data):
+        if interface in self.i:
+            self._unconsume(self.i[interface]) 
+    
         self.i[ interface ] = data
         data.manager.watchers[ data.manager_interface ].add( self )
 
@@ -187,9 +190,6 @@ class DataManager( QObject ):
         for consumer_def in consumer_defs:
             if consumer_def.can_consume(data):
                 # Remove existing data object link (stop watching)
-                if consumer_def.target in self.i:
-                    self._unconsume(self.i[consumer_def.target]) 
-
                 self._consume_action( consumer_def.target, data )
                 #self.i[ consumer_def.target ] = data
                 #data.manager.watchers[ data.manager_interface ].add( self )

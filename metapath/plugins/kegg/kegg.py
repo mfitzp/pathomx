@@ -37,13 +37,12 @@ import StringIO
 import urllib, urllib2
 
 
-# Class for data visualisations using GPML formatted pathways
-# Supports loading from local file and WikiPathways
-class gpmlPathwayView(ui.AnalysisView):
+# Class for data visualisations using KEGG formatted pathways
+# Supports loading from KEGG site
+class KEGGPathwayView(ui.AnalysisView):
     def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
-        super(gpmlPathwayView, self).__init__( plugin, parent, **kwargs)
+        super(KEGGPathwayView, self).__init__( plugin, parent, **kwargs)
 
-        self.gpml = gpml # Source GPML file
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
@@ -167,12 +166,12 @@ class dialogWikiPathways(ui.remoteQueryDialog):
 
 
 
-class GPML(VisualisationPlugin):
+class KEGG(VisualisationPlugin):
 
     def __init__(self, **kwargs):
-        super(GPML, self).__init__(**kwargs)
+        super(KEGG, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours
     def app_launcher(self):
-        return gpmlPathwayView( self, self.m )
+        return KEGGPathwayView( self, self.m )

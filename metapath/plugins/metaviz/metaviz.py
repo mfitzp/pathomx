@@ -529,10 +529,6 @@ class MetaVizView(ui.AnalysisView):
     def __init__(self, plugin, parent, **kwargs):
         super(MetaVizView, self).__init__(plugin, parent, **kwargs)
 
-        self.config = QSettings()
-
-        #self.browser = ui.QWebViewScrollFix( self, parent.onBrowserNav )
-
         self.addDataToolBar()
         
         self.data.add_input('suggested_pathways') # Add input slot
@@ -548,53 +544,77 @@ class MetaVizView(ui.AnalysisView):
             },'Relative concentration data')
         ])
         
+        # Define default settings for pathway rendering
+        self.config.set_defaults({
+            # Pathways
+            '/Pathways/Show': 'GLYCOLYSIS',
+            '/Pathways/Hide': '',
+            '/Pathways/ShowLinks': False,
+            # View
+            '/View/ShowEnzymes': True,
+            '/View/Show2nd': True,
+            '/View/ShowMolecular': True,
+            '/View/ShowAnalysis': True,
+
+            '/View/HighlightPathways': True,
+            '/View/HighlightRegions': True,
+
+            '/View/ClusterBy': 'pathway',
+        })
+
         
         show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
         show_pathway_linksAction.setCheckable( True )
-        show_pathway_linksAction.setChecked( bool( self.config.value('/Pathways/ShowLinks' ) ) )
-        show_pathway_linksAction.toggled.connect(self.onPathwayLinksToggle)
+        #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
+        self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
         
         
         showenzymesAction = QAction('Show proteins/enzymes', self.m)
         showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
         showenzymesAction.setCheckable( True )
-        showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
-        showenzymesAction.toggled.connect(self.onShowEnzymesToggle)
+        #showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
+        self.config.add_handler('/View/ShowEnzymes', showenzymesAction )
         
         show2ndAction = QAction(QIcon.fromTheme("compounds-small", QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') )), 'Show 2° compounds', self.m)
         show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
         show2ndAction.setCheckable( True )
-        show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
-        show2ndAction.toggled.connect(self.onShow2ndToggle)
+        #show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
+        self.config.add_handler('/View/Show2nd', show2ndAction )
 
         showmolecularAction = QAction(QIcon.fromTheme("compound-structure", QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') )),'Show molecular structures', self.m)
         showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
         showmolecularAction.setCheckable( True )
-        showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        showmolecularAction.toggled.connect(self.onShowMolecularToggle)
+        #showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
+        #showmolecularAction.toggled.connect(self.onShowMolecularToggle)
+        self.config.add_handler('/View/ShowMolecular', showmolecularAction )
 
         showanalysisAction = QAction('Show network analysis', self.m)
         showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
         showanalysisAction.setCheckable( True )
-        showanalysisAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
+        #showanalysisAction.setChecked( bool( self.config.value('/View/ShowAnalysis' ) ) )
+        #showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
+        self.config.add_handler('/View/ShowAnalysis', showanalysisAction )
 
         highlightcolorsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight Reaction Pathways', self.m)
         highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
         highlightcolorsAction.setCheckable( True )
-        highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
-        highlightcolorsAction.toggled.connect(self.onHighlightPathwaysToggle)
+        #highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
+        #highlightcolorsAction.toggled.connect(self.onHighlightPathwaysToggle)
+        self.config.add_handler('/View/HighlightPathways', highlightcolorsAction )
 
         highlightregionAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight pathway/compartment regions', self.m)
         highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
         highlightregionAction.setCheckable( True )
-        highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
-        highlightregionAction.toggled.connect(self.onHighlightRegionsToggle)
+        #highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
+        #highlightregionAction.toggled.connect(self.onHighlightRegionsToggle)
+        self.config.add_handler('/View/HighlightRegions', highlightregionAction )
+        
 
         self.cluster_control = QComboBox()
         self.cluster_control.addItems(['pathway','compartment'])
-        self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
+        #self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
+        self.config.add_handler('/View/ClusterBy', self.cluster_control )
 
         t = self.addToolBar('MetaViz')
         self.setIconSize( QSize(16,16) )
@@ -614,6 +634,8 @@ class MetaVizView(ui.AnalysisView):
 
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+
+        self.config.updated.connect( self.generate ) # Auto-regenerate if the configuration
           
 
     def url_handler(self, url):
@@ -627,9 +649,9 @@ class MetaVizView(ui.AnalysisView):
             # FIXME: Hacky test of an idea
             if kind == 'pathway' and id in self.m.db.pathways:
                 # Add the pathway and regenerate
-                pathways = self.m.config.value('/Pathways/Show').split(',')
+                pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.append( urllib2.unquote(id) )
-                self.m.config.setValue('/Pathways/Show', ','.join(pathways) )
+                self.config.set('/Pathways/Show', ','.join(pathways) )
                 self.generateGraphView()   
 
         # Remove an object to the current view
@@ -638,9 +660,9 @@ class MetaVizView(ui.AnalysisView):
             # FIXME: Hacky test of an idea
             if kind == 'pathway' and id in self.m.db.pathways:
                 # Add the pathway and regenerate
-                pathways = self.m.config.value('/Pathways/Show').split(',')
+                pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.remove( urllib2.unquote(id) )
-                self.m.config.setValue('/Pathways/Show', ','.join(pathways))
+                self.config.set('/Pathways/Show', ','.join(pathways))
                 self.generateGraphView()
 
 
@@ -653,41 +675,6 @@ class MetaVizView(ui.AnalysisView):
                 self.m.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
 
 
-
-    # Simple menu toggles
-    def onPathwayLinksToggle(self, checked):
-        self.config.setValue( '/Pathways/ShowLinks', checked)
-        self.generate()
-
-    def onShowEnzymesToggle(self, checked):
-        self.config.setValue( '/View/ShowEnzymes', checked)
-        self.generate()
-
-    def onShow2ndToggle(self, checked):
-        self.config.setValue( '/View/Show2nd', checked)
-        self.generate()
-
-    def onShowMolecularToggle(self, checked):
-        self.config.setValue( '/View/ShowMolecular', checked)
-        self.generate()
-
-    def onShowAnalysisToggle(self, checked):
-        self.config.setValue( '/View/ShowAnalysis', checked)
-        self.generate()
-        
-    def onHighlightPathwaysToggle(self, checked):
-        self.config.setValue( '/View/HighlightPathways', checked)
-        self.generate()
-
-    def onHighlightRegionsToggle(self, checked):
-        self.config.setValue( '/View/HighlightRegions', checked)
-        self.generate()           
-        
-    def onModifyCluster(self):
-        self.config.setValue('/View/ClusterBy', self.cluster_control.currentText() )
-        self.generate()
-        
-    
     def get_filename_with_counter(self, filename):
         fn, ext = os.path.splitext(filename)
         return fn + "-%s" + ext
@@ -706,28 +693,28 @@ class MetaVizView(ui.AnalysisView):
             'control':'',
             'test':'',
             'search':'',
-            'cluster_by': self.config.value('/View/ClusterBy'),
-            'show_enzymes': bool( self.config.value('/View/ShowEnzymes') ), #self.config.ReadBool('/View/ShowEnzymes'),
-            'show_secondary': bool( self.config.value('/View/Show2nd') ),
-            'show_molecular': bool( self.config.value('/View/ShowMolecular') ),
-            'show_network_analysis': bool( self.config.value('/View/ShowAnalysis') ),
+            'cluster_by': self.config.get('/View/ClusterBy'),
+            'show_enzymes': self.config.get('/View/ShowEnzymes'), #self.config.ReadBool('/View/ShowEnzymes'),
+            'show_secondary': self.config.get('/View/Show2nd'),
+            'show_molecular': self.config.get('/View/ShowMolecular'),
+            'show_network_analysis': self.config.get('/View/ShowAnalysis'),
 
-            'highlightpathways': bool( self.config.value('/View/HighlightPathways') ),
-            'highlightregions': bool( self.config.value('/View/HighlightRegions') ),
+            'highlightpathways': self.config.get('/View/HighlightPathways'),
+            'highlightregions': self.config.get('/View/HighlightRegions'),
 
-            'mining': bool( self.config.value('/Data/MiningActive') ),
-            'mining_depth': int( self.config.value('/Data/MiningDepth') ),
-            'mining_type': '%s%s%s' % ( self.config.value('/Data/MiningType'),
-                                        'r' if bool( self.config.value('/Data/MiningRelative') ) else '',
-                                        's' if bool( self.config.value('/Data/MiningShared') ) else '' ),
+#            'mining': self.config.get('/Data/MiningActive'),
+#            'mining_depth': self.config.get('/Data/MiningDepth'),
+#            'mining_type': '%s%s%s' % ( self.config.get('/Data/MiningType'),
+#                                        'r' if self.config.get('/Data/MiningRelative') else '',
+#                                        's' if self.config.get('/Data/MiningShared') else '' ),
             'splines': 'true',
             'focus':False,
-            'show_pathway_links': bool( self.config.value('/Pathways/ShowLinks') ),
+            'show_pathway_links': self.config.get('/Pathways/ShowLinks'),
             # Always except when saving the file
             'output':format,
 
         })
-        
+                
         #pathway_ids = self.config.value('/Pathways/Show').split(',')
         suggested_pathways = self.data.get('suggested_pathways')
         if suggested_pathways:
@@ -751,7 +738,7 @@ class MetaVizView(ui.AnalysisView):
         #    pathways += self.m.data.analysis_suggested_pathways[0:options.mining_depth]
 
         # Now remove the Hide pathways
-        pathway_ids_hide = self.config.value('/Pathways/Hide').split(',')
+        pathway_ids_hide = self.config.get('/Pathways/Hide').split(',')
         pathways = [p for p in pathways if p.id not in pathway_ids_hide]
         
         if pathway_ids == []:

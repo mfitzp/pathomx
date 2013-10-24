@@ -249,30 +249,14 @@ class MainWindow(ui.MainWindowUI):
     
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
-        self.config.setValue('/Pathways/Show', 'GLYCOLYSIS') 
-        self.config.setValue('/Pathways/ShowLinks', False)
-
         self.config.setValue('/Data/MiningActive', False)
         self.config.setValue('/Data/MiningDepth', 5)
         self.config.setValue('/Data/MiningType', 'c')
 
         self.config.setValue('/Data/MiningRelative', False)
         self.config.setValue('/Data/MiningShared', True)
-
-        self.config.setValue('/View/ShowEnzymes', True)
-        self.config.setValue('/View/Show2nd', True)
-        self.config.setValue('/View/ShowMolecular', True)
-        self.config.setValue('/View/ShowAnalysis', True)
-
-        self.config.setValue('/View/HighlightPathways', True)
-        self.config.setValue('/View/HighlightRegions', True)
-
-        self.config.setValue('/View/ClusterBy', 'pathway')
         
         self.config.setValue('/MetaPath/Is_Setup', True)
-
-        #self.generateGraphView()
-
 
     
     # UI Events           

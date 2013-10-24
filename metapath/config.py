@@ -90,13 +90,14 @@ class ConfigManager( QObject ):
         
     def add_handler(self, key, handler):
         self.handlers[key] = handler
+        print "Add handler %s for %s" % ( handler.__class__.__name__, key )
         fn = getattr(self, '_event_%s' % handler.__class__.__name__, False)
         fn( handler ).connect( lambda x: self.set(key, x) )
         
         if key not in self.config:
             fn = getattr(self, '_get_%s' % handler.__class__.__name__, False)
             self.config[key] = fn( handler )
-
+            
     def add_handlers(self, keyhandlers):
         for key, handler in keyhandlers.items():
             self.add_handler( key, handler )
@@ -122,6 +123,19 @@ class ConfigManager( QObject ):
 
     def _event_QCheckBox(self, o):
         return o.stateChanged
+        
+    # QAction
+    
+    def _get_QAction(self, o):
+        print 'o', o.isChecked()
+        return o.isChecked()
+
+    def _set_QAction(self, o, v):
+        print 'o', o.isChecked()
+        o.setChecked(v)
+
+    def _event_QAction(self, o):
+        return o.toggled
         
     # JSON
     

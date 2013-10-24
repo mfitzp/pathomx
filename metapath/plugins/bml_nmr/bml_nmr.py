@@ -30,7 +30,7 @@ class BMLNMRView( ui.DataView ):
         self.data.add_output('PQN') # Add output slot
         self.data.add_output('TSA') # Add output slot
         
-        fn = self.onImportData()
+        #fn = self.onImportData()
         
         self.t = self.addToolBar('Data Import')
         self.t.setIconSize( QSize(16,16) )
