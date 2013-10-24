@@ -563,7 +563,7 @@ class MetaVizView(ui.AnalysisView):
         })
 
         
-        show_pathway_linksAction = QAction(QIcon.fromTheme("document-page-setup", QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') )), 'Show Links to Hidden Pathways', self.m)
+        show_pathway_linksAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') ), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
         show_pathway_linksAction.setCheckable( True )
         #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
@@ -576,38 +576,34 @@ class MetaVizView(ui.AnalysisView):
         #showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
         self.config.add_handler('/View/ShowEnzymes', showenzymesAction )
         
-        show2ndAction = QAction(QIcon.fromTheme("compounds-small", QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') )), 'Show 2° compounds', self.m)
+        show2ndAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') ), 'Show 2° compounds', self.m)
         show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
         show2ndAction.setCheckable( True )
         #show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
         self.config.add_handler('/View/Show2nd', show2ndAction )
 
-        showmolecularAction = QAction(QIcon.fromTheme("compound-structure", QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') )),'Show molecular structures', self.m)
+        showmolecularAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') ),'Show molecular structures', self.m)
         showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
         showmolecularAction.setCheckable( True )
         #showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        #showmolecularAction.toggled.connect(self.onShowMolecularToggle)
         self.config.add_handler('/View/ShowMolecular', showmolecularAction )
 
         showanalysisAction = QAction('Show network analysis', self.m)
         showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
         showanalysisAction.setCheckable( True )
         #showanalysisAction.setChecked( bool( self.config.value('/View/ShowAnalysis' ) ) )
-        #showanalysisAction.toggled.connect(self.onShowAnalysisToggle)
         self.config.add_handler('/View/ShowAnalysis', showanalysisAction )
 
-        highlightcolorsAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight Reaction Pathways', self.m)
+        highlightcolorsAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight Reaction Pathways', self.m)
         highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
         highlightcolorsAction.setCheckable( True )
         #highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
-        #highlightcolorsAction.toggled.connect(self.onHighlightPathwaysToggle)
         self.config.add_handler('/View/HighlightPathways', highlightcolorsAction )
 
-        highlightregionAction = QAction(QIcon.fromTheme("visualization", QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') )), 'Highlight pathway/compartment regions', self.m)
+        highlightregionAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight pathway/compartment regions', self.m)
         highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
         highlightregionAction.setCheckable( True )
         #highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
-        #highlightregionAction.toggled.connect(self.onHighlightRegionsToggle)
         self.config.add_handler('/View/HighlightRegions', highlightregionAction )
         
 
@@ -666,15 +662,6 @@ class MetaVizView(ui.AnalysisView):
                 self.generateGraphView()
 
 
-        if action == 'import':
-            if kind == 'wikipathway':
-                gpmlpathway = gpmlPathwayView( self )
-                gpmlpathway.load_gpml_wikipathways(id)
-                gpmlpathway.generate()
-
-                self.m.tabs.addTab( gpmlpathway.browser, gpmlpathway.metadata['Name'] )
-
-
     def get_filename_with_counter(self, filename):
         fn, ext = os.path.splitext(filename)
         return fn + "-%s" + ext
@@ -702,11 +689,6 @@ class MetaVizView(ui.AnalysisView):
             'highlightpathways': self.config.get('/View/HighlightPathways'),
             'highlightregions': self.config.get('/View/HighlightRegions'),
 
-#            'mining': self.config.get('/Data/MiningActive'),
-#            'mining_depth': self.config.get('/Data/MiningDepth'),
-#            'mining_type': '%s%s%s' % ( self.config.get('/Data/MiningType'),
-#                                        'r' if self.config.get('/Data/MiningRelative') else '',
-#                                        's' if self.config.get('/Data/MiningShared') else '' ),
             'splines': 'true',
             'focus':False,
             'show_pathway_links': self.config.get('/Pathways/ShowLinks'),
@@ -722,21 +704,9 @@ class MetaVizView(ui.AnalysisView):
         else:
             pathway_ids = []
 
-        
-        # If we have no analysis, or re-analysis is reqeusted
-        #if self.m.data and (self.m.data.analysis == None or regenerate_analysis):
-        #    self.m.data.analyse( self.m.experiment )
-        
         # Add the selected pathways
         pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]        
            
-        # Add mining pathways
-        #if self.m.data and options.mining:
-        #    # Regenerate pathway suggestions if none yet in place or requested (regenerating analysis will set suggested = None
-        #    if self.m.data.analysis_suggested_pathways == None or regenerate_suggested:
-        #        self.m.data.suggest( self.m.db, mining_type=options.mining_type, mining_depth=options.mining_depth)
-        #    pathways += self.m.data.analysis_suggested_pathways[0:options.mining_depth]
-
         # Now remove the Hide pathways
         pathway_ids_hide = self.config.get('/Pathways/Hide').split(',')
         pathways = [p for p in pathways if p.id not in pathway_ids_hide]
