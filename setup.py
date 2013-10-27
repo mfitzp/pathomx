@@ -20,15 +20,7 @@ sys.path.append('metapath')
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
     packages=[
-#        'PyQt5', #.QtGui',
-#        'PyQt5.QtCore',
-#        'PyQt5.QtWebKit',
-#        'PyQt5.QtNetwork',
-#        'PyQt5.QtWidgets',
-#        'PyQt5.QtWebKitWidgets',
-#        'PyQt5.QtPrintSupport',
         'PyQt5',
-#        'PySide',
         'numpy',
         'scipy',
         'nmrglue',
@@ -36,8 +28,6 @@ default_build_options=dict(
         'pydot',
         'poster.encode',
         'sklearn',
-#        'fileiobase',
-#        'sip',
         ],
     includes=[
         'sip',
@@ -74,7 +64,7 @@ else:
                         CFBundleShortVersionString = version_string, # must be in X.X.X format
                         CFBundleGetInfoString = "MetaPath %s" % version_string,
                         CFBundleExecutable = "MetaPath",
-                        CFBundleIdentifier = "com.mfitzp.metapath",
+                        CFBundleIdentifier = "com.mfitzp.MetaPath",
                     ),
                     matplotlib_backends=['macosx'],
                 )
@@ -114,7 +104,7 @@ else:
         base = "Win32GUI"
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
-    executables=[Executable("metapath/metapath.py", base=base)]
+    executables=[Executable("metapath/MetaPath.py", base=base)]
 
     # Apply default build options to cx/py2app build targets
     build_exe.update( default_build_options )
@@ -147,7 +137,7 @@ setup(
 
     entry_points = {
         'gui_scripts': [
-            'metapath = metapath.metapath:main',
+            'MetaPath = metapath.MetaPath:main',
         ]
     },
 
@@ -179,7 +169,7 @@ setup(
         "build_mac": build_mac,
         "py2app": build_py2app
     },
-    app=[ 'metapath/metapath.py' ],
+    app=[ 'metapath/MetaPath.py' ],
     setup_requires=["py2app"],
 
     )

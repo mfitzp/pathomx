@@ -677,8 +677,6 @@ class MetaVizView(ui.AnalysisView):
             #'pathways': self.config.Read('/Pathways/Show'),
             #'not_pathways':'',
             'show_all': False, #self.config.ReadBool('/Pathways/ShowAll'),
-            'control':'',
-            'test':'',
             'search':'',
             'cluster_by': self.config.get('/View/ClusterBy'),
             'show_enzymes': self.config.get('/View/ShowEnzymes'), #self.config.ReadBool('/View/ShowEnzymes'),

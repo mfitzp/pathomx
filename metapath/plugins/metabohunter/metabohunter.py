@@ -37,7 +37,98 @@ import urllib, urllib2, cookielib
 
 
 
+# Dialog box for Metabohunter search options
+class DialogMetabohunter(ui.genericDialog):
+
+    
+    #noise
+    #thres
+    #neighbourhood
+    
+    def __init__(self, parent=None, view=None, **kwargs):
+        super(DialogMetabohunter, self).__init__(parent, **kwargs)        
+        
+        self.v = view
+        self.m = view.m
+        
+        self.setWindowTitle("Set MetaboHunter parameters")
+
+        self.lw_combos = {}
+        for n, o in self.v.options.items():
+            row = QVBoxLayout()
+            cl = QLabel(n)
+            cb = QComboBox()
+            
+            cb.addItems( o.keys() )
+            row.addWidget(cl)
+            row.addWidget(cb)
+            self.lw_combos[ n ] = cb # For read out on exit
+
+            current = self.v.config.get(n)
+            cb.setCurrentText(current)
+
+            self.layout.addLayout(row)
+            
+        #self.layout.addWidget(ctw)
+            
+        self.setMinimumSize( QSize(600,100) )
+        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
+        
+        # Build dialog layout
+        self.dialogFinalise()
+        
+        
+        
+
 class MetaboHunterView( ui.DataView ):
+
+
+    options = {
+    'Metabotype': {
+        'All':'All',
+        'Drug':'Drug',
+        'Food additive':'Food additive',
+        'Mammalian':'Mammalian',
+        'Microbial':'Microbial',
+        'Plant':'Plant',
+        'Synthetic/Industrial chemical':'Synthetic/Industrial chemical',
+        },
+    'Database Source': {
+        'Human Metabolome Database (HMDB)':'HMDB',
+        'Madison Metabolomics Consortium Database (MMCD)':'MMCD',
+        },
+    'Sample pH': {
+        '10.00 - 10.99':'ph7',
+        '9.00 - 9.99':'ph7',
+        '8.00 - 8.99':'ph7',
+        '7.00 - 7.99':'ph7',
+        '6.00 - 6.99':'ph6',
+        '5.00 - 5.99':'ph5',
+        '4.00 - 4.99':'ph4',
+        '3.00 - 3.99':'ph3',
+    },
+    'Solvent': {
+        'All':'all',
+        'Water':'water',
+        'CDCl3':'cdcl3',
+        'CD3OD':'5d3od',
+        '5% DMSO':'5d30d',
+    },
+    'Frequency': {
+        'All':'all',
+        '600 MHz':'600',
+        '500 MHz':'500',
+        '400 MHz':'400',
+    },
+    'Method': {
+        'MH1: Highest number of matched peaks':'HighestNumber',
+        'MH2: Highest number of matched peaks with shift tolerance':'HighestNumberNeighbourhood',
+        'MH3: Greedy selection of metabolites with disjoint peaks':'Greedy2',
+        'MH4: Highest number of matched peaks with intensities':'HighestNumberHeights',
+        'MH5: Greedy selection of metabolites with disjoint peaks and heights':'Greedy2Heights',
+    },
+    }
+
     def __init__(self, plugin, parent, **kwargs):
         super(MetaboHunterView, self).__init__(plugin, parent, **kwargs)
 
@@ -48,6 +139,21 @@ class MetaboHunterView( ui.DataView ):
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
+        
+        t = self.getCreatedToolbar('MetaboHunter', 'metabohunter')
+        metabohunterSetup = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Set up MetaboHunter \u2026', self.m)
+        metabohunterSetup.setStatusTip('Set parameters for MetaboHunter matching')
+        metabohunterSetup.triggered.connect(self.onMetaboHunterSettings)
+        t.addAction(metabohunterSetup)
+        
+        self.config.set_defaults({
+            'Metabotype': 'All',
+            'Database Source': 'Human Metabolome Database (HMDB)',
+            'Sample pH':'7.00 - 7.99',
+            'Solvent': 'Water',
+            'Frequency': 'All',
+            'Method': 'MH2: Highest number of matched peaks with shift tolerance',
+        })
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
@@ -60,7 +166,16 @@ class MetaboHunterView( ui.DataView ):
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
+    def onMetaboHunterSettings(self):
+        dialog = DialogMetabohunter(parent=self, view=self)
+        ok = dialog.exec_()
+        if ok:
+            # Extract the settings and from the dialog
+            for n, o in self.options.items():
+                self.config.set(n, dialog.lw_combos[n].currentText() )
 
+            self.autogenerate()            
+      
         
     def generate(self):
 
@@ -111,17 +226,12 @@ class MetaboHunterView( ui.DataView ):
                   'posturl'       : 'upload_file.php',
                   'useall'        : 'yes',
                   'peaks_list'    : peaks_list,
-                  'dbsource'      : 'HMDB',
-                  'metabotype'    : 'Mammalian',
-                  'sampleph'      : 'ph7',
-                  'solvent'       : 'water',
-                  'freq'          : 'all',
-                  'method'        : 'Greedy2',
-        #        <option value="HighestNumber">MH1: Highest number of matched peaks</option>
-        #        <option value="HighestNumberNeighbourhood">MH2: Highest number of matched peaks with shift tolerance</option>
-        #        <option value="Greedy2">MH3: Greedy selection of metabolites with disjoint peaks</option>
-        #        <option value="HighestNumberHeights">MH4: Highest number of matched peaks with intensities</option>
-        #        <option value="Greedy2Heights">MH5: Greedy selection of metabolites with disjoint peaks and heights</option>
+                  'dbsource'      : self.options['Database Source'][ self.config.get('Database Source') ],
+                  'metabotype'    : self.options['Metabotype'][ self.config.get('Metabotype') ],
+                  'sampleph'      : self.options['Sample pH'][ self.config.get('Sample pH') ],
+                  'solvent'       : self.options['Solvent'][ self.config.get('Solvent') ],
+                  'freq'          : self.options['Frequency'][ self.config.get('Frequency') ],
+                  'method'        : self.options['Method'][ self.config.get('Method') ],
                   'noise'         : '0',
                   'thres'         : options.hit_threshold,
                   'neighbourhood' : options.tolerance, #tolerance, # Use same tolerance as for shift

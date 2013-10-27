@@ -94,9 +94,17 @@ class ConfigManager( QObject ):
         fn = getattr(self, '_event_%s' % handler.__class__.__name__, False)
         fn( handler ).connect( lambda x: self.set(key, x) )
         
+        # Keep handler and data consistent
         if key not in self.config:
-            fn = getattr(self, '_get_%s' % handler.__class__.__name__, False)
-            self.config[key] = fn( handler )
+            # If the key is in defaults; set the handler to the default state (but don't add to config)
+            if key in self.defaults:
+                fn = getattr(self, '_set_%s' % handler.__class__.__name__, False)
+                fn( handler, self.defaults[key] )
+            
+            # If the key is not in defaults, set the config to match the handler
+            else:
+                fn = getattr(self, '_get_%s' % handler.__class__.__name__, False)
+                self.config[key] = fn( handler )
             
     def add_handlers(self, keyhandlers):
         for key, handler in keyhandlers.items():

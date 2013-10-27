@@ -106,7 +106,7 @@ class FilterView( ui.DataView ):
         filterAction.triggered.connect(self.onDefineFilter)
         th.addAction(filterAction)
         
-        self._filters = {'':''}
+        self.config.set_default('filters',{'':''}) 
         
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
@@ -121,22 +121,23 @@ class FilterView( ui.DataView ):
         if ok:
             # Extract the settings and store in the _annotations_targets settings
             # then run the annotation process
-            self._filters = {}
+            filters = {}
             # dict of source = (target, axis)
             
             for n, cb in enumerate(dialog.lw_filteri): # Get list of comboboxes
                 target = cb.currentText()
                 text = dialog.lw_filtert[n].text()
                 
-                self._filters[ target ] = text
+                filters[ target ] = text
                 
+            self.config.set('filters',filters)
             # Annotation name
-            self.set_name( ','.join([ '%s:%s' % (k,v) for k,v in self._filters.items()])  )
+            self.set_name( ','.join([ '%s:%s' % (k,v) for k,v in filters.items()])  )
             self.generate()
         
     def apply_filters(self,dso):
 
-        for target, text in self._filters.items():    
+        for target, text in self.config.get('filters').items():    
             axis,field = target.split('/')
             axis = int(axis) # index to apply
             

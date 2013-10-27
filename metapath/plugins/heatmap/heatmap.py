@@ -79,18 +79,24 @@ class HeatmapView(ui.AnalysisHeatmapView):
             'entities_t':   (None,['Compound']), 
             })
         )
+
+        self.initialise_predefined_views()
+        self.config.set_defaults({
+            'predefined_heatmap': 'Top Metabolites',
         
+        })        
             
         t = self.addToolBar('Heatmap')
         t.hm_control = QComboBox()
-        t.hm_control.currentIndexChanged.connect(self.onChangeHeatmap)
-        self.initialise_predefined_views()
         t.hm_control.addItems( [h for h in self.predefined_heatmaps.keys()] )
+        self.config.add_handler('predefined_heatmap', t.hm_control)
         t.addWidget(t.hm_control)
+
         self.toolbars['heatmap'] = t
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.onChangeConfig ) # Auto-regenerate if the config is changed (this redirect to rename the app)
 
     def equilibrium_table_builder(self, objs):
         result = []
@@ -150,8 +156,6 @@ class HeatmapView(ui.AnalysisHeatmapView):
     # Build lookup tables for pre-defined views (saves regenerating on view)
     def initialise_predefined_views(self):
         
-        self._show_predefined_heatmap = 'Phosphorylation'
-
         self.predefined_heatmaps = {
             'Phosphorylation': self._phosphorylation,
             'Phosphate balance': self._phosphate_balance,
@@ -292,21 +296,19 @@ class HeatmapView(ui.AnalysisHeatmapView):
 
     def generate(self):
         self.setWorkspaceStatus('active')
-    
         self.render( {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
             'figure':  {
                             'type':'heatmap',
-                            'data': self.predefined_heatmaps[ self._show_predefined_heatmap ](),
+                            'data': self.predefined_heatmaps[ self.config.get('predefined_heatmap') ](),
                         },                        
         }, template_name='heatmap')
 
         self.setWorkspaceStatus('done')
         self.clearWorkspaceStatus()
         
-    def onChangeHeatmap(self):
-        self._show_predefined_heatmap = self.toolbars['heatmap'].hm_control.currentText()
-        self.set_name( self._show_predefined_heatmap )
+    def onChangeConfig(self):
+        self.set_name( self.config.get('predefined_heatmap') )
         self.generate()
         
         

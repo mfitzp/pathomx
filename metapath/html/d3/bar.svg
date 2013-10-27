@@ -66,14 +66,17 @@ function bar(id, data, y_axis_label) {
     var svg = d3.select(id)//.insert("svg",':first-child')
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom) )
         .append("g")
+            .attr("id", "graph")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     samples = d3.keys( data[0].value ) 
 
     var s_value_range = [
-            Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key]; }); return values; } ) ), 
-            1.1*Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key]; }); return values; } ) ),
+            //Math.min.apply(null, d3.min(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key]; }); return values; } ) ), 
+            0, // Not supporting under 0 at present (FIXME)
+            Math.max.apply(null, d3.max(data, function(d) { var values = Object.keys(d.value).map(function(key){ return d.value[key] + d.error[key] }); return values; } ) ),
             /* Add 10% to max value */
             ]
 
@@ -121,6 +124,26 @@ function bar(id, data, y_axis_label) {
         .attr("height", function(d) { return height - y(d.value); })
         .style("fill", function(d) { return color(d.name); });
 
+    state.selectAll("path.errorbar")
+        .data(function(d) { return Object.keys(d.value).map(function(key) {
+            return {"name" : key, "value" : d.value[key], "error": d.error[key] }
+            })
+    })
+    .enter().append("path")
+        .attr("class","errorbar")
+        .style("stroke", function(d) { return color(d.name); })
+        .attr('d', function(d){ 
+            return 'M ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' + y(d.value) +
+                   'L ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' +  ( y(d.value + d.error) ) + 
+                   'M ' + ( x1(d.name) + x1.rangeBand()/2 - 5) + ' ' +  ( y(d.value + d.error) ) + 
+                   'L ' + ( x1(d.name) + x1.rangeBand()/2 + 5) + ' ' +  ( y(d.value + d.error) ) });
+        // Can't use markers without error bars being different colour to line?!                   
+        //.attr("x1", function(d) { return x1(d.name) + x1.rangeBand()/2; })
+        //.attr("y1", function(d) { return y(d.value); })
+        //.attr("x2", function(d) { return x1(d.name) + x1.rangeBand()/2; })
+        //.attr("y2", function(d) { return y(d.value+d.error); })
+        //.attr('marker-end','url(#errorstub)')
+
     var legend = svg.selectAll(".legend")
         .data(samples.slice().reverse())
     .enter().append("g")
@@ -141,6 +164,7 @@ function bar(id, data, y_axis_label) {
         .text(function(d) { return d; });
           
 }
+
 </script>
 @end
 
@@ -155,6 +179,11 @@ function bar(id, data, y_axis_label) {
                 'group':'@d[0]!s',
                 'value':{
                 @for n,i in d[1].items():
+                    "@n!s": @i!s,
+                @endfor
+                    },
+                'error':{
+                @for n,i in d[2].items():
                     "@n!s": @i!s,
                 @endfor
                     },

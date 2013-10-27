@@ -4,6 +4,12 @@
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg"
 xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<marker id="errorstub" markerWidth="10" markerHeight="10"
+        orient="auto" refX="0" refY="5">
+  <line x1="0" y1="0" x2="0" y2="10" style="fill:inherit; stroke:#000; stroke-width:1;" />
+</marker>
+
 @def header():
 @end
 @header()
@@ -40,6 +46,12 @@ svg {
     function delegateLink(url){
         QtWebView.delegateLink(url);
     }
+    /*
+    function _metapath_store_graph_dimensions(){
+        d = getElementSize('#graph');
+        console.log(d)
+        QWebView.storeGraphDimensions( d[0], d[1] );
+    }*/
 
   ]]></script>
 @def script():

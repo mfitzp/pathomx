@@ -224,20 +224,8 @@ class MainWindow(ui.MainWindowUI):
             print 'Done'
         
         self.onResetConfig()
-        
 
-        # Additional tabs; data analysis, data summary, identification, etc.
-        #analysisv = d3View( self )
-        #analysisv.generate()
-        #self.tabs.addTab( analysisv.browser, '&d3' )
-
-        # Additional tabs; data analysis, data summary, identification, etc.
-        #analysisc = analysisCircosView( self )
-        #analysisc.generate()
-        #self.tabs.addTab( analysisc.browser, '&Circo' )
-
-
-        self.setWindowTitle( tr('MetaPath: Metabolic pathway visualisation and analysis') )
+        self.setWindowTitle( tr('MetaPath') )
         self.statusBar().showMessage( tr('Ready') )
 
 
@@ -399,7 +387,7 @@ class MainWindow(ui.MainWindowUI):
 
     def onAbout(self):
         QMessageBox.about(self, tr('About MetaPath'), 
-            tr('A visualisation and analysis tool for metabolomics data in the context of metabolic pathways.') )
+            tr('A visualisation and analysis tool for experimental data in the context of cellular and metabolic pathways.') )
 
     def onExit(self):
         self.Close(True)  # Close the frame.

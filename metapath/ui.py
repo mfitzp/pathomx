@@ -86,40 +86,235 @@ BLANK_DEFAULT_HTML = '''
 <body>&nbsp;</body></html>
 '''
 
-
-class RenderPageToFile(QWebPage):
-    def __init__(self, fn, wv):
-        super(RenderPageToFile, self).__init__()
-
-        self.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
-        self.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
-
-        self.settings().setAttribute( QWebSettings.JavascriptEnabled,False)
-
-        self.finished = False
-        self.size = wv.size()
-        
-        self.loadFinished.connect(self._loadFinished)
-        self.fn = fn
-
-        c = wv.page().mainFrame().toHtml()
-        c = c.replace('<html><head></head><body>','')
-        c = c.replace('</body></html>','')
-        self.mainFrame().setHtml( c )
+class ExportImageDialog(genericDialog):
     
-    def _loadFinished(self, ok):
-        frame = self.mainFrame()
-        self.size = frame.contentsSize()#        self.setViewportSize(self.size)
-        self.setViewportSize(self.size)
-        image = QImage(self.size, QImage.Format_ARGB32)
-        image.setDotsPerMeterX(11811)
-        image.setDotsPerMeterY(11811)
-        painter = QPainter(image)
-        frame.render(painter)
-        painter.end()
+    print_u = { # Qt uses pixels/meter as it's default resolution so measure relative to meters
+        'in':39.3701,
+        'mm':1000,
+        'cm':100,
+        'm':1,
+        }
+    
+    print_p = { # Spinbox parameters dp, increment
+        'in': (3, 1, 0.01, 1000),
+        'mm': (2, 1, 0.1, 100000),
+        'cm': (3, 1, 0.01, 10000),
+        'm': (5, 1, 0.0001, 100),
+    }
+        
+    resolution_u = { # Qt uses pixels/meter as it's default resolution so scale to that
+                    'dpi':39.3701,
+                    'px/mm':1000,
+                    'px/cm':100,
+                    'px/m':1,
+                    }
+                    
+    def __init__(self, parent, size=QSize(800,600), dpm=11811, **kwargs):
+        super(ExportImageDialog, self).__init__(parent, **kwargs)        
+        
+        self.setWindowTitle( tr("Export Image") )
 
-        image.save(self.fn)
-        self.finished = True
+        # Handle measurements internally as pixels, convert to/from
+        self._w = size.width()
+        self._h = size.height()
+        self.default_print_units = 'cm'
+        self.default_resolution_units = 'dpi'
+
+        self._updating = False
+
+        r = 0
+        w = QGridLayout()
+
+        w.addWidget( QLabel('<b>Image Size</b>'), r, 0 )
+        r += 1
+        
+        self.width = QSpinBox()
+        self.width.setRange( 1, 100000)
+        w.addWidget( QLabel('Width'), r, 0 )        
+        w.addWidget( self.width, r, 1 )        
+        r += 1
+
+        self.height = QSpinBox()
+        self.height.setRange( 1, 100000)
+        w.addWidget( QLabel('Height'), r, 0 )        
+        w.addWidget( self.height, r, 1 )        
+        r += 1
+        w.addItem( QSpacerItem(1,10), r, 0 )
+        r += 1
+
+        w.addWidget( QLabel('<b>Print Size</b>'), r, 0 )    
+        r += 1
+
+        self.width_p = QDoubleSpinBox()
+        self.width_p.setRange( 0.0001, 10000)
+        w.addWidget( QLabel('Width'), r, 0 )        
+        w.addWidget( self.width_p, r, 1 )        
+        r += 1
+
+        self.height_p = QDoubleSpinBox()
+        self.height_p.setRange( 0.0001, 10000)
+        w.addWidget( QLabel('Height'), r, 0 )        
+        w.addWidget( self.height_p, r, 1 )     
+        
+        self.print_units = QComboBox()
+        self.print_units.addItems(self.print_u.keys())
+        self.print_units.setCurrentText( self.default_print_units )
+
+        w.addWidget( self.print_units, r, 2 )        
+        r += 1
+
+        self.resolution = QDoubleSpinBox()
+        self.resolution.setRange( 1, 1000000)
+        self.resolution.setValue( 300)
+        self.resolution.setDecimals( 2 )
+
+        self.resolution_units = QComboBox()
+        self.resolution_units.addItems(self.resolution_u.keys())
+        self.resolution_units.setCurrentText( self.default_resolution_units )
+
+        w.addWidget( QLabel('Resolution'), r, 0 )        
+        w.addWidget( self.resolution, r, 1 )        
+        w.addWidget( self.resolution_units, r, 2 )        
+        r += 1
+        w.addItem( QSpacerItem(1,10), r, 0 )
+        r += 1
+
+        w.addWidget( QLabel('<b>Scaling</b>'), r, 0 )        
+        r += 1
+        self.scaling = QComboBox()
+        self.scaling.addItems(['Resample', 'Resize'])
+        self.scaling.setCurrentText( 'Resample' )
+        w.addWidget( QLabel('Scaling method'), r, 0 )        
+        w.addWidget( self.scaling, r, 1 )        
+        r += 1
+        w.addItem( QSpacerItem(1,20), r, 0 )
+
+        # Set values
+        self.width.setValue(self._w)
+        self.height.setValue(self._h)
+        self.update_print_dimensions()
+
+        # Set event handlers (here so not triggered while setting up)
+        self.width.valueChanged.connect( self.changed_image_dimensions )
+        self.height.valueChanged.connect( self.changed_image_dimensions )
+        self.width_p.valueChanged.connect( self.changed_print_dimensions )
+        self.height_p.valueChanged.connect( self.changed_print_dimensions )
+        self.resolution_units.currentIndexChanged.connect(self.changed_resolution_units)
+        self.resolution.valueChanged.connect( self.changed_print_resolution )
+        self.print_units.currentIndexChanged.connect(self.changed_print_units)
+
+
+        self.layout.addLayout(w)
+        
+        self.setMinimumSize( QSize(300,150) )
+        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
+
+        self._current_dimension = self.print_units.currentText()
+        self._current_resolution = self.resolution.value()
+        self._current_resolution_units = self.resolution_units.currentText()
+                
+        # Build dialog layout
+        self.dialogFinalise()
+        
+    def changed_image_dimensions(self):
+        if not self._updating:
+            self._updating = True
+            self.update_print_dimensions()
+        self._updating = False
+        
+        # Keep internal data synced
+        self._w = self.width.value()
+        self._h = self.height.value()
+        
+    def changed_print_dimensions(self):
+        if not self._updating:
+            self._updating = True
+            self.update_image_dimensions()
+        self._updating = False
+        
+    def changed_print_resolution(self):
+        w_p = self.width_p.value()
+        h_p = self.height_p.value()
+            
+        new_resolution = self.resolution.value()
+        self.width_p.setValue(  ( w_p / self._current_resolution ) * new_resolution )
+        self.height_p.setValue(  ( h_p / self._current_resolution ) * new_resolution ) 
+        self._current_resolution = self.resolution.value()
+        
+
+    def changed_print_units(self):
+        dimension_t = self.print_units.currentText()
+        for o in [self.height_p, self.width_p]:
+            o.setDecimals( self.print_p[dimension_t][0] )
+            o.setSingleStep( self.print_p[dimension_t][1] )
+            o.setRange( self.print_p[dimension_t][2], self.print_p[dimension_t][3])
+
+        if dimension_t != self._current_dimension:
+            # We've had a change, so convert
+            self.width_p.setValue( self.get_converted_measurement( self.width_p.value(), self._current_dimension, dimension_t ) )
+            self.height_p.setValue( self.get_converted_measurement( self.height_p.value(), self._current_dimension, dimension_t ) )
+
+        self._current_dimension = dimension_t
+        
+    def changed_resolution_units(self):
+        ru = self.resolution_units.currentText()    
+        self.resolution.setValue( self.resolution.value() * self.resolution_u[self._current_resolution_units] / float(self.resolution_u[ru]) )
+        self._current_resolution_units = ru
+        
+    # Update print dimensions using the image dimensions and resolutions
+    def update_print_dimensions(self):
+        self._w = self.width.value()
+        self._h = self.height.value()
+        
+        print_units = self.print_units.currentText()
+    
+        w_p = self.get_print_size( self._w, print_units )
+        h_p = self.get_print_size( self._h, print_units )
+        
+        self.width_p.setValue( w_p )
+        self.height_p.setValue( h_p )
+        
+    def get_print_size(self, s, u):
+        ps = self.resolution.value()
+        ps_u = self.resolution_units.currentText()
+        s = s / (ps * self.resolution_u[ ps_u ]) # Get size in metres
+        return self.get_converted_measurement( s, 'm', u ) # Return converted value    
+
+    # Update image dimensions using the print dimensions and resolutions
+    def update_image_dimensions(self):
+        w_p = self.width_p.value()
+        h_p = self.height_p.value()
+        
+        print_units = self.print_units.currentText()
+        resolution = self.resolution.value()
+        resolution_units = self.resolution_units.currentText()
+    
+        self._w = self.get_pixel_size( w_p, print_units, resolution, resolution_units )
+        self._h = self.get_pixel_size( h_p, print_units, resolution, resolution_units )
+
+        self.width.setValue( self._w )
+        self.height.setValue( self._h )
+
+    def get_pixel_size(self, s, pu, r, ru):
+        s = s / self.print_u[ pu ] # Convert to metres
+        rm = r * self.resolution_u[ ru ] # Dots per metre
+        return s * rm
+       
+    def get_converted_measurement(self, x, f, t):
+        # Convert measurement from f to t 
+        f = self.print_u[f]
+        t = self.print_u[t]
+        return (float(x)/float(f)) * t
+
+    def get_pixel_dimensions(self):
+        return QSize( self._w, self._h)
+    
+    def get_dots_per_meter(self):
+        return self.resolution.value() * self.resolution_u[ self.resolution_units.currentText() ] 
+    
+    def get_resample(self):
+        return self.scaling.currentText() == 'Resample' 
+
 
 class QWebPageJSLog(QWebPage):
     """
@@ -130,6 +325,56 @@ class QWebPageJSLog(QWebPage):
 
     def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
         print "JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg)
+     
+
+class RenderPageToFile(QWebPage): 
+    def __init__(self, wv, fn, size=None, dpm=11811, resample=True): # 11811 == 300dpi
+        super(RenderPageToFile, self).__init__()
+
+        self.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
+        self.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
+
+        #self.settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+
+        self.finished = False
+            
+        self.size = size if size != None else wv.size() 
+        self.dpm = dpm
+        self.resample = resample
+
+        self.setViewportSize(self.size)
+        self.loadFinished.connect(self._loadFinished)
+        self.fn = fn
+        
+        c = wv.page().mainFrame().toHtml()
+        c = c.replace('<html><head></head><body>','')
+        c = c.replace('</body></html>','')
+        if self.resample: # Remove drawn graph; we'll regenerate
+            c = re.sub( '\<g.*\/g\>', '', c,  re.MULTILINE)
+        else:
+            # Keep graph but apply sizing; using svg viewport scaling
+            # this is a bit hacky; rewriting the svg width/height parameters using regex
+            c = re.sub( '(\<svg.*width=")(\d*)(".*\>)', '\g<1>%d\g<3>' % self.size.width(), c)
+            c = re.sub( '(\<svg.*height=")(\d*)(".*\>)', '\g<1>%d\g<3>' % self.size.height(), c)
+            
+        self.mainFrame().setHtml( c )
+    
+    def _loadFinished(self, ok):
+
+        frame = self.mainFrame()
+        if self.resample: # If resampling we need to regenerate the graph
+            frame.evaluateJavaScript( "_metapath_render_trigger(); console.log('done');" )
+
+        #self.size = frame.contentsSize()#        self.setViewportSize(self.size)
+        image = QImage(self.size, QImage.Format_ARGB32)
+        image.setDotsPerMeterX(self.dpm)
+        image.setDotsPerMeterY(self.dpm)
+        painter = QPainter(image)
+        frame.render(painter)
+        painter.end()
+
+        image.save(self.fn)
+        self.finished = True
 
 class QWebPageExtend(QWebPage):
     def shouldInterruptJavascript():
@@ -150,6 +395,7 @@ class QWebViewExtend(QWebView):
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         self.loadFinished.connect(self._loadFinished)
         self._is_svg_with_js = False
+        #self._svg_graph_dimensions = None
         
         # Override links for internal link cleverness
         if onNavEvent:
@@ -174,18 +420,26 @@ class QWebViewExtend(QWebView):
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
         if self._is_svg_with_js:
             self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
-            self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" ) #-magic number for scrollbars (ugh)        
-                        
+            self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" )
+            #self.page().currentFrame().evaluateJavaScript( "_metapath_store_graph_dimensions();" ) # get the inner dimensions of the g#graph element (minus margins)
+            #print self._svg_graph_dimensions
+            
     @pyqtSlot(str)
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
         return True
 
-    def saveAsImage(self):
+    #@pyqtSlot(int, int)
+    #def storeGraphDimensions(self, width, height):
+    #    self._svg_graph_dimensions = (width, height)
+    #    print self._svg_graph_dimensions
+    #    return True
+        
+    def saveAsImage(self, size=(800,600), dpm=11811, resample=True): # Size, dots per metre (for print), resample (redraw) image
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
         if filename:
-            r = RenderPageToFile(filename, self ) 
+            r = RenderPageToFile(self, filename, size, dpm, resample ) 
             while r.finished != True:
                 QCoreApplication.processEvents()
                 
@@ -595,7 +849,18 @@ class GenericView( QMainWindow ):
     
     def onSaveImage(self):
         # Get currently selected webview
-        self.tabs.currentWidget().saveAsImage()        
+        cw = self.tabs.currentWidget()
+        
+        # Load dialog for image export dimensions and resolution
+        # TODO: dialog!
+        sizedialog = ExportImageDialog(self, size=cw.size() )
+        ok = sizedialog.exec_()
+        if ok:
+            size = sizedialog.get_pixel_dimensions()
+            dpm =  sizedialog.get_dots_per_meter()
+            resample =  sizedialog.get_resample()
+        
+            cw.saveAsImage(size, dpm, resample)        
 
 
     def onRecalculate(self):

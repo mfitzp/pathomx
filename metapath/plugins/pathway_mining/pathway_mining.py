@@ -91,7 +91,6 @@ class PathwayMiningView( ui.AnalysisView ):
         
         self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.generate()
 
     def generate(self):
         self.suggest()
@@ -121,8 +120,8 @@ class PathwayMiningView( ui.AnalysisView ):
         ok = dialog.exec_()
         if ok:
             # Regenerate the graph view
-            self.experiment['control'] = dialog.cb_control.currentText()
-            self.experiment['test'] = dialog.cb_test.currentText()      
+            self.config.set('experiment_control', dialog.cb_control.currentText() )
+            self.config.set('experiment_test', dialog.cb_test.currentText() )
         
             # Update toolbar to match any change caused by timecourse settings
             self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
@@ -131,38 +130,13 @@ class PathwayMiningView( ui.AnalysisView ):
 
             self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
             self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
-            
-            #if dialog.le_timecourseRegExp.text() != '':
-            #    self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
-            #elif 'timecourse' in self.experiment:                
-            #    del(self.experiment['timecourse'])
-        
-            # Update the toolbar dropdown to match
-            self.cb_control.setCurrentIndex( self.cb_control.findText( self.experiment['control'] ) )
-            self.cb_test.setCurrentIndex( self.cb_test.findText( self.experiment['test'] ) )
-                  
-            analysisv = analysisCompoundView( self )
-            analysisv.generate()
-            self.tabs.addTab( analysisv.browser, '&Compounds' )
-            
-            analysise = analysisEquilibriaView( self )
-            analysise.generate()
-            self.tabs.addTab( analysise.browser, 'E&quilibria' )
-
-            analysisw = analysisEnergyWasteView( self )
-            analysisw.generate()
-            self.tabs.addTab( analysisw.browser, '&Energy and Waste' )
-            
-            #self.tabs.addTab( analysisv.browser, 'Genes' )
-            #self.tabs.addTab( analysisv.browser, 'Proteins' )            
     
         
     def onModifyExperiment(self):
         """ Change control or test settings from toolbar interaction """
         # Cheat a bit, simply change both - only one will be incorrect
-        self._experiment_control = self.toolbars['experiment'].cb_control.currentText()
-        self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
-        self.generate()
+        self.config.set('experiment_control', self.toolbars['experiment'].cb_control.currentText() )
+        self.config.set('experiment_test', self.toolbars['experiment'].cb_test.currentText() )
 
 
     # Generate pathway suggestions from the database based on a given data analysis (use set options)

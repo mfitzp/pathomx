@@ -18,9 +18,17 @@ None = 0; //null;
     }
     
     function getElementSize(id){
+        console.log(id);
+        console.log(d3.select(id).select(id));
+        console.log(d3.select(id).attr('width'));
         if (id == 'body' || id =='svg'){
             return getWindowSize();
+        } else if (d3.select(id).attr('width')) {
+            // Try attribute
+            xy = [ d3.select(id).attr('width'), d3.select(id).attr('height') ]
+            return xy
         } else {
+            // Try offsetWidth
             xy = [        
                 d3.select(id)[0][0].offsetWidth.parseInt(),
                 d3.select(id)[0][0].offsetHeight.parseInt(),
@@ -701,6 +709,8 @@ function scatter(id, data, regions, x_axis_label, y_axis_label) {
     var svg = d3.select(id)//.insert("svg",':first-child')
         .attr('width', width)
         .attr('height', height)
+        .attr("viewBox", "0 0 " + width + " " + height  )
+        
         .attr('class', 'chart')
         
     var clip = svg.append("svg:clipPath")
