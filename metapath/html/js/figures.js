@@ -18,9 +18,6 @@ None = 0; //null;
     }
     
     function getElementSize(id){
-        console.log(id);
-        console.log(d3.select(id).select(id));
-        console.log(d3.select(id).attr('width'));
         if (id == 'body' || id =='svg'){
             return getWindowSize();
         } else if (d3.select(id).attr('width')) {
@@ -43,6 +40,23 @@ None = 0; //null;
       return d3.nest().key(f || String).entries(array).map(function(d) { return d.key; });
     };
     
+var insertLinebreaks = function (t, d, width) {
+    console.log(t);
+    var el = d3.select(t);
+    var p = d3.select(t.parentNode);
+    p.append("foreignObject")
+        .attr('x', -width/2)
+        .attr('y', 6)
+        .attr("width", width)
+        .attr("height", 200)
+      .append("xhtml:p")
+        .attr('style','word-wrap: break-word; text-align:center;')
+        .html(d);    
+
+    el.remove();
+
+};
+
     
 /* Figure d3 functions */
 function heatmap(id, buckets, scale){
@@ -298,8 +312,6 @@ var s_y = [
     d3.max(data, function(d) { return Math.max.apply(Math, Object.keys(d.y).map(function(key){ return d.y[key]; }) ); } ),
   ];
                  
-console.log(s_y);
-                    
 var x = d3.scale
             .linear()
             .range([0,width_d])
@@ -701,7 +713,6 @@ function scatter(id, data, regions, x_axis_label, y_axis_label) {
     data.forEach( function(d){ classes.push( d.class ) } );
     var classes = d3.unique( classes ); //.keys();
 
-    console.log(classes);
     var color = d3.scale.category10();
         color.domain( classes );    	      
 

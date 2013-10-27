@@ -62,10 +62,10 @@ class TransformView( ui.DataView ):
             'apply_transform': self.transform_options.keys()[0],
         })
         
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
     
-        self.config.updated.connect( self.generate ) # Auto-regenerate if the configuration is changed
+        self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
 
     
     def onChangeTransform(self):

@@ -85,16 +85,23 @@ function bar(id, data, y_axis_label) {
     y.domain(s_value_range);
 
     svg.append("g")
+        .attr('id','xaxis')
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
-            /*.selectAll("text")  
+            /*
+            .selectAll("text")  
             .style("text-anchor", "end")
             .attr("dx", "-.8em")
             .attr("dy", ".15em")
             .attr("transform", "rotate(-60) translate(-10,0)")
             ;*/
 
+    d3.select('#xaxis')
+        .selectAll('text')
+            .each(function(d,i){ insertLinebreaks(this, d, x1.rangeBand()*2 ); });
+
+    
 
     svg.append("g")
         .attr("class", "y axis")
@@ -135,8 +142,8 @@ function bar(id, data, y_axis_label) {
         .attr('d', function(d){ 
             return 'M ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' + y(d.value) +
                    'L ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' +  ( y(d.value + d.error) ) + 
-                   'M ' + ( x1(d.name) + x1.rangeBand()/2 - 5) + ' ' +  ( y(d.value + d.error) ) + 
-                   'L ' + ( x1(d.name) + x1.rangeBand()/2 + 5) + ' ' +  ( y(d.value + d.error) ) });
+                   'M ' + ( x1(d.name) + x1.rangeBand()/2 - 3) + ' ' +  ( y(d.value + d.error) ) + 
+                   'L ' + ( x1(d.name) + x1.rangeBand()/2 + 3) + ' ' +  ( y(d.value + d.error) ) });
         // Can't use markers without error bars being different colour to line?!                   
         //.attr("x1", function(d) { return x1(d.name) + x1.rangeBand()/2; })
         //.attr("y1", function(d) { return y(d.value); })

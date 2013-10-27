@@ -565,21 +565,31 @@ class QTabWidgetExtend( QTabWidget ):
         super(QTabWidgetExtend, self).__init__(parent, **kwargs)
         self.w = parent
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+            
+        self._unfocus_tabs_enabled = True
     
     def sizeHint(self):
         return self.w.size()
     
     # A few wrappers to 
-    def addTab(self, widget, name, focused=True, try_to_keep_unfocused=False, **kwargs):
+    def addTab(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+        # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
+        widget._unfocus_on_refresh = unfocus_on_refresh
         t = super(QTabWidgetExtend, self).addTab(widget, name, **kwargs)
-
-        # Automagically unfocus the help (+any other equivalent) tabs if were' adding a second
-        # tab to the widget. Not after, as must be selected intentionally
-        #if self.count() == 2 and self.tabText(0) in self.auto_unfocus_tabs: # 
-        #    self.setCurrentIndex( t )
         
         return t
+    
+    def autoSelect(self):
+        if self._unfocus_tabs_enabled:
+            cw = self.currentWidget()
+            if cw._unfocus_on_refresh:
+                print self.count()
+                for w in range(0, self.count()):
+                    if self.widget(w)._unfocus_on_refresh == False:
+                        self.setCurrentIndex( w )
+                        self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
+                        break
         
 
 
@@ -617,7 +627,7 @@ class GenericView( QMainWindow ):
 
         if self.plugin.help_tab_html_filename:
             self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-            self.tabs.addTab(self.help,'?')            
+            self.tabs.addTab(self.help, '?', unfocus_on_refresh=True)            
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
             self.help.setHtml( template.render( {
                         'htmlbase': os.path.join( utils.scriptdir,'html'),
@@ -661,7 +671,8 @@ class GenericView( QMainWindow ):
         if self._pause_analysis_flag:
             self.setWorkspaceStatus('paused')
             return False
-            
+        
+        self.tabs.autoSelect() # Unfocus the help file if we've done something here
         self.generate(*args, **kwargs)
     
     def generate(self):
@@ -928,7 +939,7 @@ class HomeView( GenericView ):
         
         # Display welcome file
         self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-        self.tabs.addTab(self.help,'?')            
+        self.tabs.addTab(self.help,'?', unfocus_on_refresh=True)            
         template = self.m.templateEngine.get_template('welcome.html')
         self.help.setHtml( template.render( {
                     'htmlbase': os.path.join( utils.scriptdir,'html'),
@@ -972,6 +983,9 @@ class HomeView( GenericView ):
         f = open("/Users/mxf793/Desktop/workspace.svg",'w')
         f.write( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} ) ) 
         f.close()
+        
+        self.tabs.autoSelect()
+        
         
     # Url handler for all default plugin-related actions; making these accessible to all plugins
     # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add

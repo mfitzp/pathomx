@@ -70,7 +70,7 @@ class BinningView( ui.DataView ):
         th.addWidget(self.binoffset_spin)
 
 
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified        
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
     
     def generate(self):
