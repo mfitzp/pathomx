@@ -75,6 +75,14 @@ class PathwayMiningView( ui.AnalysisView ):
         
         self.addDataToolBar()
         self.addExperimentToolBar()
+        
+        self.config.set_defaults({
+            '/Data/MiningActive':False,
+            '/Data/MiningDepth': 5,
+            '/Data/MiningType': 'c',
+            '/Data/MiningRelative': False,
+            '/Data/MiningShared': True,
+        })
 
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
