@@ -1,0 +1,9 @@
+[Core]
+Name = Icoshift
+Module = icoshift_
+
+[Documentation]
+Author = Martin Fitzpatrick, Francesco Savorani, Giorgio Tomasi
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = A versatile tool for the rapid alignment of 1D NMR spectra

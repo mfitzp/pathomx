@@ -79,7 +79,7 @@ class BinningView( ui.DataView ):
             self.data.put('output',dso)
             self.render({})
         else:
-            self.m.setWorkspaceStatus('error')
+            self.setWorkspaceStatus('error')
 
         
 

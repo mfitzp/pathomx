@@ -50,7 +50,7 @@ var insertLinebreaks = function (t, d, width) {
         .attr("width", width)
         .attr("height", 200)
       .append("xhtml:p")
-        .attr('style','word-wrap: break-word; text-align:center;')
+        .attr('style','word-wrap: break-word; text-align:center; -webkit-hyphens: auto; hyphens: auto;')
         .html(d);    
 
     el.remove();

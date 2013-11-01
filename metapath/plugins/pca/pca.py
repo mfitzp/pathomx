@@ -102,7 +102,7 @@ class PCAView( ui.AnalysisView ):
         
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], weights[0:1] ),  
+                'data': zip( dso.scales[1], weights[:,0:1] ),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }

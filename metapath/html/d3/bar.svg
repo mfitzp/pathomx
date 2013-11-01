@@ -21,6 +21,9 @@
   display: none;
 }
 
+.errorbar {
+    stroke-width:1;
+}
 
 ]]></style>
 @end
@@ -99,7 +102,7 @@ function bar(id, data, y_axis_label) {
 
     d3.select('#xaxis')
         .selectAll('text')
-            .each(function(d,i){ insertLinebreaks(this, d, x1.rangeBand()*2 ); });
+            .each(function(d,i){ insertLinebreaks(this, d, x1.rangeBand()*samples.length ); });
 
     
 

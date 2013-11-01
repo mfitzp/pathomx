@@ -584,9 +584,9 @@ class QTabWidgetExtend( QTabWidget ):
         if self._unfocus_tabs_enabled:
             cw = self.currentWidget()
             if cw._unfocus_on_refresh:
-                print self.count()
                 for w in range(0, self.count()):
-                    if self.widget(w)._unfocus_on_refresh == False:
+                    uf = self.widget(w)._unfocus_on_refresh
+                    if not uf:
                         self.setCurrentIndex( w )
                         self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
                         break

@@ -45,8 +45,8 @@ class NMRPeakPickingView( ui.DataView ):
             
         th = self.addToolBar('Peak Picking')
         self.threshold_spin = QDoubleSpinBox()
-        self.threshold_spin.setDecimals(3)
-        self.threshold_spin.setRange(0.005,1)
+        self.threshold_spin.setDecimals(5)
+        self.threshold_spin.setRange(0,1)
         self.threshold_spin.setSuffix('rel')
         self.threshold_spin.setSingleStep(0.005)
         self.threshold_spin.setValue(self._peak_threshold)
@@ -72,10 +72,10 @@ class NMRPeakPickingView( ui.DataView ):
         self._peak_algorithm = 'Threshold'
 
         self.algorithms = {
-#            'Connected':'connected',
+            'Connected':'connected',
             'Threshold':'thres',
             'Threshold (fast)':'thres-fast',
-#            'Downward':'downward',
+            'Downward':'downward',
         }
 
         self.algorithm_cb = QComboBox()
@@ -86,10 +86,8 @@ class NMRPeakPickingView( ui.DataView ):
         th.addWidget(tl)
         th.addWidget(self.algorithm_cb)        
 
-        #self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified        
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.generate()
     
     def generate(self):
         dso = self.peakpick( self.data.get('input') ) #, self._bin_size, self._bin_offset)
@@ -121,11 +119,21 @@ class NMRPeakPickingView( ui.DataView ):
         # Take input dataset and flatten in first dimension (average spectra)
         data_avg = np.mean( dsi.data, axis=0)
        
-        # pick peaks and return locations; 
-        locations, cluster_ids, scales, amps = ng.analysis.peakpick.pick(data_avg, threshold, msep=msep, cluster=True, algorithm=algorithm, est_params = True, table=False)
-        locations, scales, amps = ng.analysis.peakpick.pick(data_avg, threshold, msep=msep, cluster=False, algorithm=algorithm, est_params = True, table=False)
+        print data_avg.shape
+        print threshold
+        print algorithm
 
-        n_cluster = max( cluster_ids )
+        # pick peaks and return locations; 
+        #nmrglue.analysis.peakpick.pick(data, pthres, nthres=None, msep=None, algorithm='connected', est_params=True, lineshapes=None, edge=None, diag=False, c_struc=None, c_ndil=0, cluster=True, table=True, axis_names=['A', 'Z', 'Y', 'X'])[source]¶
+        locations, scales, amps = ng.analysis.peakpick.pick(data_avg, threshold, msep=msep, algorithm=algorithm, est_params = True, cluster=False, table=False)
+    
+        print 'Peak picking output:'
+        print locations
+        #print cluster_ids
+        print scales
+        print amps
+
+        #n_cluster = max( cluster_ids )
         n_locations = len( locations )
         
         new_shape = list( dsi.shape )

@@ -47,7 +47,7 @@ class DialogDefineFilter(ui.genericDialog):
         dsi = self.v.data.get('input')
         
         
-        for k,t in self.v._filters.items():
+        for k,t in self.v.config.get('filters').items():
             
             self.lw_filteri.append( QComboBox() )
             cdw = self.lw_filteri[-1] # Shorthand
