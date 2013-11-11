@@ -1,0 +1,9 @@
+[Core]
+Name = Peak Adjust
+Module = nmr_peakadj
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Scale and shift NMR spectra by reference peaks (TMSP, Creatinine)

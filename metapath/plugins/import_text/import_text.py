@@ -82,7 +82,6 @@ class ImportTextView( ui.ImportDataView ):
 ###### LOAD HANDLERS
 
     def load_csv_C(self, filename): # Load from csv with experiments in COLUMNS, metabolites in ROWS
-        print "WAY!"
         # Read in data for the graphing metabolite, with associated value (generate mean)
         reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
         
@@ -120,17 +119,21 @@ class ImportTextView( ui.ImportDataView ):
         dso.labels[1] = metabolites
         
         scales = []
+        mlabels = []
         for m in metabolites:
             try:
                 scales.append( float(m) )
+                mlabels.append( None )
             except:
                 scales.append( None )
+                mlabels.append( m )
                 
-        dso.scales[1] = scales
         dso.labels[0] = samples
-        dso.classes[0] = classes        
-
+        dso.classes[0] = classes
         dso.entities[0] = [None] * len(samples)
+
+        dso.scales[1] = scales
+        dso.labels[1] = mlabels
         dso.entities[1] = [None] * len(scales)
 
         dso.data = data
@@ -138,7 +141,6 @@ class ImportTextView( ui.ImportDataView ):
         return dso
                 
     def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
-       
         # Read in data for the graphing metabolite, with associated value (generate mean)
         reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
         
@@ -184,20 +186,24 @@ class ImportTextView( ui.ImportDataView ):
         # Build dataset object        
         dso = DataSet( size=(xdim, ydim) ) #self.add_data('imported_data', DataSetself) )
         dso.empty(size=(ydim, xdim))
-        dso.labels[1] = metabolites
+        #dso.labels[1] = metabolites
         
         scales = []
+        mlabels = []
         for m in metabolites:
             try:
                 scales.append( float(m) )
+                mlabels.append( None )
             except:
                 scales.append( None )
+                mlabels.append( m )
                 
-        dso.scales[1] = scales
         dso.labels[0] = samples
         dso.classes[0] = classes
-
         dso.entities[0] = [None] * len(samples)
+
+        dso.scales[1] = scales
+        dso.labels[1] = mlabels
         dso.entities[1] = [None] * len(scales)
 
         dso.data = np.array( raw_data )

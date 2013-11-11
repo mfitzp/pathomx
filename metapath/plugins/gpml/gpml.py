@@ -75,8 +75,9 @@ class gpmlPathwayView(ui.AnalysisView):
         #self.o.show() 
         self.plugin.register_url_handler( self.url_handler )
 
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] )
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
 
     def url_handler(self, url):
@@ -137,6 +138,15 @@ class gpmlPathwayView(ui.AnalysisView):
 
     def generate(self):
 
+        if self.gpml == None:
+            # No pathway loaded; check config for stored source to use
+            if self.config.get('gpml_file'):
+                self.load_gpml_file( self.config.get('gpml_file') )
+                
+            elif self.config.get('gpml_wikipathways_id'):
+                self.load_gpml_wikipathways( self.config.get('gpml_wikipathways_id') )
+            
+    
         self.setWorkspaceStatus('active')
 
         # Add our urls to the defaults
@@ -152,11 +162,13 @@ class gpmlPathwayView(ui.AnalysisView):
 
         dsi = self.data.get('input')
         if dsi:
-            sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
-            print "Sf %s" % sf
+            mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
+            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
+
             for n, m in enumerate(dsi.entities[1]):
                 xref = self.get_xref( m )
-                ecol = utils.calculate_rdbu9_color( sf, dsi.data[0,n] )
+                ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[ xref ] = ecol
@@ -178,6 +190,7 @@ class gpmlPathwayView(ui.AnalysisView):
         else:
             self.svg = None
 
+        self.set_name( self.metadata['Name'] )
     
         self.setWorkspaceStatus('done')
         self.clearWorkspaceStatus()            
@@ -202,8 +215,8 @@ class gpmlPathwayView(ui.AnalysisView):
         if filename:
             self.load_gpml_file(filename)
             self.generate()
-
-            self.set_name( self.metadata['Name'] )
+            self.config.set('gpml_file', filename)
+            
 
     def onLoadGPMLWikiPathways(self):
         dialog = dialogWikiPathways(parent=self.m, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
@@ -217,8 +230,7 @@ class gpmlPathwayView(ui.AnalysisView):
             
                 self.load_gpml_wikipathways(pathway_id)
                 self.generate()
-                
-                self.set_name( self.metadata['Name'] )
+                self.config.set('gpml_wikipathways_id', pathway_id)                
                 
 
 

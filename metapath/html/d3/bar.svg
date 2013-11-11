@@ -145,8 +145,8 @@ function bar(id, data, y_axis_label) {
         .attr('d', function(d){ 
             return 'M ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' + y(d.value) +
                    'L ' + ( x1(d.name) + x1.rangeBand()/2 ) + ' ' +  ( y(d.value + d.error) ) + 
-                   'M ' + ( x1(d.name) + x1.rangeBand()/2 - 3) + ' ' +  ( y(d.value + d.error) ) + 
-                   'L ' + ( x1(d.name) + x1.rangeBand()/2 + 3) + ' ' +  ( y(d.value + d.error) ) });
+                   'M ' + ( x1(d.name) + x1.rangeBand()/2 - x1.rangeBand()/5) + ' ' +  ( y(d.value + d.error) ) + 
+                   'L ' + ( x1(d.name) + x1.rangeBand()/2 + x1.rangeBand()/5) + ' ' +  ( y(d.value + d.error) ) });
         // Can't use markers without error bars being different colour to line?!                   
         //.attr("x1", function(d) { return x1(d.name) + x1.rangeBand()/2; })
         //.attr("y1", function(d) { return y(d.value); })

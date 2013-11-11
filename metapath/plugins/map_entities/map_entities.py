@@ -128,7 +128,7 @@ class MapEntityView( ui.GenericView ):
                 data.entities[1][ n ] = self._entity_mapping_table[ m ]
 
             # Use the internal database identities
-            elif m.lower() in db.synrev:
+            elif m and m.lower() in db.synrev:
                 data.entities[1][ n ] = db.synrev[ m.lower() ]
                 
                 #self.quantities[ transid ] = self.quantities.pop( m )

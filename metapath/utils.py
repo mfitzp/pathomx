@@ -23,26 +23,37 @@ def sigstars(p):
     return s
 
 
-def calculate_scaling_factor(data, n):
-    # Get limits (we assume we traverse zero
-    maxima = np.max( abs( data[np.isfinite(data)] ) )
-    median = np.median( abs( np.isfinite(data) ) )
+def calculate_scale(range, output, out=float):
+# Calculate a scale using equally input points (min,max) or (min, 0, max)
+# mapped to the output range; returns a lambda function to perform the conversion
     
-    # Use median value to set scale (allows useful scale in despite outliers)
-    print 'Median', median
-    print 'Mean', np.mean(data)
-    print "Maxima", maxima
-    # Set limits at maxf zero centered (n must be odd)
-    # Find centre point of scale
-    # c = int( np.ceil( n/2 ) )
-    return (n/2) /float( median ) #+/-
+    if len(range)==3: # Have midpoint
+        intersect_in = range[1]
+    else:
+        intersect_in = range[0]
 
-def calculate_rdbu9_color(sf, value):
+    maxi = max( [ abs(x) for x in range ] )
+    mini = -maxi
+        
+    # Calculate slope in = x, out = y
+    # slope = y2-y1/x2-x1
+    m = (output[1]-output[0]) / (maxi-mini)
+    x1 = range[0]
+    y1 = output[0]
+    mino = min(output)
+    maxo = max(output)
+
+    scale = lambda x: np.clip( out( (m*x)-(m*x1)+y1 ), mino, maxo )
+    print "Scale generator..."
+    return scale
+    
+def calculate_rdbu9_color(scale, value):
     # Rescale minima-maxima to range of rdbu9 (9)
     try:
-        rdbu9col = max(1, min(9, int( np.round( value*sf ) ) ) )
+        rdbu9col = int( scale(value) )
     except:
         return None # Fill zero nothing if not known
+    print 'COLOR!', value, rdbu9col
     return ( rdbu9[ rdbu9col ], rdbu9c[ rdbu9col ], rdbu9col)
 
 

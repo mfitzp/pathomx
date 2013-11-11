@@ -1,0 +1,21 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>NMR Peak Adjust</h1>
+        <span>Scale and shift NMR spectra by reference peak</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+<p></p>
+
+<h2>Quick start</h2>
+<p><a href="metapath://@view.id/default_actions/data_source/add" class="btn"><img src="file://@htmlbase/../icons/database-import.png"> Select source data</a> input and enter the experimental comparison on the 
+data and the spectra will be shown in the view tab.</p>
+@end

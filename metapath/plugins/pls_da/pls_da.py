@@ -49,24 +49,30 @@ class PLSDAView( ui.AnalysisView ):
             DataDefinition('input', {})
         )
 
-        self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
         
     # Do the PCA analysis
     def generate(self):    
         
         dso = self.data.get('input') # Get the dataset
-        
+        _experiment_test = self.config.get('experiment_test')
+        _experiment_control = self.config.get('experiment_control')
+                
         data = dso.data
         
         plsr = PLSRegression(n_components=2)
-        Y = np.array([0 if c == self._experiment_control else 1 for c in dso.classes[0] ])
+        Y = np.array([0 if c == _experiment_control else 1 for c in dso.classes[0] ])
         #Y = Y.reshape( (len(dso.classes[0]),1) )
         
+        print _experiment_test
+        print _experiment_control
         print data.shape
         print data.T.shape
         print Y.shape
+        print data
+        print Y
         
         plsr.fit(data, Y) # Transpose it, as vars need to along the top
         

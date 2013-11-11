@@ -43,18 +43,25 @@ class ConfigManager( QObject ):
             return None
 
     def set(self, key, value, trigger_update=True):
-        # Set value    
-        self.config[key] = value
-        
-        if key in self.handlers:
-            # Trigger handler to update the view
-            fn = getattr(self, '_set_%s' % self.config[key].__class__.__name__, False)
-            if fn: # We have setter
-                fn( self.config[key], value )
-        
-        # Trigger update notification
-        if trigger_update:
-            self.updated.emit()
+            if key in self.config and self.config[key] == value:
+                return False # Not updating
+
+            # Set value    
+            self.config[key] = value
+
+            if key in self.handlers:
+                # Trigger handler to update the view
+                getter = getattr(self, '_get_%s' % self.handlers[key].__class__.__name__, False)
+                setter = getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
+            
+                if setter and getter( self.handlers[key] ) != self.config[key]:
+                    setter( self.handlers[key], self.config[key] )
+    
+            # Trigger update notification
+            if trigger_update:
+                self.updated.emit()
+
+            return True
         
     # Defaults are used in absence of a set value (use for base settings)    
     def set_default(self, key, value):
@@ -76,10 +83,14 @@ class ConfigManager( QObject ):
         self.set_multiple( keyvalues )
 
     def set_many(self, keyvalues):
+        has_updated = False
         for k,v in keyvalues.items():
-            self.set(k, v, trigger_update=False)
-            
-        self.updated.emit()             
+            u = self.set(k, v, trigger_update=False)
+            print 'Workflow config; setting %s to %s' % (k,v)
+            has_updated = has_updated or u
+        
+        if has_updated:
+            self.updated.emit()             
 
 
     # HANDLERS
@@ -116,6 +127,7 @@ class ConfigManager( QObject ):
         return o.currentText()
 
     def _set_QComboBox(self, o, v):
+        print 'setting via combo %s %s' %(o,v)
         o.setCurrentText(v)
 
     def _event_QComboBox(self, o):
@@ -144,6 +156,28 @@ class ConfigManager( QObject ):
 
     def _event_QAction(self, o):
         return o.toggled
+        
+    # QSpinBox
+    
+    def _get_QSpinBox(self, o):
+        return o.value()
+
+    def _set_QSpinBox(self, o, v):
+        o.setValue(v)
+
+    def _event_QSpinBox(self, o):
+        return o.valueChanged        
+        
+    # QDoubleSpinBox
+    
+    def _get_QDoubleSpinBox(self, o):
+        return o.value()
+
+    def _set_QDoubleSpinBox(self, o, v):
+        o.setValue(v)
+
+    def _event_QDoubleSpinBox(self, o):
+        return o.valueChanged                
         
     # JSON
     

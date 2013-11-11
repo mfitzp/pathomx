@@ -135,6 +135,7 @@ class MetaboHunterView( ui.DataView ):
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar(default_pause_analysis=True)
+        self.addFigureToolBar()
         
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
@@ -186,13 +187,13 @@ class MetaboHunterView( ui.DataView ):
 
         parser = OptionParser()
 
-        parser.add_option("--tolerance", dest="tolerance", default=0.05,
+        parser.add_option("--tolerance", dest="tolerance", default=0.1,
                           help="ppm +/- range for 'equivalent' peak")
 
-        parser.add_option("--peak_threshold", dest="peak_threshold", default=0.1,
+        parser.add_option("--peak_threshold", dest="peak_threshold", default=0.01,
                           help="cutoff below which 'peaks' are ignored")
 
-        parser.add_option("--hit_threshold", dest="hit_threshold", default=0.5,
+        parser.add_option("--hit_threshold", dest="hit_threshold", default=0.4,
                           help="minimum score for metabolite to count as hit ")
 
         (options, args) = parser.parse_args()

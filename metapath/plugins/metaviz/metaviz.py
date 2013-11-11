@@ -530,6 +530,7 @@ class MetaVizView(ui.AnalysisView):
         super(MetaVizView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
+        self.addFigureToolBar()
         
         self.data.add_input('suggested_pathways') # Add input slot
         self.data.add_input('data') # Add input slot
@@ -628,10 +629,9 @@ class MetaVizView(ui.AnalysisView):
         self.tabs.addTab(self.browser,'View')
         #self.tabs.addTab(self.overview,'Overview')
 
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.config.updated.connect( self.generate ) # Auto-regenerate if the configuration
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration changes
           
 
     def url_handler(self, url):
@@ -728,17 +728,18 @@ class MetaVizView(ui.AnalysisView):
             #else:
             print "Generate map for single control:test..."
             # Build analysis lookup dict; we want a single color for each metabolite
-            sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
+            mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
+            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
             
             node_colors = {}
             for n, m in enumerate(dsi.entities[1]):
                 if m is not None:
-                    ecol = utils.calculate_rdbu9_color( sf, dsi.data[0,n] )
+                    ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
                     #print xref, ecol
                     if ecol is not None:
                         node_colors[ m.id ] = ecol
             
-            print node_colors
             graph = generator( pathways, options, self.m.db, analysis=node_colors) #, layout=self.layout) 
             graph.write(filename, format=options.output, prog='neato')
             return None
@@ -765,6 +766,7 @@ class MetaVizView(ui.AnalysisView):
                 open( os.path.join( QDir.tempPath(), filename % tp) ).read().decode('utf8')
                 for tp in tps
                 ]
+        
                 
         # Add file:// refs to image links (Graphviz bug?)
         svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]

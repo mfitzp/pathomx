@@ -346,14 +346,17 @@ class RenderPageToFile(QWebPage):
         c = wv.page().mainFrame().toHtml()
         c = c.replace('<html><head></head><body>','')
         c = c.replace('</body></html>','')
+        print c[:1000]
         if self.resample: # Remove drawn graph; we'll regenerate
             c = re.sub( '\<g.*\/g\>', '', c,  re.MULTILINE)
         else:
             # Keep graph but apply sizing; using svg viewport scaling
             # this is a bit hacky; rewriting the svg width/height parameters using regex
-            c = re.sub( '(\<svg.*width=")(\d*)(".*\>)', '\g<1>%d\g<3>' % self.size.width(), c)
-            c = re.sub( '(\<svg.*height=")(\d*)(".*\>)', '\g<1>%d\g<3>' % self.size.height(), c)
+            c = re.sub( '(\<svg.*width=")([^"]*)(".*\>)', '\g<1>%d\g<3>' % self.size.width(), c)
+            c = re.sub( '(\<svg.*height=")([^"]*)(".*\>)', '\g<1>%d\g<3>' % self.size.height(), c)
             
+        print 'RESULT:'
+        print c[:1000]
         self.mainFrame().setHtml( c )
     
     def _loadFinished(self, ok):
@@ -586,7 +589,7 @@ class QTabWidgetExtend( QTabWidget ):
             if cw._unfocus_on_refresh:
                 for w in range(0, self.count()):
                     uf = self.widget(w)._unfocus_on_refresh
-                    if not uf:
+                    if not uf and self.widget(w).isEnabled():
                         self.setCurrentIndex( w )
                         self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
                         break
@@ -925,6 +928,8 @@ class HomeView( GenericView ):
         self.plugin = None
         self.m = parent
         
+        self._floating = False
+    
         self.id = 'home' #str( id( self ) )
         self.name = "Home"
 
@@ -950,6 +955,7 @@ class HomeView( GenericView ):
         self.tabs.addTab(self.workspace,'Workspace')
 
         self.toolbars = {}
+        self.addSelfToolBar() # Everything has one
         self.controls = defaultdict( dict ) # Store accessible controls
         
         self.register_url_handler( self.workspace_url_handler )
@@ -1003,6 +1009,8 @@ class HomeView( GenericView ):
                         si = self.m.stack.indexOf(v)
                         if si:
                             self.m.stack.setCurrentIndex(si)
+                            # Find the tree item and select it
+                            self.m.workspace.setCurrentItem( v._workspace_tree_widget )
                         break      
 
             elif action == "connect":
@@ -1041,7 +1049,7 @@ class DataView(GenericView):
         self.table = QTableView()
         self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
 
-        self.tabs.addTab(self.table, tr('Table') )
+        self.tabs.addTab(self.table, tr('Table'), unfocus_on_refresh=True )
         self.viewer_tab_index = self.tabs.addTab(self.viewer, tr('View'))
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
         #self.tabs.addTab(self.summary, 'Summary')
@@ -1254,29 +1262,54 @@ class AnalysisView(GenericView):
         
         t.cb_control = QComboBox()
         t.cb_control.addItems(['Control'])
-        t.cb_control.currentIndexChanged.connect(self.onModifyExperiment)
+        self.config.add_handler('experiment_control', t.cb_control )
 
         t.cb_test = QComboBox()
         t.cb_test.addItems(['Test'])
-        t.cb_test.currentIndexChanged.connect(self.onModifyExperiment)
+        self.config.add_handler('experiment_test', t.cb_test )
 
         t.addWidget(t.cb_control)
         t.addWidget(t.cb_test)
     
         self.toolbars['experiment'] = t
+        
+        self.data.source_updated.connect( self.repopulate_experiment_classes ) # Update the classes if data source changes        
 
     def repopulate_experiment_classes(self):
-        # Empty the toolbar controls
-        self.toolbars['experiment'].cb_control.clear()
-        self.toolbars['experiment'].cb_test.clear()
-        # Data source change; update the experimental control with the data input source
-        self.toolbars['experiment'].cb_control.addItems( [i for i in self.data.i['input'].classes_l[0]] )
-        self.toolbars['experiment'].cb_test.addItem("*")
-        self.toolbars['experiment'].cb_test.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+        _control = self.config.get('experiment_control')
+        _test = self.config.get('experiment_test')
 
+        classes = self.data.i['input'].classes_l[0]
+
+        if _control not in classes or _test not in classes:
+            # Block signals so no trigger of update
+            self.toolbars['experiment'].cb_control.blockSignals(True)
+            self.toolbars['experiment'].cb_test.blockSignals(True)
+            # Empty the toolbar controls
+            self.toolbars['experiment'].cb_control.clear()
+            self.toolbars['experiment'].cb_test.clear()
+            # Data source change; update the experimental control with the data input source
+            self.toolbars['experiment'].cb_control.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+            self.toolbars['experiment'].cb_test.addItem("*")
+            self.toolbars['experiment'].cb_test.addItems( [i for i in self.data.i['input'].classes_l[0]] )
+            # Reset to previous values (-if possible)
+            self.toolbars['experiment'].cb_control.setCurrentText(_control)
+            self.toolbars['experiment'].cb_test.setCurrentText(_test)
+            # Unblock
+            self.toolbars['experiment'].cb_control.blockSignals(False)
+            self.toolbars['experiment'].cb_test.blockSignals(False)
+            # If previously nothing set; now set it to something
+            _control = _control if _control in self.data.i['input'].classes_l[0] else self.data.i['input'].classes_l[0][0]
+            _test = _test if _test in self.data.i['input'].classes_l[0] else '*'
+
+            self.config.set_many({
+                'experiment_control': _control,
+                'experiment_test': _test,
+            })
+        
+        
     def onDataChanged(self):
         self.repopulate_experiment_classes()
-        self.generate()
         
     def onDefineExperiment(self):
         pass

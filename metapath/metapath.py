@@ -786,7 +786,7 @@ class MainWindow(QMainWindow):
         for app_id,d in jsond['apps'].items():
             # Launch the app; keep a reference for subsequent processing
             app = self.app_launchers[ d['plugin'] ]()
-            app.config.set_many( d['config'] )
+            app.set_name( d['name'] )
             appref[ app_id ] = app         
 
         print "BUILD OBJECT LINKS"
@@ -797,7 +797,12 @@ class MainWindow(QMainWindow):
                 source_app_id, manager_port = idef
                 app.data._consume_action( i, appref[ source_app_id ].data.o[ manager_port ] )
             
-        print "Load complete.", self.views
+        print "LOAD CONFIG"
+        for app_id,d in jsond['apps'].items():
+            # Launch the app; keep a reference for subsequent processing
+            appref[ app_id ].config.set_many( d['config'] )
+            
+        print "Load complete."
         # Focus the home tab & refresh the view
         self.goWorkspaceHome()
         self.workspace_updated.emit()

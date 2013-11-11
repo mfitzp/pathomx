@@ -53,24 +53,24 @@ class TransformView( ui.DataView ):
             'Local minima':self._local_minima,
             'Remove invalid data':self._remove_invalid_data,
         }
-        
-        self.hm_control.addItems( [h for h in self.transform_options.keys()] )
-        #self.hm_control.currentIndexChanged.connect(self.onChangeTransform)
 
-        self.config.add_handler('apply_transform', self.hm_control)
         self.config.set_defaults({
             'apply_transform': self.transform_options.keys()[0],
         })
+                        
+        self.hm_control.addItems( [h for h in self.transform_options.keys()] )
+        self.hm_control.currentIndexChanged.connect(self.onChangeTransform) # Updates name only
+
+        self.config.add_handler('apply_transform', self.hm_control)
+
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-    
         self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
 
     
     def onChangeTransform(self):
         self.set_name( self.hm_control.currentText() )
-        self.generate()
         #self.config.set('apply_transform', self.hm_control.currentText())
                
     # Data file import handlers (#FIXME probably shouldn't be here)

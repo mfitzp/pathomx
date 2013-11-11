@@ -51,12 +51,10 @@ class PCAView( ui.AnalysisView ):
             })
         )
 
-        self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
-
-    def onDataChanged(self):
-        self.generate()
         
     # Do the PCA analysis
     def generate(self):    

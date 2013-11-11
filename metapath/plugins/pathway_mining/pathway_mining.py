@@ -24,12 +24,13 @@ import numpy as np
 from db import Compound, Gene, Protein
 
 
-METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm')
+METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPE_TEXT = (
     'Compound change scores for pathway',
     'Compound up-regulation scores for pathway', 
     'Compound down-regulation scores for pathway',
     'Number compounds with data per pathway',
+    'Pathway overall tendency',
 )
 
 
@@ -44,18 +45,18 @@ class dialogMiningSettings(ui.genericDialog):
 
         self.cb_miningType = QComboBox()
         self.cb_miningType.addItems( METAPATH_MINING_TYPE_TEXT )
-        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( parent.config.value('/Data/MiningType') ) )
+        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( parent.config.get('/Data/MiningType') ) )
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
-        self.xb_miningRelative.setChecked( bool(parent.config.value('/Data/MiningRelative') ) )
+        self.xb_miningRelative.setChecked( bool(parent.config.get('/Data/MiningRelative') ) )
 
         self.xb_miningShared = QCheckBox('Share compound scores between pathways') 
-        self.xb_miningShared.setChecked( bool(parent.config.value('/Data/MiningShared') ) )
+        self.xb_miningShared.setChecked( bool(parent.config.get('/Data/MiningShared') ) )
                         
 
         self.sb_miningDepth = QSpinBox()
         self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( parent.config.value('/Data/MiningDepth') ) )
+        self.sb_miningDepth.setValue( int( parent.config.get('/Data/MiningDepth') ) )
         
         self.layout.addWidget(self.cb_miningType)
         self.layout.addWidget(self.xb_miningRelative)
@@ -84,6 +85,12 @@ class PathwayMiningView( ui.AnalysisView ):
             '/Data/MiningShared': True,
         })
 
+        t = self.getCreatedToolbar('Pathway mining', 'pathway_mining')
+        miningSetup = QAction( QIcon( os.path.join( self.plugin.path, 'icon-16.png' ) ), 'Set up pathway mining \u2026', self.m)
+        miningSetup.setStatusTip('Set parameters for pathway mining')
+        miningSetup.triggered.connect(self.onMiningSettings)
+        t.addAction(miningSetup)
+
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
         self.table = QTableView()        
@@ -97,8 +104,9 @@ class PathwayMiningView( ui.AnalysisView ):
             }, title='Source compound, gene or protein data')
         )
         
-        self.data.source_updated.connect( self.onDataChanged ) # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
 
     def generate(self):
         self.suggest()
@@ -109,17 +117,17 @@ class PathwayMiningView( ui.AnalysisView ):
         dialog = dialogMiningSettings(parent=self)
         ok = dialog.exec_()
         if ok:
-            self.config.setValue('/Data/MiningDepth', dialog.sb_miningDepth.value() )
-            self.config.setValue('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
-            self.config.setValue('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
-            self.config.setValue('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
+            self.config.set('/Data/MiningDepth', dialog.sb_miningDepth.value() )
+            self.config.set('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
+            self.config.set('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
+            self.config.set('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
 
             # Update the toolbar dropdown to match
             self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
 
     def onModifyMiningDepth(self):
         """ Change mine depth via toolbar spinner """    
-        self.config.setValue('/Data/MiningDepth', self.sb_miningDepth.value())
+        self.config.set('/Data/MiningDepth', self.sb_miningDepth.value())
 
             
     def onDefineExperiment(self):
@@ -139,16 +147,9 @@ class PathwayMiningView( ui.AnalysisView ):
             self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
             self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
     
-        
-    def onModifyExperiment(self):
-        """ Change control or test settings from toolbar interaction """
-        # Cheat a bit, simply change both - only one will be incorrect
-        self.config.set('experiment_control', self.toolbars['experiment'].cb_control.currentText() )
-        self.config.set('experiment_test', self.toolbars['experiment'].cb_test.currentText() )
-
 
     # Generate pathway suggestions from the database based on a given data analysis (use set options)
-    def suggest(self, mining_type='c', mining_depth=10):
+    def suggest(self):
         self.setWorkspaceStatus('active')
 
         # Iterate all the compounds in the current analysis
@@ -162,6 +163,9 @@ class PathwayMiningView( ui.AnalysisView ):
             return False
             
         db = self.m.db
+
+        mining_depth = self.config.get('/Data/MiningDepth')
+        mining_type= self.config.get('/Data/MiningType')
 
         pathway_scores = defaultdict( int )
         print "Mining using '%s'" % mining_type
@@ -187,7 +191,7 @@ class PathwayMiningView( ui.AnalysisView ):
             if pathways == []:
                 continue   
                 
-            if "s" in mining_type:
+            if self.config.get('/Data/MiningShared'):
                 # Share the change score between the associated pathways
                 # this prevents compounds having undue influence
                 score = score / len(pathways)    
@@ -197,15 +201,23 @@ class PathwayMiningView( ui.AnalysisView ):
                     'c': abs( score),
                     'u': max( 0, score),
                     'd': abs( min( 0, score ) ),
-                    'm': 1.0
+                    'm': 1.0,
+                    't': score,
                     }
-                pathway_scores[ p ] += mining_val[ mining_type[0] ]
+                pathway_scores[ p ] += mining_val[ mining_type ]
                     
+    
+        # If we're using tendency scaling; abs the scores here
+        if mining_type == 't':
+            for p,v  in pathway_scores.items():
+                pathway_scores[p] = abs( v )
+            
+    
         # If we're pruning, then remove any pathways not in keep_pathways
-        if "r" in mining_type:
+        if self.config.get('/Data/MiningRelative'):
             print "Scaling pathway scores to pathway sizes..."
             for p,v in pathway_scores.items():
-                pathway_scores[p] = float(v) / len( db.pathways[p].reactions )
+                pathway_scores[p] = float(v) / len( p.reactions )
     
         pathway_scorest = pathway_scores.items() # Switch it to a dict so we can sort
         pathway_scorest = [(p,v) for p,v in pathway_scorest if v>0] # Remove any scores of 0

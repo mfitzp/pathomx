@@ -1,6 +1,6 @@
 [Core]
 Name = Peak Picking
-Module = nmr_peak
+Module = nmr_pick
 
 [Documentation]
 Author = Martin Fitzpatrick

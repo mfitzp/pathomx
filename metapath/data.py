@@ -710,7 +710,8 @@ class DataSet( QObject ):
 
         return dso     
     
-
+    def as_copy(self):
+        return deepcopy(self)
         
     # DESTRUCTIVE resizing of the current dso
     # All entries are simply clipped to size

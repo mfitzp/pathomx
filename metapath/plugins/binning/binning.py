@@ -148,7 +148,10 @@ class BinningView( ui.DataView ):
 
         dso.scales[1] = [float(x) for x in binned_data[1][:-1]]
         dso.labels[1] = [str(x) for x in binned_data[1][:-1]]
-        
+
+        # Remove any NaNs that have crept in (due to the histogram)
+        dso.remove_invalid_data()
+
         print "Min %s Max %s" % ( min(list(dso.data.flatten())), max(list(dso.data.flatten())) )
         return dso
         
