@@ -57,7 +57,7 @@
     <message>
         <location filename="ui.py" line="212"/>
         <source>Select Data Source(s)</source>
-        <translation type="unfinished">Selecteer Databron(nen)</translation>
+        <translation>Selecteer Databron(nen)</translation>
     </message>
     <message>
         <location filename="ui.py" line="477"/>
@@ -83,7 +83,7 @@
         <location filename="ui.py" line="1266"/>
         <source>Workspace</source>
         <translatorcomment>Not sure if it shouldnt be werkruimte , but I dont think ive ever seen that in software... its always &apos;werkblad&apos;</translatorcomment>
-        <translation type="unfinished">Werkblad</translation>
+        <translation>Werkblad</translation>
     </message>
     <message>
         <location filename="ui.py" line="1079"/>
@@ -99,7 +99,7 @@
     <message>
         <location filename="metapath.py" line="159"/>
         <source>Select Pathways to Display</source>
-        <translation type="unfinished">Selecteer pathway om weer te geven</translation>
+        <translation>Selecteer pathway om weer te geven</translation>
     </message>
     <message>
         <location filename="metapath.py" line="171"/>
@@ -134,7 +134,7 @@
     <message>
         <location filename="ui.py" line="1111"/>
         <source>Save current workspace for future use</source>
-        <translation type="unfinished">Sla huidig werkblad op voor toekomstig gebruik</translation>
+        <translation>Sla huidig werkblad op voor toekomstig gebruik</translation>
     </message>
     <message>
         <location filename="ui.py" line="490"/>
@@ -231,7 +231,7 @@
     <message>
         <location filename="ui.py" line="418"/>
         <source>Select a data sourceâ¦</source>
-        <translation type="unfinished">Kies een databron</translation>
+        <translation>Kies een databron</translation>
     </message>
     <message>
         <location filename="ui.py" line="436"/>
@@ -269,7 +269,7 @@
         <location filename="ui.py" line="1133"/>
         <source>&amp;Load database unificationâ¦</source>
         <translatorcomment>Do you mean you can merge different databases?</translatorcomment>
-        <translation type="unfinished">Laad samengevoegde database </translation>
+        <translation>Laad samengevoegde database </translation>
     </message>
     <message>
         <location filename="ui.py" line="1095"/>
@@ -285,7 +285,7 @@
     <message>
         <location filename="db.py" line="80"/>
         <source>Pathway</source>
-        <translation type="unfinished">Pathway</translation>
+        <translation>Pathway</translation>
     </message>
     <message>
         <location filename="db.py" line="92"/>
@@ -295,7 +295,7 @@
     <message>
         <location filename="db.py" line="120"/>
         <source>Protein</source>
-        <translation type="unfinished">Eiwit</translation>
+        <translation>Eiwit</translation>
     </message>
     <message>
         <location filename="db.py" line="135"/>
@@ -310,7 +310,7 @@
     <message>
         <location filename="translate.py" line="31"/>
         <source>Pathways</source>
-        <translation type="unfinished">Pathways</translation>
+        <translation>Pathways</translation>
     </message>
     <message>
         <location filename="translate.py" line="27"/>
@@ -320,7 +320,7 @@
     <message>
         <location filename="translate.py" line="28"/>
         <source>Proteins</source>
-        <translation type="unfinished">Eiwitten</translation>
+        <translation>Eiwitten</translation>
     </message>
     <message>
         <location filename="translate.py" line="32"/>

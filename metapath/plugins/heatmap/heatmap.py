@@ -76,7 +76,7 @@ class HeatmapView(ui.AnalysisHeatmapView):
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
-            'entities_t':   (None,['Compound']), 
+            'entities_t':   (None,['Compound','Gene','Protein','Pathway','Reaction']), # Any entity
             })
         )
 
@@ -243,33 +243,44 @@ class HeatmapView(ui.AnalysisHeatmapView):
         # Store entry for Min,Mout
         self.redox = self.equilibrium_table_builder( proton_carriers ) 
         self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
+    
+    def get_flattened_list(self, input):
+        o = []
+        [ o.extend(i) for i in input]
+        return o
 
     def _phosphorylation(self):
         dso = self.data.get('input')
+        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.phosphate))                
         return self.build_heatmap_buckets( [ 'Phosphorylated','Dephosphorylated' ], [' → '.join(n) for n in self.phosphate], self.build_change_table_of_entitytypes( dso, self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
 
     def _phosphate_balance(self):
         dso = self.data.get('input')
+        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.nucleosides))
         return self.build_heatmap_buckets( [ 'Pi','PPI','PI3','PI4' ], [' → '.join(n) for n in self.nucleosides], self.build_change_table_of_entitytypes( dso, self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
 
     def _redox(self):
         dso = self.data.get('input')
+        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.redox))        
         return self.build_heatmap_buckets( [ 'Reduced','Oxidised' ], [' → '.join(n) for n in self.redox], self.build_change_table_of_entitytypes( dso, self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
 
     def _proton_balance(self):
         dso = self.data.get('input')
+        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.proton))        
         return self.build_heatmap_buckets( [ '-','H','H2' ], [' → '.join(n) for n in self.proton], self.build_change_table_of_entitytypes( dso, self.proton, [ '-','H','H2' ] ), sort_data=True )
     
     def _energy_waste(self):
         dso = self.data.get('input')
         labelsY = self.energy
         labelsX = dso.classes[0]
+        dso = dso.as_filtered(dim=1, labels=labelsY)
         return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
     def _endpoints(self):
         dso = self.data.get('input')
         labelsY = self.endpoints
         labelsX = dso.classes[0]
+        dso = dso.as_filtered(dim=1, labels=labelsY)
         return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
     def _top_metabolites(self, fn=abs):
@@ -282,6 +293,7 @@ class HeatmapView(ui.AnalysisHeatmapView):
 
         labelsY = metabolites[:30]
         labelsX = dso.classes[0]
+        dso = dso.as_filtered(dim=1,labels=labelsY)
 
         return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), remove_empty_rows=True, sort_data=True)
     

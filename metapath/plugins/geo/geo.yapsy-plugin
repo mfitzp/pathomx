@@ -1,0 +1,9 @@
+[Core]
+Name = Gene Expression Omnibus (GEO)
+Module = geo
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Import public data from NCBI Gene Expression Omnibus (GEO)

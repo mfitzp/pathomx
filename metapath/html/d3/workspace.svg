@@ -111,7 +111,7 @@ inheritance.forEach(function(d) {
     var width_c = idxy[0],
         height_c = idxy[1];
     
-    var margin = {top: 50, right: 50, bottom: 80, left: 50};
+    var margin = {top: 50, right: 50, bottom: 50, left: 50};
     var width = width_c - margin.left - margin.right,
         height = height_c - margin.top - margin.bottom;
 

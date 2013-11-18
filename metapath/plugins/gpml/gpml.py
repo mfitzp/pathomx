@@ -113,7 +113,7 @@ class gpmlPathwayView(ui.AnalysisView):
     def get_xref_via_unification(self, database, id):
         xref_translate = {
             'Kegg Compound': 'LIGAND-CPD',
-            'Entrez Gene': 'ENTREZ',
+            'Entrez Gene': 'NCBI-GENE',
             'HMDB': 'HMDB',
             'CAS': 'CAS',
             }

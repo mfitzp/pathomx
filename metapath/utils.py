@@ -53,7 +53,6 @@ def calculate_rdbu9_color(scale, value):
         rdbu9col = int( scale(value) )
     except:
         return None # Fill zero nothing if not known
-    print 'COLOR!', value, rdbu9col
     return ( rdbu9[ rdbu9col ], rdbu9c[ rdbu9col ], rdbu9col)
 
 

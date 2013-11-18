@@ -525,7 +525,7 @@ class MainWindow(QMainWindow):
                             'title': protein.name,
                             'object': protein,
                             })
-                    elif kind == 'gene' and id in self.db.gene:
+                    elif kind == 'gene' and id in self.db.genes:
                         gene = self.db.genes[id]
                         self.generatedbBrowserView(template='db/gene.html', data={
                             'title': gene.name,
@@ -666,12 +666,13 @@ class MainWindow(QMainWindow):
     
     def setWorkspaceStatus(self, workspace_item, status):
         status_icons = {
-            'active':   QIcon( os.path.join( utils.scriptdir,'icons','flag-green.png' ) ),
-            'waiting':  QIcon( os.path.join( utils.scriptdir,'icons','flag-yellow.png' ) ),
-            'error':    QIcon( os.path.join( utils.scriptdir,'icons','flag-red.png' ) ),
+            'active':  QIcon( os.path.join( utils.scriptdir,'icons','flag-green.png' ) ),
+            'render':  QIcon( os.path.join( utils.scriptdir,'icons','flag-purple.png' ) ),
+            'waiting': QIcon( os.path.join( utils.scriptdir,'icons','flag-yellow.png' ) ),
+            'error':   QIcon( os.path.join( utils.scriptdir,'icons','flag-red.png' ) ),
             'paused':  QIcon( os.path.join( utils.scriptdir,'icons','flag-white.png' ) ),
-            'done':     QIcon( os.path.join( utils.scriptdir,'icons','flag-checker.png' ) ),
-            'clear':    QIcon(None)
+            'done':    QIcon( os.path.join( utils.scriptdir,'icons','flag-checker.png' ) ),
+            'clear':   QIcon(None)
         }
             
         if status not in status_icons.keys():
@@ -834,7 +835,7 @@ def main():
         
     # Load MetaPath specific translations
     translator_mp = QTranslator()
-    if translator_mp.load( "metapath_%s" % locale,  ):
+    if translator_mp.load( "metapath_%s" % locale, os.path.join(utils.scriptdir,'translations') ):
         print "Loaded MetaPath translations for locale: %s" % locale
     app.installTranslator(translator_mp)    
 

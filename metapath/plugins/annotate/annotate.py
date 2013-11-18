@@ -161,6 +161,7 @@ class AnnotateView( ui.DataView ):
                     
     def generate(self):
         self.apply_annotations()
+        self.render({})
    
     def apply_annotations(self):
 

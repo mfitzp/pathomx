@@ -68,11 +68,11 @@ def get_reaction_color( analysis, r ):
     if hasattr(r, 'proteins'): # Dummy ReactionIntermediates will not; til that's fixed!
         for p in r.proteins:
             if p.id in analysis:
-                colors.append( rdbu9[ analysis[p.id][0] ] )
+                colors.append( analysis[p.id][0])
                         
             for g in p.genes:
                 if g.id in analysis:
-                    colors.append( rdbu9[ analysis[g.id][0] ] )
+                    colors.append( analysis[g.id][0] )
     
     if colors == []:
         colors = [ utils.rdbu9[5] ] # Mid-grey      
@@ -466,6 +466,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
         if analysis:
             color = get_reaction_color( analysis, r )
             colorscheme = 'rdbu9'
+            
         elif options.highlightpathways:
             #color=1+( ] % 11) # Length of colorscheme -1 
             r_clusterclu = list( set(edgecluster[ cluster_key ][r]) & set(clusterclu) )

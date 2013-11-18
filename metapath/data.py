@@ -595,25 +595,6 @@ class DataSet( QObject ):
 
         return dso        
 
-    def as_filtered(self, d=0, classes=None, labels=None, scales=None ):
-
-        dso = DataSet()
-        dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
-
-        # Build masks
-        for match,matcht in [
-            (classes,self.classes[d]),
-            (labels, self.labels[d]),
-            (scales, self.scales[d])]:
-            if match == None:
-                continue
-            mask = np.array( [True if t in match else False for t in matcht ] )
-            matcht = [t for t in matcht if t in match]
-
-            dso.data = np.ma.array(dso.data, mask=np.repeat(mask,self.data.shape[d]))    
-
-        return dso    
-        
     # Compress the dataset object in 'd' dimension; 
     # being compressed in d dimension by the fn function
     # Compression only if classes, labels and entities are equal. Scale is treated the same as data (fn function)
@@ -628,7 +609,8 @@ class DataSet( QObject ):
         # We match only on those specified as match_attribs
         #print "!!", [ dso.__dict__[ma][dim] for ma in match_attribs ]
         identities = [ tuple(o) for o in zip( *[ dso.__dict__[ma][dim] for ma in match_attribs ] )  ]#dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
-
+        identities_na = np.array( identities )
+        
         unique = tuple( set( identities ) )
         
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )
@@ -636,12 +618,17 @@ class DataSet( QObject ):
         print 'Reshape from %s to %s' % (old_shape,new_shape)
         dso.crop( new_shape )
         
+        # OPTIMISE?
+        # Get the singular values (no summarisation needed) and first copy those across
+        # then perform the summary on the remaining entries
+
         for n,u in enumerate( unique ):
             for ma in match_attribs:
                 dso.__dict__[ma][dim][n] = u
                 
             # Build mask against the original identities file
-            mask = np.array([ True if u == i else False for i in identities ])
+            mask = (identities_na == u).all(axis=1) # np.array([ True if u == i else False for i in identities ])
+
             # Mask of T F T T T F if the identity at this position matches our unique value
             # Apply this mask to the data; then use specified np.function to reduce it in our dimension
             if dim == 0:
@@ -662,8 +649,7 @@ class DataSet( QObject ):
             # Wipe out compressed attributes
             for ma in set(match_attribs) - set(available_match_attribs):
                 dso.__dict__[ma][dim] = [None]*new_shape[dim]
-    
-        
+            
         for mn, ma in enumerate(match_attribs):
             dso.__dict__[ma][dim] = dso.__dict__[ma][dim][:new_shape[dim]]
 
@@ -690,6 +676,8 @@ class DataSet( QObject ):
         for dis,ois in iter:
             if ois == None:
                 continue
+            ois_na = np.array(ois)
+                
             imask = np.array([ True if di not in ois else False for di in dis ]) 
             mask[imask] = False
             

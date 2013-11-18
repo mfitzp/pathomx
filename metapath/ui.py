@@ -986,10 +986,6 @@ class HomeView( GenericView ):
         template = self.m.templateEngine.get_template('d3/workspace.svg')
         self.workspace.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
 
-        f = open("/Users/mxf793/Desktop/workspace.svg",'w')
-        f.write( template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} ) ) 
-        f.close()
-        
         self.tabs.autoSelect()
         
         

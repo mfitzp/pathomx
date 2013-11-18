@@ -86,12 +86,17 @@ class KEGGPathwayView(ui.AnalysisView):
 
         node_colors = {}
         if dsi:
-            sf = utils.calculate_scaling_factor( dsi.data, 9) # rdbu9 scale
-            print "Sf %s" % sf
+            mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
+            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
+
+            for n, m in enumerate(dsi.entities[1]):
+                xref = self.get_xref( m )
+
             for n, m in enumerate(dsi.entities[1]):
                 if m and 'LIGAND-CPD' in m.databases:
                     kegg_id = m.databases['LIGAND-CPD']
-                    ecol = utils.calculate_rdbu9_color( sf, dsi.data[0,n] )
+                    ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
                     if kegg_id is not None and ecol is not None:
                         node_colors[ kegg_id ] = ecol
                

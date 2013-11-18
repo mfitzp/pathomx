@@ -200,7 +200,12 @@ class databaseManager():
         except:
             return None
 
-
+    # Helper functions
+    def get_via_synonym(self, id):
+        try:
+            return self.synrev[id]
+        except:
+            return None
 
     # Handler to load all identity files in /identities
     def load_identities(self): 
