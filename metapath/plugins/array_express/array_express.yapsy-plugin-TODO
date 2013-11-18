@@ -1,0 +1,9 @@
+[Core]
+Name = Array Express
+Module = array_express
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Import public data from EMBL Array Express
