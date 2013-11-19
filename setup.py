@@ -25,12 +25,16 @@ default_build_options=dict(
         'scipy',
         'nmrglue',
         'gpml2svg',
-        'pydot',
-        'poster.encode',
+        'poster',
+        #'poster.encode',
+        'nose',
         'sklearn',
+        'icoshift',
         ],
     includes=[
         'sip',
+        'poster.encode',
+        'pydot',
         ],
     excludes=[
         '_xmlplus',
@@ -39,6 +43,7 @@ default_build_options=dict(
         'networkx',
         'wx',
         'matplotlib',
+        'mpl-data',
         ],
     )
 
@@ -104,7 +109,13 @@ else:
         base = "Win32GUI"
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
-    executables=[Executable("metapath/MetaPath.py", base=base)]
+    executables=[
+        Executable(
+            "metapath/MetaPath.py",
+            base=base,
+            copyDependentFiles=True,
+            replacePaths=True,
+            )]
 
     # Apply default build options to cx/py2app build targets
     build_exe.update( default_build_options )
@@ -167,9 +178,9 @@ setup(
     options={
         "build_exe": build_exe,
         "build_mac": build_mac,
-        "py2app": build_py2app
+        #"py2app": build_py2app
     },
     app=[ 'metapath/MetaPath.py' ],
-    setup_requires=["py2app"],
+    #setup_requires=["py2app"],
 
     )

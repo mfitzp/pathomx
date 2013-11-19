@@ -144,6 +144,14 @@ ID_REF	VALUE
             metadata[ key ] = value
             
         return metadata
+        
+    def get_float(self, x):
+        try:
+            x = float(x)
+        except:
+            if x == 'null':
+                x = None
+        return x
     
     def get_soft_data(self, rows, starts, ends):
         headers = False
@@ -164,7 +172,10 @@ ID_REF	VALUE
             if row[0] == ends:
                 break
                 
-            data[ row[0] ] = dict( zip(headers, row) )
+            # Rewrite to account for null values; skip header (left column)
+            row_data = row
+            row_data[1:] = [self.get_float(x) for x in row[1:] ]
+            data[ row[0] ] = dict( zip(headers, row_data) )
                 
         return data
     

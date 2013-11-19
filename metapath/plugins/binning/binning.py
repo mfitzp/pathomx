@@ -29,10 +29,9 @@ class BinningView( ui.DataView ):
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
-        self.difference =  ui.QWebViewExtend(self)
 
+        self.difference =  ui.QWebViewExtend(self)
         self.tabs.addTab(self.difference, 'Difference')
-        
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
@@ -81,8 +80,7 @@ class BinningView( ui.DataView ):
         else:
             self.setWorkspaceStatus('error')
 
-        
-
+    
     def render(self, metadata):
         super(BinningView, self).render({})
         dsi = self.data.get('input')
@@ -105,10 +103,7 @@ class BinningView( ui.DataView ):
 
             template = self.m.templateEngine.get_template('d3/difference.svg')
             self.difference.setSVG(template.render( metadata ))
-        
-            f = open('/Users/mxf793/Desktop/test.svg','w')
-            f.write( template.render( metadata ) )
-            f.close()        
+      
 
     def onChangeBinParameters(self):
         self._bin_size = float( self.binsize_spin.value() )
