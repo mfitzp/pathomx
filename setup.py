@@ -13,7 +13,7 @@ distribute_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
-version_string = '0.9.0'
+version_string = '0.9.9'
 
 sys.path.append('metapath')
 
@@ -25,15 +25,12 @@ default_build_options=dict(
         'scipy',
         'nmrglue',
         'gpml2svg',
-        'poster',
-        #'poster.encode',
-        'nose',
+        'poster.encode',
         'sklearn',
         'icoshift',
         ],
     includes=[
         'sip',
-        'poster.encode',
         'pydot',
         ],
     excludes=[
