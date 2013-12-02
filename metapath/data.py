@@ -19,6 +19,14 @@ import operator
 
 from copy import copy, deepcopy
 
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
+
+
+from lxml import etree as et
+
 # DataManager allows a view/analysis class to handle control of consumable data sources
 class DataManager( QObject ):
 
@@ -371,9 +379,10 @@ class QTableInterface(QAbstractTableModel):
         return None
         
     def refresh(self):
+        self.layoutAboutToBeChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
         self.headerDataChanged.emit(Qt.Horizontal,0,self.columnCount(None))
         self.headerDataChanged.emit(Qt.Vertical,0,self.rowCount(None))
-        self.layoutChanged.emit()
+        self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
         
     def sort(self, col, order):
         """sort table by given column number col"""
@@ -754,5 +763,83 @@ class DataSet( QObject ):
     #def json_loads(self, json):
     #    # Reonstruct the object from the json input
     #    self.config = json.loads( json )
+
+    #o = DataSet( size=self.shape )
+    #o.manager = None # Maintain the manager link
+    #o.manager_interface = None # Interface the manager is advertising this on
+
+    #o.name = deepcopy(self.name, memo)
+    #o.description = deepcopy(self.description, memo)
+    #o.type = deepcopy(self.type, memo)
+
+    #o.labels = deepcopy(self.labels, memo)
+    #o.entities = [copy(x) for x in self.entities] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
+    #o.scales = deepcopy(self.scales, memo)
+    #o.classes = deepcopy(self.classes, memo)
+
+    #o.data = deepcopy(self.data)
+
+    #o.log = deepcopy(self.log)
+
+    #o.previously_managed_by = [n for n in self.previously_managed_by]
+
+    #return o   
     
+    def annotations_to_XML(self, et, obj, anno):
+        # Labels (all axes)
+        objset = et.SubElement(root, anno[0])
+        for os in self.labels:
+            objs = et.SubElement(objset, anno[1])
+            for o in os:
+                obj = et.SubElement(objs, anno[2])
+                obj.set('type', type(o).__name__)
+                obj.text = str(o) 
+        return objset
+        
+    def annotations_from_XML(self, et, obj):
+        pass
     
+    def to_XML(self):
+        
+        root = et.Element("DataSet")
+        root.set('xmlns', "http://getmetapath.org/schema/DataSet/2013a")
+        
+        manager = et.SubElement(root, "Manager")
+        manager.set('id', self.manager.id)
+        manager.set('interface', self.manager_interface)
+        
+        name = et.SubElement(root, "Name")
+        name.text = self.name
+
+        description = et.SubElement(root, "Description")
+        description.text = self.description
+
+        type = et.SubElement(root, "Type")
+        type.text = self.type
+    
+        self.annotations_to_XML(root, self.labels,  ['LabelSet','Labels','Label'])
+        self.annotations_to_XML(root, self.scales,  ['ScaleSet','Scale','Point'])
+        self.annotations_to_XML(root, self.classes, ['ClassSet','Classes','Class'])
+        self.annotations_to_XML(root, self.scales,  ['EntitySet','Entities','Entity'])
+
+        log = et.SubElement(root, "Log")
+        for log_ in self.log:
+            li = et.SubElement(log,"Entry")
+            li.text = log_
+            
+        history = et.SubElement(root, "History")
+        for manager in self.previously_managed_by:
+            hi = et.SubElement(log,"Manager")
+            hi.set('id', manager.id)
+        
+        data = et.SubElement(root, "Data")
+        data.set("type", self.data.dtype.type.__name__)
+        data.text = '\n'.join(' '.join(str(cell) for cell in row) for row in self.data)
+
+        tree = et.ElementTree(root)    
+    
+    def from_XML(self):
+        pass
+        
+        
+        

@@ -37,7 +37,6 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-
 # MetaPath classes
 import db, data, utils, ui # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
 import plugins # plugin helper/manager
@@ -333,11 +332,14 @@ class MainWindow(QMainWindow):
         # Loop round the plugins and print their names.
         for category in plugin_categories:
             for plugin in self.pluginManager.getPluginsOfCategory(category):
-                self.plugin_names[ plugin.plugin_object.__module__ ] = plugin.name
+                
+                self.plugin_names[ id( plugin.plugin_object ) ] = plugin.name
                 
                 plugin_image = os.path.join( os.path.dirname(plugin.path), 'icon.png' )
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
+                
+                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name )
                 
                 apps[category].append({
                     'id': plugin.plugin_object.__class__.__name__, #__module__, 
@@ -724,6 +726,7 @@ class MainWindow(QMainWindow):
             v.delete()
 
         self.workspace_updated.emit()    
+    
 
     ### OPEN/SAVE WORKFLOWS
 
@@ -731,40 +734,48 @@ class MainWindow(QMainWindow):
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current workflow', '',  "MetaPath Workflow Format (*.mpf)")
         if filename:
             self.saveWorkflow(filename)
+            
         
     def saveWorkflow(self, fn):
+        
+        root = et.Element("Workflow")
+        root.set('xmlns', "http://getmetapath.org/schema/Workflow/2013a")
+    
         # Build a JSONable object representing the entire current workspace and write it to file
-        jsond = {
-            'metadata':{},
-            'apps':{},
-        }
         for v in self.views:
+            app = et.SubElement(root, "App")
+            app.set("id", v.id)
+            
+            name = et.SubElement(app, "Name")
+            name.text = v.name
+            
+            plugin = et.SubElement(app, "Plugin")
+            plugin.set("version", 1.0)
+            plugin.text = v.plugin.__class__.__name__
 
-            viewobj = {
-                'plugin': v.plugin.__class__.__name__,
-                'plugin_module': v.__class__.__module__,
-                'app': v.__class__.__name__,
-                'name': v.name,
-                'config': v.config.config, #.json_dumps(),
-            }
+            plugin_class = et.SubElement(app, "Launcher")
+            plugin_class.text = v.__class__.__name__
 
+            config = et.SubElement(app, "Config")
+            print v.config.config
+            for ck,cv in v.config.config.items():
+                co = et.SubElement(config, "ConfigSetting")
+                co.set("id", ck)
+                co.set("type", type(cv).__name__)
+                co.text = str(cv)
+
+            datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
-            inputs = {}
-            for k,i in v.data.i.items():
-                print i
-                if i: # Something on this interface
-                    inputs[k] = ( i.manager.id, i.manager_interface )
-        
-            viewobj['data'] = { 'inputs': inputs }
-                
-            jsond['apps'][v.id] = viewobj
+            for sk,si in v.data.i.items():
+                if si: # Something on this interface
+                    cs = et.SubElement(datasources, "Input")
+                    cs.set("id", sk)
+                    cs.set("manager", si.manager.id)
+                    cs.set("interface", si.manager_interface)
 
-        s = json.dumps(jsond, indent=4)
-        print s
-        f = open(fn, 'w')
-        f.write(s)
-        f.close()
-        
+        tree = et.ElementTree(root)
+        tree.write(fn, pretty_print=True)
+
         
     def onOpenWorkflow(self):
         """ Open a data file"""
@@ -773,7 +784,7 @@ class MainWindow(QMainWindow):
             self.openWorkflow(filename)
 
         
-    def openWorkflow(self, fn):
+    def openLegacyWorkflow(self, fn):
         # Wipe existing workspace
         self.clearWorkspace()
         f = open(fn, 'r')
@@ -802,6 +813,56 @@ class MainWindow(QMainWindow):
         for app_id,d in jsond['apps'].items():
             # Launch the app; keep a reference for subsequent processing
             appref[ app_id ].config.set_many( d['config'] )
+            
+        print "Load complete."
+        # Focus the home tab & refresh the view
+        self.goWorkspaceHome()
+        self.workspace_updated.emit()
+    
+
+    def openWorkflow(self, fn):
+        print "Loading workflow..."
+        # Wipe existing workspace
+        self.clearWorkspace()
+        # Load from file 
+        tree = et.parse(fn)
+        workflow = tree.getroot()
+        
+        type_converter = {
+            'int': int,
+            'float': float,
+            'bool': bool,
+        }
+        
+        
+        appref = {}
+        print "...Loading apps."
+        for xapp in workflow.findall('App'):
+            # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
+            # Check plugins loaded etc.
+            app = self.app_launchers[ xapp.find("Plugin").text ]()
+            #app = self.app_launchers[ item.find("launcher").text ]()
+            app.set_name( xapp.find('Name').text )
+            appref[ xapp.get('id') ] = app
+
+            config = {}
+            for config in xapp.findall('Config/ConfigSetting'):
+                #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
+                v = config.text
+                if config.get('type') in type_converter:
+                    v = type_converter[ config.get('type') ](v)
+                config[ config.get('id') ] = v
+
+            app.config.set_many( config )
+
+
+        print "...Linking objects."
+        # Now build the links between objects; we need to force these as data is not present
+        for xapp in workflow.findall('App'):
+            app = appref[ xapp.get('id') ]
+            
+            for idef in xapp.findall('DataInputs/Input'):
+                app.data._consume_action(  idef.get('id'), appref[ idef.get('manager') ].data.o[ idef.get('interface') ] )
             
         print "Load complete."
         # Focus the home tab & refresh the view

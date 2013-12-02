@@ -8,14 +8,12 @@ Usage:
 """
 import sys
 from copy import copy
-import distribute_setup
-distribute_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
 version_string = '0.9.9'
 
-sys.path.append('metapath')
+sys.path.insert(0,'metapath')
 
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
@@ -26,6 +24,7 @@ default_build_options=dict(
         'nmrglue',
         'gpml2svg',
         'poster.encode',
+        'wheezy.template',
         'sklearn',
         'icoshift',
         ],

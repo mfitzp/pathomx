@@ -614,7 +614,9 @@ class GenericView( QMainWindow ):
         self._pause_analysis_flag = False
         
         self.data = data.DataManager(self.m, self)
-        self.name = self.m.plugin_names[ self.plugin.__class__.__module__ ] 
+        self.name = self.m.plugin_names[ id( self.plugin ) ]
+        
+        self.threads = [] 
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         
@@ -681,6 +683,35 @@ class GenericView( QMainWindow ):
     def generate(self):
         return
     
+    # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
+    def generated(self, **kwargs):
+        return
+        
+    def _worker_result_callback(self, kwargs_dict):
+        self.generated(**kwargs_dict)  
+
+    def _worker_error_callback(self, s):
+        print "Error in worker thread: %s" % s
+        
+    def start_worker_thread(self, worker, callback=None):
+        
+        if callback == None:
+            callback = self._worker_result_callback
+            
+        thread = QThread()
+        self.threads.append(thread)
+        worker.moveToThread(thread)
+        
+        thread.started.connect( worker.run )
+        worker.result.connect( self._worker_result_callback )
+        worker.error.connect( self._worker_error_callback )
+        worker.finished.connect( worker.deleteLater )
+        worker.finished.connect( thread.quit )
+        thread.finished.connect( thread.deleteLater )
+        #self.worker.error.connect( self._worker_error_callback )
+
+        thread.start()
+        
         
     def set_name(self, name):
         self.name = name

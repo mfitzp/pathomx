@@ -14,14 +14,47 @@ from plugins import AnalysisPlugin
 
 from collections import defaultdict
 
-import os
+import os, time
 from copy import copy
 
 import numpy as np
 from sklearn.decomposition import PCA, KernelPCA
 
-import ui, db, utils
+import ui, db, utils, threads
 from data import DataSet, DataDefinition
+
+
+
+
+class PCAWorker(threads.Worker):
+    def process(self, dso):
+        data = dso.data
+        
+        pca = PCA(n_components=2)
+        pca.fit(data.T) # Transpose it, as vars need to along the top
+        
+        weights = pca.transform(data.T) # Get weights?
+      
+        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
+        
+        # Label up the top 50 (the values are retained; just for clarity)
+        wmx = np.amax( np.absolute( weights), axis=1 )
+
+        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
+        
+        dso_z = [x for x, wmx in dso_z ]    
+        
+        return {
+            'dso': dso,
+            'pca': pca,
+            'weights': weights,
+            'figure_data': figure_data,
+            'wmx': wmx,
+            'dso_z': dso_z,        
+        }
+
+
 
 
 class PCAView( ui.AnalysisView ):
@@ -55,27 +88,16 @@ class PCAView( ui.AnalysisView ):
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
-        
-    # Do the PCA analysis
-    def generate(self):    
-        
+    def generate(self):
         dso = self.data.get('input') # Get the dataset
-        
-        data = dso.data
-        
-        pca = PCA(n_components=2)
-        pca.fit(data.T) # Transpose it, as vars need to along the top
-        
-        weights = pca.transform(data.T) # Get weights?
-        
-        print pca.explained_variance_ratio_
-        print pca.explained_variance_
-        print pca.components_.shape
+        self.worker = PCAWorker(dso=dso)
+        self.start_worker_thread(self.worker)
+    
+    # Do the PCA analysis
+    def generated(self, dso, pca, weights, figure_data, wmx, dso_z):    
         
         # Build a list object of class, x, y
         
-        
-        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
         metadata = {
             'figure':{
                 'data':figure_data,
@@ -90,13 +112,6 @@ class PCAView( ui.AnalysisView ):
         if 'NoneType' in dso.scales_t[1]:
             dso.scales[1] = range(0, len( dso.scales[1] ) )
         
-        # Label up the top 50 (the values are retained; just for clarity)
-        wmx = np.amax( np.absolute( weights), axis=1 )
-
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
-        
-        dso_z = [x for x, wmx in dso_z ]    
         
         metadata = {
             'figure':{

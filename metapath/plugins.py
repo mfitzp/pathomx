@@ -34,9 +34,21 @@ class BasePlugin(IPlugin):
         self.module = self.__module__
         self.m.plugins[ self.id ] = self
 
-        self.name = "%s %s " % (self.default_workspace_category, "Plugin")
+        #self.name = "%s %s " % (self.default_workspace_category, "Plugin")
+
+    def post_setup(self, path=None, name=None): # Post setup hook
         
-        self.path = os.path.dirname( inspect.getfile(self.__class__) )
+        if path:
+            self.path = path
+        else:
+            self.path = os.path.dirname( inspect.getfile(self.__class__) )
+        
+        if name:
+            self.name = name
+        else:
+            self.name = "%s %s " % (self.default_workspace_category, "Plugin")
+        
+        self.name = name
         
         # Plugin personal template engine
         self.templateEngine = Engine(
