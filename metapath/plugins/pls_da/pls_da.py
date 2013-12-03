@@ -20,12 +20,12 @@ from copy import copy
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 
-import ui, db, utils
+import ui, db, utils, threads
 from data import DataSet, DataDefinition
 
 
 class PLSDAView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PLSDAView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -50,13 +50,18 @@ class PLSDAView( ui.AnalysisView ):
         )
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         
     # Do the PCA analysis
-    def generate(self):    
-        
+    def generate(self):   
         dso = self.data.get('input') # Get the dataset
+        self.worker = threads.Worker(self.plsda, dso=dso)
+        self.start_worker_thread(self.worker)
+        
+    def plsda(self, dso):
+        
         _experiment_test = self.config.get('experiment_test')
         _experiment_control = self.config.get('experiment_control')
                 
@@ -65,29 +70,8 @@ class PLSDAView( ui.AnalysisView ):
         plsr = PLSRegression(n_components=2)
         Y = np.array([0 if c == _experiment_control else 1 for c in dso.classes[0] ])
         #Y = Y.reshape( (len(dso.classes[0]),1) )
-        
-        print _experiment_test
-        print _experiment_control
-        print data.shape
-        print data.T.shape
-        print Y.shape
-        print data
-        print Y
-        
+
         plsr.fit(data, Y) # Transpose it, as vars need to along the top
-        
-        #weights = pca.transform(data.T) # Get weights?
-        
-        # Build a list object of class, x, y
-        print 'Xs',plsr.x_scores_[:,0]
-        print plsr.x_scores_.shape
-        print 'Ys',plsr.y_scores_[0]
-        print plsr.y_scores_.shape
-        
-        print 'Xw',plsr.x_weights_[0]
-        print plsr.x_weights_.shape
-        print 'Yw',plsr.y_weights_[0]
-        print plsr.y_weights_.shape
         
         figure_data = zip( dso.classes[0], plsr.x_scores_[:,0], plsr.x_scores_[:,1])
         
@@ -116,13 +100,32 @@ class PLSDAView( ui.AnalysisView ):
             figure_regions.append( 
                 (c, cx, cy, rx, ry)
             )
+
+            
+        # Label up the top 50 (the values are retained; just for clarity)
+        wmx = np.amax( np.absolute( plsr.x_weights_), axis=1 )
+        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
+        dso_z = [x for x, wmx in dso_z ]    
+
+        
+        return {
+            'dso': dso,
+            'dso_z': dso_z,
+            'figure_data': figure_data,
+            'figure_regions': figure_regions,
+            'y_weights': plsr.y_weights_,
+            'x_weights': plsr.x_weights_,
+            }
+        
+    def generated(self, dso, dso_z, figure_data, figure_regions, y_weights, x_weights):
         
         metadata = {
             'figure':{
                 'data':figure_data,
                 'regions': figure_regions,
-                'x_axis_label': 'Latent Variable 1 (%0.2f%%)' % (plsr.y_weights_[0][0]*100),
-                'y_axis_label': 'Latent Variable 2 (%0.2f%%)' % (plsr.y_weights_[0][1]*100),
+                'x_axis_label': 'Latent Variable 1 (%0.2f%%)' % (y_weights[0][0]*100),
+                'y_axis_label': 'Latent Variable 2 (%0.2f%%)' % (y_weights[0][1]*100),
                 },
         }
         
@@ -130,18 +133,10 @@ class PLSDAView( ui.AnalysisView ):
 
         if 'NoneType' in dso.scales_t[1]:
             dso.scales[1] = range(0, len( dso.scales[1] ) )
-            
-        weights = plsr.x_weights_
-        
-        # Label up the top 50 (the values are retained; just for clarity)
-        wmx = np.amax( np.absolute( weights), axis=1 )
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
-        dso_z = [x for x, wmx in dso_z ]    
 
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], weights[:,0:1] ),  
+                'data': zip( dso.scales[1], x_weights[:,0:1] ),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
@@ -151,7 +146,7 @@ class PLSDAView( ui.AnalysisView ):
 
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], weights[:,1:2] ),  
+                'data': zip( dso.scales[1], x_weights[:,1:2] ),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
@@ -167,7 +162,7 @@ class PLSDAPlugin(AnalysisPlugin):
         super(PLSDAPlugin, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return PLSDAView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return PLSDAView( self, self.m, **kwargs )
         
         

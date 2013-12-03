@@ -29,7 +29,7 @@ class ArrayExpressView( ui.ImportDataView ):
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
     import_description =  "Open experimental data from text file data file"
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(ArrayExpressView, self).__init__(plugin, parent, **kwargs)
 
        
@@ -217,5 +217,5 @@ class ArrayExpress(ImportPlugin):
         super(ArrayExpress, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return ArrayExpressView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return ArrayExpressView( self, self.m, **kwargs )

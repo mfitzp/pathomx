@@ -28,7 +28,7 @@ class ImportMetabolightsView( ui.ImportDataView ):
     import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     import_description =  "Open experimental data from Metabolights experimental datasets"
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(ImportMetabolightsView, self).__init__(plugin, parent, **kwargs)
 
        
@@ -100,8 +100,8 @@ class ImportMetabolights(ImportPlugin):
         super(ImportMetabolights, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return ImportMetabolightsView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return ImportMetabolightsView( self, self.m, **kwargs )
 
     
 

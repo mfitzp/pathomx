@@ -31,7 +31,7 @@ import urllib, urllib2, cookielib
 
 
 class ZeitgeistView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(ZeitgeistView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -166,7 +166,7 @@ class Zeitgeist(VisualisationPlugin):
         super(Zeitgeist, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return ZeitgeistView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return ZeitgeistView( self, self.m, **kwargs )
         
         

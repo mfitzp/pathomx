@@ -26,39 +26,8 @@ from data import DataSet, DataDefinition
 
 
 
-class PCAWorker(threads.Worker):
-    def process(self, dso):
-        data = dso.data
-        
-        pca = PCA(n_components=2)
-        pca.fit(data.T) # Transpose it, as vars need to along the top
-        
-        weights = pca.transform(data.T) # Get weights?
-      
-        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
-        
-        # Label up the top 50 (the values are retained; just for clarity)
-        wmx = np.amax( np.absolute( weights), axis=1 )
-
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
-        
-        dso_z = [x for x, wmx in dso_z ]    
-        
-        return {
-            'dso': dso,
-            'pca': pca,
-            'weights': weights,
-            'figure_data': figure_data,
-            'wmx': wmx,
-            'dso_z': dso_z,        
-        }
-
-
-
-
 class PCAView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PCAView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -85,13 +54,42 @@ class PCAView( ui.AnalysisView ):
         )
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
     def generate(self):
         dso = self.data.get('input') # Get the dataset
-        self.worker = PCAWorker(dso=dso)
+        self.worker = threads.Worker(self.pca, dso=dso)
         self.start_worker_thread(self.worker)
+    
+    def pca(self,dso):
+        data = dso.data
+        
+        pca = PCA(n_components=2)
+        pca.fit(data.T) # Transpose it, as vars need to along the top
+        
+        weights = pca.transform(data.T) # Get weights?
+      
+        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
+        
+        # Label up the top 50 (the values are retained; just for clarity)
+        wmx = np.amax( np.absolute( weights), axis=1 )
+
+        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
+        
+        dso_z = [x for x, wmx in dso_z ]    
+        
+        return {
+            'dso': dso,
+            'pca': pca,
+            'weights': weights,
+            'figure_data': figure_data,
+            'wmx': wmx,
+            'dso_z': dso_z,        
+        }
+
     
     # Do the PCA analysis
     def generated(self, dso, pca, weights, figure_data, wmx, dso_z):    
@@ -143,7 +141,7 @@ class PCAPlugin(AnalysisPlugin):
         super(PCAPlugin, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return PCAView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return PCAView( self, self.m, **kwargs )
         
         

@@ -19,12 +19,12 @@ from collections import defaultdict
 
 import numpy as np
 
-import ui, db
+import ui, db, threads
 from data import DataSet, DataDefinition
 
 class TransformView( ui.DataView ):
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True,  **kwargs):
         super(TransformView, self).__init__(plugin, parent, **kwargs)
         
         self.addDataToolBar()
@@ -65,7 +65,8 @@ class TransformView( ui.DataView ):
 
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
 
     
@@ -75,37 +76,35 @@ class TransformView( ui.DataView ):
                
     # Data file import handlers (#FIXME probably shouldn't be here)
     def generate(self):
-        self.setWorkspaceStatus('active')
-        
-        dso = self.data.get('input')
-        dso = self.transform_options[ self.config.get('apply_transform') ]( dso )
+        dso = self.data.get('input') # Get the dataset
+        self.worker = threads.Worker(self.transform_options[ self.config.get('apply_transform') ], dso=dso)
+        self.start_worker_thread(self.worker)
 
+    def generated(self, dso):
         self.data.put('output',dso)
         self.render({})
-        
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()                
+               
 
     # Apply log2 transform to dataset
     def _log2(self, dso):
         dso.data = np.log2( dso.data )
-        return dso
+        return {'dso':dso}
         
     # Apply log10 transform to dataset
     def _log10(self, dso):
         dso.data = np.log10( dso.data )
-        return dso
+        return {'dso':dso}
         
     def _zero_baseline(self, dso):
         minima = np.min( dso.data )
         dso.data = dso.data + -minima
-        return dso
+        return {'dso':dso}
 
     def _global_minima(self,dso):
         minima = np.min( dso.data[ dso.data > 0 ] ) / 2 # Half the smallest value by default
         # Get the dso filtered by class
         dso.data[ dso.data <= 0] = minima
-        return dso
+        return {'dso':dso}
 
     # Minima on column by column basis (should have optional axis here)
     def _local_minima(self,dso):
@@ -113,18 +112,18 @@ class TransformView( ui.DataView ):
         dmin = np.ma.masked_less_equal(dso.data,0).min(0)/2
         inds = np.where( np.logical_and( dso.data==0, np.logical_not( np.ma.getmask(dmin) ) ) )
         dso.data[inds]=np.take(dmin,inds[1])
-        return dso
+        return {'dso':dso}
         
     def _mean_center(self, dso):
         center = np.mean( dso.data, axis=0) # Assume it
         dso.data = dso.data -center
-        return dso
+        return {'dso':dso}
         
     def _remove_invalid_data(self,dso):
         # Remove invalid data (Nan/inf) from the data
         # and adjust rest of the data object to fit
         dso.remove_invalid_data()
-        return dso
+        return {'dso':dso}
                 
         
     def _transpose(self, dso):
@@ -138,5 +137,5 @@ class Transform(ProcessingPlugin):
         self.register_app_launcher( self.app_launcher )
 
 
-    def app_launcher(self):
-        return TransformView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return TransformView( self, self.m, **kwargs )

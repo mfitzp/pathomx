@@ -15,12 +15,12 @@ from plugins import ProcessingPlugin
 
 import numpy as np
 
-import ui, db, utils
+import ui, db, utils, threads
 from data import DataSet, DataDefinition
 
 
 class BinningView( ui.DataView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(BinningView, self).__init__(plugin, parent, **kwargs)
         
         self.addDataToolBar()
@@ -42,7 +42,11 @@ class BinningView( ui.DataView ):
             })
         )
 
-        self._bin_size = 0.01
+        self.config.set_defaults({
+            'bin_size': 0.01,
+            'bin_offset': 0,
+        })
+                        
             
         th = self.addToolBar( self.tr('Binning') )
         self.binsize_spin = QDoubleSpinBox()
@@ -50,36 +54,44 @@ class BinningView( ui.DataView ):
         self.binsize_spin.setRange(0.005,0.5)
         self.binsize_spin.setSuffix('ppm')
         self.binsize_spin.setSingleStep(0.005)
-        self.binsize_spin.valueChanged.connect(self.onChangeBinParameters)
         tl = QLabel( self.tr('Size') )
         th.addWidget(tl)
         th.addWidget(self.binsize_spin)
-
-        self._bin_offset = 0
+        self.config.add_handler('bin_size', self.binsize_spin)
 
         self.binoffset_spin = QDoubleSpinBox()
         self.binoffset_spin.setDecimals(3)
         self.binoffset_spin.setRange(-0.5,0.5)
         self.binoffset_spin.setSuffix('ppm')
         self.binoffset_spin.setSingleStep(0.001)
-        self.binoffset_spin.valueChanged.connect(self.onChangeBinParameters)
         tl = QLabel( self.tr('Offset') )
         tl.setIndent(5)
         th.addWidget(tl)
         th.addWidget(self.binoffset_spin)
-
+        self.config.add_handler('bin_offset', self.binoffset_spin)
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
     
     def generate(self):
-        dso = self.binning( self.data.get('input') ) #, self._bin_size, self._bin_offset)
+        self.status.emit('active')
+        self.worker = threads.Worker(self.binning, dsi=self.data.get('input')) #, config=self.config)
+        self.start_worker_thread(self.worker)
+
+    def generated(self, dso):
         if dso:
             self.data.put('output',dso)
+            self.status.emit('render')
             self.render({})
+            self.status.emit('done')
         else:
-            self.setWorkspaceStatus('error')
-
+            self.status.emit('error')
+            
+        self.status.emit('clear')
+            
+        
     
     def render(self, metadata):
         super(BinningView, self).render({})
@@ -103,32 +115,24 @@ class BinningView( ui.DataView ):
 
             template = self.m.templateEngine.get_template('d3/difference.svg')
             self.difference.setSVG(template.render( metadata ))
-      
 
-    def onChangeBinParameters(self):
-        self._bin_size = float( self.binsize_spin.value() )
-        self._bin_offset = float( self.binoffset_spin.value() )
-        self.generate()
-
-
-
-###### TRANSLATION to METACYC IDENTIFIERS
-
-    def binning(self, dsi):               
+    
+    def binning(self, dsi):
+        ###### BINNING USING CONFI
         # Generate bin values for range start_scale to end_scale
         # Calculate the number of bins at binsize across range
-        dso = self.data.o['output']
+        dso = DataSet()
         dso.import_data( dsi )
-        print dsi.entities_n        
+
         r = dsi.scales_r[1]
-        print "Binsize/offset:",self._bin_size,self._bin_offset
+        self._bin_size, self._bin_offset = self.config.get('bin_size'), self.config.get('bin_offset')
 
         bins = np.arange(r[0]+self._bin_offset,r[1]+self._bin_offset,self._bin_size)
         number_of_bins = len(bins)-1
                 
         # Can't increase the size of data, if bins > current size return the original
-        if number_of_bins > len( dso.scales[1] ):
-            return dso
+        if number_of_bins >= len( dso.scales[1] ):
+            return {'dso':dso}
 
         # Resize (lossy) to the new shape
         old_shape, new_shape = list(dsi.data.shape), list(dso.data.shape)
@@ -147,10 +151,9 @@ class BinningView( ui.DataView ):
         # Remove any NaNs that have crept in (due to the histogram)
         dso.remove_invalid_data()
 
-        print "Min %s Max %s" % ( min(list(dso.data.flatten())), max(list(dso.data.flatten())) )
-        return dso
-        
-
+        return {'dso':dso}
+    
+ 
  
 class Binning(ProcessingPlugin):
 
@@ -158,5 +161,5 @@ class Binning(ProcessingPlugin):
         super(Binning, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return BinningView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return BinningView( self, self.m, **kwargs )

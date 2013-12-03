@@ -21,7 +21,7 @@ from data import DataSet, DataDefinition
 
 
 class IcoshiftView( ui.DataView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(IcoshiftView, self).__init__(plugin, parent, **kwargs)
         
         self.addDataToolBar()
@@ -108,5 +108,5 @@ class Icoshift(ProcessingPlugin):
         super(Icoshift, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return IcoshiftView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return IcoshiftView( self, self.m, **kwargs )

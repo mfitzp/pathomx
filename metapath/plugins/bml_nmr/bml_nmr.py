@@ -23,7 +23,7 @@ from data import DataSet
 
 
 class BMLNMRView( ui.DataView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(BMLNMRView, self).__init__(plugin, parent, **kwargs)
     
         self.data.add_output('Raw') # Add output slot
@@ -145,5 +145,5 @@ class BMLNMR(ImportPlugin):
         super(BMLNMR, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return BMLNMRView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return BMLNMRView( self, self.m, **kwargs )

@@ -40,7 +40,7 @@ import urllib, urllib2
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
 class KEGGPathwayView(ui.AnalysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
+    def __init__(self, plugin, parent, gpml=None, svg=None, auto_consume_data=True, **kwargs):
         super(KEGGPathwayView, self).__init__( plugin, parent, **kwargs)
 
         self.svg = svg # Rendered GPML file as SVG
@@ -178,5 +178,5 @@ class KEGG(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return KEGGPathwayView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return KEGGPathwayView( self, self.m, **kwargs )

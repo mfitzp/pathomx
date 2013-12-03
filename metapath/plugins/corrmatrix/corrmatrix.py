@@ -27,7 +27,7 @@ from data import DataSet, DataDefinition
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
 class CorrMatrixView(ui.AnalysisD3View):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(CorrMatrixView, self).__init__(plugin, parent, **kwargs)
          
         self.addDataToolBar()
@@ -95,5 +95,5 @@ class CorrMatrix(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return CorrMatrixView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return CorrMatrixView( self, self.m, **kwargs )

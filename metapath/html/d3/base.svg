@@ -27,6 +27,7 @@ svg {
     position:relative;
     cursor:default;
 }
+
 ]]></style>
 
 @def styles():

@@ -24,7 +24,7 @@ from data import DataSet, DataDefinition
 
 class FoldChangeView( ui.AnalysisView ):
     
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(FoldChangeView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -428,7 +428,7 @@ class FoldChange(AnalysisPlugin):
         super(FoldChange, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return FoldChangeView( self, self.m ) 
+    def app_launcher(self, **kwargs):
+        return FoldChangeView( self, self.m, **kwargs ) 
         
         

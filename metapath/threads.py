@@ -10,26 +10,29 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
+import traceback
+
 class Worker(QObject):
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, callback, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
+        self.callback = callback
         self.args = args
         self.kwargs = kwargs
 
     @pyqtSlot()
     def run(self):
         # Retrieve args/kwargs here; and fire processing using them
-        result = self.process(*self.args, **self.kwargs)
         try:
-            result = self.process(*self.args, **self.kwargs)
+            result = self.callback(*self.args, **self.kwargs)
         except:
-            self.error.emit() #finished.emit()
-            return False
-
-        self.result.emit(result) # Return the result of the processing
-        self.finished.emit() # Done
+            traceback.print_exc()
+            self.error.emit()
+        else:
+            self.result.emit(result) # Return the result of the processing
+        finally:                
+            self.finished.emit() # Done
                     
     # Stub to be over-wridden on subclass
     def process(self, *args, **kwargs):
@@ -38,3 +41,6 @@ class Worker(QObject):
     finished = pyqtSignal()
     error = pyqtSignal()
     result = pyqtSignal(dict)
+    status = pyqtSignal(str)
+    
+    

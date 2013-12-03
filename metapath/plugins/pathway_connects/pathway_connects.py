@@ -19,7 +19,7 @@ from data import DataSet, DataDefinition
 
 
 class PathwayConnectsView(ui.AnalysisView):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PathwayConnectsView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
@@ -33,7 +33,8 @@ class PathwayConnectsView(ui.AnalysisView):
         )
         
         self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
 
     def url_handler(self, url):
@@ -137,8 +138,8 @@ class PathwayConnects(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
 
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return PathwayConnectsView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return PathwayConnectsView( self, self.m, **kwargs )
 
                      
         

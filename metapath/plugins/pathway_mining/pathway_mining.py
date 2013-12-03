@@ -37,7 +37,7 @@ METAPATH_MINING_TYPE_TEXT = (
     
 class dialogMiningSettings(ui.genericDialog):
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, parent=None, auto_consume_data=True, **kwargs):
         super(dialogMiningSettings, self).__init__(parent, **kwargs)        
         
         self.setWindowTitle("Setup for Data-based Pathway Mining")
@@ -69,7 +69,7 @@ class dialogMiningSettings(ui.genericDialog):
 
 
 class PathwayMiningView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PathwayMiningView, self).__init__(plugin, parent, **kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -105,7 +105,8 @@ class PathwayMiningView( ui.AnalysisView ):
         )
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
 
     def generate(self):
@@ -260,5 +261,5 @@ class PathwayMining(AnalysisPlugin):
         super(PathwayMining, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return PathwayMiningView( self, self.m ) 
+    def app_launcher(self, **kwargs):
+        return PathwayMiningView( self, self.m, **kwargs ) 

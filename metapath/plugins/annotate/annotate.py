@@ -32,7 +32,7 @@ from data import DataSet, DataDefinition
 # in each list show the data sources that can potentially file that slot. 
 # Select the currently used 
 class DialogAnnotationTargets(ui.genericDialog):
-    def __init__(self, parent=None, view=None, **kwargs):
+    def __init__(self, parent=None, view=None, auto_consume_data=True, **kwargs):
         super(DialogAnnotationTargets, self).__init__(parent, **kwargs)        
         
         self.v = view
@@ -109,8 +109,6 @@ class AnnotateView( ui.DataView ):
         annotations_dataAction.triggered.connect(self.onEditAnnotationsSettings)
         t.addAction(annotations_dataAction)
 
-
-    
         # We need an input filter for this type; accepting *anything*
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -121,8 +119,6 @@ class AnnotateView( ui.DataView ):
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-
 
     def onLoadAnnotations(self):
         """ Open a annotations file"""
@@ -211,5 +207,5 @@ class Annotate(ProcessingPlugin):
         super(Annotate, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return AnnotateView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return AnnotateView( self, self.m, **kwargs )

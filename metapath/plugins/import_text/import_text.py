@@ -20,7 +20,7 @@ from collections import defaultdict
 
 import numpy as np
 
-import ui, db
+import ui, db, threads
 from data import DataSet
 
 
@@ -29,13 +29,24 @@ class ImportTextView( ui.ImportDataView ):
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
     import_description =  "Open experimental data from text file data file"
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(ImportTextView, self).__init__(plugin, parent, **kwargs)
 
        
     # Data file import handlers (#FIXME probably shouldn't be here)
-        
     def load_datafile(self, filename):
+        self.worker = threads.Worker(self._load_datafile, filename)
+        self.start_worker_thread(self.worker)
+            
+    def generated(self,dso):
+        self.status.emit('done')
+        self.data.put('output',dso) 
+        self.render({})
+
+        self.status.emit('clear')
+    
+        
+    def _load_datafile(self, filename):
     
         # Determine if we've got a csv or peakml file (extension)
         fn, fe = os.path.splitext(filename)
@@ -54,14 +65,11 @@ class ImportTextView( ui.ImportDataView ):
             self.set_name( dso.name )
             dso.description = 'Imported %s file' % fe  
 
-            self.setWorkspaceStatus('done')
-            self.data.put('output',dso) 
-            self.render({})
-
-            self.clearWorkspaceStatus()
+            return {'dso':dso}
             
         else:
             print "Unsupported file format."
+            return {'dso':False}
         
 ###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
 
@@ -217,5 +225,5 @@ class ImportText(ImportPlugin):
         super(ImportText, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return ImportTextView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return ImportTextView( self, self.m, **kwargs )

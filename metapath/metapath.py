@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import os, sys, re, math, codecs, locale, json, importlib
+import os, sys, re, math, codecs, locale, json, importlib, functools
 
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
@@ -363,6 +363,10 @@ class MainWindow(QMainWindow):
 
         self.stack = QStackedWidget()
         self.views = []
+        
+        # Rudimentary thread-holder; wipe occasionally
+        # self.threads = []
+        
         #self.stack.addWidget(self.mainBrowser)
         
         self.setCentralWidget(self.stack)
@@ -439,8 +443,13 @@ class MainWindow(QMainWindow):
         self.onResetConfig()
 
         self.setWindowTitle( tr('MetaPath') )
-        self.statusBar().showMessage( tr('Ready') )
+        
+        self.progressBar = QProgressBar(self.statusBar())      
+        self.progressBar.setMaximumSize( QSize(170,19) )
+        self.statusBar().addPermanentWidget( self.progressBar )
 
+        self.statusBar().showMessage( tr('Ready') )
+        
 
         self.showMaximized()
 
@@ -682,8 +691,14 @@ class MainWindow(QMainWindow):
 
         workspace_item.setIcon(3, status_icons[status] )
         self.workspace.update( self.workspace.indexFromItem( workspace_item ) )
-        self.app.processEvents()
+    
+        # Bit hacky to keep things ticking (e.g. on load where we create many items)
+        QCoreApplication.processEvents()
         
+        if status == 'done': # Flash done then clear in a bit
+            statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')            
+            workspace_item.status_timeout =  QTimer.singleShot(1000, statusclearCallback)
+            
         
     def clearWorkspaceStatus(self, workspace_item):
         self.setWorkspaceStatus(workspace_item, 'clear')        
@@ -724,6 +739,9 @@ class MainWindow(QMainWindow):
     def clearWorkspace(self):
         for v in self.views[:]: # Copy as v.delete modifies the self.views list
             v.delete()
+            
+        # Remove all workspace datasets
+        self.datasets = []
 
         self.workspace_updated.emit()    
     
@@ -739,7 +757,7 @@ class MainWindow(QMainWindow):
     def saveWorkflow(self, fn):
         
         root = et.Element("Workflow")
-        root.set('xmlns', "http://getmetapath.org/schema/Workflow/2013a")
+        root.set('xmlns:mpwfml', "http://getmetapath.org/schema/Workflow/2013a")
     
         # Build a JSONable object representing the entire current workspace and write it to file
         for v in self.views:
@@ -750,7 +768,7 @@ class MainWindow(QMainWindow):
             name.text = v.name
             
             plugin = et.SubElement(app, "Plugin")
-            plugin.set("version", 1.0)
+            plugin.set("version", '1.0')
             plugin.text = v.plugin.__class__.__name__
 
             plugin_class = et.SubElement(app, "Launcher")
@@ -774,7 +792,7 @@ class MainWindow(QMainWindow):
                     cs.set("interface", si.manager_interface)
 
         tree = et.ElementTree(root)
-        tree.write(fn, pretty_print=True)
+        tree.write(fn)#, pretty_print=True)
 
         
     def onOpenWorkflow(self):
@@ -834,26 +852,26 @@ class MainWindow(QMainWindow):
             'bool': bool,
         }
         
-        
         appref = {}
         print "...Loading apps."
         for xapp in workflow.findall('App'):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
-            app = self.app_launchers[ xapp.find("Plugin").text ]()
+            print '- %s' % xapp.find('Name').text
+            app = self.app_launchers[ xapp.find("Plugin").text ](auto_consume_data=False)
             #app = self.app_launchers[ item.find("launcher").text ]()
             app.set_name( xapp.find('Name').text )
             appref[ xapp.get('id') ] = app
 
             config = {}
-            for config in xapp.findall('Config/ConfigSetting'):
+            for xconfig in xapp.findall('Config/ConfigSetting'):
                 #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
-                v = config.text
-                if config.get('type') in type_converter:
-                    v = type_converter[ config.get('type') ](v)
-                config[ config.get('id') ] = v
+                v = xconfig.text
+                if xconfig.get('type') in type_converter:
+                    v = type_converter[ xconfig.get('type') ](v)
+                config[ xconfig.get('id') ] = v
 
-            app.config.set_many( config )
+            app.config.set_many( config, trigger_update=False )
 
 
         print "...Linking objects."

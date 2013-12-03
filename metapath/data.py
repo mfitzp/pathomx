@@ -436,18 +436,18 @@ class DataSet( QObject ):
         o.manager = None # Maintain the manager link
         o.manager_interface = None # Interface the manager is advertising this on
         
-        o.name = deepcopy(self.name, memo)
-        o.description = deepcopy(self.description, memo)
-        o.type = deepcopy(self.type, memo)
+        o.name = copy(self.name) 
+        o.description = copy(self.description)
+        o.type = copy(self.type) 
 
-        o.labels = deepcopy(self.labels, memo)
-        o.entities = [copy(x) for x in self.entities] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
-        o.scales = deepcopy(self.scales, memo)
-        o.classes = deepcopy(self.classes, memo)
+        o.labels = self.labels[:]
+        o.entities = self.entities[:]
+        o.scales = self.scales[:]
+        o.classes = self.classes[:]
 
         o.data = deepcopy(self.data)
 
-        o.log = deepcopy(self.log)
+        o.log = self.log[:]
         
         o.previously_managed_by = [n for n in self.previously_managed_by]
         

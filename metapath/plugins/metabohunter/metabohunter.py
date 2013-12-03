@@ -19,17 +19,15 @@ from plugins import IdentificationPlugin
 
 import os, sys, re, math
 
-import ui, utils
+import ui, utils, threads
 from data import DataSet, DataDefinition
 
-
+from collections import OrderedDict
 
 
 import csv
 
 
-from collections import OrderedDict
-from optparse import OptionParser
 from poster.encode import multipart_encode
 
 from poster.streaminghttp import register_openers
@@ -68,8 +66,22 @@ class DialogMetabohunter(ui.genericDialog):
             cb.setCurrentText(current)
 
             self.layout.addLayout(row)
+        
+        row = QGridLayout()
+        self.lw_spin = {}
+        for n, o in enumerate(['Noise Threshold','Hit Threshold','Tolerance']):
+            cl = QLabel(o)
+            cb = QDoubleSpinBox()
+            cb.setDecimals(2)
+            cb.setRange(0,0.5)
+            cb.setSingleStep(0.01)
+            cb.setValue( float(self.v.config.get(o) ) )
             
-        #self.layout.addWidget(ctw)
+            row.addWidget(cl, 0, n)
+            row.addWidget(cb, 1, n)
+            self.lw_spin[ o ] = cb
+            
+        self.layout.addLayout(row)
             
         self.setMinimumSize( QSize(600,100) )
         self.layout.setSizeConstraint(QLayout.SetMinimumSize)
@@ -77,8 +89,8 @@ class DialogMetabohunter(ui.genericDialog):
         # Build dialog layout
         self.dialogFinalise()
         
-        
-        
+    
+
 
 class MetaboHunterView( ui.DataView ):
 
@@ -129,7 +141,7 @@ class MetaboHunterView( ui.DataView ):
     },
     }
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(MetaboHunterView, self).__init__(plugin, parent, **kwargs)
 
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -154,6 +166,9 @@ class MetaboHunterView( ui.DataView ):
             'Solvent': 'Water',
             'Frequency': 'All',
             'Method': 'MH2: Highest number of matched peaks with shift tolerance',
+            'Noise Threshold':0.0,
+            'Hit Threshold':0.4,
+            'Tolerance':0.1,
         })
         
         # Setup data consumer options
@@ -165,7 +180,8 @@ class MetaboHunterView( ui.DataView ):
         )
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
     def onMetaboHunterSettings(self):
         dialog = DialogMetabohunter(parent=self, view=self)
@@ -175,34 +191,29 @@ class MetaboHunterView( ui.DataView ):
             for n, o in self.options.items():
                 self.config.set(n, dialog.lw_combos[n].currentText() )
 
+            for n in ['Noise Threshold','Hit Threshold','Tolerance']:
+                self.config.set(n, dialog.lw_spin[n].value() )
+
             self.autogenerate()            
-      
-        
-    def generate(self):
-
-        self.setWorkspaceStatus('active')
     
-        dso = self.data.get('input')
-        #dso = DataSet()
+    def generate(self):
+        self.worker = threads.Worker(self.metabohunter, dso=self.data.get('input')) #, config=self.config, options=self.options)
+        self.start_worker_thread(self.worker)
 
-        parser = OptionParser()
-
-        parser.add_option("--tolerance", dest="tolerance", default=0.1,
-                          help="ppm +/- range for 'equivalent' peak")
-
-        parser.add_option("--peak_threshold", dest="peak_threshold", default=0.01,
-                          help="cutoff below which 'peaks' are ignored")
-
-        parser.add_option("--hit_threshold", dest="hit_threshold", default=0.4,
-                          help="minimum score for metabolite to count as hit ")
-
-        (options, args) = parser.parse_args()
+    def generated(self, dso):
+        if dso:
+            self.data.put('output',dso)
+            self.render({})
+            self.status.emit('clear')
+        else:
+            self.status.emit('error')
+            
+    def metabohunter(self, dso):
 
         ### GLOBAL VARIABLES ###
         samples = OrderedDict()
         ppm_master = list() # ppm masterlist
         ppm_cleaned = list() # ppm masterlist, no dups
-
 
         splits = dict() # Peak sets [full, class-split, loading-split, class & loading split]
         annotate = dict()
@@ -222,6 +233,16 @@ class MetaboHunterView( ui.DataView ):
         peaks_list = '\n'.join( [ ' '.join( [str(a), str(b)] ) for a,b in zip( dso.scales[1], dso.data[0,:] ) ]  )
         
         url = 'http://www.nrcbioinformatics.ca/metabohunter/post_handler.php'
+        
+        #parser.add_option("--tolerance", dest="tolerance", default=0.1,
+        #                  help="ppm +/- range for 'equivalent' peak")
+
+        #parser.add_option("--peak_threshold", dest="peak_threshold", default=0.01,
+        #                  help="cutoff below which 'peaks' are ignored")
+
+        #parser.add_option("--hit_threshold", dest="hit_threshold", default=0.4,
+        #                  help="minimum score for metabolite to count as hit ")
+        
 
         values = {#'file'          : open('metabid_peaklist.txt', 'rt'),
                   'posturl'       : 'upload_file.php',
@@ -233,13 +254,13 @@ class MetaboHunterView( ui.DataView ):
                   'solvent'       : self.options['Solvent'][ self.config.get('Solvent') ],
                   'freq'          : self.options['Frequency'][ self.config.get('Frequency') ],
                   'method'        : self.options['Method'][ self.config.get('Method') ],
-                  'noise'         : '0',
-                  'thres'         : options.hit_threshold,
-                  'neighbourhood' : options.tolerance, #tolerance, # Use same tolerance as for shift
+                  'noise'         : self.config.get('Noise Threshold'),
+                  'thres'         : self.config.get('Hit Threshold'),
+                  'neighbourhood' : self.config.get('Tolerance'), #tolerance, # Use same tolerance as for shift
                   'submit'        : 'Find matches',
                  }
-
-        self.setWorkspaceStatus('waiting')
+                 
+        self.status.emit('waiting')
 
         data = urllib.urlencode(values)
         request = urllib2.Request(url, data)
@@ -253,7 +274,7 @@ class MetaboHunterView( ui.DataView ):
 
         html = response.read()
 
-        self.setWorkspaceStatus('active')
+        self.status.emit('active')
 
         m = re.search('name="hits" value="(.*?)\n(.*?)\n"', html, re.MULTILINE | re.DOTALL)
         remote_data['metabolite_table'] = m.group(2)
@@ -291,7 +312,7 @@ class MetaboHunterView( ui.DataView ):
                   'noise'         : '0',
          }
 
-        self.setWorkspaceStatus('waiting')
+        self.status.emit('waiting')
 
         data = urllib.urlencode(values)
 
@@ -305,7 +326,7 @@ class MetaboHunterView( ui.DataView ):
             return
 
         matched_peaks_text = response.read()
-        self.setWorkspaceStatus('active')
+        #self.setWorkspaceStatus('active')
         
         print("Extracting data...")
 
@@ -347,13 +368,10 @@ class MetaboHunterView( ui.DataView ):
         #
         #
 
-        self.setWorkspaceStatus('done')
-        self.data.put('output', dso)
-        self.render({})
-        self.clearWorkspaceStatus()
-
-        print("Done.")
-
+        self.status.emit('done')
+        return {'dso':dso}
+            
+            
 
 
 class MetaboHunter(IdentificationPlugin):
@@ -368,6 +386,6 @@ class MetaboHunter(IdentificationPlugin):
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return MetaboHunterView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return MetaboHunterView( self, self.m, **kwargs)
 

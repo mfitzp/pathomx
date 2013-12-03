@@ -35,7 +35,7 @@ except ImportError:
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
 class gpmlPathwayView(ui.AnalysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, **kwargs):
+    def __init__(self, plugin, parent, gpml=None, svg=None, auto_consume_data=True, **kwargs):
         super(gpmlPathwayView, self).__init__( plugin, parent, **kwargs)
 
         self.gpml = gpml # Source GPML file
@@ -76,7 +76,8 @@ class gpmlPathwayView(ui.AnalysisView):
         self.plugin.register_url_handler( self.url_handler )
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] )
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] )
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
 
@@ -261,5 +262,5 @@ class GPML(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
     
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return gpmlPathwayView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return gpmlPathwayView( self, self.m, **kwargs )

@@ -80,16 +80,16 @@ class ConfigManager( QObject ):
             
     def replace(self, keyvalues):
         self.config = []
-        self.set_multiple( keyvalues )
+        self.set_many( keyvalues )
 
-    def set_many(self, keyvalues):
+    def set_many(self, keyvalues, trigger_update=True):
         has_updated = False
         for k,v in keyvalues.items():
             u = self.set(k, v, trigger_update=False)
             print 'Workflow config; setting %s to %s' % (k,v)
             has_updated = has_updated or u
         
-        if has_updated:
+        if has_updated and trigger_update:
             self.updated.emit()             
 
 

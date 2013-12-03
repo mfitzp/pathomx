@@ -24,7 +24,7 @@ from data import DataSet
 
 
 class ImportDataView( ui.DataView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(ImportDataView, self).__init__(plugin, parent, **kwargs)
     
         self.data.add_output('output') # Add output slot
@@ -288,5 +288,5 @@ class ImportText(ImportPlugin):
         super(ImportText, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return ImportDataView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return ImportDataView( self, self.m, **kwargs )

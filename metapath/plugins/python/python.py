@@ -81,7 +81,7 @@ class PythonHighlighter( QSyntaxHighlighter ):
 
 class PythonView( ui.GenericView ):
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PythonView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
@@ -125,5 +125,5 @@ class Python(ProcessingPlugin):
         super(Python, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return PythonView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return PythonView( self, self.m, **kwargs )

@@ -25,7 +25,7 @@ import copy
 import operator
 
 # MetaPath classes and handlers
-import ui, utils, db
+import ui, utils, db, threads
 from data import DataSet, DataDefinition
 from db import ReactionIntermediate
 
@@ -524,10 +524,10 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
 
 
-        
+
 
 class MetaVizView(ui.AnalysisView):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(MetaVizView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
@@ -631,7 +631,8 @@ class MetaVizView(ui.AnalysisView):
         #self.tabs.addTab(self.overview,'Overview')
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration changes
           
 
@@ -663,12 +664,48 @@ class MetaVizView(ui.AnalysisView):
                 self.generateGraphView()
 
 
+    def generate(self):
+        dso = self.data.get('input') # Get the dataset
+        self.worker = threads.Worker(self.generator, dso=dso)
+        self.start_worker_thread(self.worker)
+
+    def generated(self, svg):
+        self.browser.setSVG(svg) #,"~") 
+
     def get_filename_with_counter(self, filename):
         fn, ext = os.path.splitext(filename)
         return fn + "-%s" + ext
 
+    def generator(self, dso):
+        
+        self.status.emit('active')
 
-    def generateGraph(self, filename, format = 'svg', regenerate_analysis = False, regenerate_suggested = False):
+        # By default use the generated metapath file to view
+        filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
+        
+        tps = self.generateGraph(filename=filename, format='svg')
+        if tps == None:
+            svg_source = [ open(filename).read().decode('utf8') ]
+            tps = [0]
+        else:
+            filename = self.get_filename_with_counter(filename) 
+            svg_source = [ 
+                open( os.path.join( QDir.tempPath(), filename % tp) ).read().decode('utf8')
+                for tp in tps
+                ]
+                
+        # Add file:// refs to image links (Graphviz bug?)
+        svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
+
+        #self.browser.setSVG(svg_source[0]) #,"~") 
+
+        self.status.emit('done')
+        
+        return {
+            'svg': svg_source[0],
+        }
+
+    def generateGraph(self, filename, format = 'svg'): 
         # Build options-like structure for generation of graph
         # (compatibility with command line version, we need to fake it)
         options = Values()
@@ -748,34 +785,6 @@ class MetaVizView(ui.AnalysisView):
             graph = generator( pathways, options, self.m.db) #, layout=self.layout) 
             graph.write(filename, format=options.output, prog='neato')
             return None
-        
-    def generate(self, regenerate_analysis = False, regenerate_suggested = False):
-        self.setWorkspaceStatus('active')
-
-        # By default use the generated metapath file to view
-        filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
-        
-        tps = self.generateGraph(filename=filename, format='svg', regenerate_analysis=regenerate_analysis, regenerate_suggested=regenerate_suggested)
-
-        
-        if tps == None:
-            svg_source = [ open(filename).read().decode('utf8') ]
-            tps = [0]
-        else:
-            filename = self.get_filename_with_counter(filename) 
-            svg_source = [ 
-                open( os.path.join( QDir.tempPath(), filename % tp) ).read().decode('utf8')
-                for tp in tps
-                ]
-        
-                
-        # Add file:// refs to image links (Graphviz bug?)
-        svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
-
-        self.browser.setSVG(svg_source[0]) #,"~") 
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
 
 
 class MetaViz(VisualisationPlugin):
@@ -786,7 +795,7 @@ class MetaViz(VisualisationPlugin):
         self.register_app_launcher( self.app_launcher )
 
     # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self):
-        return MetaVizView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return MetaVizView( self, self.m, **kwargs )
 
                      

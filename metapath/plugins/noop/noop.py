@@ -20,7 +20,7 @@ from data import DataSet, DataDefinition
 
 class NOOPView( ui.GenericView ):
 
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(NOOPView, self).__init__(plugin, parent, **kwargs)
 
         self.addDataToolBar()
@@ -36,7 +36,8 @@ class NOOPView( ui.GenericView ):
         )
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
         
     def generate(self):
@@ -55,5 +56,5 @@ class NOOP(ProcessingPlugin):
         super(NOOP, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return NOOPView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return NOOPView( self, self.m, **kwargs )

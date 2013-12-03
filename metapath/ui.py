@@ -600,6 +600,7 @@ class QTabWidgetExtend( QTabWidget ):
 class GenericView( QMainWindow ):
 
     help_tab_html_filename = None
+    status = pyqtSignal(str)
 
     def __init__(self, plugin, parent, **kwargs):
         super(GenericView, self).__init__(parent, **kwargs)
@@ -615,8 +616,8 @@ class GenericView( QMainWindow ):
         
         self.data = data.DataManager(self.m, self)
         self.name = self.m.plugin_names[ id( self.plugin ) ]
-        
-        self.threads = [] 
+
+        self.thread = None
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         
@@ -650,6 +651,8 @@ class GenericView( QMainWindow ):
 
         self.setCentralWidget(self.tabs)
         
+        self.status.connect( self.setWorkspaceStatus )
+        
         self.config = config.ConfigManager() # Configuration manager object; handle all get/setting, defaults etc.
         
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
@@ -665,6 +668,9 @@ class GenericView( QMainWindow ):
         # Tear down the config and data objects
         self.data.reset()
         self.config.reset()
+        # Delete all threads (remove references)
+        # FIXME: Wait for nice cleanup
+        self.thread = None
         # Close the window obj
         self.m.views.remove( self )
         # Trigger notification for state change
@@ -688,28 +694,48 @@ class GenericView( QMainWindow ):
         return
         
     def _worker_result_callback(self, kwargs_dict):
+        self.status.emit('render')
         self.generated(**kwargs_dict)  
+        self.status.emit('done')
 
-    def _worker_error_callback(self, s):
-        print "Error in worker thread: %s" % s
+    def _worker_error_callback(self):
+        self.status.emit('error')
+
+    def _worker_status_callback(self, s):
+        self.setWorkspaceStatus(s)
+        
+    def _thread_finished_callback(self):
+        self.thread = None
         
     def start_worker_thread(self, worker, callback=None):
-        
         if callback == None:
             callback = self._worker_result_callback
+
+        if self.thread != None: # Handle nicer; wait or similar
+            return False
             
         thread = QThread()
-        self.threads.append(thread)
-        worker.moveToThread(thread)
-        
-        thread.started.connect( worker.run )
+        self.thread = thread #(thread, worker)
+        #print "%s thread stack @%d" % (self.name, len(self.threads) )
+         
         worker.result.connect( self._worker_result_callback )
+
         worker.error.connect( self._worker_error_callback )
+        worker.error.connect( worker.deleteLater )
+        worker.error.connect( thread.quit )
+
         worker.finished.connect( worker.deleteLater )
         worker.finished.connect( thread.quit )
-        thread.finished.connect( thread.deleteLater )
-        #self.worker.error.connect( self._worker_error_callback )
 
+        thread.finished.connect( thread.deleteLater )
+        thread.finished.connect( self._thread_finished_callback )
+        
+        #worker.status.connect( self.setWorkspaceStatus )
+
+        thread.worker = worker
+        thread.started.connect( worker.run )
+        worker.moveToThread(thread)
+        self.status.emit('active')
         thread.start()
         
         
@@ -1000,7 +1026,6 @@ class HomeView( GenericView ):
 
     def render(self):
         objects = []
-        print self.m.views
         for v in self.m.views:
             objects.append( (v.id, v) )
 
@@ -1081,7 +1106,7 @@ class DataView(GenericView):
         self.tabs.setTabEnabled( self.viewer_tab_index, False)
         #self.tabs.addTab(self.summary, 'Summary')
 
-    def render(self, metadata):
+    def render(self, metadata={}):
         # If we have scale data, enable and render the Viewer tab
         #FIXME: Must be along the top axis 
         if 'output' in self.data.o:

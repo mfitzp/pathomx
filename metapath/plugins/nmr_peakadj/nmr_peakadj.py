@@ -21,7 +21,7 @@ from data import DataSet, DataDefinition
 
 
 class NMRPeakAdjView( ui.DataView ):
-    def __init__(self, plugin, parent, **kwargs):
+    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(NMRPeakAdjView, self).__init__(plugin, parent, **kwargs)
         
         self.addDataToolBar()
@@ -123,12 +123,13 @@ class NMRPeakAdjView( ui.DataView ):
         th.addAction(self.configuration)
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-    
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards    
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
     
     
     def generate(self):
+        dso = self.data.get('input')
         dso, dsor = self.shiftandscale( self.data.get('input') ) #, self._bin_size, self._bin_offset)
         self.data.put('output',dso)
         self.region_dso = dsor
@@ -179,7 +180,6 @@ class NMRPeakAdjView( ui.DataView ):
     def shiftandscale(self, dsi):
         # Get the target region from the spectra (will be using this for all calculations;
         # then applying the result to the original data)
-
         scale = dsi.scales[1]
         
         target_ppm = self.config.get('peak_target_ppm')
@@ -198,6 +198,8 @@ class NMRPeakAdjView( ui.DataView ):
         region_scales = dsi.scales[1][start:end:d]
         region_labels = dsi.labels[1][start:end:d]
         region_entities = dsi.entities[1][start:end:d]
+        
+        print d, region_scales, region_labels, region_entities
         
         pcentre = min(range(len(region_scales)), key=lambda i: abs(region_scales[i]-target_ppm))  # Base centre point to shift all spectra to
 
@@ -261,5 +263,5 @@ class NMRPeakAdj(ProcessingPlugin):
         super(NMRPeakAdj, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return NMRPeakAdjView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return NMRPeakAdjView( self, self.m, **kwargs )

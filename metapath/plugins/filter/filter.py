@@ -32,7 +32,7 @@ from data import DataSet, DataDefinition
 # in each list show the data sources that can potentially file that slot. 
 # Select the currently used 
 class DialogDefineFilter(ui.genericDialog):
-    def __init__(self, parent=None, view=None, **kwargs):
+    def __init__(self, parent=None, view=None, auto_consume_data=True, **kwargs):
         super(DialogDefineFilter, self).__init__(parent, **kwargs)        
         
         self.v = view
@@ -180,5 +180,5 @@ class Filter(ProcessingPlugin):
         super(Filter, self).__init__(**kwargs)
         self.register_app_launcher( self.app_launcher )
 
-    def app_launcher(self):
-        return FilterView( self, self.m )
+    def app_launcher(self, **kwargs):
+        return FilterView( self, self.m, **kwargs )
