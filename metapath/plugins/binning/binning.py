@@ -107,15 +107,16 @@ class BinningView( ui.DataView ):
             datao = np.mean( dso.data, 0) # Mean flatten
             
             # Interpolate the data for shorter set
-            datao = np.interp( dsi.scales[1], dso.scales[1], datao)
+            if len(datao) < len(datai):
+                datao = np.interp( dsi.scales[1], dso.scales[1], datao)
 
             metadata['figure'] = {
                 'data':zip( dsi.scales[1], datai.T, datao.T ), # (ppm, [dataa,datab])
             }
 
+
             template = self.m.templateEngine.get_template('d3/difference.svg')
             self.difference.setSVG(template.render( metadata ))
-
     
     def binning(self, dsi):
         ###### BINNING USING CONFI
@@ -129,7 +130,7 @@ class BinningView( ui.DataView ):
 
         bins = np.arange(r[0]+self._bin_offset,r[1]+self._bin_offset,self._bin_size)
         number_of_bins = len(bins)-1
-                
+        
         # Can't increase the size of data, if bins > current size return the original
         if number_of_bins >= len( dso.scales[1] ):
             return {'dso':dso}

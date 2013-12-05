@@ -601,6 +601,7 @@ class GenericView( QMainWindow ):
 
     help_tab_html_filename = None
     status = pyqtSignal(str)
+    progress = pyqtSignal(int)
 
     def __init__(self, plugin, parent, **kwargs):
         super(GenericView, self).__init__(parent, **kwargs)
@@ -617,7 +618,10 @@ class GenericView( QMainWindow ):
         self.data = data.DataManager(self.m, self)
         self.name = self.m.plugin_names[ id( self.plugin ) ]
 
-        self.thread = None
+        #self.thread = None
+        #self.threadpool = QThreadPool()
+        #self.threadpool.setMaxThreadCount(1)
+
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         
@@ -652,6 +656,7 @@ class GenericView( QMainWindow ):
         self.setCentralWidget(self.tabs)
         
         self.status.connect( self.setWorkspaceStatus )
+        self.progress.connect( self.updateProgress )
         
         self.config = config.ConfigManager() # Configuration manager object; handle all get/setting, defaults etc.
         
@@ -670,7 +675,7 @@ class GenericView( QMainWindow ):
         self.config.reset()
         # Delete all threads (remove references)
         # FIXME: Wait for nice cleanup
-        self.thread = None
+        #self.thread = None
         # Close the window obj
         self.m.views.remove( self )
         # Trigger notification for state change
@@ -697,6 +702,7 @@ class GenericView( QMainWindow ):
         self.status.emit('render')
         self.generated(**kwargs_dict)  
         self.status.emit('done')
+        
 
     def _worker_error_callback(self):
         self.status.emit('error')
@@ -711,33 +717,38 @@ class GenericView( QMainWindow ):
         if callback == None:
             callback = self._worker_result_callback
 
-        if self.thread != None: # Handle nicer; wait or similar
-            return False
+        #if self.thread != None: # Handle nicer; wait or similar
+        #    return False
+
             
-        thread = QThread()
-        self.thread = thread #(thread, worker)
+        #thread = QThread()
+        #self.thread = thread #(thread, worker)
+        
         #print "%s thread stack @%d" % (self.name, len(self.threads) )
          
-        worker.result.connect( self._worker_result_callback )
+        worker.signals.result.connect( self._worker_result_callback )
 
-        worker.error.connect( self._worker_error_callback )
-        worker.error.connect( worker.deleteLater )
-        worker.error.connect( thread.quit )
+        worker.signals.error.connect( self._worker_error_callback )
+        #worker.signals.error.connect( worker.deleteLater )
+        #worker.signals.error.connect( thread.quit )
 
-        worker.finished.connect( worker.deleteLater )
-        worker.finished.connect( thread.quit )
+        #worker.signals.finished.connect( worker.deleteLater )
+        #worker.signals.finished.connect( thread.quit )
 
-        thread.finished.connect( thread.deleteLater )
-        thread.finished.connect( self._thread_finished_callback )
+        #thread.finished.connect( thread.deleteLater )
+        #thread.finished.connect( self._thread_finished_callback )
         
         #worker.status.connect( self.setWorkspaceStatus )
-
+        '''
         thread.worker = worker
         thread.started.connect( worker.run )
         worker.moveToThread(thread)
-        self.status.emit('active')
         thread.start()
+        '''
         
+        self.status.emit('active')
+        self.m.threadpool.start(worker)
+
         
     def set_name(self, name):
         self.name = name
@@ -750,6 +761,9 @@ class GenericView( QMainWindow ):
             self.m.workspace_updated.emit()            
         except:
             pass
+
+    def updateProgress(self, progress):
+        self.m.updateProgress( self.workspace_item, progress)
 
     def setWorkspaceStatus(self, status):
         self.m.setWorkspaceStatus( self.workspace_item, status)

@@ -677,8 +677,6 @@ class MetaVizView(ui.AnalysisView):
         return fn + "-%s" + ext
 
     def generator(self, dso):
-        
-        self.status.emit('active')
 
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
@@ -698,9 +696,8 @@ class MetaVizView(ui.AnalysisView):
         svg_source = [s.replace('<image xlink:href="','<image xlink:href="file://') for s in svg_source ]
 
         #self.browser.setSVG(svg_source[0]) #,"~") 
+        self.progress.emit(90)
 
-        self.status.emit('done')
-        
         return {
             'svg': svg_source[0],
         }
@@ -779,10 +776,14 @@ class MetaVizView(ui.AnalysisView):
                         node_colors[ m.id ] = ecol
             
             graph = generator( pathways, options, self.m.db, analysis=node_colors) #, layout=self.layout) 
+            self.status.emit('waiting')
+            self.progress.emit(50)
             graph.write(filename, format=options.output, prog='neato')
             return None
         else:
             graph = generator( pathways, options, self.m.db) #, layout=self.layout) 
+            self.status.emit('waiting')
+            self.progress.emit(50)
             graph.write(filename, format=options.output, prog='neato')
             return None
 

@@ -12,7 +12,14 @@ from PyQt5.QtPrintSupport import *
 
 import traceback
 
-class Worker(QObject):
+class WorkerSignals(QObject):
+        
+    finished = pyqtSignal()
+    error = pyqtSignal()
+    result = pyqtSignal(dict)
+    status = pyqtSignal(str)
+    
+class Worker(QRunnable):
     
     def __init__(self, callback, *args, **kwargs):
         super(Worker, self).__init__()
@@ -20,6 +27,7 @@ class Worker(QObject):
         self.callback = callback
         self.args = args
         self.kwargs = kwargs
+        self.signals = WorkerSignals()
 
     @pyqtSlot()
     def run(self):
@@ -28,19 +36,15 @@ class Worker(QObject):
             result = self.callback(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
-            self.error.emit()
+            self.signals.error.emit()
         else:
-            self.result.emit(result) # Return the result of the processing
+            self.signals.result.emit(result) # Return the result of the processing
         finally:                
-            self.finished.emit() # Done
+            self.signals.finished.emit() # Done
                     
     # Stub to be over-wridden on subclass
     def process(self, *args, **kwargs):
         return False        
-        
-    finished = pyqtSignal()
-    error = pyqtSignal()
-    result = pyqtSignal(dict)
-    status = pyqtSignal(str)
+
     
     

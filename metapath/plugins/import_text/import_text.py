@@ -39,12 +39,8 @@ class ImportTextView( ui.ImportDataView ):
         self.start_worker_thread(self.worker)
             
     def generated(self,dso):
-        self.status.emit('done')
         self.data.put('output',dso) 
         self.render({})
-
-        self.status.emit('clear')
-    
         
     def _load_datafile(self, filename):
     
@@ -56,7 +52,6 @@ class ImportTextView( ui.ImportDataView ):
             
         if fe in formats.keys():
             print "Loading... %s" %fe
-            self.setWorkspaceStatus('active')
 
             dso=formats[fe](filename)
 

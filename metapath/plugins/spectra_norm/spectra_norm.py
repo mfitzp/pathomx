@@ -16,7 +16,7 @@ from plugins import ProcessingPlugin
 import numpy as np
 import nmrglue as ng
 
-import ui, db, utils
+import ui, db, utils, threads
 from data import DataSet, DataDefinition
 
 
@@ -84,9 +84,11 @@ class SpectraNormView( ui.DataView ):
             template = self.m.templateEngine.get_template('d3/difference.svg')
             self.difference.setSVG(template.render( metadata ))
 
-    
     def generate(self):
-        dso = self.normalise( self.data.get('input') ) #, self._bin_size, self._bin_offset)
+        self.worker = threads.Worker(self.normalise, dsi=self.data.get('input'))
+        self.start_worker_thread(self.worker)
+        
+    def generated(self, dso):
         self.data.put('output',dso)
         self.render({})
 
@@ -128,7 +130,7 @@ class SpectraNormView( ui.DataView ):
         # -- optionally use the line widths and take max within each of these for each spectra (peak shiftiness)
         # Filter the original data with those locations and output\
         
-        return dso
+        return {'dso':dso}
 
  
 class SpectraNorm(ProcessingPlugin):

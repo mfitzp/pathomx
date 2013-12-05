@@ -364,8 +364,8 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         self.views = []
         
-        # Rudimentary thread-holder; wipe occasionally
-        # self.threads = []
+        self.threadpool = QThreadPool()
+        print "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount()
         
         #self.stack.addWidget(self.mainBrowser)
         
@@ -446,7 +446,9 @@ class MainWindow(QMainWindow):
         
         self.progressBar = QProgressBar(self.statusBar())      
         self.progressBar.setMaximumSize( QSize(170,19) )
+        self.progressBar.setRange(0,100)
         self.statusBar().addPermanentWidget( self.progressBar )
+        self.progressTracker = {} # Dict storing values for each view/object
 
         self.statusBar().showMessage( tr('Ready') )
         
@@ -692,16 +694,44 @@ class MainWindow(QMainWindow):
         workspace_item.setIcon(3, status_icons[status] )
         self.workspace.update( self.workspace.indexFromItem( workspace_item ) )
     
-        # Bit hacky to keep things ticking (e.g. on load where we create many items)
+        # Keep things ticking
         QCoreApplication.processEvents()
         
-        if status == 'done': # Flash done then clear in a bit
+        if status == 'active': # Starting
+            self.updateProgress( workspace_item, 0)
+        
+        elif status == 'clear' or status == 'error':
+            self.updateProgress( workspace_item, None)
+        
+        elif status == 'done': # Flash done then clear in a bit
+            self.updateProgress( workspace_item, 100)
             statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')            
             workspace_item.status_timeout =  QTimer.singleShot(1000, statusclearCallback)
             
         
     def clearWorkspaceStatus(self, workspace_item):
-        self.setWorkspaceStatus(workspace_item, 'clear')        
+        self.setWorkspaceStatus(workspace_item, 'clear')      
+          
+        
+    def updateProgress(self, workspace_item, progress):
+            
+        if progress == None:
+            if workspace_item in self.progressTracker:
+                del( self.progressTracker[ workspace_item ] )
+            if len(self.progressTracker) == 0:
+                self.progressBar.reset()
+                return
+        else:
+            self.progressTracker[ workspace_item ] = progress
+    
+        m = 1.0/len( self.progressTracker )
+        pt = round( sum([n*m for n in self.progressTracker.values()]), 0)
+        if self.progressBar.value() < pt: # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
+            self.progressBar.setValue(pt)
+            
+        # Keep things ticking
+        QCoreApplication.processEvents()
+            
         
     def onPathwayMiningToggle(self, checked):
         self.config.setValue( '/Data/MiningActive', checked)

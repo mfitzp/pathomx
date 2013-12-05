@@ -27,13 +27,11 @@ from collections import OrderedDict
 
 import csv
 
+import poster 
 
-from poster.encode import multipart_encode
+#import urllib, urllib2, cookielib
 
-from poster.streaminghttp import register_openers
-import urllib, urllib2, cookielib
-
-
+import requests
 
 # Dialog box for Metabohunter search options
 class DialogMetabohunter(ui.genericDialog):
@@ -69,7 +67,7 @@ class DialogMetabohunter(ui.genericDialog):
         
         row = QGridLayout()
         self.lw_spin = {}
-        for n, o in enumerate(['Noise Threshold','Hit Threshold','Tolerance']):
+        for n, o in enumerate(['Noise Threshold','Confidence Threshold','Tolerance']):
             cl = QLabel(o)
             cb = QDoubleSpinBox()
             cb.setDecimals(2)
@@ -167,7 +165,7 @@ class MetaboHunterView( ui.DataView ):
             'Frequency': 'All',
             'Method': 'MH2: Highest number of matched peaks with shift tolerance',
             'Noise Threshold':0.0,
-            'Hit Threshold':0.4,
+            'Confidence Threshold':0.4,
             'Tolerance':0.1,
         })
         
@@ -223,26 +221,9 @@ class MetaboHunterView( ui.DataView ):
         # Web service peak-list assignment (metabohunter)
         print("Sending peaklist to MetaboHunter...")
 
-        opener = register_openers()
-        opener.add_handler(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
-
-        ### WAS BUILDING GENERIC PEAKLIST BY GETTING ALL SAMPLES WITH IT SET
-        ### INTEGRATE THIS WITH LOADINGS SPLIT? CAN BUILD *AFTER* SPLITS FOR BETTER RESULTS
-        ### OR USE CLASSIFICATION GROUPINGS TO SPLIT (MORE SENSIBLE?) - SEPARATE STEPS
-    
         peaks_list = '\n'.join( [ ' '.join( [str(a), str(b)] ) for a,b in zip( dso.scales[1], dso.data[0,:] ) ]  )
         
         url = 'http://www.nrcbioinformatics.ca/metabohunter/post_handler.php'
-        
-        #parser.add_option("--tolerance", dest="tolerance", default=0.1,
-        #                  help="ppm +/- range for 'equivalent' peak")
-
-        #parser.add_option("--peak_threshold", dest="peak_threshold", default=0.01,
-        #                  help="cutoff below which 'peaks' are ignored")
-
-        #parser.add_option("--hit_threshold", dest="hit_threshold", default=0.4,
-        #                  help="minimum score for metabolite to count as hit ")
-        
 
         values = {#'file'          : open('metabid_peaklist.txt', 'rt'),
                   'posturl'       : 'upload_file.php',
@@ -255,27 +236,22 @@ class MetaboHunterView( ui.DataView ):
                   'freq'          : self.options['Frequency'][ self.config.get('Frequency') ],
                   'method'        : self.options['Method'][ self.config.get('Method') ],
                   'noise'         : self.config.get('Noise Threshold'),
-                  'thres'         : self.config.get('Hit Threshold'),
+                  'thres'         : self.config.get('Confidence Threshold'),
                   'neighbourhood' : self.config.get('Tolerance'), #tolerance, # Use same tolerance as for shift
                   'submit'        : 'Find matches',
                  }
                  
         self.status.emit('waiting')
 
-        data = urllib.urlencode(values)
-        request = urllib2.Request(url, data)
-
-        try:
-            response = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+        try:        
+            r = requests.post(url, data=values)
+        except e:
             print e
-            return
+            return {'dso':None}
 
-
-        html = response.read()
-
+        html = r.content
         self.status.emit('active')
-
+        
         m = re.search('name="hits" value="(.*?)\n(.*?)\n"', html, re.MULTILINE | re.DOTALL)
         remote_data['metabolite_table'] = m.group(2)
 
@@ -286,7 +262,6 @@ class MetaboHunterView( ui.DataView ):
 
         # Regexp out the matched peaks table from the hidden form field in response (easiest to parse)
         metabolites = OrderedDict()
-        #hits = re.search('name="hits" value="(.*?)\n(.*?)\n"', html, re.MULTILINE | re.DOTALL)
 
         # Iterate line by line (skip first, header) building a table of the returned metabolites
         for row in remote_data['metabolite_table'].split('\n'):
@@ -302,32 +277,26 @@ class MetaboHunterView( ui.DataView ):
                 'rank': fields[0],
                 }
 
-        #writer.writerow( ['HMDBid','%','Score','Name','Rank','Taxonomic'] )
-
         print("Retrieving matched peaks to metabolite relationships...")
 
-        values = {'hits'          : remote_data['metabolite_table'],
-                  'sample_file'   : remote_data['sample_file'],
-                  'matched_peaks_file'   : remote_data['sample_file'] + "_matched_spectra.txt",
-                  'noise'         : '0',
+        values = {'sample_file'   : remote_data['sample_file'],
+                  'matched_peaks_file' : remote_data['sample_file'] + "_matched_spectra.txt",
+                  'noise'         : 0.0,
+                  'hits'          : 'Rank\tID\tMetabolite name\tMatching peaks score\tTaxonomic origin\r\n' + remote_data['metabolite_table'] + '\r\n',
          }
 
         self.status.emit('waiting')
-
-        data = urllib.urlencode(values)
-
-        url = 'http://www.nrcbioinformatics.ca/metabohunter/download_matched_peaks.php'
-        request = urllib2.Request(url, data)
-
-        try:
-            response = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
-            print e
-            return
-
-        matched_peaks_text = response.read()
-        #self.setWorkspaceStatus('active')
         
+        # Create the Request object
+        url = 'http://www.nrcbioinformatics.ca/metabohunter/download_matched_peaks.php'
+        try:        
+            r = requests.post(url, data=values, files={'foo':'bar'})
+        except e:
+            print e
+            return {'dso':None}
+
+        matched_peaks_text = r.content
+        self.status.emit('active')
         print("Extracting data...")
 
         # Need to do this in two steps, so they are in the correct order for output
@@ -340,7 +309,7 @@ class MetaboHunterView( ui.DataView ):
                 # fields[0] contains the HMDBid plus a colon :(
                 fields[0] = fields[0].rstrip(':')
                 metabolite_peaks[ fields[0] ] = fields[1:]
-
+                
         for metabolite in metabolites:
             if metabolite in metabolite_peaks:
                 # Save metabolite for each peak
@@ -349,7 +318,6 @@ class MetaboHunterView( ui.DataView ):
                     #    matched_peak_metabolites[ peak ].append(metabolite)
                     #else:
                     matched_peak_metabolites[ peak ] = metabolite
-    
     
     
         # Assign metabolite names to labels (for subsequent entity lookup)

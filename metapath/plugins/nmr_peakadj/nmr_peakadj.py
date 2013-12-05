@@ -157,12 +157,6 @@ class NMRPeakAdjView( ui.DataView ):
             f.close()        
 
 
-    def onChangeScalingParameters(self):
-        self._peak_threshold = float( self.threshold_spin.value() )
-        self._peak_separation = float( self.separation_spin.value() )
-        self._peak_algorithm = self.algorithm_cb.currentText()
-        self.generate()
-
     def onSetCustomTarget(self):
         if self._automated_update_config == False:
             self.peak_target_cb.setCurrentText('Custom')
@@ -171,8 +165,8 @@ class NMRPeakAdjView( ui.DataView ):
         ppm, ppm_tol = self.peak_targets[ self.peak_target_cb.currentText() ]
         if ppm is not None:
             self._automated_update_config = True
-            self.ppm_spin.setValue( ppm )
-            self.ppm_tolerance_spin.setValue( ppm_tol )
+            self.config.set('peak_target_ppm', ppm)
+            self.config.set('peak_target_ppm_tolerance', ppm_tol)
             self._automated_update_config = False
 
 

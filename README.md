@@ -1,12 +1,14 @@
 # Introduction
 
-**Unstable** The current trunk of MetaPath is unstable as it undergoes a transformation. Stable earlier versions are
-available as [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+**Stable** The current trunk of MetaPath is stable and able to build using cx_Freeze on Mac. The latest version (0.9.9) is now available to download
+from [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
-MetaPath is a tool for the analysis of metabolic pathway and associated visualisation
-of experimental data. Built on the [MetaCyc][metacyc] database it provides an interactive map in which multiple pathways can be simultaneously visualised. Multiple annotations from the MetaCyc database are available including synonyms, associated reactions and pathways and database unification links.
+MetaPath is an interactive tool for the analysis and visualisation of metabolic data.
+Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
+through configurable and extensible plugin. Multiple annotations from the MetaCyc database are 
+available including synonyms, associated reactions and pathways and database unification links.
 
-Metabolomics change data can be imported via simple CSV formats for visualisation on
+Metabolomics and genomic data can be imported via various routes for visualisation on
 targeted pathways. Pathways can be mined and removed algorithmically to identify key
 regulated pathways within in a given dataset providing a simper route to metabolic
 function.
@@ -28,7 +30,7 @@ and government use.
  [metapath-github]: https://github.com/mfitzp/metapath/issues
  [metapath-github-issues]: https://github.com/mfitzp/metapath
  [metacyc]: http://metacyc.org
- [metapath-macapp]: http://download.martinfitzpatrick.name/MetaPath.dmg
+ [metapath-macapp]: http://download.martinfitzpatrick.name/MetaPath-0.9.9.dmg
  [metapath-pypi]: https://pypi.python.org/pypi/metapath 
  [graphviz]: http://www.graphviz.org/
  
