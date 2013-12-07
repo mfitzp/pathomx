@@ -313,6 +313,7 @@ class MainWindow(QMainWindow):
         self.pluginManager.m = self
         
         self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
+        self.pluginManager.setPluginInfoExtension( 'metapath-plugin' )
         categories_filter = {
                "Import" : plugins.ImportPlugin,
                "Processing" : plugins.ProcessingPlugin,
