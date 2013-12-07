@@ -11,7 +11,7 @@ from copy import copy
 
 from setuptools import setup, find_packages
 
-version_string = '0.9.9'
+version_string = '1.0.0'
 
 sys.path.insert(0,'metapath')
 

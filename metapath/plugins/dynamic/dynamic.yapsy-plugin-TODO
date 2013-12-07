@@ -1,9 +1,0 @@
-[Core]
-Name = Dynamic Maps
-Module = dynamic
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Visualise data in dynamic force-directed maps.

@@ -1,9 +1,0 @@
-[Core]
-Name = NET Analysis
-Module = net_analysis
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Network Embedded Thermodynamic analysis
