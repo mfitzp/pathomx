@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import urllib2#, sip
+import urllib2
 
 from optparse import Values
 from collections import defaultdict
@@ -179,6 +179,9 @@ class dialogPathwaysShow(ui.genericDialog):
 
 
 
+  
+
+
 class MainWindow(QMainWindow):
 
     workspace_updated = pyqtSignal()
@@ -298,6 +301,19 @@ class MainWindow(QMainWindow):
         self.menuBar['database'].addAction(reload_databaseAction)
         
         
+        # PLUGINS MENU
+        
+        change_pluginsAction = QAction( tr('&Manage plugins…'), self)
+        change_pluginsAction.setStatusTip('Find, activate, deactivate and remove plugins')
+        change_pluginsAction.triggered.connect(self.onChangePlugins)
+        self.menuBar['plugins'].addAction(change_pluginsAction)
+    
+        check_pluginupdatesAction = QAction( tr('&Check for updated plugins'), self)
+        check_pluginupdatesAction.setStatusTip('Check for updates to installed plugins')
+        check_pluginupdatesAction.triggered.connect(self.onCheckPluginUpdates)
+        #self.menuBar['plugins'].addAction(check_pluginupdatesAction)  FIXME: Add a plugin-update check  
+        
+        
         # GLOBAL WEB SETTINGS
         QNetworkProxyFactory.setUseSystemConfiguration( True )
 
@@ -308,11 +324,27 @@ class MainWindow(QMainWindow):
         # Display a introductory helpfile 
         self.mainBrowser = ui.QWebViewExtend( None, onNavEvent=self.onBrowserNav )
         
-        self.plugins = {} # Dict of plugin name references to objs (for load/save)
+        self.plugins = {} # Dict of plugin shortnames to data
+        self.plugins_obj = {} # Dict of plugin name references to objs (for load/save)
         self.pluginManager = PluginManagerSingleton.get()
         self.pluginManager.m = self
         
-        self.pluginManager.setPluginPlaces([os.path.join( utils.scriptdir,'plugins')])
+        self.plugin_places = []
+        self.core_plugin_path = os.path.join( utils.scriptdir,'plugins')
+        self.plugin_places.append( self.core_plugin_path )
+        
+        user_application_data_paths = QStandardPaths.standardLocations( QStandardPaths.DataLocation )
+        if user_application_data_paths:
+            self.user_plugin_path = os.path.join(user_application_data_paths[0], 'plugins' )
+            utils.mkdir_p( self.user_plugin_path ) 
+            self.plugin_places.append( self.user_plugin_path )
+            
+            self.application_data_path = os.path.join(user_application_data_paths[1])
+            
+        print "Search for plugins..."
+        print ', '.join( self.plugin_places )
+            
+        self.pluginManager.setPluginPlaces(self.plugin_places)
         self.pluginManager.setPluginInfoExtension( 'metapath-plugin' )
         categories_filter = {
                "Import" : plugins.ImportPlugin,
@@ -329,25 +361,37 @@ class MainWindow(QMainWindow):
         apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
+        self.plugin_metadata = dict()
         
         # Loop round the plugins and print their names.
         for category in plugin_categories:
             for plugin in self.pluginManager.getPluginsOfCategory(category):
                 
-                self.plugin_names[ id( plugin.plugin_object ) ] = plugin.name
-                
                 plugin_image = os.path.join( os.path.dirname(plugin.path), 'icon.png' )
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
-                
-                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name )
-                
-                apps[category].append({
+                    
+                plugin_path = plugin._PluginInfo__details.get('Core','Module')
+
+                metadata = {
                     'id': plugin.plugin_object.__class__.__name__, #__module__, 
                     'image': plugin_image,          
                     'name': plugin.name,
+                    'version': plugin.version,
                     'description': plugin.description,
-                })
+                    'info': plugin, 
+                    'path': os.path.dirname(plugin_path),
+                    'module': os.path.basename(plugin_path),
+                    'shortname': os.path.basename(plugin_path),
+                    'is_core_plugin': plugin_path.startswith(self.core_plugin_path)
+                }
+
+                self.plugins[ metadata['shortname'] ] = metadata
+                self.plugin_names[ id( plugin.plugin_object ) ] = plugin.name
+                
+                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name )
+                
+                apps[category].append(metadata)
 
         self.dataDock = QDockWidget( tr('Database') )
 
@@ -456,12 +500,24 @@ class MainWindow(QMainWindow):
 
         self.showMaximized()
 
+    
+    def onChangePlugins(self):
+        dialog = plugins.dialogPluginManagement(self)
+        if dialog.exec_():
+            pass
+        
+    def onCheckPluginUpdates(self):
+        pass
         
     # Init application configuration
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
-        self.config.setValue('/MetaPath/Is_Setup', True)
-
+        self.config.setValue('MetaPath/Is_Setup', True)
+        self.config.setValue('Plugins/Active', [])
+        self.config.setValue('Plugins/Disabled', [])
+        self.config.setValue('Plugins/Available', [])
+        self.config.setValue('Plugins/Paths', [])
+        
     
     # UI Events           
 
@@ -479,22 +535,6 @@ class MainWindow(QMainWindow):
         zf = self.mainBrowser.zoomFactor()
         zf = min(1.5, zf + 0.1)
         self.mainBrowser.setZoomFactor( zf )
-
-    def onPathwaysShow(self):
-        dialog = dialogPathwaysShow(self)
-        ok = dialog.exec_()
-        if ok:
-            # Show
-            idx = dialog.tab['show']['lw_pathways'].selectedItems()
-            pathways = [self.db.synrev[ x.text() ].id for x in idx]
-            self.config.setValue('/Pathways/Show', ','.join(pathways) )
-            # Hide
-            idx = dialog.tab['hide']['lw_pathways'].selectedItems()
-            pathways = [self.db.synrev[ x.text() ].id for x in idx]
-            self.config.setValue('/Pathways/Hide', ','.join(pathways) )
-                  
-            # Generate
-            self.generateGraphView()
 
     def onBrowserNav(self, url):
         # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface
@@ -925,8 +965,8 @@ def main():
     # Create a Qt application
     app = QApplication(sys.argv)
     app.setStyle('fusion')
-    app.setOrganizationName("Martin Fitzpatrick")
-    app.setOrganizationDomain("martinfitzpatrick.name")
+    app.setOrganizationName("MetaPath")
+    app.setOrganizationDomain("getmetapath.org")
     app.setApplicationName("MetaPath")
 
     locale = QLocale.system().name()
