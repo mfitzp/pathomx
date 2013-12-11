@@ -764,7 +764,7 @@ class MetaVizView(ui.AnalysisView):
             print "Generate map for single control:test..."
             # Build analysis lookup dict; we want a single color for each metabolite
             mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
-            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            mini, maxi = -1.0, +1.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
             scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
             
             node_colors = {}

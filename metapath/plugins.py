@@ -23,7 +23,7 @@ from distutils.version import StrictVersion
 
 from collections import defaultdict
 
-import urllib2, re, requests
+import urllib2, re, requests, hashlib
 
 import os, inspect, shutil
 import utils, ui
@@ -386,6 +386,25 @@ class BasePlugin(IPlugin):
                     menuAction.setStatusTip( entry['status'] )
                 menuAction.triggered.connect( entry['action'] )
                 self.m.menuBar[ menu ].addAction( menuAction )
+         
+    def generate_cache_key(self, o):
+        return 'cache-' + hashlib.sha224( str(o) ).hexdigest()
+                
+    def get_cache_item(self, key):
+        path = os.path.join( QStandardPaths.standardLocations(QStandardPaths.CacheLocation)[0], self.id )
+        hash = self.generate_cache_key(key)
+        try:
+            with open(os.path.join(path, hash), 'r') as f:
+                return f.read()
+        except:
+            return None          
+    
+    def put_cache_item(self, key, value):
+        path = os.path.join( QStandardPaths.standardLocations(QStandardPaths.CacheLocation)[0], self.id )
+        hash = self.generate_cache_key(key)
+        utils.mkdir_p(path)    
+        with open(os.path.join(path, hash), 'w') as f:
+            f.write(str(value))
 
 class ImportPlugin(BasePlugin):
     default_workspace_category = 'Import'

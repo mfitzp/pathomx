@@ -1230,12 +1230,7 @@ class AnalysisView(GenericView):
 
         template = self.m.templateEngine.get_template(template)
         target.setSVG(template.render( metadata ))
-                
-        f = open("/Users/mxf793/Desktop/test.svg","w")
-        f.write(template.render( metadata ))
-        f.close()                
-        
-        
+
     # Build change table 
     def build_change_table_of_classes(self, dso, objs, classes):
         
@@ -1393,16 +1388,10 @@ class AnalysisD3View(AnalysisView):
     def render(self, metadata, debug=False, template_name='figure'):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
         
-        
         template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
         self.browser.setSVG(template.render( metadata ))
-
         self.m.workspace_updated.emit()
-                
-        f = open("/Users/mxf793/Desktop/test.svg","w")
-        f.write(template.render( metadata ))
-        f.close()                
-        
+
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class D3View(AnalysisView):
