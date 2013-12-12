@@ -1230,6 +1230,12 @@ class AnalysisView(GenericView):
 
         template = self.m.templateEngine.get_template(template)
         target.setSVG(template.render( metadata ))
+        
+                
+        f = open("/Users/mxf793/Desktop/test.svg","w")
+        f.write(template.render( metadata ))
+        f.close()                
+                
 
     # Build change table 
     def build_change_table_of_classes(self, dso, objs, classes):

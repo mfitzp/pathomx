@@ -1,3 +1,0 @@
-# use Pandoc’s Markdown: http://www.johnmacfarlane.net/pandoc/
-# or use reStructuredText markup: http://docutils.sourceforge.net/rst.html
-
