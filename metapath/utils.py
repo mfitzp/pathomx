@@ -209,7 +209,7 @@ def find_packager():
 # Get current running script folder (MetaPath app folder)
 pkg = find_packager()
 if pkg == None:
-    scriptdir = os.path.realpath(__file__).rpartition('/')[0]
+    scriptdir = os.path.dirname( os.path.realpath(__file__) ) #.rpartition('/')[0]
 elif pkg == True:
     scriptdir = os.path.dirname(sys.executable)
 elif pkg == 'py2app':
