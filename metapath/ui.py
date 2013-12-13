@@ -412,7 +412,7 @@ class QWebViewExtend(QWebView):
 
     def setSVG(self, svg):
         self._is_svg_with_js = True
-        super(QWebViewExtend, self).setHtml(svg, QUrl('~') )             
+        super(QWebViewExtend, self).setHtml(svg, QUrl('file:///') )             
         #super(QWebViewExtend, self).setContent(svg, "image/svg+xml") <- this would be preferable but has encoding issues
         
     def _loadFinished(self, ok):
