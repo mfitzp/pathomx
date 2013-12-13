@@ -77,8 +77,8 @@ text {
 @def script():
 <script type="text/javascript" xlink:href="dagre.min.js"></script>
 <script type="text/javascript" xlink:href="dagre-d3.min.js"></script>
-<script type="text/javascript" xlink:href="file://@htmlbase/js/dagre.min.js"></script>
-<script type="text/javascript" xlink:href="file://@htmlbase/js/dagre-d3.min.js"></script>
+<script type="text/javascript" xlink:href="file:///@htmlbase/js/dagre.min.js"></script>
+<script type="text/javascript" xlink:href="file:///@htmlbase/js/dagre-d3.min.js"></script>
 <script>
 
 function workspace(nodes, edges){

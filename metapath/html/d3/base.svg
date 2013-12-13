@@ -37,8 +37,8 @@ svg {
 
 <script type="text/javascript" xlink:href="d3.min.js"></script>
 <script type="text/javascript" xlink:href="figures.js"></script>
-<script type="text/javascript" xlink:href="file://@htmlbase/js/d3.min.js"></script>
-<script type="text/javascript" xlink:href="file://@htmlbase/js/figures.js"></script>
+<script type="text/javascript" xlink:href="file:///@htmlbase/js/d3.min.js"></script>
+<script type="text/javascript" xlink:href="file:///@htmlbase/js/figures.js"></script>
 <script type="text/javascript"><![CDATA[
     
     //QtViewportSize = false
