@@ -6,11 +6,11 @@
 
     <link rel="stylesheet" type="text/css" href="foundation.min.css">
 
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/normalize.css">
         
-    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
-    <base href="file://@htmlbase/">
+    <link rel="stylesheet" href="file:///@htmlbase/css/base.css">
+    <base href="file:///@htmlbase/">
     <style>
         html, body {
             background:#f8f8f8 !important;
@@ -66,7 +66,7 @@
             @for app in apps:
                 <li><a class="app" href="metapath://app-manager/@app['id']/add"
                             @if app['image']:
-                                style="background-image:url('file://@app['image']');"
+                                style="background-image:url('file:///@app['image']');"
                             @endif
                                 onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
                         <div class="meta">

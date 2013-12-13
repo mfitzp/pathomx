@@ -3,7 +3,7 @@
 
 @def content():
     <div class="header">
-        <div class="header-icon"><img src="file://@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-icon"><img src="file:///@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
         <div class="header-text"><h1>Pathway Mining Import</h1>
         <span>Identify most changed pathways, reactions and compartments in a dataset</span><br />
         <span class="author_list">
@@ -19,12 +19,12 @@ benefit of proving context for the identified change.</p>
 
 <h2>Quick start</h2>
 <p>To enable pathway pruning, simply load data as above then enable pruning via the menubar.</p>  
-<img src="file://@htmlbase/img/help-data-menu-pruning.png">
+<img src="file:///@htmlbase/img/help-data-menu-pruning.png">
 <p>Starting with the entire network of metabolic pathways in the database, each pathway will be scored according to the chosen method
 and lower-scoring pathways removed from the view up to the set pruning threshold. The remaining pathways are displayed, giving an overview
 of the key pathways in the system. Note that pruning obeys the 'Show Selected Pathways...' settings which can be useful to link disparate pathways into a regulated whole.</p>
-<img src="file://@htmlbase/img/help-data-pruning-settings.png">
-<img src="file://@htmlbase/img/help-data-pruning-map.png">
+<img src="file:///@htmlbase/img/help-data-pruning-settings.png">
+<img src="file:///@htmlbase/img/help-data-pruning-map.png">
 <p>The scoring algorithm can be altered from the 'Pruning settings...' dialog. Scoring can be based on upregulation, downregulation, overall change and by the number of identified metabolites in the sample. Adjusting scores
 relative to the number of metabolites in a pathway removes the bias towards larger pathways (although this is often preferable for interpretation).
 You can adjust the pruning threshold from the data toolbar.</p>

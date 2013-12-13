@@ -3,11 +3,11 @@
 <html>
     <head>
         <title>@title</title>
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="file:////@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file:////@htmlbase/css/normalize.css">
 
-    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
-    <base href="file://@htmlbase/">
+    <link rel="stylesheet" href="file:////@htmlbase/css/base.css">
+    <base href="file:////@htmlbase/">
     </head>
     <style>
     body {
@@ -45,9 +45,9 @@
                 <a href="metapath://db/pathway/@p.id/view">@p.name</a>
 
                 @if p.id not in current_pathways:
-                    <a href="metapath://db/pathway/@p.id/add"><img src="file://@htmlbase/img/icon_addlink.png"></a>
+                    <a href="metapath://db/pathway/@p.id/add"><img src="file:////@htmlbase/img/icon_addlink.png"></a>
                 @else:
-                    <a href="metapath://db/pathway/@p.id/remove"><img src="file://@htmlbase/img/icon_deletelink.png"></a>
+                    <a href="metapath://db/pathway/@p.id/remove"><img src="file:////@htmlbase/img/icon_deletelink.png"></a>
                 @end
 
                 </li>

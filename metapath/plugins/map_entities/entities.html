@@ -4,11 +4,11 @@
     <head>
         <title>Entity mapping</title>
 
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/foundation.min.css">
-    <link rel="stylesheet" type="text/css" href="file://@htmlbase/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/normalize.css">
         
-    <link rel="stylesheet" href="file://@htmlbase/css/base.css">
-    <base href="file://@htmlbase/">
+    <link rel="stylesheet" href="file:///@htmlbase/css/base.css">
+    <base href="file:///@htmlbase/">
     <style>
         html, body {
             background:#f8f8f8 !important;
@@ -73,7 +73,7 @@
                     <a href="metapath://db/@entity.type/@entity.id/view" class="entity">
                     @endif
                     @if hasattr(entity,'image'):
-                        <img src="file://@entity.image">
+                        <img src="file:///@entity.image">
                     @endif
                     <h3>@label!s</h3>
                     @if entity == None:
