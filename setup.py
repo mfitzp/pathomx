@@ -103,6 +103,7 @@ else:
     base = None
     if sys.platform == "win32":
         base = "Win32GUI"
+        build_exe['include_msvcr'] = True
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
     executables=[
@@ -111,6 +112,8 @@ else:
             base=base,
             copyDependentFiles=True,
             replacePaths=True,
+            shortcutName="MetaPath",
+            shortcutDir="ProgramMenuFolder",
             )]
 
     # Apply default build options to cx/py2app build targets
