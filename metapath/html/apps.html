@@ -66,7 +66,7 @@
             @for app in apps:
                 <li><a class="app" href="metapath://app-manager/@app['id']/add"
                             @if app['image']:
-                                style="background-image:url('file:///@app['image_forward_slashes']') center center no-repeat;"
+                                style="background:url('file:///@app['image_forward_slashes']') center center no-repeat;"
                             @endif
                                 onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
                         <div class="meta">
