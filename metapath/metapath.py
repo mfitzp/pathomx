@@ -375,7 +375,8 @@ class MainWindow(QMainWindow):
 
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__, #__module__, 
-                    'image': plugin_image,          
+                    'image': plugin_image,    
+                    'image_forward_slashes': plugin_image.replace('\\','/'), # Slashes fix for CSS in windows
                     'name': plugin.name,
                     'version': plugin.version,
                     'description': plugin.description,
