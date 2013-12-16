@@ -26,7 +26,9 @@ default_build_options=dict(
         'poster.encode',
         'wheezy.template',
         'sklearn',
+        'sklearn.decomposition',
         'icoshift',
+        'nmrglue.fileio.fileiobase',
         ],
     includes=[
         'sip',
@@ -40,6 +42,7 @@ default_build_options=dict(
         'wx',
         'matplotlib',
         'mpl-data',
+        'Tkinter',
         ],
     )
 
@@ -85,6 +88,7 @@ else:
     exceutables = None
 
     build_all = dict()
+    bdist_msi = dict()
 
     build_all['include_files']=[
         ('metapath/static', 'static'),
@@ -104,6 +108,59 @@ else:
     if sys.platform == "win32":
         base = "Win32GUI"
         build_exe['include_msvcr'] = True
+        build_exe['icon'] = 'metapath/static/icon.ico'
+        # FIXME: The following is a hack to correctly copy all files required for 
+        # numpy, scipy and nmrglue on Windows. At present cx_Freeze misses a number of 
+        # the .pyd files. The fix is to copy *all* of them regardless if they're used.
+        # This means bigger binaries (.msi) but they work.
+        import os, glob2, numpy, scipy, nmrglue
+        explore_dirs = [
+            os.path.dirname(numpy.__file__),
+            os.path.dirname(scipy.__file__),
+            os.path.dirname(nmrglue.__file__),
+        ]
+        
+        files = []
+        for d in explore_dirs:
+            files.extend( glob2.glob( os.path.join(d, '**', '*.pyd') ) )
+            
+        # Now we have a list of .pyd files; iterate to build a list of tuples into 
+        # include files containing the source path and the basename
+        for f in files:
+            build_all['include_files'].append( (f, os.path.basename(f) ) )
+
+        shortcut_table = [
+            ("DesktopShortcut",        # Shortcut
+             "DesktopFolder",          # Directory_
+             "MetaPath",           # Name
+             "TARGETDIR",              # Component_
+             "[TARGETDIR]MetaPath.exe",# Target
+             None,                     # Arguments
+             None,                     # Description
+             None,                     # Hotkey
+             None,                     # Icon
+             None,                     # IconIndex
+             None,                     # ShowCmd
+             'TARGETDIR'               # WkDir
+             ),
+            ("Shortcut",        # Shortcut
+             "ProgramMenuFolder",          # Directory_
+             "MetaPath",           # Name
+             "TARGETDIR",              # Component_
+             "[TARGETDIR]MetaPath.exe",# Target
+             None,                     # Arguments
+             None,                     # Description
+             None,                     # Hotkey
+             None,                     # Icon
+             None,                     # IconIndex
+             None,                     # ShowCmd
+             'TARGETDIR'               # WkDir
+             )             
+            ]
+        # Change some default MSI options and specify the use of the above defined tables
+        bdist_msi['data'] = {"Shortcut": shortcut_table}
+
+        
     # cx_freeze GUI applications require a different base on Windows (the default is for a
     # console application).
     executables=[
@@ -112,8 +169,8 @@ else:
             base=base,
             copyDependentFiles=True,
             replacePaths=True,
-            shortcutName="MetaPath",
-            shortcutDir="ProgramMenuFolder",
+            #shortcutName="MetaPath",
+            #shortcutDir="ProgramMenuFolder",
             )]
 
     # Apply default build options to cx/py2app build targets
@@ -177,6 +234,7 @@ setup(
     options={
         "build_exe": build_exe,
         "build_mac": build_mac,
+        "bdist_msi": bdist_msi,
         #"py2app": build_py2app
     },
     app=[ 'metapath/MetaPath.py' ],

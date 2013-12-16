@@ -38,7 +38,7 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 # MetaPath classes
-import db, data, utils, ui # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
+import db, data, utils, ui, threads # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
 import plugins # plugin helper/manager
 
 # Translation (@default context)
@@ -217,6 +217,8 @@ class MainWindow(QMainWindow):
         self.update_view_callback_enabled = True
 
         self.printer = QPrinter()
+        
+        QNetworkProxyFactory.setUseSystemConfiguration(True)
 
         #  UI setup etc
         menubar = self.menuBar()
