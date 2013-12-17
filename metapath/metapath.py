@@ -107,80 +107,6 @@ class dialogDefineExperiment(ui.genericDialog):
         # Build dialog layout
         self.dialogFinalise()
 
-            
-class dialogPathwaysShow(ui.genericDialog):
-
-    def onRegexpAdd(self):
-        tab = self.sender().objectName()
-        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
-        for i in items:
-            i.setSelected( True )            
-    
-    def onRegexpRemove(self):
-        tab = self.sender().objectName()
-        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
-        for i in items:
-            i.setSelected( False )            
-    
-    def setupTabPage(self, tab, selected_pathways = []):
-        # SHOW PATHWAYS
-        page = QWidget()
-        vbox = QVBoxLayout()
-        # Populate the list boxes
-        self.tab[tab]['lw_pathways'] = QListWidget()
-        self.tab[tab]['lw_pathways'].setSelectionMode( QAbstractItemView.ExtendedSelection)
-        self.tab[tab]['lw_pathways'].addItems( self.all_pathways )
-
-        for p in selected_pathways:
-            self.tab[tab]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
-        self.tab[tab]['lw_regExp'] = QLineEdit()
-
-        vbox.addWidget(self.tab[tab]['lw_pathways'])
-        vbox.addWidget( QLabel( tr('Select/deselect matching pathways by name:') ) )   
-        vboxh = QHBoxLayout()
-        vboxh.addWidget(self.tab[tab]['lw_regExp'])
-        addfr = QPushButton('-')
-        addfr.clicked.connect( self.onRegexpRemove )
-        addfr.setObjectName(tab)
-        remfr = QPushButton('+')
-        remfr.clicked.connect( self.onRegexpAdd)
-        remfr.setObjectName(tab)
-
-        vboxh.addWidget( addfr )
-        vboxh.addWidget( remfr )
-        vbox.addLayout(vboxh)   
-
-        page.setLayout(vbox)
-        
-        return page
-
-    def __init__(self, parent, **kwargs):
-        super(dialogPathwaysShow, self).__init__(parent, **kwargs)
-        
-        self.setWindowTitle( tr("Select Pathways to Display") )
-
-        #all_pathways = parent.db.pathways.keys()
-        self.all_pathways = sorted( [p.name for p in parent.db.pathways.values()] )
-
-        self.tabs = QTabWidget()
-        self.tab = defaultdict(dict)
-        selected_pathways = str( parent.config.value('/Pathways/Show') ).split(',')
-        page1 = self.setupTabPage('show', selected_pathways=[p.name for p in parent.db.pathways.values() if p.id in selected_pathways] )
-        selected_pathways = str( parent.config.value('/Pathways/Hide') ).split(',')
-        page2 = self.setupTabPage('hide', selected_pathways=[p.name for p in parent.db.pathways.values() if p.id in selected_pathways] )
-
-        self.tabs.addTab(page1, tr('Show') )
-        self.tabs.addTab(page2, tr('Hide') )
-
-        self.layout.addWidget(self.tabs)
-        
-        # Stack it all up, with extra buttons
-        self.dialogFinalise()
-
-
-
-  
-
 
 class MainWindow(QMainWindow):
 
@@ -245,7 +171,7 @@ class MainWindow(QMainWindow):
         openAction.setShortcut('Ctrl+O')
         openAction.setStatusTip( tr('Open previous analysis workspace') )
         openAction.triggered.connect(self.onOpenWorkspace)
-        self.menuBar['file'].addAction(openAction)
+        #self.menuBar['file'].addAction(openAction)
 
         openAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'folder-open-document.png') ), tr('&Open Workflow…'), self)
         openAction.setStatusTip( tr('Open an analysis workflow') )
@@ -258,15 +184,15 @@ class MainWindow(QMainWindow):
         saveAction.setShortcut('Ctrl+S')
         saveAction.setStatusTip( tr('Save current workspace for future use') )
         saveAction.triggered.connect(self.onSaveWorkspace)
-        self.menuBar['file'].addAction(saveAction)
+        #self.menuBar['file'].addAction(saveAction)
 
-        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') ), tr('Save &As…'), self)
+        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'disk--pencil.png') ), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
         saveAsAction.setStatusTip( tr('Save current workspace for future use') )
         saveAsAction.triggered.connect(self.onSaveWorkspaceAs)
-        self.menuBar['file'].addAction(saveAsAction)
+        #self.menuBar['file'].addAction(saveAsAction)
 
-        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'document-save-as.png') ), tr('Save Workflow As…'), self)
+        saveAsAction = QAction( QIcon( os.path.join( utils.scriptdir, 'icons', 'disk--pencil.png') ), tr('Save Workflow As…'), self)
         saveAsAction.setStatusTip( tr('Save current workflow for future use') )
         saveAsAction.triggered.connect(self.onSaveWorkflowAs)
         self.menuBar['file'].addAction(saveAsAction)
@@ -620,15 +546,6 @@ class MainWindow(QMainWindow):
                 self.data.translate(self.db)
                 self.generateGraphView(regenerate_analysis=True)                
 
-    def onLoadDataFile(self):
-        """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open experimental compound data file', '')
-        if filename:
-            self.data = data.dataManager(filename)
-            # Re-translate the datafile
-            self.data.translate(self.db)
-            self.setWindowTitle('MetaPath: %s' % self.data.filename)
-            self.onDefineExperiment()
     
     def onSaveAs(self):
         """ Save a copy of the graph as one of the supported formats"""
@@ -662,7 +579,7 @@ class MainWindow(QMainWindow):
         metadata = {
             'htmlbase': os.path.join( utils.scriptdir,'html'),
             # Current state data
-            'current_pathways': self.config.value('/Pathways/Show').split(','),
+            'current_pathways': [], #self.config.value('/Pathways/Show').split(','),
             'data': self.data,
             # Color schemes
             # 'rdbu9':['b2182b', 'd6604d', 'f4a582', '33a02c', 'fddbc7', 'f7f7f7', 'd1e5f0', '92c5de', '4393c3', '2166ac']
@@ -775,11 +692,6 @@ class MainWindow(QMainWindow):
             
         # Keep things ticking
         QCoreApplication.processEvents()
-            
-        
-    def onPathwayMiningToggle(self, checked):
-        self.config.setValue( '/Data/MiningActive', checked)
-        self.generateGraphView()
 
 
     def register_url_handler( self, identifier, url_handler ):

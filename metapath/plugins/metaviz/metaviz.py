@@ -290,6 +290,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             if analysis: # and options.mining:
                 # Not actually used for color, this is a ranking value (bud-sized on pathway link)
                 p_compound_scores = [ analysis[m.id] for m in p.compounds if m.id in analysis] 
+                print p_compound_scores
                 if p_compound_scores:
                     fillcolor = sum( p_compound_scores ) / len( p_compound_scores )
                 else:
@@ -389,8 +390,10 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             size = len(db.pathways[ m.id ].compounds )
             width, height = size/24., size/24.
             if node_color is None:
-                fillcolor = '#cccccc'          
-            color = node_color[0]
+                fillcolor = '#cccccc' 
+                color = '#cccccc' 
+            else:         
+                color = node_color[0]
             border=0
             url=PATHWAY_URL
 
@@ -526,6 +529,78 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
 
 
+            
+class dialogPathwaysShow(ui.genericDialog):
+
+    def onRegexpAdd(self):
+        tab = self.sender().objectName()
+        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
+        for i in items:
+            i.setSelected( True )            
+    
+    def onRegexpRemove(self):
+        tab = self.sender().objectName()
+        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
+        for i in items:
+            i.setSelected( False )            
+    
+    def setupTabPage(self, tab, selected_pathways = []):
+        # SHOW PATHWAYS
+        page = QWidget()
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.tab[tab]['lw_pathways'] = QListWidget()
+        self.tab[tab]['lw_pathways'].setSelectionMode( QAbstractItemView.ExtendedSelection)
+        self.tab[tab]['lw_pathways'].addItems( self.all_pathways )
+
+        for p in selected_pathways:
+            self.tab[tab]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
+        self.tab[tab]['lw_regExp'] = QLineEdit()
+
+        vbox.addWidget(self.tab[tab]['lw_pathways'])
+        vbox.addWidget( QLabel( 'Select/deselect matching pathways by name:') )   
+        vboxh = QHBoxLayout()
+        vboxh.addWidget(self.tab[tab]['lw_regExp'])
+        addfr = QPushButton('-')
+        addfr.clicked.connect( self.onRegexpRemove )
+        addfr.setObjectName(tab)
+        remfr = QPushButton('+')
+        remfr.clicked.connect( self.onRegexpAdd)
+        remfr.setObjectName(tab)
+
+        vboxh.addWidget( addfr )
+        vboxh.addWidget( remfr )
+        vbox.addLayout(vboxh)   
+
+        page.setLayout(vbox)
+        
+        return page
+
+    def __init__(self, parent, **kwargs):
+        super(dialogPathwaysShow, self).__init__(parent, **kwargs)
+        
+        self.setWindowTitle( "Select Pathways to Display" )
+
+        #all_pathways = parent.db.pathways.keys()
+        self.all_pathways = sorted( [p.name for p in parent.m.db.pathways.values()] )
+
+        self.tabs = QTabWidget()
+        self.tab = defaultdict(dict)
+        selected_pathways = str( parent.config.get('/Pathways/Show') ).split(',')
+        page1 = self.setupTabPage('show', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
+        selected_pathways = str( parent.config.get('/Pathways/Hide') ).split(',')
+        page2 = self.setupTabPage('hide', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
+
+        self.tabs.addTab(page1, 'Show' )
+        self.tabs.addTab(page2, 'Hide' )
+
+        self.layout.addWidget(self.tabs)
+        
+        # Stack it all up, with extra buttons
+        self.dialogFinalise()
+
+
+
 class MetaVizView(ui.AnalysisView):
     def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(MetaVizView, self).__init__(plugin, parent, **kwargs)
@@ -564,13 +639,18 @@ class MetaVizView(ui.AnalysisView):
             '/View/ClusterBy': 'pathway',
         })
 
+
+        show_pathwaysAction = QAction(  QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Show/Hide Pathways', self.m)
+        show_pathwaysAction.setStatusTip('Show/hide specific pathways')
+        show_pathwaysAction.triggered.connect( self.onPathwaysShow )
+        #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
+        #self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
         
         show_pathway_linksAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') ), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
         show_pathway_linksAction.setCheckable( True )
         #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
         self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
-        
         
         showenzymesAction = QAction('Show proteins/enzymes', self.m)
         showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
@@ -617,6 +697,8 @@ class MetaVizView(ui.AnalysisView):
         t = self.addToolBar('MetaViz')
         self.setIconSize( QSize(16,16) )
 
+        t.addAction(show_pathwaysAction)
+        t.addAction(show_pathway_linksAction)
         t.addAction(showenzymesAction)
         t.addAction(show2ndAction)
         t.addAction(showmolecularAction)
@@ -634,7 +716,21 @@ class MetaVizView(ui.AnalysisView):
         if auto_consume_data:
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration changes
-          
+       
+       
+    def onPathwaysShow(self):
+        dialog = dialogPathwaysShow(self)
+        ok = dialog.exec_()
+        if ok:
+            # Show
+            idx = dialog.tab['show']['lw_pathways'].selectedItems()
+            pathways = [self.m.db.synrev[ x.text() ].id for x in idx]
+            self.config.set('/Pathways/Show', ','.join(pathways) )
+            # Hide
+            idx = dialog.tab['hide']['lw_pathways'].selectedItems()
+            pathways = [self.m.db.synrev[ x.text() ].id for x in idx]
+            self.config.set('/Pathways/Hide', ','.join(pathways) )
+   
 
     def url_handler(self, url):
 
@@ -736,13 +832,18 @@ class MetaVizView(ui.AnalysisView):
             pathway_ids = [p.id for p in suggested_pathways.entities[1] ]
         else:
             pathway_ids = []
-
-        # Add the selected pathways
-        pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]        
+            
+        # Add the manually Shown pathways
+        pathway_ids_show = self.config.get('/Pathways/Show').split(',')
+        pathway_ids.extend( pathway_ids_show )
            
         # Now remove the Hide pathways
         pathway_ids_hide = self.config.get('/Pathways/Hide').split(',')
-        pathways = [p for p in pathways if p.id not in pathway_ids_hide]
+        pathway_ids = [p for p in pathway_ids if p not in pathway_ids_hide]
+
+        # Convert pathways_ids to pathways
+        pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]        
+
         
         if pathway_ids == []:
             return None        

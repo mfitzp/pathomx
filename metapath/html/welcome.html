@@ -16,13 +16,89 @@
     </div>
     
     <h2>Introduction</h2>
-    <p>MetaPath is a tool for the analysis of metabolic pathway and associated visualisation of experimental data. Built on the <a href="http://metacyc.org">MetaCyc</a>
-    database it provides an interactive map in which multiple pathways can be simultaneously visualised.
-    Multiple annotations from the MetaCyc database are available including synonyms, associated reactions and pathways and database unification links.</p>
+    <p>MetaPath is a workflow-based tool for the analysis of metabolomic and other omics datasets. It is interactive, visual, extensible, intelligent and free for any use.</p>
     
-    <p>Metabolomics change data can be imported via simple <code title="Command-separated values">CSV</code> formats for visualisation on targeted pathways. Pathways can be mined and removed
-    algorithmically to identify key regulated pathways within in a given dataset providing a simper route to metabolic function.</p>
+    <h2>Background</h2>
+    <p>The key to analysis with MetaPath is the <em>workflow</em>. In data analysis it is common to perform a number of repeated steps in order,
+    taking outputs of one action and feeding them into the next step in the analysis. In many cases the conversion from the output of one
+    application to the input of another must be performed manually. For complex datasets this can significantly extend the time taken from
+    getting data to finding results. MetaPath aims to solve this problem through the use of reusable, customisable, workflows. Workflows allow a number of processing
+    steps to be connected together into a complex, parallel, system.</p>
+
+    <img src="file:///@htmlbase/img/help-workspace.png">
+
+    <h2>Quick Start</h2>
+
+    <p>To get started, simply click on the sidebar and select 'Import'. Here you can select the type of data to import using one of the 
+    provided import plugins. There are a number of example datafiles available on the <a href="http://getmetapath.org">MetaPath website</a>.</p>
+
+    <img src="file:///@htmlbase/img/help-data-import.png">
+
+
+
+    <p>Once you've imported a dataset, you can then proceed to analyse it. Click on the Analysis tab and select PCA to perform Principal Components Analysis. The Scores plot
+    will be shown immediately, with the principal component weight plots available on the tabs below.</p>
+
+    <img src="file:///@htmlbase/img/help-data-pca-wrong.png">
     
+    <p>If you click back to the Home tab, you will now see the Workspace view - showing your data source connected to the PCA analysis app. 
+    This is how all analysis is performed in MetaPath, by connecting apps to data sources (or the outputs of other apps). You'll notice
+    that these two have been connected automatically for you by making a best guess of what you want. If something is connected wrongly
+    it is simple to fix - simply drag the yellow output port onto the orange input port.</p>
+
+    <img src="file:///@htmlbase/img/help-data-pca.png">
+    
+    <p>If your input data is not mean centred you may have noticed the PCA weights plots are a not centred around a zero-point. To fix this
+    we need to mean center the data before applying the PCA. Click on the Processing tab and select 'Transform' to launch a simple app providing 
+    basic data-transformation options. On the Transform toolbar select 'Mean centre' from the drop down menu (containing 'log2').</p>
+
+    <p>If you go back to your workspace you'll see that the application has guessed wrongly and connected the mean centring to the output 
+    of the PCA. It has made this assumption on the basis of the order you have added the applications. So correct the order by first dragging from the
+    output of your data input to the input of the Mean Centre app, then from the output of the Mean Centre app to the input for PCA.</p>
+
+    <img src="file:///@htmlbase/img/help-data-pca-mc-wrong.png"> 
+    <img src="file:///@htmlbase/img/help-data-pca-mc-fixing.png">
+    <img src="file:///@htmlbase/img/help-data-pca-mc-done.png">
+    
+    <p>If you now return to the PCA app (click on it) you'll see the corrected, mean centered PCA.</p>
+    
+    <img src="file:///@htmlbase/img/help-data-pca-correct.png">
+    
+    <p>While this has taken a few minutes to set up, you can save this workflow for future use by using <em>File > Save Workflow As...</em>.
+
+    <h2>Identification</h2>
+
+    <p>Identification of biological entities is a key step in <em>omics</em> data analysis and essential for putting any findings into a 
+    biological context. In order to aid this process MetaPath ships with an internal database of biological entities, derived from <a href="http://www.metacyc.org">MetaCyc</a>. This allows
+    annotation of imported datasets with referenced metabolites, reactions and pathways.</p>
+    
+    <p>To demonstrate this, we can use the same demo data source. To enable identification simply click on the Identification section in the sidebar
+    and select Synonym Matching. This is the most rudimentary form of identity-matching, using known synonyms, database identifiers (and optionally,
+    custom mappings) to map your input data to the database.</p>
+    
+    <p>As before, this will probably end up connected on the bottom of your other outputs! So open the Home tab and drag the output from your data input app
+    into the input for Synonym Matching. Then take the output of Synonym Matching and drag it into the Mean Centre app.</p>
+    
+    <p>Click back to the PCA and look at the weights tabs (labelled PC1 or PC2). Here you wil notice some peaks are now labelled in blue. These blue
+    highlighted entries are now mapped to database entities. To explore further, simply click and the database information held for that object
+    will appear in the sidebar.</p>
+
+    <img src="file:///@htmlbase/img/help-database-pathway.png">
+    <img src="file:///@htmlbase/img/help-database-reaction.png">
+    <img src="file:///@htmlbase/img/help-database-metabolite.png">
+    <p>You can browse the database from the sidebar, exploring pathway, reaction and metabolite relationships. 
+    The database also contains links both to the online <a href="http://metacyc.org">MetaCyc</a> database and to other related resources including 
+                    <a href="http://www.genome.ad.jp/">KEGG</a>,
+                    <a href="http://pubchem.ncbi.nlm.nih.gov/">PubChem</a>,
+                    <a href="http://www.commonchemistry.org/">CAS</a>,
+                    <a href="http://www.ebi.ac.uk/chebi/">CHEBI</a> and
+                    <a href="http://kanaya.naist.jp/knapsack_jsp/top.html">KNApSAcK</a>.
+    </p>
+
+    <h2>More</h2>
+    
+    <p>There are many more examples, tutorials, walkthroughs and videos available on the <a href="http://getmetapath.org">MetaPath website</a>.</p>
+
     <h2>License</h2>
     <p>MetaPath is available free for any use, licensed under the GPLv3.</p>
     <p class="hilite">MetaPath is built on the <a href="http://metacyc.org">MetaCyc</a> pathway database itself part of the <a href="http://biocyc.org">BioCyc</a> and <a href="http://humancyc.org">HumanCyc</a> family.
@@ -35,36 +111,19 @@
     <h2>Publications</h2>
     <p>tbc.</p>
 
-
-    <h5>Database</h5>
-    <p>All map objects are accessible in the same way, including metabolites, reactions and pathways. Click on any item (pathways can also be selected by the light-grey bounding box)
-    to bring up object metadata in the sidebar.</p>
-    <img src="file:///@htmlbase/img/help-database-pathway.png">
-    <img src="file:///@htmlbase/img/help-database-reaction.png">
-    <img src="file:///@htmlbase/img/help-database-metabolite.png">
-    <p>You can browse the database from the sidebar, exploring pathway, reaction and metabolite relationships. Pathways can be added to the main
-    map at any time by clicking the links (<img src="file:///@htmlbase/img/img/icon_addlink.gif"><img src="file:///@htmlbase/img/icon_deletelink.gif">) or buttons on the pathway view and the map will automatically update.
-    The database also contains links both to the online <a href="http://metacyc.org">MetaCyc</a> database and to other related resources including 
-                    <a href="http://www.genome.ad.jp/">KEGG</a>,
-                    <a href="http://pubchem.ncbi.nlm.nih.gov/">PubChem</a>,
-                    <a href="http://www.commonchemistry.org/">CAS</a>,
-                    <a href="http://www.ebi.ac.uk/chebi/">CHEBI</a> and
-                    <a href="http://kanaya.naist.jp/knapsack_jsp/top.html">KNApSAcK</a>.
-    </p>
-    
-    
-    <h5>Saving Your Work & Finishing Up</h5>
-    <p>Generated pathway maps can be saved to multiple formats including <code>tif</code>, <code>eps</code>, <code>fig</code>, <code>gif</code>, <code>jpeg</code>, <code>pdf</code>, <code>png</code>, <code>ps</code>, <code>svg</code>, <code>dot</code> and <code>bmp</code>.
-    When you close MetaPath your current session settings are saved and will be restored next time. However, you will need to reload any datafiles for visualisation or mining.</p>
-
     <h2>Troubleshooting</h2>
     <p>MetaPath is under continued development. If you spot bugs, or have suggestions for improvement, please submit them via our <a href="">github bug tracker</a>.
     
     <h2>Updates & Changelog</h2>
-    <p>Releases of MetaPath are available for download <a href="">from our website</a> packaged for both MacOS X and Windows XP, 7 and 8. Unpackaged source files are also available for manual installation or development from our <a href="">github repository</a>.</p>
+    <p>Releases of MetaPath are available for download <a href="http://getmetapath.org">from our website</a> packaged for both MacOS X and Windows x64 (XP, 7 and 8). Unpackaged source files are also available for manual installation or development from our <a href="">github repository</a>.</p>
 
     <table class="releases">    
     <tr>
+        <td class="release_version">1.0.0</td>
+        <td>Interactive workflow analysis support, plugins, Windows and Mac support, multithreading.
+        <span class="release_date">(18/12/2013)</span>
+        </td>
+    </tr>    <tr>
         <td class="release_version">0.7.0</td>
         <td>GPML visualisation support, data heatmaps introduced.
         <span class="release_date">(01/07/2013)</span>
