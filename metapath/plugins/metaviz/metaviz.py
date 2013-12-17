@@ -646,7 +646,7 @@ class MetaVizView(ui.AnalysisView):
         #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
         #self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
         
-        show_pathway_linksAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','document-page-setup.png') ), 'Show Links to Hidden Pathways', self.m)
+        show_pathway_linksAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','node-select-all.png') ), 'Show Links to Hidden Pathways', self.m)
         show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
         show_pathway_linksAction.setCheckable( True )
         #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
