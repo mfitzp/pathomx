@@ -44,10 +44,11 @@ class DataManager( QObject ):
         self.consumer_defs = [] # Holds data-consumer definitions 
         self.consumes = [] # Holds list of data objects that are consumed
 
-        self.i = {} # Input: dict of 'interface' tuples: (origin,interface)
-        self.o = {} # Output
+        self.i = {} # Inputs: dict of 'interface' tuples: (origin,interface)
+        self.o = {} # Outputs
 
         self.watchers = defaultdict( set ) # List of watchers on each output interface
+        self.viewers = defaultdict( set ) # List of watchers on each output interface
                 
     # Get a dataset through input interface id;
     # This provides indirect access to a copy of the object (local link in self.i = {})
@@ -60,6 +61,7 @@ class DataManager( QObject ):
             return deepcopy( dso )
                 
         return False
+    
         
     def unget(self, interface):
         if interface in self.i:
@@ -82,25 +84,35 @@ class DataManager( QObject ):
             self.notify_watchers(interface)
             return True
         return False
-        
+    
     def unput(self, interface):
         self.watchers[interface] = set()
         self.o[interface] = DataSet(manager=self) # Empty dso (temp; replace with None later?)
+
+    # Get a dataset through output interface id;
+    def geto(self, interface):
+        if interface in self.o:
+            dso = self.o[interface]
+            return dso
+        return False
+    
             
-    def add_output(self, interface, dso=None):
+    def add_output(self, interface, dso=None, is_public=True):
         if dso==None:
             dso = DataSet(manager=self)
         
         self.o[interface] = dso
         self.o[interface].manager = self
         self.o[interface].manager_interface = interface
+        self.o[interface].is_public = is_public
         
         # If we're in a constructed view we will have a reference to the global data table
         # This feels a bit hacky
-        try:
-            self.m.datasets.append( dso )
-        except:
-            pass
+        if is_public:
+            try:
+                self.m.datasets.append( dso )
+            except:
+                pass
         
     def remove_output(self, interface):
         if interface in self.o:
@@ -130,7 +142,11 @@ class DataManager( QObject ):
     def notify_watchers(self, interface):
         for manager in self.watchers[interface]:
             manager.source_updated.emit()
-        
+
+        for view in self.viewers[interface]:
+            view.source_updated.emit()
+            
+            
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
     def can_consume(self, data, consumer_defs=None):

@@ -21,7 +21,7 @@ from plugins import VisualisationPlugin
 import os
 import ui, utils
 from data import DataSet, DataDefinition
-
+from views import D3BarView
 
 
 # Class for data visualisations using GPML formatted pathways
@@ -34,6 +34,9 @@ class BarView(ui.AnalysisD3View):
         self.addFigureToolBar()
             
         self.data.add_input('input') # Add input slot
+        self.data.add_output('output', is_public=False) # Hidden
+        
+        self.tabs.add_view('View', D3BarView, 'output')
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -50,48 +53,8 @@ class BarView(ui.AnalysisD3View):
 
 
     def generate(self):
-        self.setWorkspaceStatus('active')
-
-        
         dso = self.data.get('input')
-        
-        fd = np.mean( dso.data, axis=0 )
-
-        fdm = zip( dso.labels[1], fd )
-        sms = sorted(fdm,key=lambda x: abs(x[1]), reverse=True )
-        metabolites = [m for m,s in sms]
-
-        # Get mean version of dataset (or alternative; +/- error)
-        # Requires compressing dataset >1 for each alternative information set
-
-        dso_mean = dso.as_summary( fn=np.mean, dim=0, match_attribs=['classes']) # Get mean dataset/ Classes only
-        dso_std = dso.as_summary( fn=np.std, dim=0, match_attribs=['classes']) # Get std_dev/ Classes only
-        
-        classes = dso_mean.classes[0]
-        groups = metabolites[:10]
-
-        data = []
-        for g in groups:
-            
-            data.append(
-                ( g, 
-                    {c: dso_mean.data[n, dso_mean.labels[1].index(g)] for n,c in enumerate(classes)},
-                    {c: dso_std.data[n, dso_std.labels[1].index(g)] for n,c in enumerate(classes)} #2sd?
-                     )
-            )
-    
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figure':  {
-                            'type':'bar',
-                            'data': data,
-                        },                        
-        }, template_name='bar')
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
-
-        
+        self.data.put('output',dso)
 
 
 class Bar(VisualisationPlugin):

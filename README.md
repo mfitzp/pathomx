@@ -1,7 +1,7 @@
 # Introduction
 
-**Stable** The current trunk of MetaPath is stable and able to build using cx_Freeze on Mac. The latest version (0.9.9) is now available to download
-from [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+**Stable** The current trunk of MetaPath is stable and can be built using cx_Freeze (with some tweaks). The latest version (1.0.0) is now available to download
+[Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
 MetaPath is an interactive tool for the analysis and visualisation of metabolic data.
 Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
@@ -13,7 +13,7 @@ targeted pathways. Pathways can be mined and removed algorithmically to identify
 regulated pathways within in a given dataset providing a simper route to metabolic
 function.
 
-**Download** [Mac OS X Mountain Lion .app][metapath-macapp] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+**Download** [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
 > MetaPath requires installation of [Graphviz][graphviz] for pathway drawing.
 
@@ -30,7 +30,8 @@ and government use.
  [metapath-github]: https://github.com/mfitzp/metapath/issues
  [metapath-github-issues]: https://github.com/mfitzp/metapath
  [metacyc]: http://metacyc.org
- [metapath-macapp]: http://download.martinfitzpatrick.name/MetaPath-0.9.9.dmg
+ [metapath-mac]: http://download.getmetapath.org/MetaPath-1.0.0.dmg
+ [metapath-windows]: http://download.getmetapath.org/MetaPath-1.0.0-amd64.msi
  [metapath-pypi]: https://pypi.python.org/pypi/metapath 
  [graphviz]: http://www.graphviz.org/
  

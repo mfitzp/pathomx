@@ -36,6 +36,8 @@ try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
+    
+import matplotlib as mpl
 
 # MetaPath classes
 import db, data, utils, ui, threads # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
@@ -336,7 +338,7 @@ class MainWindow(QMainWindow):
         #self.dataDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
         self.stack = QStackedWidget()
-        self.views = []
+        self.apps = []
         
         self.threadpool = QThreadPool()
         print "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount()
@@ -358,10 +360,8 @@ class MainWindow(QMainWindow):
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
 
-        self.home = ui.HomeView(self)
+        self.home = ui.HomeApp(self)
 
-        # Signals
-        self.workspace_updated.connect( self.home.render )
         
         app_category_icons = {
                "Import": QIcon( os.path.join( utils.scriptdir,'icons','disk--arrow.png' ) ),
@@ -723,7 +723,7 @@ class MainWindow(QMainWindow):
             self.clearWorkspace()
     
     def clearWorkspace(self):
-        for v in self.views[:]: # Copy as v.delete modifies the self.views list
+        for v in self.apps[:]: # Copy as v.delete modifies the self.apps list
             v.delete()
             
         # Remove all workspace datasets
@@ -746,7 +746,7 @@ class MainWindow(QMainWindow):
         root.set('xmlns:mpwfml', "http://getmetapath.org/schema/Workflow/2013a")
     
         # Build a JSONable object representing the entire current workspace and write it to file
-        for v in self.views:
+        for v in self.apps:
             app = et.SubElement(root, "App")
             app.set("id", v.id)
             
@@ -903,6 +903,15 @@ def main():
     if translator_mp.load( "metapath_%s" % locale, os.path.join(utils.scriptdir,'translations') ):
         print "Loaded MetaPath translations for locale: %s" % locale
     app.installTranslator(translator_mp)    
+    
+    # Set Matplotlib defaults for nice looking charts
+    mpl.rcParams['figure.facecolor'] = 'white'
+    mpl.rcParams['lines.linewidth'] = 0.5
+    mpl.rcParams['lines.color'] = 'black'
+    mpl.rcParams['axes.linewidth'] = 0.5
+    mpl.rcParams['font.size'] = 9
+    mpl.rcParams['font.sans-serif'] = ['Helvetica Neue','Helvetica','Helvetica','Bitstream Vera Sans','Lucida Grande','Verdana','Geneva','Lucid','Arial']
+    
 
     window = MainWindow(app)
     app.exec_()

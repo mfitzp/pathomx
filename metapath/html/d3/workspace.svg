@@ -8,7 +8,7 @@
       <rect width="80" height="80" fill="url(#smallGrid)"/>
       <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1"/>
     </pattern>
-<rect fill="url(#largeGrid)" width="100%" height="100%" />
+<rect fill="#ffffff" afill="url(#largeGrid)" width="100%" height="100%" />
 
 <marker id="circlemark" markerWidth="10" markerHeight="10"
         orient="auto" refX="5" refY="5">

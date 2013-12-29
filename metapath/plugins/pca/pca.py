@@ -26,7 +26,7 @@ from data import DataSet, DataDefinition
 
 
 
-class PCAView( ui.AnalysisView ):
+class PCAView( ui.DataPyQtGraphView ):
     def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
         super(PCAView, self).__init__(plugin, parent, **kwargs)
 

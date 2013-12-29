@@ -13,17 +13,33 @@ from PyQt5.QtPrintSupport import *
 
 from collections import defaultdict
 
-import os, urllib, urllib2, copy, re, json, importlib
-
-# MetaPath classes
-import utils
-
+import os, urllib, urllib2, copy, re, json, importlib, sys
 import numpy as np
 
-import data, config
+# MetaPath classes
+import utils, data, config
+
+from views import D3HomeView, ViewManager
 
 # Translation (@default context)
 from translate import tr
+
+
+from numpy import arange, sin, pi
+
+# Web views default HTML
+BLANK_DEFAULT_HTML = '''
+<html>
+<style>
+    * {
+        width:100%;
+        height:100%;
+        margin:0;
+        background-color: #f5f5f5;
+    }
+</style>
+<body>&nbsp;</body></html>
+'''
 
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
@@ -67,21 +83,6 @@ class genericDialog(QDialog):
                     control.Deselect(idx)
         except:
             pass
-        
-# Web views
-
-BLANK_DEFAULT_HTML = '''
-<html>
-<style>
-    * {
-        width:100%;
-        height:100%;
-        margin:0;
-        background-color: #f5f5f5;
-    }
-</style>
-<body>&nbsp;</body></html>
-'''
 
 class ExportImageDialog(genericDialog):
     
@@ -313,73 +314,9 @@ class ExportImageDialog(genericDialog):
         return self.scaling.currentText() == 'Resample' 
 
 
-class QWebPageJSLog(QWebPage):
-    """
-    Makes it possible to use a Python logger to print javascript console messages
-    """
-    def __init__(self, parent=None, **kwargs):
-        super(QWebPageJSLog, self).__init__(parent, **kwargs)
-
-    def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
-        print "JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg)
-     
-
-class RenderPageToFile(QWebPage): 
-    def __init__(self, wv, fn, size=None, dpm=11811, resample=True): # 11811 == 300dpi
-        super(RenderPageToFile, self).__init__()
-
-        self.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
-        self.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
-
-        #self.settings().setAttribute( QWebSettings.JavascriptEnabled,False)
-
-        self.finished = False
-            
-        self.size = size if size != None else wv.size() 
-        self.dpm = dpm
-        self.resample = resample
-
-        self.setViewportSize(self.size)
-        self.loadFinished.connect(self._loadFinished)
-        self.fn = fn
-        
-        c = wv.page().mainFrame().toHtml()
-        c = c.replace('<html><head></head><body>','')
-        c = c.replace('</body></html>','')
-        print c[:1000]
-        if self.resample: # Remove drawn graph; we'll regenerate
-            c = re.sub( '\<g.*\/g\>', '', c,  re.MULTILINE)
-        else:
-            # Keep graph but apply sizing; using svg viewport scaling
-            # this is a bit hacky; rewriting the svg width/height parameters using regex
-            c = re.sub( '(\<svg.*width=")([^"]*)(".*\>)', '\g<1>%d\g<3>' % self.size.width(), c)
-            c = re.sub( '(\<svg.*height=")([^"]*)(".*\>)', '\g<1>%d\g<3>' % self.size.height(), c)
-            
-        print 'RESULT:'
-        print c[:1000]
-        self.mainFrame().setHtml( c )
-    
-    def _loadFinished(self, ok):
-
-        frame = self.mainFrame()
-        if self.resample: # If resampling we need to regenerate the graph
-            frame.evaluateJavaScript( "_metapath_render_trigger(); console.log('done');" )
-
-        #self.size = frame.contentsSize()#        self.setViewportSize(self.size)
-        image = QImage(self.size, QImage.Format_ARGB32)
-        image.setDotsPerMeterX(self.dpm)
-        image.setDotsPerMeterY(self.dpm)
-        painter = QPainter(image)
-        frame.render(painter)
-        painter.end()
-
-        image.save(self.fn)
-        self.finished = True
-
 class QWebPageExtend(QWebPage):
     def shouldInterruptJavascript():
         return False
-
 
 class QWebViewExtend(QWebView):
 
@@ -393,9 +330,6 @@ class QWebViewExtend(QWebView):
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        self.loadFinished.connect(self._loadFinished)
-        self._is_svg_with_js = False
-        #self._svg_graph_dimensions = None
         
         # Override links for internal link cleverness
         if onNavEvent:
@@ -409,47 +343,12 @@ class QWebViewExtend(QWebView):
             return self.w.size()
         else:
             return super(QWebViewExtend, self).sizeHint()        
-
-    def setSVG(self, svg):
-        self._is_svg_with_js = True
-        super(QWebViewExtend, self).setHtml(svg, QUrl('file:///') )             
-        #super(QWebViewExtend, self).setContent(svg, "image/svg+xml") <- this would be preferable but has encoding issues
-        
-    def _loadFinished(self, ok):
-        sizer = self.sizeHint()   
-        self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
-        if self._is_svg_with_js:
-            self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
-            self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" )
-            #self.page().currentFrame().evaluateJavaScript( "_metapath_store_graph_dimensions();" ) # get the inner dimensions of the g#graph element (minus margins)
-            #print self._svg_graph_dimensions
             
     @pyqtSlot(str)
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
         return True
 
-    #@pyqtSlot(int, int)
-    #def storeGraphDimensions(self, width, height):
-    #    self._svg_graph_dimensions = (width, height)
-    #    print self._svg_graph_dimensions
-    #    return True
-        
-    def saveAsImage(self, size=(800,600), dpm=11811, resample=True): # Size, dots per metre (for print), resample (redraw) image
-        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
-                                                                                     Portable Network Graphics (*.png)")
-        if filename:
-            r = RenderPageToFile(self, filename, size, dpm, resample ) 
-            while r.finished != True:
-                QCoreApplication.processEvents()
-                
-
-class QWebViewScrollFix(QWebViewExtend):
-    
-    def __init__(self, parent, onNavEvent=None, **kwargs):
-        super(QWebViewScrollFix, self).__init__(parent, onNavEvent=onNavEvent, **kwargs)        
-
-        
 
 # View Dialogs
 
@@ -575,11 +474,11 @@ class QTabWidgetExtend( QTabWidget ):
         return self.w.size()
     
     # A few wrappers to 
-    def addTab(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
+    def addView(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
-        t = super(QTabWidgetExtend, self).addTab(widget, name, **kwargs)
+        t = super(QTabWidgetExtend, self).addView(widget, name, **kwargs)
         
         return t
     
@@ -597,14 +496,14 @@ class QTabWidgetExtend( QTabWidget ):
 
 
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
-class GenericView( QMainWindow ):
+class GenericApp( QMainWindow ):
 
     help_tab_html_filename = None
     status = pyqtSignal(str)
     progress = pyqtSignal(int)
 
     def __init__(self, plugin, parent, **kwargs):
-        super(GenericView, self).__init__(parent, **kwargs)
+        super(GenericApp, self).__init__(parent, **kwargs)
     
         self.id = str( id( self ) )
 
@@ -616,28 +515,21 @@ class GenericView( QMainWindow ):
         self._pause_analysis_flag = False
         
         self.data = data.DataManager(self.m, self)
+        self.views = ViewManager(self)
         self.name = self.m.plugin_names[ id( self.plugin ) ]
 
         #self.thread = None
         #self.threadpool = QThreadPool()
         #self.threadpool.setMaxThreadCount(1)
 
-
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        
-        #self.w = QMainWindow()
-        self.tabs = QTabWidgetExtend(self)
-        self.tabs.setDocumentMode(True)
-        self.tabs.setTabsClosable(False)
-        self.tabs.setTabPosition( QTabWidget.South )
-        self.tabs.setMovable(True)
         
         self.file_watcher = QFileSystemWatcher()            
         self.file_watcher.fileChanged.connect( self.onFileChanged )
 
         if self.plugin.help_tab_html_filename:
             self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-            self.tabs.addTab(self.help, '?', unfocus_on_refresh=True)            
+            self.views.addView(self.help, '?', unfocus_on_refresh=True)            
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
             self.help.setHtml( template.render( {
                         'htmlbase': os.path.join( utils.scriptdir,'html'),
@@ -653,7 +545,7 @@ class GenericView( QMainWindow ):
         
         self.register_url_handler( self.default_url_handler )
 
-        self.setCentralWidget(self.tabs)
+        self.setCentralWidget(self.views)
         
         self.status.connect( self.setWorkspaceStatus )
         self.progress.connect( self.updateProgress )
@@ -688,7 +580,7 @@ class GenericView( QMainWindow ):
             self.setWorkspaceStatus('paused')
             return False
         
-        self.tabs.autoSelect() # Unfocus the help file if we've done something here
+        self.views.autoSelect() # Unfocus the help file if we've done something here
         self.generate(*args, **kwargs)
     
     def generate(self):
@@ -931,7 +823,7 @@ class GenericView( QMainWindow ):
     
     def onSaveImage(self):
         # Get currently selected webview
-        cw = self.tabs.currentWidget()
+        cw = self.views.currentWidget()
         
         # Load dialog for image export dimensions and resolution
         # TODO: dialog!
@@ -947,6 +839,9 @@ class GenericView( QMainWindow ):
 
     def onRecalculate(self):
         self.generate()
+        
+    def onBrowserNav(self, url):
+        self.m.onBrowserNav(url)
 
     # Url handler for all default plugin-related actions; making these accessible to all plugins
     # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
@@ -991,10 +886,10 @@ class GenericView( QMainWindow ):
 
 # Workspace overview (Home) class
 
-class HomeView( GenericView ):
+class HomeApp( GenericApp ):
 
     def __init__(self, parent, **kwargs):
-        super(GenericView, self).__init__(parent, **kwargs) # We're overriding all of the GenericView Init, so super it
+        super(GenericApp, self).__init__(parent, **kwargs) # We're overriding all of the GenericApp Init, so super it
     
         self.plugin = None
         self.m = parent
@@ -1006,16 +901,16 @@ class HomeView( GenericView ):
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         
-        #self.w = QMainWindow()
-        self.tabs = QTabWidgetExtend(self)
-        self.tabs.setDocumentMode(True)
-        self.tabs.setTabsClosable(False)
-        self.tabs.setTabPosition( QTabWidget.South )
-        self.tabs.setMovable(True)
+        self.views = ViewManager(self)
+
+        view = D3HomeView(self)
+        self.m.workspace_updated.connect( view.render )
+        self.views.addView(view,'Workflow')
+        
         
         # Display welcome file
         self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-        self.tabs.addTab(self.help,'?', unfocus_on_refresh=True)            
+        self.views.addView(self.help,'?', unfocus_on_refresh=True)            
         template = self.m.templateEngine.get_template('welcome.html')
         self.help.setHtml( template.render( {
                     'htmlbase': os.path.join( utils.scriptdir,'html'),
@@ -1023,14 +918,14 @@ class HomeView( GenericView ):
                     )
 
         self.workspace = QWebViewExtend( self, onNavEvent=self.m.onBrowserNav )
-        self.tabs.addTab(self.workspace,'Workspace')
+        #self.views.addView(self.workspace,'Workspace')
 
         self.toolbars = {}
         self.addSelfToolBar() # Everything has one
         self.controls = defaultdict( dict ) # Store accessible controls
         
         self.register_url_handler( self.workspace_url_handler )
-        self.setCentralWidget(self.tabs)
+        self.setCentralWidget(self.views)
         
         self.config = QSettings()
         
@@ -1038,27 +933,7 @@ class HomeView( GenericView ):
         
         self.workspace_item = self.m.addWorkspaceItem(self, None, self.name, is_selected=True, icon=QIcon( os.path.join( utils.scriptdir,'icons','home.png' )) )#, icon = None)
 
-    def render(self):
-        objects = []
-        for v in self.m.views:
-            objects.append( (v.id, v) )
-
-        inheritance = [] # Inter datasetmanager links; used for view hierarchy
-        for v in self.m.views:
-            # v.id = origin
-            for i,ws in v.data.watchers.items():
-                for w in ws:
-                    inheritance.append( (v.id, w.v.id) ) # watcher->view->id
-                    
-        links = [] # Links inputs -> outputs (dso links)
-        
-
-        template = self.m.templateEngine.get_template('d3/workspace.svg')
-        self.workspace.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
-
-        self.tabs.autoSelect()
-        
-        
+    
     # Url handler for all default plugin-related actions; making these accessible to all plugins
     # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
     def workspace_url_handler(self, url):
@@ -1107,18 +982,18 @@ class HomeView( GenericView ):
 
 # Data view prototypes
 
-class DataView(GenericView):
+class DataApp(GenericApp):
     def __init__(self, plugin, parent, **kwargs):
-        super(DataView, self).__init__(plugin, parent, **kwargs)
+        super(DataApp, self).__init__(plugin, parent, **kwargs)
 
         self.summary = QWebViewExtend(self)
         self.table = QTableView()
         self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
 
-        self.tabs.addTab(self.table, tr('Table'), unfocus_on_refresh=True )
-        self.viewer_tab_index = self.tabs.addTab(self.viewer, tr('View'))
-        self.tabs.setTabEnabled( self.viewer_tab_index, False)
-        #self.tabs.addTab(self.summary, 'Summary')
+        self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True )
+        self.viewer_tab_index = self.views.addView(self.viewer, tr('View'))
+        self.views.setTabEnabled( self.viewer_tab_index, False)
+        #self.views.addView(self.summary, 'Summary')
 
     def render(self, metadata={}):
         # If we have scale data, enable and render the Viewer tab
@@ -1127,7 +1002,7 @@ class DataView(GenericView):
             dso = self.data.o['output']
 
             if float in [type(t) for t in dso.scales[1]]:
-                self.tabs.setTabEnabled( self.viewer_tab_index, True)
+                self.views.setTabEnabled( self.viewer_tab_index, True)
             
                 print "Scale data up top; make a spectra view"
                 metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
@@ -1164,14 +1039,14 @@ class DataView(GenericView):
 
 # Import Data viewer
 
-class ImportDataView( DataView ):
+class ImportDataApp( DataApp ):
 
     import_type = tr('Data')
     import_filename_filter = tr("All Files") + " (*.*);;"
     import_description =  tr("Open experimental data from file")
     
     def __init__(self, plugin, parent, **kwargs):
-        super(ImportDataView, self).__init__(plugin, parent, **kwargs)
+        super(ImportDataApp, self).__init__(plugin, parent, **kwargs)
     
         self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
@@ -1215,12 +1090,12 @@ class ImportDataView( DataView ):
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class AnalysisView(GenericView):
+class AnalysisApp(GenericApp):
     def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisView, self).__init__(plugin, parent, **kwargs)
+        super(AnalysisApp, self).__init__(plugin, parent, **kwargs)
 
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
-        self.tabs.addTab(self.browser, tr('View') )
+        self.views.addView(self.browser, tr('View') )
     
     def render(self, metadata, template='d3/figure.svg', target=None):
         if target == None:
@@ -1389,7 +1264,7 @@ class AnalysisView(GenericView):
     
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class AnalysisD3View(AnalysisView):
+class AnalysisD3App(AnalysisApp):
         
     def render(self, metadata, debug=False, template_name='figure'):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
@@ -1400,12 +1275,12 @@ class AnalysisD3View(AnalysisView):
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class D3View(AnalysisView):
+class D3App(AnalysisApp):
     def __init__(self, plugin, parent, **kwargs):
-        super(D3View, self).__init__(plugin, parent, **kwargs)        
+        super(D3App, self).__init__(plugin, parent, **kwargs)        
     
         self.parent = parent
-        self.browser = QWebViewExtend( self.tabs, onNavEvent=parent.onBrowserNav )
+        self.browser = QWebViewExtend( self.views, onNavEvent=parent.onBrowserNav )
     
     def generate(self):
         current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
@@ -1448,7 +1323,7 @@ class D3View(AnalysisView):
 
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class AnalysisHeatmapView(AnalysisD3View):
+class AnalysisHeatmapApp(AnalysisD3App):
 
     #self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
     def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
@@ -1489,9 +1364,9 @@ class AnalysisHeatmapView(AnalysisD3View):
 
 
 
-class AnalysisCircosView(AnalysisD3View):
+class AnalysisCircosApp(AnalysisD3App):
     def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisCircosView, self).__init__(plugin, parent, **kwargs)        
+        super(AnalysisCircosApp, self).__init__(plugin, parent, **kwargs)        
         self.parent = parent
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
 
@@ -1513,9 +1388,9 @@ class AnalysisCircosView(AnalysisD3View):
 
 
 
-class AnalysisCircosPathwayView(AnalysisHeatmapView):
+class AnalysisCircosPathwayApp(AnalysisHeatmapApp):
     def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisCircosPathwayView, self).__init__(plugin, parent, **kwargs)        
+        super(AnalysisCircosPathwayApp, self).__init__(plugin, parent, **kwargs)        
 
         self.parent = parent
         self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
