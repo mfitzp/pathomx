@@ -25,6 +25,168 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 
+
+
+class DataTreeItem(object):
+    '''
+    a python object used to return row/column data, and keep note of
+    it's parents and/or children
+    '''
+    def __init__(self, dso, header, parentItem):
+        self.dso = dso
+        self.parentItem = parentItem
+        self.header = header
+        self.childItems = []
+
+    def appendChild(self, item):
+        self.childItems.append(item)
+
+    def child(self, row):
+        return self.childItems[row]
+
+    def childCount(self):
+        return len(self.childItems)
+
+    def columnCount(self):
+        return 2
+    
+    def data(self, column):
+        e = set()
+        for el in self.dso.entities_t:
+            e |= set(el) # Add entities to the set
+
+        map = {
+        0: 0,
+        1: self.dso.manager.v.name,
+        2: self.dso.name,
+        3: ', '.join( e - {'NoneType'} ),
+        4: 'x'.join( [str(s) for s in self.dso.shape ] ),
+        }
+    
+        if self.dso:
+            return map[column]
+                            
+        return QVariant()
+        
+    def icon(self):
+        if self.dso.manager.v.plugin.workspace_icon:
+            return self.dso.manager.v.plugin.workspace_icon
+
+    def parent(self):
+        return self.parentItem
+    
+    def row(self):
+        if self.parentItem:
+            return self.parentItem.childItems.index(self)
+        return 0
+
+class DataTreeModel(QAbstractItemModel):
+    '''
+    a model to display a few names, ordered by sex
+    '''
+    def __init__(self, dsos=[], parent=None):
+        super(DataTreeModel, self).__init__(parent)
+        self.dsos = dsos
+        self.HORIZONTAL_HEADERS = ['','Source','Data','Entities', 'Size']
+        self.rootItem = DataTreeItem(None, "ALL", None)
+        self.parents = {0 : self.rootItem}
+        self.setupModelData()
+
+    def columnCount(self, parent=None):
+        if parent and parent.isValid():
+            return parent.internalPointer().columnCount()
+        else:
+            return len(self.HORIZONTAL_HEADERS)
+
+    def data(self, index, role):
+        if not index.isValid():
+            return QVariant()
+
+        item = index.internalPointer()
+        if role == Qt.DisplayRole:
+            return item.data(index.column())
+        if role == Qt.UserRole:
+            if item:
+                return item.dso
+        if role == Qt.DecorationRole and index.column() == 1:
+            return item.icon()
+
+        return QVariant()
+
+    def headerData(self, column, orientation, role):
+        if (orientation == Qt.Horizontal and
+        role == Qt.DisplayRole):
+            try:
+                return QVariant(self.HORIZONTAL_HEADERS[column])
+            except IndexError:
+                pass
+
+        return QVariant()
+
+    def index(self, row, column, parent):
+        if not self.hasIndex(row, column, parent):
+            return QModelIndex()
+
+        if not parent.isValid():
+            parentItem = self.rootItem
+        else:
+            parentItem = parent.internalPointer()
+
+        childItem = parentItem.child(row)
+        if childItem:
+            return self.createIndex(row, column, childItem)
+        else:
+            return QModelIndex()
+
+    def parent(self, index):
+        if not index.isValid():
+            return QModelIndex()
+
+        childItem = index.internalPointer()
+        if not childItem:
+            return QModelIndex()
+        
+        parentItem = childItem.parent()
+
+        if parentItem == self.rootItem:
+            return QModelIndex()
+
+        return self.createIndex(parentItem.row(), 0, parentItem)
+
+    def rowCount(self, parent=QModelIndex()):
+        if parent.column() > 0:
+            return 0
+        if not parent.isValid():
+            p_Item = self.rootItem
+        else:
+            p_Item = parent.internalPointer()
+        return p_Item.childCount()
+    
+    def setupModelData(self):   
+        if self.dsos:
+            for dso in self.dsos:
+                newItem = DataTreeItem(dso, "", self.rootItem)
+                self.rootItem.appendChild(newItem)
+        
+    def refresh(self):
+        self.layoutAboutToBeChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
+        
+        ins = set()
+        for n, item in enumerate(self.rootItem.childItems): #self.parentItem.childItems.index(self)
+            if item.dso not in self.dsos:
+                self.removeRow(n)
+            ins.add( item.dso )
+
+        outs = set(self.dsos) - ins
+        for dso in outs:
+            newItem = DataTreeItem(dso, "", self.rootItem)
+            self.rootItem.appendChild(newItem)
+            
+            
+        self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
+        
+        
+
 #from lxml import etree as et
 
 # DataManager allows a view/analysis class to handle control of consumable data sources
@@ -32,6 +194,8 @@ class DataManager( QObject ):
 
     # Signals
     source_updated = pyqtSignal()
+    consumed = pyqtSignal( tuple, tuple )
+    unconsumed = pyqtSignal( tuple, tuple )
 
     def __init__(self, parent, view, *args, **kwargs):
         super(DataManager, self).__init__( *args, **kwargs)
@@ -79,14 +243,26 @@ class DataManager( QObject ):
             self.o[interface].manager = self
             self.o[interface].manager_interface = interface
             # Update consumers / refresh views
-            self.o[interface].as_table.refresh()    
+            self.o[interface].refresh_interfaces()    
             self.o[interface].previously_managed_by.append(self)
             self.notify_watchers(interface)
+
+
+            self.m.dataModel.refresh()
             return True
+            
+            
         return False
     
     def unput(self, interface):
+        print 'UNPUTTING'
+        # Trigger _unconsume on all watchers
+        for w in list( self.watchers[interface] ):
+            for i,d in w.i.items():
+                w.unget( i )
+        
         self.watchers[interface] = set()
+        self.m.datasets.remove( self.o[interface] )
         self.o[interface] = DataSet(manager=self) # Empty dso (temp; replace with None later?)
 
     # Get a dataset through output interface id;
@@ -142,9 +318,6 @@ class DataManager( QObject ):
     def notify_watchers(self, interface):
         for manager in self.watchers[interface]:
             manager.source_updated.emit()
-
-        for view in self.viewers[interface]:
-            view.source_updated.emit()
             
             
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
@@ -185,23 +358,24 @@ class DataManager( QObject ):
     def _unconsume(self, data):
         if data and self in data.manager.watchers[ data.manager_interface ]:
             data.manager.watchers[ data.manager_interface ].remove( self )
-            # Implement some way to stop the double-hit here (when called from _consume)
-            #try: # Notify the mainview of the workspace change
-            #    self.m.workspace_updated.emit()            
-            #except:
-            #    pass
+            for interface,d in self.i.items():
+                if d == data:
+                    self.unconsumed.emit( (data.manager, data.manager_interface), (self, interface) )
+
             
     # This is an unchecked consume action; for loading mainly
     def _consume_action(self, interface, data):
         if interface in self.i:
             self._unconsume(self.i[interface]) 
-    
+
         self.i[ interface ] = data
         data.manager.watchers[ data.manager_interface ].add( self )
 
         self.consumes.append( data )
         data.consumers.append( self )
-  
+
+        self.consumed.emit( (data.manager, data.manager_interface), (self, interface) )
+
     # Check if we can consume some data, then do it                      
     def _consume(self, data, consumer_defs=None):
         if consumer_defs == None:
@@ -219,9 +393,9 @@ class DataManager( QObject ):
                 #data.manager.watchers[ data.manager_interface ].add( self )
                 #self.consumes.append( data )
                 #data.consumers.append( self )
+                
                 try: # Notify the mainview of the workspace change
                     self.m.workspace_updated.emit()   
-                    print "_consume ACTION ---"         
                 except:
                     pass
                 return True    
@@ -236,7 +410,8 @@ class DataManager( QObject ):
         for dso in data_l:
             if self._consume(dso):
                 self.source_updated.emit()
-                return True
+                return dso
+        return False
                 
     def consume_with(self, data, consumer_def):
         if self._consume(data, [consumer_def]):
@@ -261,14 +436,12 @@ class DataManager( QObject ):
         self.source_updated.emit() # Trigger recalculation
 
 
-
     def reset(self):
         for i in self.i.keys():
             self.unget(i)
         
         for i in self.o.keys():
             self.unput(i)
-            
             
         
 
@@ -356,9 +529,9 @@ class DataDefinition( QObject ):
 
 
 # QAbstractTableModel interface to loaded dataset. 
-class QTableInterface(QAbstractTableModel):
+class TableInterface(QAbstractTableModel):
     def __init__(self, dso, *args, **kwargs):        
-        super(QTableInterface, self).__init__(*args, **kwargs)
+        super(TableInterface, self).__init__(*args, **kwargs)
         self.dso = dso
         
     def rowCount(self, parent):
@@ -399,6 +572,7 @@ class QTableInterface(QAbstractTableModel):
         self.headerDataChanged.emit(Qt.Horizontal,0,self.columnCount(None))
         self.headerDataChanged.emit(Qt.Vertical,0,self.rowCount(None))
         self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
+
         
     def sort(self, col, order):
         """sort table by given column number col"""
@@ -435,12 +609,14 @@ class DataSet( QObject ):
         # Helpers for doing this should ideally be implemented
         self.interfaces = [] # Interface interface table; for triggering refresh on update
         
-        self.register_interface( 'as_table', QTableInterface(self) )
+        self.register_interface( 'as_table', TableInterface )
         # self.as_table = #
 
         # MetaData derived from data formats, inc. statistics etc. [informational only; not prescribed]
         self.log = [] # Log of processing
                       # a list of dicts containing the 
+    
+        self.statistics = defaultdict(defaultdict)
     
     # Metaclasses for copying the dataset object; copy is fine as the default implementation
     # but we need deepcopy that stops at the db boundary.
@@ -456,10 +632,10 @@ class DataSet( QObject ):
         o.description = copy(self.description)
         o.type = copy(self.type) 
 
-        o.labels = self.labels[:]
-        o.entities = self.entities[:]
-        o.scales = self.scales[:]
-        o.classes = self.classes[:]
+        o.labels = [x[:] for x in self.labels]
+        o.entities = [x[:] for x in self.entities]
+        o.scales = [x[:] for x in self.scales]
+        o.classes = [x[:] for x in self.classes]
 
         o.data = deepcopy(self.data)
 
@@ -483,7 +659,7 @@ class DataSet( QObject ):
             self.scales.append( [None] * s )
             self.classes.append( [None] * s ) 
 
-        self.axes = []
+        self.axes = [None] * len(size)
         
         self.data = np.zeros( size ) #np.array([]) # Data container  
         
@@ -509,9 +685,18 @@ class DataSet( QObject ):
 
     
     def register_interface(self, interface_name, interface):
+        interface = interface( self )
         self.__dict__[ interface_name ] = interface
-        self.interfaces.append( interface )        
+        self.interfaces.append( interface )     
         
+    
+    def refresh_interfaces(self):
+        """ 
+        Refresh all interfaces, e.g. as_table
+        """
+        for i in self.interfaces:
+            i.refresh()
+
     # Helper functions for describing this dataset object; they summarise the data held in a consistent way
     # naming conventionis _l for lists; _n for 'number of' e.g. class_l holds a list of all classes (in each dimension)
     # class_n holds the number of classes (in each dimension). All accessible as properties
@@ -682,12 +867,10 @@ class DataSet( QObject ):
     
     # Filter data by labels/entities on a given axis    
     def as_filtered(self, dim=1, scales=None, classes=None, labels=None, entities=None):
-        
         dso = DataSet()
         dso.import_data( self ) # We'll overwrite the wrongly dimensional data anyway
-
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )
-
+        
         # Build consecutive mask
         iter = [
             (dso.entities[dim], entities),
@@ -697,12 +880,10 @@ class DataSet( QObject ):
         ]
         
         mask = np.array([ True for i in dso.entities[dim] ])
-        
         for dis,ois in iter:
             if ois == None:
                 continue
-            ois_na = np.array(ois)
-                
+
             imask = np.array([ True if di not in ois else False for di in dis ]) 
             mask[imask] = False
             
@@ -734,6 +915,7 @@ class DataSet( QObject ):
         for d, s in enumerate( shape ):
             if s<self.data.shape[d]: # Only allow crop
                 self.labels[d] = self.labels[d][:s]
+                self.classes[d] = self.classes[d][:s]
                 self.entities[d] = self.entities[d][:s]
                 self.scales[d] = self.scales[d][:s]
                 final_shape[d] = shape[d]

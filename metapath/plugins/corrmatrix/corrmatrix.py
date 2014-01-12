@@ -21,17 +21,19 @@ from plugins import VisualisationPlugin
 import os
 import ui, utils
 from data import DataSet, DataDefinition
-
+from views import D3PrerenderedView
 
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class CorrMatrixView(ui.AnalysisD3View):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(CorrMatrixView, self).__init__(plugin, parent, **kwargs)
+class CorrMatrixApp(ui.AnalysisApp):
+    def __init__(self,auto_consume_data=True, **kwargs):
+        super(CorrMatrixApp, self).__init__( **kwargs)
          
         self.addDataToolBar()
         self.addFigureToolBar()
+            
+        self.views.addView( D3PrerenderedView(self), 'View')
             
         self.data.add_input('input') # Add input slot            
         # Setup data consumer options
@@ -46,11 +48,11 @@ class CorrMatrixView(ui.AnalysisD3View):
         self.toolbars['bar'] = t
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
 
-    def generate(self):
-        self.setWorkspaceStatus('active')
+    def generate(self, input=None):
 
         #State,Under 5 Years,5 to 13 Years,14 to 17 Years,18 to 24 Years,25 to 44 Years,45 to 64 Years,65 Years and Over
         #CA,2704659,4499890,2159981,3853788,10604510,8819342,4114496
@@ -60,7 +62,7 @@ class CorrMatrixView(ui.AnalysisD3View):
         #IL,894368,1558919,725973,1311479,3596343,3239173,1575308
         #PA,737462,1345341,679201,1203944,3157759,3414001,1910571
         
-        dso = self.data.get('input')
+        dso = input
         
         fd = np.mean( dso.data, axis=0 )
         fdm = zip( dso.labels[1], fd )
@@ -73,27 +75,23 @@ class CorrMatrixView(ui.AnalysisD3View):
             data.append(
                 ( c, {m: dso.data[n, dso.labels[1].index(m)] for m in metabolites[:4]} )
             )
-    
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
+            
+        metadata = {
             'figure':  {
                             'type':'bar',
                             'data': data,
-                        },                        
-        }, template_name='corrmatrix')
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
-
-        
+                        },     
+                    }
+    
+        return {'metadata':metadata}
+    
+    def prerender(self, metadata=None):
+        return {'View':{'metadata':metadata, 'template':'d3/corrmatrix.svg'} }
 
 
 class CorrMatrix(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(CorrMatrix, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-    
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return CorrMatrixView( self, self.m, **kwargs )
+        CorrMatrixApp.plugin = self
+        self.register_app_launcher( CorrMatrixApp )

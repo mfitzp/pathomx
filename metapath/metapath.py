@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import urllib2
+import urllib2, textwrap
 
 from optparse import Values
 from collections import defaultdict
@@ -40,14 +40,41 @@ except ImportError:
 import matplotlib as mpl
 
 # MetaPath classes
-import db, data, utils, ui, threads # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
+import db, data, utils, ui, threads, custom_exceptions # core, layout - removed to plugin MetaViz, figure -deprecated in favour of d3
 import plugins # plugin helper/manager
+from editor.editor import WorkspaceEditor
 
 # Translation (@default context)
 from translate import tr
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
+
+
+class DialogAbout(QDialog):
+    def __init__(self, parent, **kwargs):
+        super(DialogAbout, self).__init__(parent, **kwargs)        
+
+
+        self.help = ui.QWebViewExtend(self, parent.onBrowserNav)
+        template = parent.templateEngine.get_template('about.html')
+        self.help.setHtml( template.render( {
+                    'htmlbase': os.path.join( utils.scriptdir,'html'),
+                    } ), QUrl("~")
+                    )
+                    
+        self.layout = QVBoxLayout()
+        self.layout.addWidget( self.help )
+
+        # Setup default button configurations etc.
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
+        self.buttonBox.rejected.connect(self.close)
+        self.layout.addWidget( self.buttonBox )
+        self.setLayout(self.layout)                
+
+    def sizeHint(self):
+        return QSize(600,400)
+
 
 class dialogDefineExperiment(ui.genericDialog):
     
@@ -108,8 +135,117 @@ class dialogDefineExperiment(ui.genericDialog):
 
         # Build dialog layout
         self.dialogFinalise()
+        
 
 
+
+class toolBoxItemDelegate(QAbstractItemDelegate):
+
+    def __init__(self, parent=None,**kwargs):
+        super(toolBoxItemDelegate, self).__init__(parent, **kwargs)
+        self._elidedwrappedtitle = {} #Cache
+            
+    def paint( self, painter, option, index):
+        # GET TITLE, DESCRIPTION AND ICON
+        icon = index.data(Qt.DecorationRole)
+        title = index.data(Qt.DisplayRole) #.toString()
+        #description = index.data(Qt.UserRole) #.toString()
+        #notice = index.data(Qt.UserRole+1) #.toString()
+
+        if option.state & QStyle.State_Selected:
+            painter.setPen( QPalette().highlightedText().color() )
+            painter.fillRect(option.rect, QBrush(QPalette().highlight().color()) )
+        else:
+            painter.setPen( QPalette().text().color() )
+            
+        
+        icon.paint(painter, option.rect.adjusted(2,2,-2,-34), Qt.AlignVCenter|Qt.AlignLeft)
+
+        text_rect = option.rect.adjusted(0,64,0,0)
+        font=QFont()
+        font.setPointSize(11)
+        painter.setFont(font)     
+        
+        if title not in self._elidedwrappedtitle:   
+             self._elidedwrappedtitle[title] = self.elideWrapText( painter, title, text_rect )
+
+        painter.drawText(text_rect, Qt.AlignTop|Qt.AlignHCenter|Qt.TextWordWrap, self._elidedwrappedtitle[title]) 
+        #painter.drawText(text_rect.x(), text_rect.y(), text_rect.width(), text_rect.height(),, 'Hello this is a long title', boundingRect=text_rect)
+
+    def elideWrapText(self,painter, text, text_rect):
+        text = textwrap.wrap(text, 10, break_long_words=False)
+        wrapped_text = []
+        for l in text[:2]: # Max 2 lines
+            l = painter.fontMetrics().elidedText(l, Qt.ElideRight, text_rect.width() )
+            wrapped_text.append( l )
+        wrapped_text = '\n'.join(wrapped_text)
+        return wrapped_text
+
+    def sizeHint( self, option, index ):
+        return QSize(64,96)   
+
+class ToolBoxItem(QListWidgetItem):
+    def __init__(self, data=None, parent=None,**kwargs):
+        super(ToolBoxItem, self).__init__(parent, **kwargs)
+        self.data = data
+        
+class ToolPanel(QListWidget):
+
+    def __init__(self, parent, tools=[], **kwargs):
+        super(ToolPanel, self).__init__(parent, **kwargs)
+
+        self.setViewMode( QListView.IconMode )
+        self.setGridSize( QSize(64,96) )
+        #self._columns = 4 
+        self.setItemDelegate(toolBoxItemDelegate())
+        
+        self.tools = tools   
+        self.addTools()
+        
+        #self.setLayout(self.vlayout)
+        #self.vlayout.addLayout( self.grid )
+        #self.vlayout.addItem( QSpacerItem(10, 10, QSizePolicy.Maximum) )
+        
+    def addTools(self):
+        
+        
+        for n, tool in enumerate(self.tools):
+            #col = n % self._columns
+            #row = n // self._columns
+            
+            #print tool
+            t = ToolBoxItem(data=tool)
+            #t.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+            t.setIcon( tool['plugin'].icon )
+            #t.setIconSize( QSize(32, 32) )
+            t.setText( getattr(tool['app'], 'name', tool['plugin'].name) )
+            self.addItem(t)
+            
+            #t = ToolItem(QIcon( tool['icon']), tool['name'], data=tool)
+            #self.grid.addWidget( t, row, col )
+            
+            
+    def colX(self, col):
+        return col * self._tool_width 
+
+    def rowY(self, row):
+        return row * self._tool_width 
+
+    def mouseMoveEvent(self, e):
+
+        item = self.currentItem()
+
+        mimeData = QMimeData()
+        mimeData.setData('application/x-metapath-app', item.data['id']);
+
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+        drag.setPixmap(item.data['plugin'].pixmap.scaled( QSize(64,64), transformMode = Qt.SmoothTransformation ) )
+        drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
+        
+        dropAction = drag.exec_(Qt.MoveAction)
+     
+     
 class MainWindow(QMainWindow):
 
     workspace_updated = pyqtSignal()
@@ -134,6 +270,8 @@ class MainWindow(QMainWindow):
         self.tab_handlers = []
         self.url_handlers = defaultdict(list)
         self.app_launchers = {}
+        self.app_launcher_categories = defaultdict(list)
+        self.file_handlers = {}
 
         # Create templating engine
         self.templateEngine = Engine(
@@ -154,6 +292,7 @@ class MainWindow(QMainWindow):
             'file': menubar.addMenu( tr('&File') ),
             'plugins': menubar.addMenu( tr('&Plugins') ),
             'database': menubar.addMenu( tr('&Database') ),
+            'help': menubar.addMenu( tr('&Help') ),
         }
 
         # FILE MENU 
@@ -242,8 +381,23 @@ class MainWindow(QMainWindow):
         check_pluginupdatesAction.setStatusTip('Check for updates to installed plugins')
         check_pluginupdatesAction.triggered.connect(self.onCheckPluginUpdates)
         #self.menuBar['plugins'].addAction(check_pluginupdatesAction)  FIXME: Add a plugin-update check  
-        
-        
+
+        aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
+        aboutAction.setStatusTip( tr('About MetaPath') )
+        aboutAction.triggered.connect(self.onAbout)
+        self.menuBar['help'].addAction(aboutAction)
+
+        goto_metapath_websiteAction = QAction( tr('&MetaPath website'), self)
+        goto_metapath_websiteAction.setStatusTip('Go to the MetaPath website')
+        goto_metapath_websiteAction.triggered.connect(self.onGoToMetaPathWeb)
+        self.menuBar['help'].addAction(goto_metapath_websiteAction)
+
+        goto_metapath_demosAction = QAction( tr('&MetaPath demos'), self)
+        goto_metapath_demosAction.setStatusTip('Watch MetaPath demo videos')
+        goto_metapath_demosAction.triggered.connect(self.onGoToMetaPathDemos)
+        self.menuBar['help'].addAction(goto_metapath_demosAction)
+
+
         # GLOBAL WEB SETTINGS
         QNetworkProxyFactory.setUseSystemConfiguration( True )
 
@@ -273,6 +427,8 @@ class MainWindow(QMainWindow):
             
         print "Search for plugins..."
         print ', '.join( self.plugin_places )
+
+        self.tools = defaultdict(list)
             
         self.pluginManager.setPluginPlaces(self.plugin_places)
         self.pluginManager.setPluginInfoExtension( 'metapath-plugin' )
@@ -293,11 +449,13 @@ class MainWindow(QMainWindow):
         self.plugin_names = dict()
         self.plugin_metadata = dict()
         
+        
         # Loop round the plugins and print their names.
         for category in plugin_categories:
             for plugin in self.pluginManager.getPluginsOfCategory(category):
                 
                 plugin_image = os.path.join( os.path.dirname(plugin.path), 'icon.png' )
+
                 if not os.path.isfile( plugin_image ):
                     plugin_image = None
                     
@@ -324,18 +482,6 @@ class MainWindow(QMainWindow):
                 
                 apps[category].append(metadata)
 
-        self.dataDock = QDockWidget( tr('Database') )
-
-        self.dbBrowser = ui.QWebViewExtend( self.dataDock, onNavEvent=self.onBrowserNav )
-        # Display a list of supporting orgs
-        template = self.templateEngine.get_template('sponsors.html')
-        self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),QUrl('~')) 
-        
-        self.dataDock.setWidget(self.dbBrowser)
-        self.dataDock.setMinimumWidth(300)
-        self.dataDock.setMaximumWidth(300)
-        
-        #self.dataDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
         self.stack = QStackedWidget()
         self.apps = []
@@ -355,13 +501,15 @@ class MainWindow(QMainWindow):
         
         self.workspace = QTreeWidget()
         self.workspace.setColumnCount(4)
+        self.workspace.expandAll()
+        
         #∞Σ⌘⁉★⌘↛⇲Σ▼◎♥⚑☺⬚↛⑃        
         self.workspace.setHeaderLabels(['','ID',' ◎',' ⚑']) #,'#'])
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
 
-        self.home = ui.HomeApp(self)
-
+        self.editor = WorkspaceEditor(self)   
+        self.setCentralWidget(self.editor)
         
         app_category_icons = {
                "Import": QIcon( os.path.join( utils.scriptdir,'icons','disk--arrow.png' ) ),
@@ -374,22 +522,21 @@ class MainWindow(QMainWindow):
     
         template = self.templateEngine.get_template('apps.html')
         for category in plugin_categories:
-            self.appBrowsers[ category ] = ui.QWebViewExtend(  self.workspace, onNavEvent=self.onBrowserNav )
-            self.appBrowsers[ category ].setHtml(template.render( 
-                {
-                'htmlbase': os.path.join( utils.scriptdir,'html'),
-                'category': tr(category),
-                'apps':apps[ category ],
-                }                
-             ),QUrl('~')) 
-                
-            self.appBrowsers[ category ].loadFinished.connect( self.onBrowserLoadDone )
-                
-            self.addWorkspaceItem( self.appBrowsers[ category ], None, category, app_category_icons[category]   )
+            self.addWorkspaceItem( None, None, category, app_category_icons[category] )
 
         self.workspace.setSelectionMode( QAbstractItemView.SingleSelection )
-
         self.workspace.currentItemChanged.connect( self.onWorkspaceStackChange)
+
+        #self.dbBrowser = ui.QWebViewExtend( self.dataDock, onNavEvent=self.onBrowserNav )
+        #self.dbBrowser.setHtml(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html')} ),QUrl('~')) 
+
+        self.toolbox = QToolBox(self)
+        for category in plugin_categories:
+            panel = ToolPanel(self, tools=self.tools[category])
+            self.toolbox.addItem( panel, app_category_icons[category], category )
+            
+        self.toolDock = QDockWidget( tr('Toolkit') )
+        self.toolDock.setWidget(self.toolbox)
 
         self.workspaceDock = QDockWidget( tr('Workspace') )
         self.workspaceDock.setWidget(self.workspace)
@@ -400,13 +547,23 @@ class MainWindow(QMainWindow):
         self.workspaceDock.setMinimumWidth(300)
         self.workspaceDock.setMaximumWidth(300)
 
+        self.dataView = QTreeView(self)
+        self.dataModel = data.DataTreeModel(self.datasets)
+        self.dataView.setModel(self.dataModel);
+        self.dataView.hideColumn(0)
+
+        self.dataDock = QDockWidget( tr('Data') )
+        self.dataDock.setWidget(self.dataView)
+        self.dataDock.setMinimumWidth(300)
+        self.dataDock.setMaximumWidth(300)
+
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dataDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
-        #self.workspace.resizeColumnToContents(0)
-        self.tabifyDockWidget( self.workspaceDock, self.dataDock ) 
-        self.workspaceDock.raise_()
-
+        self.tabifyDockWidget( self.toolDock, self.workspaceDock)
+        self.tabifyDockWidget( self.workspaceDock, self.dataDock)
+        self.toolDock.raise_()
 
         if self.config.value('/MetaPath/Is_Setup') != True:
             print "Setting up initial configuration..."
@@ -425,8 +582,6 @@ class MainWindow(QMainWindow):
         self.progressTracker = {} # Dict storing values for each view/object
 
         self.statusBar().showMessage( tr('Ready') )
-        
-
         self.showMaximized()
 
     
@@ -448,7 +603,14 @@ class MainWindow(QMainWindow):
         self.config.setValue('Plugins/Paths', [])
         
     
-    # UI Events           
+    # UI Events        
+    
+    def onGoToMetaPathWeb(self):
+        QDesktopServices.openUrl( QUrl('http://www.getmetapath.org') )
+
+    def onGoToMetaPathDemos(self):
+        QDesktopServices.openUrl( QUrl('http://getmetapath.org/demos') )
+   
 
     def onPrint(self):
         dialog = QPrintDialog(self.printer, self)
@@ -468,14 +630,19 @@ class MainWindow(QMainWindow):
     def onBrowserNav(self, url):
         # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface
         # then block the continued loading
+        if url.isRelative() and url.hasFragment():
+            # Local #url; pass to default handler
+            pass
+
         if url.scheme() == 'metapath':
             # Take string from metapath:// onwards, split on /
             app = url.host()
             if app == 'app-manager':
                 app, action = url.path().strip('/').split('/')
                 if action == 'add':
-                    self.app_launchers[ app ]()
-                
+                    a = self.app_launchers[ app ]()
+
+
                 # Update workspace viewer
                 self.workspace_updated.emit() # Notify change to workspace layout        
                         
@@ -562,8 +729,9 @@ class MainWindow(QMainWindow):
                 pass
 
     def onAbout(self):
-        QMessageBox.about(self, tr('About MetaPath'), 
-            tr('A visualisation and analysis tool for experimental data in the context of cellular and metabolic pathways.') )
+        dlg = DialogAbout(self)
+        dlg.exec_()
+
 
     def onExit(self):
         self.Close(True)  # Close the frame.
@@ -589,28 +757,22 @@ class MainWindow(QMainWindow):
         self.dbBrowser.setHtml(template.render( dict( data.items() + metadata.items() ) ),QUrl("~")) 
      
 
-    def goWorkspaceHome(self):
-        home = self.workspace_parents[ 'Home' ]
-        self.onWorkspaceStackChange( home, None)
-    
     def onWorkspaceStackChange(self, item, previous):
         widget = self.workspace_index[ item.text(1) ]
-        if hasattr(widget,'_floating') and widget._floating:
+        if widget:
+            widget.show()
             widget.raise_()
-        else:
-            self.stack.setCurrentWidget( self.workspace_index[ item.text(1) ] )
 
-    def addWorkspaceItem(self, widget, section, title, icon = None, is_selected=None):
-        
-        self.stack.addWidget( widget )
-        #widget._stack_index = stack_index
-        wid = str( id( widget ) )
-        widget._workspace_index = wid
-        
+    def addWorkspaceItem(self, widget, section, title, icon = None):
+
         tw = QTreeWidgetItem()
+        wid = str( id( tw ) )
         tw.setText(0, tr(title) )
         tw.setText(1, wid )
-        
+
+        if widget:        
+            widget._workspace_index = wid
+            
         self.workspace_index[ wid ] = widget
         
         if icon:
@@ -623,17 +785,11 @@ class MainWindow(QMainWindow):
         else:
             self.workspace.addTopLevelItem(tw) 
             self.workspace_parents[ title ] = tw
-
-        if is_selected:
-            if section:
-                self.workspace_parents[ section ].setExpanded(True)
-            self.workspace.setCurrentItem(tw)
-
+            tw.setExpanded(True)
 
         return tw
         
     def removeWorkspaceItem(self, widget):
-        self.stack.removeWidget( widget )
         del self.workspace_index[ widget._workspace_index ] 
         widget._workspace_section.removeChild( widget._workspace_tree_widget )
 
@@ -665,7 +821,7 @@ class MainWindow(QMainWindow):
             self.updateProgress( workspace_item, None)
         
         elif status == 'done': # Flash done then clear in a bit
-            self.updateProgress( workspace_item, 100)
+            self.updateProgress( workspace_item, 1)
             statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')            
             workspace_item.status_timeout =  QTimer.singleShot(1000, statusclearCallback)
             
@@ -675,7 +831,7 @@ class MainWindow(QMainWindow):
           
         
     def updateProgress(self, workspace_item, progress):
-            
+
         if progress == None:
             if workspace_item in self.progressTracker:
                 del( self.progressTracker[ workspace_item ] )
@@ -685,13 +841,14 @@ class MainWindow(QMainWindow):
         else:
             self.progressTracker[ workspace_item ] = progress
     
-        m = 1.0/len( self.progressTracker )
-        pt = round( sum([n*m for n in self.progressTracker.values()]), 0)
+        m = 100.0/len( self.progressTracker )
+        pt = sum([n*m for n in self.progressTracker.values()])
+
         if self.progressBar.value() < pt: # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
             self.progressBar.setValue(pt)
             
         # Keep things ticking
-        QCoreApplication.processEvents()
+        #QCoreApplication.processEvents()
 
 
     def register_url_handler( self, identifier, url_handler ):
@@ -727,7 +884,7 @@ class MainWindow(QMainWindow):
             v.delete()
             
         # Remove all workspace datasets
-        self.datasets = []
+        del self.datasets[:]
 
         self.workspace_updated.emit()    
     
@@ -760,6 +917,10 @@ class MainWindow(QMainWindow):
             plugin_class = et.SubElement(app, "Launcher")
             plugin_class.text = v.__class__.__name__
 
+            position = et.SubElement(app, "EditorXY")
+            position.set("x", str( v.editorItem.x() ))
+            position.set("y", str( v.editorItem.y() ))
+
             config = et.SubElement(app, "Config")
             print v.config.config
             for ck,cv in v.config.config.items():
@@ -787,43 +948,6 @@ class MainWindow(QMainWindow):
         if filename:
             self.openWorkflow(filename)
 
-        
-    def openLegacyWorkflow(self, fn):
-        # Wipe existing workspace
-        self.clearWorkspace()
-        f = open(fn, 'r')
-        s = f.read()
-        f.close()
-        # Load from file 
-        jsond = json.loads(s)
-        appref = {}
-        print "Loading..."
-        print "LOAD APPS"
-        for app_id,d in jsond['apps'].items():
-            # Launch the app; keep a reference for subsequent processing
-            app = self.app_launchers[ d['plugin'] ]()
-            app.set_name( d['name'] )
-            appref[ app_id ] = app         
-
-        print "BUILD OBJECT LINKS"
-        # Now build the links between objects; we need to force these as data is not present
-        for app_id,d in jsond['apps'].items():
-            app = appref[ app_id]
-            for i,idef in d['data']['inputs'].items():
-                source_app_id, manager_port = idef
-                app.data._consume_action( i, appref[ source_app_id ].data.o[ manager_port ] )
-            
-        print "LOAD CONFIG"
-        for app_id,d in jsond['apps'].items():
-            # Launch the app; keep a reference for subsequent processing
-            appref[ app_id ].config.set_many( d['config'] )
-            
-        print "Load complete."
-        # Focus the home tab & refresh the view
-        self.goWorkspaceHome()
-        self.workspace_updated.emit()
-    
-
     def openWorkflow(self, fn):
         print "Loading workflow..."
         # Wipe existing workspace
@@ -844,9 +968,11 @@ class MainWindow(QMainWindow):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
             print '- %s' % xapp.find('Name').text
-            app = self.app_launchers[ xapp.find("Plugin").text ](auto_consume_data=False)
+            app = self.app_launchers[ "%s.%s" % ( xapp.find("Plugin").text, xapp.find("Launcher").text ) ](auto_consume_data=False, name=xapp.find('Name').text)
+            editorxy = xapp.find('EditorXY')
+            app.editorItem.setPos( QPointF( float(editorxy.get('x') ), float(editorxy.get('y') ) ) )
             #app = self.app_launchers[ item.find("launcher").text ]()
-            app.set_name( xapp.find('Name').text )
+            #app.set_name(  )
             appref[ xapp.get('id') ] = app
 
             config = {}
@@ -870,7 +996,6 @@ class MainWindow(QMainWindow):
             
         print "Load complete."
         # Focus the home tab & refresh the view
-        self.goWorkspaceHome()
         self.workspace_updated.emit()
     
 
@@ -906,12 +1031,15 @@ def main():
     
     # Set Matplotlib defaults for nice looking charts
     mpl.rcParams['figure.facecolor'] = 'white'
-    mpl.rcParams['lines.linewidth'] = 0.5
-    mpl.rcParams['lines.color'] = 'black'
+    mpl.rcParams['figure.autolayout'] = True
+    mpl.rcParams['lines.linewidth'] = 0.25
+    mpl.rcParams['lines.color'] =  'black'
+    mpl.rcParams['lines.markersize'] = 10
     mpl.rcParams['axes.linewidth'] = 0.5
-    mpl.rcParams['font.size'] = 9
-    mpl.rcParams['font.sans-serif'] = ['Helvetica Neue','Helvetica','Helvetica','Bitstream Vera Sans','Lucida Grande','Verdana','Geneva','Lucid','Arial']
-    
+    mpl.rcParams['axes.color_cycle'] = utils.category10
+    mpl.rcParams['font.size'] = 8
+    mpl.rcParams['font.sans-serif'] = ['Helvetica','Arial','Bitstream Vera Sans','Lucida Grande','Verdana','Geneva','Lucid','Arial']
+    mpl.rcParams['patch.linewidth'] = 0
 
     window = MainWindow(app)
     app.exec_()

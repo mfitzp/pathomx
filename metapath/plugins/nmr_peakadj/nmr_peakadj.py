@@ -18,11 +18,11 @@ import nmrglue as ng
 
 import ui, db, utils
 from data import DataSet, DataDefinition
+from views import MplSpectraView
 
-
-class NMRPeakAdjView( ui.DataView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(NMRPeakAdjView, self).__init__(plugin, parent, **kwargs)
+class NMRPeakAdjApp( ui.DataApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(NMRPeakAdjApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -32,8 +32,8 @@ class NMRPeakAdjView( ui.DataView ):
         self.data.add_output('region')
         self.table.setModel(self.data.o['output'].as_table)
 
-        self.region =  ui.QWebViewExtend(self)
-        self.tabs.addTab(self.region, 'Region')
+        self.views.addView(MplSpectraView(self), 'View')
+        self.views.addView(MplSpectraView(self), 'Region')
     
         
         # Setup data consumer options
@@ -128,35 +128,17 @@ class NMRPeakAdjView( ui.DataView ):
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
     
     
-    def generate(self):
-        dso = self.data.get('input')
-        dso, dsor = self.shiftandscale( self.data.get('input') ) #, self._bin_size, self._bin_offset)
-        self.data.put('output',dso)
-        self.region_dso = dsor
-        self.render({})
-        
-    def render(self, metadata):
-        super(NMRPeakAdjView, self).render({})
-        dsor = self.region_dso
+    def generate(self,input=None):
+        dso, dsor = self.shiftandscale( input ) #, self._bin_size, self._bin_offset)
+        return {'output':dso,'region':dsor}
 
-        if dsor and float in [type(t) for t in dsor.scales[1]]:
-            metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-
-            dso_z = zip( dsor.scales[1], dsor.entities[1], dsor.labels[1] )
-            metadata['figure'] = {
-                'data':zip( dsor.scales[1], dsor.data.T ), # (ppm, [dataa,datab])
-                'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
-                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
+    def prerender(self,output,region):
+        return {
+            'View':{'dso':output},
+            'Region':{'dso':region},
             }
 
-            template = self.m.templateEngine.get_template('d3/spectra.svg')
-            self.region.setSVG(template.render( metadata ))
-
-            f = open('/Users/mxf793/Desktop/test9.svg','w')
-            f.write( template.render( metadata ) )
-            f.close()        
-
-
+    
     def onSetCustomTarget(self):
         if self._automated_update_config == False:
             self.peak_target_cb.setCurrentText('Custom')
@@ -255,7 +237,5 @@ class NMRPeakAdj(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(NMRPeakAdj, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return NMRPeakAdjView( self, self.m, **kwargs )
+        NMRPeakAdjApp.plugin = self
+        self.register_app_launcher( NMRPeakAdjApp )

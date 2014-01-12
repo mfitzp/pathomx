@@ -14,13 +14,13 @@ from plugins import VisualisationPlugin
 
 import ui, utils
 from data import DataSet, DataDefinition
+from views import D3CircosView
 
 
 
-
-class PathwayConnectsView(ui.AnalysisView):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(PathwayConnectsView, self).__init__(plugin, parent, **kwargs)
+class PathwayConnectsApp(ui.AnalysisApp):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(PathwayConnectsApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
         
@@ -32,7 +32,10 @@ class PathwayConnectsView(ui.AnalysisView):
             })
         )
         
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
+        self.views.addView( D3CircosView(self), 'Reactions')
+        self.views.addView( D3CircosView(self), 'Metabolites')
+        
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         if auto_consume_data:
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
@@ -63,10 +66,8 @@ class PathwayConnectsView(ui.AnalysisView):
         return data, targets
 
 
-    def generate(self):
-        self.setWorkspaceStatus('active')
+    def generate(self, input=None):
 
-        print "Generating..."
         pathways = self.m.db.pathways.keys()
         pathway_compounds = dict()
         
@@ -84,7 +85,7 @@ class PathwayConnectsView(ui.AnalysisView):
 
         pathway_active_reactions = dict()
         pathway_active_compounds = dict()
-        active_pathways = self.data.get('input').entities[1] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways = input.entities[1] #[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
         active_pathways_id = []
         
         for p in active_pathways:
@@ -95,51 +96,32 @@ class PathwayConnectsView(ui.AnalysisView):
 
         data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
         data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_compounds)
+    
+        dim = len(data_ar)
+        
+        dso_r = DataSet( size=(dim,dim) )
+        dso_r.data = data_ar
+        dso_r.labels[1] = labels_ar
 
-
-        self.render( {
-            'figure':  {
-                            'type':'circos',
-                            'data': data_am,
-                            'labels': labels_am,
-                            'n':2,  
-                            'legend':('Metabolic pathway compound interconnections','Links between pathways indicate proportions of shared compounds between the two pathways in MetaCyc database')
-                        },  
-                        
-            'figures': [[
-                        {
-                            'type':'circos',
-                            'data': data_ar,
-                            'labels': labels_ar,
-                            'n':1,  
-                            'legend':('Metabolic pathway reaction interconnections','Links between pathways indicate proportions of shared reactions between the two pathways in MetaCyc database')                             
-                        },
-                        {
-                            'type':'circos',
-                            'data': data_am,
-                            'labels': labels_am,
-                            'n':2,  
-                            'legend':('Metabolic pathway compound interconnections','Links between pathways indicate proportions of shared compounds between the two pathways in MetaCyc database')
-                        },                                             
-                    ]],
-                    })
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
+        dso_m = DataSet( size=(dim,dim) )
+        dso_m.data = data_am
+        dso_m.labels[1] = labels_am
+        
+        return {'dso_r':dso_r, 'dso_m':dso_m}
+        
+    def prerender(self, dso_r=None, dso_m=None):
+        return {'Metabolites':{'dso':dso_m}, 'Reactions':{'dso':dso_r} }
+        
 
 
 
 
 class PathwayConnects(VisualisationPlugin):
 
-
     def __init__(self, **kwargs):
         super(PathwayConnects, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return PathwayConnectsView( self, self.m, **kwargs )
+        PathwayConnectsApp.plugin = self
+        self.register_app_launcher( PathwayConnectsApp )
 
                      
         

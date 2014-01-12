@@ -21,6 +21,7 @@ import os, sys, re, math
 
 import ui, utils, threads
 from data import DataSet, DataDefinition
+from views import MplSpectraView
 
 from collections import OrderedDict
 
@@ -90,7 +91,7 @@ class DialogMetabohunter(ui.genericDialog):
     
 
 
-class MetaboHunterView( ui.DataView ):
+class MetaboHunterApp( ui.DataApp ):
 
 
     options = {
@@ -139,8 +140,8 @@ class MetaboHunterView( ui.DataView ):
     },
     }
 
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(MetaboHunterView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(MetaboHunterApp, self).__init__(**kwargs)
 
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
@@ -150,6 +151,8 @@ class MetaboHunterView( ui.DataView ):
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
+        
+        self.views.addView(MplSpectraView(self), 'View')
         
         t = self.getCreatedToolbar('MetaboHunter', 'metabohunter')
         metabohunterSetup = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Set up MetaboHunter \u2026', self.m)
@@ -194,17 +197,8 @@ class MetaboHunterView( ui.DataView ):
 
             self.autogenerate()            
     
-    def generate(self):
-        self.worker = threads.Worker(self.metabohunter, dso=self.data.get('input')) #, config=self.config, options=self.options)
-        self.start_worker_thread(self.worker)
-
-    def generated(self, dso):
-        if dso:
-            self.data.put('output',dso)
-            self.render({})
-            self.status.emit('clear')
-        else:
-            self.status.emit('error')
+    def generate(self, input=None):
+        return {'output': self.metabohunter(dso=input) }
             
     def metabohunter(self, dso):
 
@@ -247,7 +241,7 @@ class MetaboHunterView( ui.DataView ):
             r = requests.post(url, data=values)
         except e:
             print e
-            return {'dso':None}
+            return None
 
         html = r.content
         self.status.emit('active')
@@ -293,7 +287,7 @@ class MetaboHunterView( ui.DataView ):
             r = requests.post(url, data=values, files={'foo':'bar'})
         except e:
             print e
-            return {'dso':None}
+            return None
 
         matched_peaks_text = r.content
         self.status.emit('active')
@@ -336,8 +330,7 @@ class MetaboHunterView( ui.DataView ):
         #
         #
 
-        self.status.emit('done')
-        return {'dso':dso}
+        return dso
             
             
 
@@ -346,14 +339,6 @@ class MetaboHunter(IdentificationPlugin):
 
     def __init__(self, **kwargs):
         super(MetaboHunter, self).__init__(**kwargs)
-        #self.register_url_handler( self.id, self.url_handler )
-        #self.register_menus( 'pathways', [
-        #    {'title': u'&Load GPML pathway\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway file'},
-        #    {'title': u'&Load GPML pathway via WikiPathways\u2026', 'action': self.onLoadGPMLPathway, 'status': 'Load a GPML pathway from WikiPathways service'},        
-        #] )
-        self.register_app_launcher( self.app_launcher )
-    
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return MetaboHunterView( self, self.m, **kwargs)
+        MetaboHunterApp.plugin = self
+        self.register_app_launcher( MetaboHunterApp )
 

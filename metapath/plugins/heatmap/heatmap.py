@@ -15,59 +15,19 @@ import numpy as np
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-
 from plugins import VisualisationPlugin
 
 import os
 import ui, utils
 from data import DataSet, DataDefinition
-
-
-
-class AnalysisMetaboliteView(ui.AnalysisHeatmapView):
-    def generate(self):
-        # Sort by scores
-        ms = [ (k,v['score']) for k,v in self.parent.data.analysis.items() ]
-        sms = sorted(ms,key=lambda x: abs(x[1]), reverse=True )
-        metabolites = [m for m,s in sms]
-
-        labelsY = metabolites[:30]
-        labelsX = sorted( self.parent.data.quantities[labelsY[0]].keys() )
-
-        data1 = self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
-        data2 = self.build_heatmap_buckets( labelsX, labelsY, self.build_raw_change_control_vs_multi(labelsY, labelsX), remove_empty_rows=True, sort_data=True)
-  
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': [[
-                        {
-                            'type':'heatmap',
-                            'data':data1, 
-                            'legend':('Relative change in metabolite concentration vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                      'Scale indicates Log2 concentration change in original units, mean centered to zero. Red up, blue down.'),
-                            'scale':'Δlog2',
-                            'n':1,                            
-                        },
-                        {
-                            'type':'heatmap',
-                            'data':data2, 
-                            'legend':('Raw metabolite concentration changes vs. control (%s) under each experimental condition.' % self.parent.experiment['control'],
-                                    'Scale indicates linear concentration change in original unites, mean centered to zero. Red up, blue down.'),
-                            'scale':'Δlog2',
-                            'n':2,
-                        },
-                    ]],
-        })
-        
-
-
+from views import MplHeatmapView
         
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class HeatmapView(ui.AnalysisHeatmapView):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(HeatmapView, self).__init__(plugin, parent, **kwargs)
+class HeatmapApp(ui.AnalysisApp):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(HeatmapApp, self).__init__(**kwargs)
          
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -85,6 +45,8 @@ class HeatmapView(ui.AnalysisHeatmapView):
             'predefined_heatmap': 'Top Metabolites',
         
         })        
+ 
+        self.views.addView(MplHeatmapView(self),'View')
             
         t = self.addToolBar('Heatmap')
         t.hm_control = QComboBox()
@@ -95,8 +57,9 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.toolbars['heatmap'] = t
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.onChangeConfig ) # Auto-regenerate if the config is changed (this redirect to rename the app)
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the config is changed (this redirect to rename the app)
 
     def equilibrium_table_builder(self, objs):
         result = []
@@ -244,47 +207,41 @@ class HeatmapView(ui.AnalysisHeatmapView):
         self.redox = self.equilibrium_table_builder( proton_carriers ) 
         self.phosphate = self.equilibrium_table_builder( phosphate_carriers ) 
     
-    def get_flattened_list(self, input):
+    def get_flattened_entity_list(self, input):
         o = []
         [ o.extend(i) for i in input]
-        return o
+        
+        return [self.m.db.index[i] for i in o if i in self.m.db.index]
 
-    def _phosphorylation(self):
-        dso = self.data.get('input')
-        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.phosphate))                
-        return self.build_heatmap_buckets( [ 'Phosphorylated','Dephosphorylated' ], [' → '.join(n) for n in self.phosphate], self.build_change_table_of_entitytypes( dso, self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
+    def _phosphorylation(self, dso=None):
+        dso = dso.as_filtered(dim=1, entities=self.get_flattened_entity_list(self.phosphate))                
+        return self.build_heatmap_dso( [ 'Phosphorylated','Dephosphorylated' ], [' → '.join(n) for n in self.phosphate], self.build_change_table_of_entitytypes( dso, self.phosphate, [ 'Phosphorylated','Dephosphorylated' ] ), remove_empty_rows=True, sort_data=True  )
 
-    def _phosphate_balance(self):
-        dso = self.data.get('input')
-        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.nucleosides))
-        return self.build_heatmap_buckets( [ 'Pi','PPI','PI3','PI4' ], [' → '.join(n) for n in self.nucleosides], self.build_change_table_of_entitytypes( dso, self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
+    def _phosphate_balance(self, dso=None):
+        dso = dso.as_filtered(dim=1, entities=self.get_flattened_entity_list(self.nucleosides))
+        return self.build_heatmap_dso( [ 'Pi','PPI','PI3','PI4' ], [' → '.join(n) for n in self.nucleosides], self.build_change_table_of_entitytypes( dso, self.nucleosides, [ 'Pi','PPI','PI3','PI4' ] ), sort_data=True)
 
-    def _redox(self):
-        dso = self.data.get('input')
-        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.redox))        
-        return self.build_heatmap_buckets( [ 'Reduced','Oxidised' ], [' → '.join(n) for n in self.redox], self.build_change_table_of_entitytypes( dso, self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
+    def _redox(self, dso=None):
+        dso = dso.as_filtered(dim=1, entities=self.get_flattened_entity_list(self.redox))        
+        return self.build_heatmap_dso( [ 'Reduced','Oxidised' ], [' → '.join(n) for n in self.redox], self.build_change_table_of_entitytypes( dso, self.redox, [ 'Reduced','Oxidised' ] ), remove_incomplete_rows=True, sort_data=True )
 
-    def _proton_balance(self):
-        dso = self.data.get('input')
-        dso = dso.as_filtered(dim=1, labels=self.get_flattened_list(self.proton))        
-        return self.build_heatmap_buckets( [ '-','H','H2' ], [' → '.join(n) for n in self.proton], self.build_change_table_of_entitytypes( dso, self.proton, [ '-','H','H2' ] ), sort_data=True )
+    def _proton_balance(self, dso=None):
+        dso = dso.as_filtered(dim=1, entities=self.get_flattened_entity_list(self.proton))  
+        return self.build_heatmap_dso( [ '-','H','H2' ], [' → '.join(n) for n in self.proton], self.build_change_table_of_entitytypes( dso, self.proton, [ '-','H','H2' ] ), sort_data=True )
     
-    def _energy_waste(self):
-        dso = self.data.get('input')
-        labelsY = self.energy
+    def _energy_waste(self, dso=None):
+        labelsY = self.get_flattened_entity_list( self.energy )
         labelsX = dso.classes[0]
-        dso = dso.as_filtered(dim=1, labels=labelsY)
-        return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
+        dso = dso.as_filtered(dim=1, entities=labelsY)
+        return self.build_heatmap_dso( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
-    def _endpoints(self):
-        dso = self.data.get('input')
-        labelsY = self.endpoints
+    def _endpoints(self, dso=None):
+        labelsY = self.get_flattened_entity_list( self.endpoints )
         labelsX = dso.classes[0]
-        dso = dso.as_filtered(dim=1, labels=labelsY)
-        return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
+        dso = dso.as_filtered(dim=1, entities=labelsY)
+        return self.build_heatmap_dso( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), sort_data=True )
 
-    def _top_metabolites(self, fn=abs):
-        dso = self.data.get('input')
+    def _top_metabolites(self, dso=None, fn=abs):
         # Flatten data input (0 dim) to get average 'score' for each metabolite; then take top 30
         fd = np.mean( dso.data, axis=0 )
         fdm = zip( dso.labels[1], fd )
@@ -292,37 +249,22 @@ class HeatmapView(ui.AnalysisHeatmapView):
         metabolites = [m for m,s in sms]
 
         labelsY = metabolites[:30]
-        labelsX = dso.classes[0]
+        labelsX = list( set(dso.classes[0]) )
         dso = dso.as_filtered(dim=1,labels=labelsY)
-
-        return self.build_heatmap_buckets( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), remove_empty_rows=True, sort_data=True)
+        
+        return self.build_heatmap_dso( labelsX, labelsY, self.build_change_table_of_classes(dso, labelsY, labelsX), remove_empty_rows=True, sort_data=True)
     
-    def _top_metabolites_up(self):
+    def _top_metabolites_up(self, dso=None):
         fn = lambda x: x if x>0 else 0
-        return self._top_metabolites(fn)
+        return self._top_metabolites(dso, fn)
 
-    def _top_metabolites_down(self):
+    def _top_metabolites_down(self, dso=None):
         fn = lambda x: abs(x) if x<0 else 0
-        return self._top_metabolites(fn)
+        return self._top_metabolites(dso, fn)
 
-
-    def generate(self):
-        self.setWorkspaceStatus('active')
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figure':  {
-                            'type':'heatmap',
-                            'data': self.predefined_heatmaps[ self.config.get('predefined_heatmap') ](),
-                        },                        
-        }, template_name='heatmap')
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
-        
-    def onChangeConfig(self):
-        self.set_name( self.config.get('predefined_heatmap') )
-        self.generate()
-        
+    def generate(self, input=None):
+        data = self.predefined_heatmaps[ self.config.get('predefined_heatmap') ](input)
+        return {'output':data}
         
 
 
@@ -330,11 +272,9 @@ class Heatmap(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(Heatmap, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
+        HeatmapApp.plugin = self
+        self.register_app_launcher( HeatmapApp )
     
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return HeatmapView( self, self.m, **kwargs )
         
 
                      

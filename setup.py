@@ -5,7 +5,7 @@ from copy import copy
 
 from setuptools import setup, find_packages
 
-version_string = '1.0.0'
+version_string = '1.5.0'
 
 sys.path.insert(0,'metapath')
 
@@ -23,6 +23,7 @@ default_build_options=dict(
         'sklearn.decomposition',
         'icoshift',
         'nmrglue.fileio.fileiobase',
+        'matplotlib',
         ],
     includes=[
         'sip',
@@ -34,7 +35,6 @@ default_build_options=dict(
         'test',
         'networkx',
         'wx',
-        'matplotlib',
         'mpl-data',
         'Tkinter',
         ],

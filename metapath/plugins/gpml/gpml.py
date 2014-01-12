@@ -20,7 +20,7 @@ from plugins import VisualisationPlugin
 import os
 import ui, utils
 from data import DataSet, DataDefinition
-
+from views import HTMLView
 
 import urllib2
 
@@ -32,18 +32,34 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 
+class GPMLView(HTMLView):
+    
+    def generate(self, gpml=None, node_colors = None):
+
+        # Add our urls to the defaults
+        xref_urls = {
+            'MetaCyc compound': 'metapath://db/compound/%s/view',
+            'MetaCyc gene': 'metapath://db/gene/%s/view',
+            'MetaCyc protein': 'metapath://db/protein/%s/view',
+            'WikiPathways': 'metapath://wikipathway/%s/import',
+        }
+        if gpml:
+            svg, metadata = gpml2svg.gpml2svg( gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
+            self.setHtml(svg,QUrl("~")) 
+            self.w.set_name( metadata['Name'] )
+
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class gpmlPathwayView(ui.AnalysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, auto_consume_data=True, **kwargs):
-        super(gpmlPathwayView, self).__init__( plugin, parent, **kwargs)
+class GPMLPathwayApp(ui.AnalysisApp):
+    def __init__(self, gpml=None, svg=None, auto_consume_data=True, filename=None, **kwargs):
+        super(GPMLPathwayApp, self).__init__( **kwargs)
 
         self.gpml = gpml # Source GPML file
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
         #self.browser = ui.QWebViewExtend(self)
-        #self.tabs.addTab(self.browser,'View')
+        self.views.addView(GPMLView(self),'View')
 
         self.data.add_input('input') # Add input slot
         # Setup data consumer options
@@ -72,6 +88,9 @@ class gpmlPathwayView(ui.AnalysisView):
         t.addAction(load_gpmlAction)
         t.addAction(load_wikipathwaysAction)
          
+        if filename:
+            self.load_gpml_file( filename )
+        
         #self.o.show() 
         self.plugin.register_url_handler( self.url_handler )
 
@@ -80,6 +99,7 @@ class gpmlPathwayView(ui.AnalysisView):
             self.data.consume_any_of( self.m.datasets[::-1] )
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
+        
 
     def url_handler(self, url):
 
@@ -94,7 +114,7 @@ class gpmlPathwayView(ui.AnalysisView):
         if action == 'import':
             if kind == 'wikipathway':
                 # Create a new GPML viewer entity, delegating it to the parent plugin
-                g = gpmlPathwayView( self.plugin, self.m )
+                g = gpmlPathwayApp( self.plugin, self.m )
                 g.load_gpml_wikipathways(id)
                 g.generate()
                 self.plugin.instances.append( g )
@@ -137,7 +157,7 @@ class gpmlPathwayView(ui.AnalysisView):
             return ('MetaCyc %s' % obj.type, obj.id)
     
 
-    def generate(self):
+    def generate(self, input=None):
 
         if self.gpml == None:
             # No pathway loaded; check config for stored source to use
@@ -147,65 +167,27 @@ class gpmlPathwayView(ui.AnalysisView):
             elif self.config.get('gpml_wikipathways_id'):
                 self.load_gpml_wikipathways( self.config.get('gpml_wikipathways_id') )
             
-    
-        self.setWorkspaceStatus('active')
+        return {'dso':input, 'gpml':self.gpml}
 
-        # Add our urls to the defaults
-        xref_urls = {
-            'MetaCyc compound': 'metapath://db/compound/%s/view',
-            'MetaCyc gene': 'metapath://db/gene/%s/view',
-            'MetaCyc protein': 'metapath://db/protein/%s/view',
-            'WikiPathways': 'metapath://wikipathway/%s/import',
-        }
     
+    def prerender(self, dso=None, gpml=None):
+
         node_colors = {}
-
-
-        dsi = self.data.get('input')
-        if dsi:
-            mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
+    
+        if dso:
+            mini, maxi = min( abs( np.median(dso.data) ), 0 ), max( abs( np.median(dso.data) ), 0) 
             mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
             scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
 
-            for n, m in enumerate(dsi.entities[1]):
+            for n, m in enumerate(dso.entities[1]):
                 xref = self.get_xref( m )
-                ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
+                ecol = utils.calculate_rdbu9_color( scale, dso.data[0,n] )
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[ xref ] = ecol
-               
-        print node_colors
-        '''    
-        if self.m.data and self.m.data.analysis:
-            # Build color_table
-            node_colors = {}
-            for m_id, analysis in self.m.data.analysis.items():
-                if m_id in self.m.db.metabolites.keys():
-                    node_colors[ self.get_xref( self.m.db.metabolites[ m_id ] ) ] =
-        else:
-            node_colors = {}
-        '''
-        if self.gpml:
-            self.svg, self.metadata = gpml2svg.gpml2svg( self.gpml, xref_urls=xref_urls, xref_synonyms_fn=self.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
-            self.render()
-        else:
-            self.svg = None
 
-        self.set_name( self.metadata['Name'] )
-    
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()            
-        
-    def render(self):
-        if self.svg is None:
-            self.generate()
-    
-        if self.svg is None:
-            html_source = ''
-        else:
-            html_source = '''<html><body><div id="svg%d" class="svg">''' + self.svg + '''</body></html>'''
+        return {'View':{'gpml':gpml,'node_colors':node_colors} }
 
-        self.browser.setHtml(html_source)
 
 
     # Events (Actions, triggers)
@@ -226,7 +208,7 @@ class gpmlPathwayView(ui.AnalysisView):
             # Show
             idx = dialog.select.selectedItems()
             for x in idx:
-                #gpmlpathway = gpmlPathwayView( self.m )
+                #gpmlpathway = gpmlPathwayApp( self.m )
                 pathway_id = dialog.data[x.text()]
             
                 self.load_gpml_wikipathways(pathway_id)
@@ -259,8 +241,6 @@ class GPML(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(GPML, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-    
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return gpmlPathwayView( self, self.m, **kwargs )
+        GPMLPathwayApp.plugin = self
+        self.register_app_launcher( GPMLPathwayApp )
+        self.register_file_handler( GPMLPathwayApp, 'gpml' )

@@ -22,56 +22,32 @@ import ui, db, utils
 from data import DataSet
 
 
-class BMLNMRView( ui.DataView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(BMLNMRView, self).__init__(plugin, parent, **kwargs)
+class BMLNMRApp( ui.ImportDataApp ):
+
+    import_filename_filter = "Compressed Files (*.zip);;All files (*.*)"
+    import_description =  "Open BML-NMR FIMA .zip output"
+
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(BMLNMRApp, self).__init__(**kwargs)
     
         self.data.add_output('Raw') # Add output slot
         self.data.add_output('PQN') # Add output slot
         self.data.add_output('TSA') # Add output slot
         
-        #fn = self.onImportData()
-        
         self.t = self.addToolBar('Data Import')
         self.t.setIconSize( QSize(16,16) )
 
         self.table.setModel(self.data.o['Raw'].as_table)
-        
 
-        import_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--arrow.png' ) ), 'Import .zip output of BML-NMR\u2026', self.m)
-        import_dataAction.setStatusTip('Import from BML-NMR FIMA output (.zip)')
-        import_dataAction.triggered.connect(self.onImportData)
-        self.t.addAction(import_dataAction)
-
-    def onImportData(self):
-        """ Open a data file"""
-        #Qd.setFileMode(QFileDialog.Directory)
-        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open BML-NMR FIMA .zip output', None, "Compressed Files (*.zip)")
-        if filename:
-                        
-            self.load_bml_zipfile( filename )
-
-            self.file_watcher = QFileSystemWatcher()            
-            self.file_watcher.fileChanged.connect( self.onFileChanged )
-            self.file_watcher.addPath( filename )
-
-            self.render({})
-
-            #self.data.o['imported_data'].as_filtered(classes=['H'])
-            
-            #self.m.data.translate(self.m.db)
-            self.workspace_item.setText(0, os.path.basename(filename))
-            
-        return False
         
     def onFileChanged(self, file):
         self.load_datafile( file )
+        
+    def prerender(self, Raw=None, PQN=None, TSA=None):
+        return {'View':{'dso':Raw} }
 
 
-    # Data file import handlers (#FIXME probably shouldn't be here)
-    def load_bml_zipfile(self, filename):
-
-        self.setWorkspaceStatus('active')
+    def load_datafile(self, filename):
 
         # Unzip into temporary folder
         folder = tempfile.mkdtemp() #os.path.join( QDir.tempPath(), 
@@ -88,17 +64,17 @@ class BMLNMRView( ui.DataView ):
     
         # We have the data folder; import each of the complete datasets in turn
         # non, PQN, TSA and label appropriately
+        dsos = {}
 
         for fn,l in fns:
             # Load the data file
             data_path = os.path.join( folder, bml_job, 'overall_result_outputs', fn )    
             
-            self.load_bml_datafile( data_path, l, "%s (%s)" % (bml_job, l) )
+            dsos[l] = self.load_bml_datafile( data_path, l, "%s (%s)" % (bml_job, l) )
 
         self.set_name( bml_job )
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
+        print dsos
+        return dsos
         
 
     def load_bml_datafile( self, data_path, target, name):
@@ -137,13 +113,10 @@ class BMLNMRView( ui.DataView ):
         dso.name = name
         dso.description = 'Imported from FIMA (%s)' % name  
         
-        self.data.put( target, dso )
+        return dso
         
 class BMLNMR(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(BMLNMR, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return BMLNMRView( self, self.m, **kwargs )
+        self.register_app_launcher( BMLNMRApp )

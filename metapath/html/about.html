@@ -9,12 +9,11 @@
         <span class="author_list">
             <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>,
             Catherine M. McGrath,
-            <a href="http://www.birmingham.ac.uk/staff/profiles/iandi/wallace-graham.aspx">Graham R. Wallace</a>,            
             <a href="http://www.birmingham.ac.uk/staff/profiles/iandi/young-stephen.aspx">Stephen P. Young</a>
         </span>    
         </div>
     </div>
-    
+
     <h2>Introduction</h2>
     <p>MetaPath is a workflow-based tool for the analysis of metabolomic and other omics datasets. It is interactive, visual, extensible, intelligent and free for any use.</p>
     
@@ -66,38 +65,18 @@
     
     <p>While this has taken a few minutes to set up, you can save this workflow for future use by using <em>File > Save Workflow As...</em>.
 
-    <h2>Identification</h2>
 
-    <p>Identification of biological entities is a key step in <em>omics</em> data analysis and essential for putting any findings into a 
-    biological context. In order to aid this process MetaPath ships with an internal database of biological entities, derived from <a href="http://www.metacyc.org">MetaCyc</a>. This allows
-    annotation of imported datasets with referenced metabolites, reactions and pathways.</p>
+    <img src="file:///@htmlbase/img/help-data-pca-mc-inline-view.png">
     
-    <p>To demonstrate this, we can use the same demo data source. To enable identification simply click on the Identification section in the sidebar
-    and select Synonym Matching. This is the most rudimentary form of identity-matching, using known synonyms, database identifiers (and optionally,
-    custom mappings) to map your input data to the database.</p>
+    <p>Another useful features is the inline views that are available from most tools. Simply right-click and select a view from the drop
+    down list under Views, and it will be pinned onto the current workflow. These views automatically update as processing occurs, so you 
+    can get a instant overview of what is happening under the hood.</p>
     
-    <p>As before, this will probably end up connected on the bottom of your other outputs! So open the Home tab and drag the output from your data input app
-    into the input for Synonym Matching. Then take the output of Synonym Matching and drag it into the Mean Centre app.</p>
-    
-    <p>Click back to the PCA and look at the weights tabs (labelled PC1 or PC2). Here you wil notice some peaks are now labelled in blue. These blue
-    highlighted entries are now mapped to database entities. To explore further, simply click and the database information held for that object
-    will appear in the sidebar.</p>
-
-    <img src="file:///@htmlbase/img/help-database-pathway.png">
-    <img src="file:///@htmlbase/img/help-database-reaction.png">
-    <img src="file:///@htmlbase/img/help-database-metabolite.png">
-    <p>You can browse the database from the sidebar, exploring pathway, reaction and metabolite relationships. 
-    The database also contains links both to the online <a href="http://metacyc.org">MetaCyc</a> database and to other related resources including 
-                    <a href="http://www.genome.ad.jp/">KEGG</a>,
-                    <a href="http://pubchem.ncbi.nlm.nih.gov/">PubChem</a>,
-                    <a href="http://www.commonchemistry.org/">CAS</a>,
-                    <a href="http://www.ebi.ac.uk/chebi/">CHEBI</a> and
-                    <a href="http://kanaya.naist.jp/knapsack_jsp/top.html">KNApSAcK</a>.
-    </p>
 
     <h2>More</h2>
-    
-    <p>There are many more examples, tutorials, walkthroughs and videos available on the <a href="http://getmetapath.org">MetaPath website</a>.</p>
+    <p>More information and demo workflows are available on the <a href="http://getmetapath.org">MetaPath website</a>. 
+    We've also put together a number of <a href="http://getmetapath.org/demos">demo videos</a> to demonstrate these functions in more detail.
+    </p>
 
     <h2>License</h2>
     <p>MetaPath is available free for any use, licensed under the GPLv3.</p>
@@ -119,6 +98,11 @@
 
     <table class="releases">    
     <tr>
+        <td class="release_version">1.5.0</td>
+        <td>New Visual workflow editor, Matplotlib-based graphing, improved interface, API improvements
+        <span class="release_date">(12/01/2014)</span>
+        </td>
+    </tr>    <tr>
         <td class="release_version">1.0.0</td>
         <td>Interactive workflow analysis support, plugins, Windows and Mac support, multithreading.
         <span class="release_date">(18/12/2013)</span>

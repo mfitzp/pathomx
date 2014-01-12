@@ -17,11 +17,12 @@ import numpy as np
 
 import ui, db, utils, threads
 from data import DataSet, DataDefinition
+from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
-class BinningView( ui.DataView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(BinningView, self).__init__(plugin, parent, **kwargs)
+class BinningApp( ui.DataApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(BinningApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -30,8 +31,11 @@ class BinningView( ui.DataView ):
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
 
-        self.difference =  ui.QWebViewExtend(self)
-        self.tabs.addTab(self.difference, 'Difference')
+        #self.views.addTab(D3SpectraView(self), 'View')
+        #self.views.addTab(D3DifferenceView(self), 'Difference')
+        self.views.addTab(MplSpectraView(self), 'View')
+        self.views.addTab(MplDifferenceView(self), 'Difference')
+        
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
@@ -75,50 +79,17 @@ class BinningView( ui.DataView ):
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
     
-    def generate(self):
-        self.status.emit('active')
-        self.worker = threads.Worker(self.binning, dsi=self.data.get('input')) #, config=self.config)
-        self.start_worker_thread(self.worker)
+    def generate(self, input=None):
+        return {'output': self.binning(dsi=input), 'input':input }
 
-    def generated(self, dso):
-        if dso:
-            self.data.put('output',dso)
-            self.status.emit('render')
-            self.render({})
-            self.status.emit('done')
-        else:
-            self.status.emit('error')
-            
-        self.status.emit('clear')
-            
-        
-    
-    def render(self, metadata):
-        super(BinningView, self).render({})
-        dsi = self.data.get('input')
-        dso = self.data.o['output']
-
-        if float in [type(t) for t in dso.scales[1]]:
-            print "Difference plot"
-            metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-            
-            # Get common scales
-            datai = np.mean( dsi.data, 0) # Mean flatten
-            datao = np.mean( dso.data, 0) # Mean flatten
-            
-            # Interpolate the data for shorter set
-            if len(datao) < len(datai):
-                datao = np.interp( dsi.scales[1], dso.scales[1], datao)
-
-            metadata['figure'] = {
-                'data':zip( dsi.scales[1], datai.T, datao.T ), # (ppm, [dataa,datab])
+    def prerender(self, output=None, input=None):
+        return {
+            'View':{'dso':output },
+            'Difference':{'dso_a': input,'dso_b': output }
             }
-
-
-            template = self.m.templateEngine.get_template('d3/difference.svg')
-            self.difference.setSVG(template.render( metadata ))
     
-    def binning(self, dsi):
+    def generate(self, input=None):
+        dsi = input
         ###### BINNING USING CONFI
         # Generate bin values for range start_scale to end_scale
         # Calculate the number of bins at binsize across range
@@ -152,7 +123,7 @@ class BinningView( ui.DataView ):
         # Remove any NaNs that have crept in (due to the histogram)
         dso.remove_invalid_data()
 
-        return {'dso':dso}
+        return {'output':dso, 'input':input} # Pass back input for difference plot
     
  
  
@@ -160,7 +131,5 @@ class Binning(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Binning, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return BinningView( self, self.m, **kwargs )
+        BinningApp.plugin = self
+        self.register_app_launcher( BinningApp )

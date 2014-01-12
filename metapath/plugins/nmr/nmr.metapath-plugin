@@ -1,6 +1,6 @@
 [Core]
-Name = NMRGlue
-Module = nmrglue
+Name = NMR
+Module = nmr
 
 [Documentation]
 Author = Martin Fitzpatrick

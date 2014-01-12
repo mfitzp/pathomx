@@ -80,10 +80,10 @@ class DialogDefineFilter(ui.genericDialog):
         
 
 
-class FilterView( ui.DataView ):
+class FilterApp( ui.DataApp ):
 
-    def __init__(self, plugin, parent, **kwargs):
-        super(FilterView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, **kwargs):
+        super(FilterApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -157,28 +157,14 @@ class FilterView( ui.DataView ):
             dso = dso.as_filtered(dim=axis, **kwargs)
         
         return dso
-            
 
-               
-    # Data file import handlers (#FIXME probably shouldn't be here)
-    def generate(self):
-        self.setWorkspaceStatus('active')
-        
-        dso = self.data.get('input')
-        dso = self.apply_filters( dso )
-
-        self.data.put('output',dso)
-        self.render({})
-        
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()                
+    def generate(self, input=None):
+        return {'output':self.apply_filters( input )}
 
 
 class Filter(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Filter, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return FilterView( self, self.m, **kwargs )
+        FilterApp.plugin = self
+        self.register_app_launcher( FilterApp )

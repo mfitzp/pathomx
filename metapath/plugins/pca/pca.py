@@ -22,24 +22,22 @@ from sklearn.decomposition import PCA, KernelPCA
 
 import ui, db, utils, threads
 from data import DataSet, DataDefinition
+from views import MplScatterView, MplSpectraView
 
 
 
-
-class PCAView( ui.DataPyQtGraphView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(PCAView, self).__init__(plugin, parent, **kwargs)
+class PCAApp( ui.AnalysisApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(PCAApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
         self.addFigureToolBar()
         
-        self.pc1 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.pc1,'PC1')
-
-        self.pc2 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.pc2,'PC2')
+        self.views.addView(MplScatterView(self),'Scores')
+        self.views.addView(MplSpectraView(self),'PC1')
+        self.views.addView(MplSpectraView(self),'PC2')
         
         self.data.add_input('input') # Add input slot
         
@@ -58,80 +56,56 @@ class PCAView( ui.DataPyQtGraphView ):
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
-    def generate(self):
-        dso = self.data.get('input') # Get the dataset
-        self.worker = threads.Worker(self.pca, dso=dso)
-        self.start_worker_thread(self.worker)
-    
-    def pca(self,dso):
-        data = dso.data
+    def generate(self, input=None):
+        data = input.data
         
         pca = PCA(n_components=2)
         pca.fit(data.T) # Transpose it, as vars need to along the top
         
         weights = pca.transform(data.T) # Get weights?
-      
-        figure_data = zip( dso.classes[0], pca.components_[0], pca.components_[1])
         
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( weights), axis=1 )
 
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = zip( input.scales[1], input.entities[1], input.labels[1] )
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
         
-        dso_z = [x for x, wmx in dso_z ]    
+        dso_z = [x for x, wmx in dso_z ]  
         
-        return {
-            'dso': dso,
+        # Build scores into a dso no_of_samples x no_of_principal_components
+        scored = DataSet(size=(len(pca.components_[0]),len(pca.components_)))  
+        scored.labels[0] = input.labels[0]
+        scored.classes[0] = input.classes[0]
+        
+        for n,s in enumerate(pca.components_):
+            scored.data[:,n] = s
+            scored.labels[1][n] = 'Principal Component %d (%0.2f%%)' % (n+1, pca.explained_variance_ratio_[0] * 100.)
+        
+        dso_pc = {}
+        for n in range(0, weights.shape[1] ):
+            pcd =  DataSet( size=(1, input.shape[1] ) )
+            pcd.entities[1] = input.entities[1]
+            pcd.labels[1] = input.labels[1]
+            pcd.scales[1] = input.scales[1]
+            pcd.data = weights[:,n:n+1].T
+            dso_pc['pc%s' % (n+1)] = pcd
+        
+        return dict( {
+            'dso': input,
             'pca': pca,
-            'weights': weights,
-            'figure_data': figure_data,
+            'scores': scored,
+            #'weights': weights,
             'wmx': wmx,
             'dso_z': dso_z,        
-        }
-
+        }.items() + dso_pc.items() )
+        
+    def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, **kwargs):
+        return {
+            'Scores':{'dso': scores}, 
+            'PC1':{'dso':pc1},
+            'PC2':{'dso':pc2}, #zip( dso.classes[0], pca.components_[0], pca.components_[1])}
+            }
     
-    # Do the PCA analysis
-    def generated(self, dso, pca, weights, figure_data, wmx, dso_z):    
-        
-        # Build a list object of class, x, y
-        
-        metadata = {
-            'figure':{
-                'data':figure_data,
-                'regions': [],
-                'x_axis_label': 'Principal Component 1 (%0.2f%%)' % (pca.explained_variance_ratio_[0] * 100.),
-                'y_axis_label': 'Principal Component 2 (%0.2f%%)' % (pca.explained_variance_ratio_[1] * 100.),
-                },
-        }
-        
-        self.render(metadata, template='d3/pca.svg')
-
-        if 'NoneType' in dso.scales_t[1]:
-            dso.scales[1] = range(0, len( dso.scales[1] ) )
-        
-        
-        metadata = {
-            'figure':{
-                'data': zip( dso.scales[1], weights[:,0:1] ),  
-                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
-                'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
-            }
-        }
-        
-        self.render(metadata, template='d3/line.svg', target=self.pc1)
-
-        metadata = {
-            'figure':{
-                'data': zip( dso.scales[1], weights[:,1:2] ),  
-                'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
-                'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
-            }
-        }
-        
-        self.render(metadata, template='d3/line.svg', target=self.pc2)
-        
-        # Do the weights plot
         
                 
 
@@ -139,9 +113,7 @@ class PCAPlugin(AnalysisPlugin):
 
     def __init__(self, **kwargs):
         super(PCAPlugin, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return PCAView( self, self.m, **kwargs )
+        PCAApp.plugin = self
+        self.register_app_launcher( PCAApp )
         
         

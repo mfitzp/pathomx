@@ -21,14 +21,14 @@ from plugins import VisualisationPlugin
 import os
 import ui, utils
 from data import DataSet, DataDefinition
-from views import D3BarView
+from views import D3BarView, MplCategoryBarView
 
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
-class BarView(ui.AnalysisD3View):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(BarView, self).__init__(plugin, parent, **kwargs)
+class BarApp(ui.AnalysisApp):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(BarApp, self).__init__(**kwargs)
          
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -36,7 +36,8 @@ class BarView(ui.AnalysisD3View):
         self.data.add_input('input') # Add input slot
         self.data.add_output('output', is_public=False) # Hidden
         
-        self.tabs.add_view('View', D3BarView, 'output')
+        self.views.addView(MplCategoryBarView(self), 'View')
+        
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -49,20 +50,24 @@ class BarView(ui.AnalysisD3View):
         self.toolbars['bar'] = t
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
+    def generate(self, input=None):
+        return {'dso': self.data.get('input') }
+        
+    def prerender(self, dso=None):
+        dso_mean = dso.as_summary( fn=np.mean, dim=0, match_attribs=['classes']) # Get mean dataset/ Classes only
+        dso_std = dso.as_summary( fn=np.std, dim=0, match_attribs=['classes']) # Get std_dev/ Classes only
 
-    def generate(self):
-        dso = self.data.get('input')
-        self.data.put('output',dso)
-
-
+        dso = dso_mean
+        dso.statistics['error']['stddev'] = dso_std.data
+        
+        return {'View':{'dso':dso} }
+        
 class Bar(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(Bar, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-    
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return BarView( self, self.m, **kwargs )
+        BarApp.plugin = self
+        self.register_app_launcher( BarApp )

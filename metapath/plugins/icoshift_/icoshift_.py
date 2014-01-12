@@ -18,11 +18,11 @@ from icoshift import icoshift
 
 import ui, db, utils
 from data import DataSet, DataDefinition
+from views import MplSpectraView, MplDifferenceView
 
-
-class IcoshiftView( ui.DataView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(IcoshiftView, self).__init__(plugin, parent, **kwargs)
+class IcoshiftApp( ui.DataApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(IcoshiftApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -32,7 +32,8 @@ class IcoshiftView( ui.DataView ):
         self.table.setModel(self.data.o['output'].as_table)
         self.difference =  ui.QWebViewExtend(self)
 
-        self.tabs.addTab(self.difference, 'Shifted')
+        self.views.addView( MplSpectraView(self), 'Spectra' )
+        self.views.addView( MplDifferenceView(self), 'Shift' )
         
         
         # Setup data consumer options
@@ -47,49 +48,15 @@ class IcoshiftView( ui.DataView ):
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
     
-    def generate(self):
-        dso = self.icoshift( self.data.get('input') ) #, self._bin_size, self._bin_offset)
-        if dso:
-            self.data.put('output',dso)
-            self.render({})
-        else:
-            self.setWorkspaceStatus('error')
-
-        
-
-    def render(self, metadata):
-        super(IcoshiftView, self).render({})
-        dsi = self.data.get('input')
-        dso = self.data.o['output']
-
-        if float in [type(t) for t in dso.scales[1]]:
-            metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-            
-            # Get common scales
-            datai = np.mean( dsi.data, 0) # Mean flatten
-            datao = np.mean( dso.data, 0) # Mean flatten
-            
-            metadata['figure'] = {
-                'data':zip( dsi.scales[1], datai.T, datao.T ), # (ppm, [dataa,datab])
+    def generate(self, input=None):
+        return {
+            'output': self.icoshift( self.data.get('input') ),
+            'input': self.data.get('input')
             }
-
-            template = self.m.templateEngine.get_template('d3/difference.svg')
-            self.difference.setSVG(template.render( metadata ))
-        
-            f = open('/Users/mxf793/Desktop/test8.svg','w')
-            f.write( template.render( metadata ) )
-            f.close()        
-
-    def onChangeBinParameters(self):
-        self._bin_size = float( self.binsize_spin.value() )
-        self._bin_offset = float( self.binoffset_spin.value() )
-        self.generate()
-
-
-
-###### TRANSLATION to METACYC IDENTIFIERS
-
     
+    def prerender(self, output=None, input=None):
+        return {'Spectra': {'dso':output}, 'Shift': {'dso_a':input, 'dso_b':output} }
+
 
     def icoshift(self, dsi):               
         # Generate bin values for range start_scale to end_scale
@@ -106,7 +73,5 @@ class Icoshift(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Icoshift, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return IcoshiftView( self, self.m, **kwargs )
+        IcoshiftApp.plugin = self
+        self.register_app_launcher( IcoshiftApp )

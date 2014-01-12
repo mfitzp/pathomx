@@ -23,33 +23,24 @@ import numpy as np
 import ui, db
 from data import DataSet
 
-class ImportMetabolightsView( ui.ImportDataView ):
+class ImportMetabolightsApp( ui.ImportDataApp ):
 
     import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     import_description =  "Open experimental data from Metabolights experimental datasets"
 
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(ImportMetabolightsView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(ImportMetabolightsApp, self).__init__(**kwargs)
 
        
     # Data file import handlers (#FIXME probably shouldn't be here)
         
     def load_datafile(self, filename):
-        print "Loading... %s" % filename
-        self.setWorkspaceStatus('active')
-
         dso=self.load_metabolights(filename)
-
         dso.name = os.path.basename( filename )
         self.set_name( dso.name )
         dso.description = 'Imported %s file' % filename  
 
-        self.setWorkspaceStatus('done')
-        self.data.put('output',dso) 
-        self.render({})
-
-        self.clearWorkspaceStatus()
-            
+        return {'output':dso}            
             
         
         
@@ -98,10 +89,7 @@ class ImportMetabolights(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportMetabolights, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return ImportMetabolightsView( self, self.m, **kwargs )
+        self.register_app_launcher( ImportMetabolightsApp )
 
     
 

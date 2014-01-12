@@ -75,14 +75,17 @@ class DialogAnnotationTargets(ui.genericDialog):
         
 
 
-class AnnotateView( ui.DataView ):
+class AnnotateApp( ui.DataApp ):
 
     import_name = "Annotations"
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
     import_description =  "Import data annotations (classes, labels, scales) for current dataset"
 
-    def __init__(self, plugin, parent, **kwargs):
-        super(AnnotateView, self).__init__(plugin, parent, **kwargs)
+
+
+
+    def __init__(self, **kwargs):
+        super(AnnotateApp, self).__init__(**kwargs)
         # Annotations is a list of dicts; each list a distinct annotation        
         # Targets is their mapping to the data; e.g. ('scales', 1) for scales[1]
         self._annotations = defaultdict( list )
@@ -90,6 +93,9 @@ class AnnotateView( ui.DataView ):
 
         # Source object for the data      
         self.addDataToolBar()
+
+        self._field_transforms = {'scales':float, 'labels':self.str_or_none, 'classes':self.str_or_none }
+    
 
         self.data.add_input('input') # Add input slot
         self.data.add_output('output') # Add output slot
@@ -119,6 +125,7 @@ class AnnotateView( ui.DataView ):
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
     def onLoadAnnotations(self):
         """ Open a annotations file"""
@@ -126,7 +133,7 @@ class AnnotateView( ui.DataView ):
         if filename:
             self.load_annotations( filename )
             self.onEditAnnotationsSettings()
-            self.apply_annotations()
+            self.autogenerate()
             self.file_watcher.addPath( filename )
             
             self.workspace_item.setText(0, os.path.basename(filename))
@@ -151,24 +158,11 @@ class AnnotateView( ui.DataView ):
                     source = n
                     target = field                
                     self._annotations_targets[ source ] = (target, axis)     
-            
-            self.apply_annotations()
+
             
                     
-    def generate(self):
-        self.apply_annotations()
-        self.render({})
-   
-    def apply_annotations(self):
-
-        dso = self.data.get('input')
-        if dso == False:
-            self.setWorkspaceStatus('error')
-            return 
-        
-        # Iterate over the list of annotations and apply them to the dataset in i['input']
-        # to produce the o['output'] result
-        self.setWorkspaceStatus('active')
+    def generate(self, input):
+        dso = input
         print 'Applying annotations...'
 
         for source, (target, index) in self._annotations_targets.items():
@@ -176,12 +170,10 @@ class AnnotateView( ui.DataView ):
             print ':',source, target, index
             if len( annotation ) == len( dso.__dict__[ target ][ index ] ):
                 print 'Applying annotation %s to %s' % (source, target)
-                dso.__dict__[ target ][ index ] = annotation
+                dso.__dict__[ target ][ index ] = [ self._field_transforms[target](a) for a in annotation]
         
-        self.data.put('output',dso)
-        
-        self.clearWorkspaceStatus()
-   
+        return {'output':dso}
+
     def load_datafile(self, filename):
         self.load_annotations(filename)
         
@@ -197,15 +189,15 @@ class AnnotateView( ui.DataView ):
             for c,r in enumerate(row):
                 self._annotations[c].append(r)
         
-        self.apply_annotations()
-        
-
+    def str_or_none(self,x):
+        if x == '':
+            return None
+        else:
+            return str(x)
 
 class Annotate(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Annotate, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return AnnotateView( self, self.m, **kwargs )
+        AnnotateApp.plugin = self
+        self.register_app_launcher( AnnotateApp )

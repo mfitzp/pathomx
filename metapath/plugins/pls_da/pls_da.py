@@ -22,22 +22,22 @@ from sklearn.cross_decomposition import PLSRegression
 
 import ui, db, utils, threads
 from data import DataSet, DataDefinition
+from views import MplScatterView, MplSpectraView
 
-
-class PLSDAView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(PLSDAView, self).__init__(plugin, parent, **kwargs)
+class PLSDAApp( ui.AnalysisApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(PLSDAApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
         self.addDataToolBar()
         self.addExperimentToolBar()
         self.addFigureToolBar()
-        
-        self.lv1 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.lv2 = ui.QWebViewExtend(self, onNavEvent=self.m.onBrowserNav)
-        self.tabs.addTab(self.lv1,'1')
-        self.tabs.addTab(self.lv2,'2')
+
+        self.views.addView(MplScatterView(self),'Scores')
+
+        self.views.addView(MplSpectraView(self),'LV1')
+        self.views.addView(MplSpectraView(self),'LV2')
         
         self.data.add_output('scores')
         self.data.add_output('weights')
@@ -55,33 +55,42 @@ class PLSDAView( ui.AnalysisView ):
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
         
     # Do the PCA analysis
-    def generate(self):   
-        dso = self.data.get('input') # Get the dataset
-        self.worker = threads.Worker(self.plsda, dso=dso)
-        self.start_worker_thread(self.worker)
-        
-    def plsda(self, dso):
+    def generate(self, input=None):   
+        dso = input
         
         _experiment_test = self.config.get('experiment_test')
         _experiment_control = self.config.get('experiment_control')
                 
         data = dso.data
         
-        plsr = PLSRegression(n_components=2)
+        plsr = PLSRegression(n_components=2, scale=False)
         Y = np.array([0 if c == _experiment_control else 1 for c in dso.classes[0] ])
         #Y = Y.reshape( (len(dso.classes[0]),1) )
 
         plsr.fit(data, Y) # Transpose it, as vars need to along the top
         
-        figure_data = zip( dso.classes[0], plsr.x_scores_[:,0], plsr.x_scores_[:,1])
+        #figure_data = zip( dso.classes[0], plsr.x_scores_[:,0], plsr.x_scores_[:,1])
+        
+        # Build scores into a dso no_of_samples x no_of_principal_components
+        scored = DataSet(size=(len(plsr.x_scores_),len(plsr.x_scores_[0])))  
+        scored.labels[0] = input.labels[0]
+        scored.classes[0] = input.classes[0]
+        
+        print plsr.x_scores_.shape
+        print scored.data.shape
+        
+        for n,s in enumerate(plsr.x_scores_.T):
+            scored.data[:,n] = s
+            scored.labels[1][n] = 'Latent Variable %d (%0.2f%%)' % (n+1, plsr.y_weights_[0][0]*100)
+                
         
         # PLS-DA regions; mean +- 95% confidence in each axis for each cluster
         cw_x = defaultdict(list)
         cw_y = defaultdict(list)
-        figure_regions = []
-        for c,x,y in figure_data:
-            cw_x[c].append( x )
-            cw_y[c].append( y )
+        #figure_regions = []
+        #for c,x,y in figure_data:
+        #    cw_x[c].append( x )
+        #    cw_y[c].append( y )
             
         for c in cw_x.keys():
             # Calculate mean point
@@ -101,6 +110,7 @@ class PLSDAView( ui.AnalysisView ):
                 (c, cx, cy, rx, ry)
             )
 
+        
             
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( plsr.x_weights_), axis=1 )
@@ -108,17 +118,33 @@ class PLSDAView( ui.AnalysisView ):
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
         dso_z = [x for x, wmx in dso_z ]    
 
-        
-        return {
+        dso_lv = {}
+        for n in range(0, plsr.x_weights_.shape[1] ):
+            lvd =  DataSet( size=(1, input.shape[1] ) )
+            lvd.entities[1] = input.entities[1]
+            lvd.labels[1] = input.labels[1]
+            lvd.scales[1] = input.scales[1]
+            lvd.data = plsr.x_weights_[:,n:n+1].T
+            dso_lv['lv%s' % (n+1)] = lvd
+                    
+        return dict({
             'dso': dso,
-            'dso_z': dso_z,
-            'figure_data': figure_data,
-            'figure_regions': figure_regions,
+            'scores':scored,
+            #'figure_data': figure_data,
+            #'figure_regions': figure_regions,
             'y_weights': plsr.y_weights_,
             'x_weights': plsr.x_weights_,
-            }
+        }.items() + dso_lv.items() )
         
-    def generated(self, dso, dso_z, figure_data, figure_regions, y_weights, x_weights):
+    def prerender(self, scores=None, lv1=None, lv2=None, **kwargs):
+        return {
+            'Scores':{'dso': scores}, 
+            'LV1':{'dso':lv1},
+            'LV2':{'dso':lv2}, #zip( dso.classes[0], pca.components_[0], pca.components_[1])}
+            }
+    
+    
+    def legacy_generated(self, dso, dso_z, figure_data, figure_regions, y_weights, x_weights):
         
         metadata = {
             'figure':{
@@ -160,9 +186,7 @@ class PLSDAPlugin(AnalysisPlugin):
 
     def __init__(self, **kwargs):
         super(PLSDAPlugin, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return PLSDAView( self, self.m, **kwargs )
+        PLSDAApp.plugin = self
+        self.register_app_launcher( PLSDAApp )
         
         

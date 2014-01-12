@@ -1,4 +1,4 @@
-@require(htmlbase, category, apps)
+@require(htmlbase, categories, apps)
 
 <html>
     <head>
@@ -8,9 +8,15 @@
 
     <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/foundation.min.css">
     <link rel="stylesheet" type="text/css" href="file:///@htmlbase/css/normalize.css">
+    <script src="file:///@htmlbase/js/vendor/modernizr.js"></script>        
+
+<!--    <script src="file:///@htmlbase/js/jquery.js"></script>
+    <script src="file:///@htmlbase/js/vendor/fastclick.js"></script>
+    <script src="file:///@htmlbase/js/foundation/foundation.js"></script>
+    <script src="file:///@htmlbase/js/foundation/foundation.magellan.js"></script> -->
         
     <link rel="stylesheet" href="file:///@htmlbase/css/base.css">
-    <base href="file:///@htmlbase/">
+    <abase href="file:///@htmlbase/">
     <style>
         html, body {
             background:#f8f8f8 !important;
@@ -21,7 +27,7 @@
             }
         
         .app {
-            width:200px;
+            max-width:200px;
             height:200px;
             display: inline-block;
             box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.2);
@@ -30,7 +36,7 @@
             background:#fff;
             width:100%;
             cursor:pointer;
-            background-size: 200px 200px;
+            background-size: 100% 100%;
         }
         
         .app:hover {
@@ -53,31 +59,50 @@
         
         
         </style>
+        
 <script>
 
     function delegateLink(url){
         QtWebView.delegateLink(url);
     }
+    
+    function _metapath_foundation_trigger(){
+        $(document).foundation();
+    }
 </script>        
     </head>
     <body id="mainwindow">
-        <h2>@category</h2>
-        <ul class="large-block-grid-5">
-            @for app in apps:
-                <li><a class="app" href="metapath://app-manager/@app['id']/add"
-                            @if app['image']:
-                                style="background:url('file:///@app['image_forward_slashes']') center center no-repeat;"
-                            @endif
-                                onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
-                        <div class="meta">
-                            <div class="name">@app['name']</div>
-                            <div class="description">@app['description']</div>
-                        </div>
-                    </a>
-                </li>
-            @endfor
-        </ul>
-        @endfor
 
+<!--    <div data-magellan-expedition="fixed" id="magellanTopNav" >
+        <dl class="sub-nav">
+        @for category in categories:
+            <dd data-magellan-arrival="@category!s"><a href="#@category!s">@category!s</a></dd>
+        @endfor
+        </dl> </div>-->
+    
+        @for category in categories:
+        
+            <a name="@category!s">
+            <h2 data-magellan-destination="@category!s">@category</h2>
+            <ul class="small-block-grid-3 medium-block-grid-4 large-block-grid-6">
+                @for app in apps[ category ]:
+                    <li class="radius"><a class="app" href="metapath://app-manager/@app['id']/add"
+                                @if app['image']:
+                                    style="background:url('file:///@app['image_forward_slashes']') center center no-repeat;"
+                                @endif
+                                    onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
+                            <div class="meta">
+                                <div class="name">@app['name']</div>
+                                <div class="description">@app['description']</div>
+                            </div>
+                        </a>
+                    </li>
+                @endfor
+            </ul>
+            @endfor
+            
+        @endfor
+        
+ 
     </body>
 </html>

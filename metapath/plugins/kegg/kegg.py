@@ -20,7 +20,7 @@ from plugins import VisualisationPlugin
 import os, re
 import ui, utils
 from data import DataSet, DataDefinition
-
+from views import HTMLView
 
 import urllib2
 
@@ -39,15 +39,15 @@ import urllib, urllib2
 
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
-class KEGGPathwayView(ui.AnalysisView):
-    def __init__(self, plugin, parent, gpml=None, svg=None, auto_consume_data=True, **kwargs):
-        super(KEGGPathwayView, self).__init__( plugin, parent, **kwargs)
+class KEGGPathwayApp(ui.AnalysisApp):
+    def __init__(self, gpml=None, svg=None, auto_consume_data=True, **kwargs):
+        super(KEGGPathwayApp, self).__init__( **kwargs)
 
         self.svg = svg # Rendered GPML file as SVG
         self.metadata = {}
 
         #self.browser = ui.QWebViewExtend(self)
-        #self.tabs.addTab(self.browser,'View')
+        #self.views.addTab(self.browser,'App')
 
         self.data.add_input('input') # Add input slot
         # Setup data consumer options
@@ -57,13 +57,14 @@ class KEGGPathwayView(ui.AnalysisView):
             },'Relative concentration data'),
         )
 
+        self.views.addView( HTMLView(self), 'View')
                 
         self.addDataToolBar(default_pause_analysis=True)
         self.addFigureToolBar()
 
         self.kegg_pathway_t = QLineEdit()
         self.kegg_pathway_t.setText('hsa00010')
-        self.kegg_pathway_t.textChanged.connect(self.generate)
+        self.kegg_pathway_t.textChanged.connect(self.autogenerate)
 
         t = self.addToolBar('KEGG')
         t.setIconSize( QSize(16,16) )
@@ -73,13 +74,9 @@ class KEGGPathwayView(ui.AnalysisView):
         self.data.consume_any_of( self.m.datasets[::-1] )
                 
 
-    def generate(self):
-
-        self.setWorkspaceStatus('active')
-        dsi = self.data.get('input')
-
+    def generate(self, input=None):
+        dsi = input
         opener = register_openers()
-
         url = 'http://www.kegg.jp/kegg-bin/mcolor_pathway'
 
         data = StringIO.StringIO()
@@ -90,15 +87,23 @@ class KEGGPathwayView(ui.AnalysisView):
             mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
             scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
 
-            for n, m in enumerate(dsi.entities[1]):
-                xref = self.get_xref( m )
+            #for n, m in enumerate(dsi.entities[1]):
+            #    xref = self.get_xref( m )
 
             for n, m in enumerate(dsi.entities[1]):
-                if m and 'LIGAND-CPD' in m.databases:
-                    kegg_id = m.databases['LIGAND-CPD']
-                    ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
-                    if kegg_id is not None and ecol is not None:
-                        node_colors[ kegg_id ] = ecol
+                if m:
+                
+                    if 'LIGAND-CPD' in m.databases:
+                        kegg_id = m.databases['LIGAND-CPD']
+                        ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
+                        if kegg_id is not None and ecol is not None:
+                            node_colors[ kegg_id ] = ecol
+
+                    elif 'NCBI-GENE' in m.databases:
+                        kegg_id = m.databases['NCBI-GENE']
+                        ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
+                        if kegg_id is not None and ecol is not None:
+                            node_colors[ kegg_id ] = ecol
                
         tmp = open( os.path.join(QDir.tempPath(),'kegg-pathway-data.txt') , 'w')
         tmp.write('#hsa\tData\n')
@@ -113,7 +118,7 @@ class KEGGPathwayView(ui.AnalysisView):
                   'submit'       : 'Exec',
                  }
 
-        self.setWorkspaceStatus('waiting')
+        self.status.emit('waiting')
 
         datagen, headers = multipart_encode(values)
         # Create the Request object
@@ -125,9 +130,10 @@ class KEGGPathwayView(ui.AnalysisView):
         except urllib2.HTTPError, e:
             print e
             return
+            
+        return {'html':response.read()}
 
-
-        html = response.read()
+    def prerender(self, html=''):
 
         # We've got the html page; pull out the image
         # <img src="/tmp/mark_pathway13818418802193/hsa05200.1.png" name="pathwayimage" usemap="#mapdata" border="0" />
@@ -137,16 +143,9 @@ class KEGGPathwayView(ui.AnalysisView):
         m = re.search('^KEGG PATHWAY: (.*)$', html, flags=re.MULTILINE)
         title = m.group(1)
         self.set_name( title )
-        
         output_html = '<html><body><img src="http://www.kegg.jp%s"></body></html>' % img
-        print output_html
-        self.browser.setHtml(output_html)
 
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()            
-        
-    def render(self):
-        self.generate()
+        return {'View':{'html':output_html} }
 
 
 
@@ -175,8 +174,5 @@ class KEGG(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(KEGG, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-    
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return KEGGPathwayView( self, self.m, **kwargs )
+        KEGGPathwayApp.plugin = self
+        self.register_app_launcher( KEGGPathwayApp )

@@ -17,11 +17,10 @@ import ui
 from data import DataSet, DataDefinition
 
 
+class NOOPApp( ui.GenericApp ):
 
-class NOOPView( ui.GenericView ):
-
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(NOOPView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(NOOPApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
 
@@ -38,23 +37,13 @@ class NOOPView( ui.GenericView ):
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         if auto_consume_data:
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        
-    def generate(self):
-        self.setWorkspaceStatus('active')
-    
-        dso = self.data.get('input')
-        self.data.put('output',dso)
-
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()                
-
+  
+    def generate(self, input=None):
+        return {'output':input}
 
 class NOOP(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(NOOP, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return NOOPView( self, self.m, **kwargs )
+        NOOPApp.plugin = self
+        self.register_app_launcher( NOOPApp )

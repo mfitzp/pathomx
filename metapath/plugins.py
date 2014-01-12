@@ -358,6 +358,14 @@ class BasePlugin(IPlugin):
             return QIcon( icon_path )
         else:
             return None
+            
+    @property
+    def pixmap(self):
+        icon_path = os.path.join( self.path, 'icon.png' )
+        if os.path.exists( icon_path ):
+            return QPixmap( icon_path )
+        else:
+            return None            
 
     @property
     def workspace_icon(self):
@@ -367,10 +375,19 @@ class BasePlugin(IPlugin):
         else:
             return None
                        
-
-                    
-    def register_app_launcher(self, app_launcher):
-        self.m.app_launchers[ self.id ] = app_launcher
+    def register_app_launcher(self, app):
+        app.plugin = self
+        key = "%s.%s" %( self.id, app.__name__ )
+        self.m.app_launchers[ key ] = app
+        
+        self.m.tools[ self.default_workspace_category ].append( {
+            'id':key,
+            'app': app,
+            'plugin': self,
+        })
+        
+    def register_file_handler(self, app, ext):
+        self.m.file_handlers[ext] = app
 
     def register_url_handler(self, url_handler):
         self.m.register_url_handler( self.id, url_handler )

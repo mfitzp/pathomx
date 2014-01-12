@@ -21,35 +21,24 @@ import ui, db, utils
 from data import DataSet, DataDefinition
 
 
-class MergeView( ui.DataView ):
+class MergeApp( ui.DataApp ):
 
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(MergeView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(MergeApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
-        self.data.add_input('input') # Add input slot        
+        self.data.add_input('input_1') # Add input slot        
+        self.data.add_input('input_2') # Add input slot                
         self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
 
         # Setup data consumer options
         self.data.consumer_defs.extend([ 
-            DataDefinition('1', {
+            DataDefinition('input_1', {
             'labels_n':     (None, '>1'),
             'entities_t':   (None, None), 
             }),
-            DataDefinition('2', {
-            'labels_n':     (None, '>1'),
-            'entities_t':   (None, None), 
-            }),
-            DataDefinition('3', {
-            'labels_n':     (None, '>1'),
-            'entities_t':   (None, None), 
-            }),
-            DataDefinition('4', {
-            'labels_n':     (None, '>1'),
-            'entities_t':   (None, None), 
-            }),
-            DataDefinition('5', {
+            DataDefinition('input_2', {
             'labels_n':     (None, '>1'),
             'entities_t':   (None, None), 
             }),
@@ -57,21 +46,16 @@ class MergeView( ui.DataView ):
         )
         
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
 
 
-    def generate(self):
-        self.setWorkspaceStatus('active')
-    
+    def generate(self, **kwargs):
+        
         dsos = []
-        for n in self.data.i:
-            dsi = self.data.get( n )
+        for n,dsi in kwargs.items():
             if dsi:
                 dsos.append(dsi)
-                
-        if len(dsos) == 0:
-            self.setWorkspaceStatus('error')
-            return False
 
         # We now have a list of dsos to work on
         # Take the first one as the basis; then iterate the remainder
@@ -80,7 +64,11 @@ class MergeView( ui.DataView ):
         # NOTE: NEED TO CHECK DIMENSIONALITY & SAMPLE IDs 
         
         dsw = dsos[0]
-        for dso in dsos[1:]:
+        todo = dsos[1:]
+        todo_n = len(todo)
+        for n,dso in enumerate(todo):
+            self.progress.emit( float(n)/todo_n )
+
             print dso.name
             # Check if we have sample ids; if yes then build index to the working dso
             if dso.labels_n[0] != dso.shape[0]: # Need labels for everything
@@ -140,21 +128,12 @@ class MergeView( ui.DataView ):
                     # Append data to the end of the dsw
                     dsw.data = np.concatenate( (dsw.data, new_data), axis=1)
 
-            
-        self.data.put('output', dsw)
-        
-        self.setWorkspaceStatus('done')
-
-        self.clearWorkspaceStatus()
-
-
+        return {'output':dso}
 
  
 class Merge(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(Merge, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return MergeView( self, self.m, **kwargs )
+        MergeApp.plugin = self
+        self.register_app_launcher( MergeApp )

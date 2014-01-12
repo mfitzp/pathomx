@@ -17,10 +17,11 @@ import os, urllib, urllib2, copy, re, json, importlib, sys
 import numpy as np
 
 # MetaPath classes
-import utils, data, config
+import utils, data, config, threads
+from data import DataSet
 
-from views import D3HomeView, ViewManager
-
+from views import D3HomeView, HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
+from editor.editor import WorkspaceEditor
 # Translation (@default context)
 from translate import tr
 
@@ -107,7 +108,9 @@ class ExportImageDialog(genericDialog):
                     'px/m':1,
                     }
                     
-    def __init__(self, parent, size=QSize(800,600), dpm=11811, **kwargs):
+    convert_res_to_unit = {'dpi':'in', 'px/mm':'mm', 'px/cm':'cm', 'px/m':'m' }
+                    
+    def __init__(self, parent, size=QSize(800,600), dpm=11811, show_rerender_options=False, **kwargs):
         super(ExportImageDialog, self).__init__(parent, **kwargs)        
         
         self.setWindowTitle( tr("Export Image") )
@@ -177,15 +180,16 @@ class ExportImageDialog(genericDialog):
         w.addItem( QSpacerItem(1,10), r, 0 )
         r += 1
 
-        w.addWidget( QLabel('<b>Scaling</b>'), r, 0 )        
-        r += 1
-        self.scaling = QComboBox()
-        self.scaling.addItems(['Resample', 'Resize'])
-        self.scaling.setCurrentText( 'Resample' )
-        w.addWidget( QLabel('Scaling method'), r, 0 )        
-        w.addWidget( self.scaling, r, 1 )        
-        r += 1
-        w.addItem( QSpacerItem(1,20), r, 0 )
+        if show_rerender_options:
+            w.addWidget( QLabel('<b>Scaling</b>'), r, 0 )        
+            r += 1
+            self.scaling = QComboBox()
+            self.scaling.addItems(['Resample', 'Resize'])
+            self.scaling.setCurrentText( 'Resample' )
+            w.addWidget( QLabel('Scaling method'), r, 0 )        
+            w.addWidget( self.scaling, r, 1 )        
+            r += 1
+            w.addItem( QSpacerItem(1,20), r, 0 )
 
         # Set values
         self.width.setValue(self._w)
@@ -266,17 +270,23 @@ class ExportImageDialog(genericDialog):
         
         print_units = self.print_units.currentText()
     
-        w_p = self.get_print_size( self._w, print_units )
-        h_p = self.get_print_size( self._h, print_units )
+        w_p = self.get_as_print_size( self._w, print_units )
+        h_p = self.get_as_print_size( self._h, print_units )
         
         self.width_p.setValue( w_p )
         self.height_p.setValue( h_p )
         
-    def get_print_size(self, s, u):
+    def get_as_print_size(self, s, u):
         ps = self.resolution.value()
         ps_u = self.resolution_units.currentText()
         s = s / (ps * self.resolution_u[ ps_u ]) # Get size in metres
         return self.get_converted_measurement( s, 'm', u ) # Return converted value    
+        
+    def get_print_size(self, u):
+        return ( 
+            self.get_as_print_size( self._w, u ),
+            self.get_as_print_size( self._h, u )
+            )
 
     # Update image dimensions using the print dimensions and resolutions
     def update_image_dimensions(self):
@@ -309,6 +319,12 @@ class ExportImageDialog(genericDialog):
     
     def get_dots_per_meter(self):
         return self.resolution.value() * self.resolution_u[ self.resolution_units.currentText() ] 
+
+    def get_dots_per_inch(self):
+        if self.resolution_units.currentText() == 'in':
+            return self.resolution.value()
+        else:
+            return self.get_converted_measurement( self.resolution.value(), self.convert_res_to_unit[ self.resolution_units.currentText() ], 'in')
     
     def get_resample(self):
         return self.scaling.currentText() == 'Resample' 
@@ -334,9 +350,17 @@ class QWebViewExtend(QWebView):
         # Override links for internal link cleverness
         if onNavEvent:
             self.onNavEvent = onNavEvent
-            self.linkClicked.connect( self.onNavEvent )
+            self.linkClicked.connect( self.delegateUrlWrapper )
 
         self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
+    
+    def delegateUrlWrapper(self, url):
+        if url.isRelative() and url.hasFragment():
+            self.page().currentFrame().evaluateJavaScript("$('html,body').scrollTop( $(\"a[name='%s']\").offset().top );" % url.fragment()) 
+        else:
+            self.onNavEvent(url)
+        
+            
     
     def sizeHint(self):
         if self.w:
@@ -348,6 +372,8 @@ class QWebViewExtend(QWebView):
     def delegateLink(self, url):
         self.onNavEvent( QUrl(url) )
         return True
+
+
 
 
 # View Dialogs
@@ -495,53 +521,56 @@ class QTabWidgetExtend( QTabWidget ):
         
 
 
+
+
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
 class GenericApp( QMainWindow ):
 
     help_tab_html_filename = None
     status = pyqtSignal(str)
-    progress = pyqtSignal(int)
+    progress = pyqtSignal(float)
+    complete = pyqtSignal()
 
-    def __init__(self, plugin, parent, **kwargs):
-        super(GenericApp, self).__init__(parent, **kwargs)
-    
+    nameChanged = pyqtSignal(str)
+
+    #def event(self,e):
+    #    print QApplication.focusWidget().__class__.__name__
+    #    return super(GenericApp, self).event(e)
+
+    def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=False, **kwargs):
+        super(GenericApp, self).__init__()
+
         self.id = str( id( self ) )
-
-        self.plugin = plugin
-        self.m = parent
-        self.m.views.append( self )
         
-        self._floating = False
+        self._previous_size = None
+
+        self.m = self.plugin.m
+        self.m.apps.append( self )
+        
         self._pause_analysis_flag = False
         
         self.data = data.DataManager(self.m, self)
         self.views = ViewManager(self)
-        self.name = self.m.plugin_names[ id( self.plugin ) ]
+        self.complete.connect(self.views.onRefreshAll)
 
-        #self.thread = None
-        #self.threadpool = QThreadPool()
-        #self.threadpool.setMaxThreadCount(1)
+        if name == None:
+            name = getattr(self, 'name', self.m.plugin_names[ id( self.plugin ) ] )
+        self.set_name(name)
 
-        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        
         self.file_watcher = QFileSystemWatcher()            
         self.file_watcher.fileChanged.connect( self.onFileChanged )
 
         if self.plugin.help_tab_html_filename:
-            self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-            self.views.addView(self.help, '?', unfocus_on_refresh=True)            
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
-            self.help.setHtml( template.render( {
+            html = template.render( {
                         'htmlbase': os.path.join( utils.scriptdir,'html'),
                         'pluginbase': self.plugin.path,
                         'view': self,                        
-                        } ), QUrl("~") 
-                        )
+                        } )
+
+            self.views.addView(StaticHTMLView(self, html), '?', unfocus_on_refresh=True)            
         
         self.toolbars = {}
-        self.addSelfToolBar() # Everything has one
-        
-        self.controls = defaultdict( dict ) # Store accessible controls
         
         self.register_url_handler( self.default_url_handler )
 
@@ -552,7 +581,11 @@ class GenericApp( QMainWindow ):
         
         self.config = config.ConfigManager() # Configuration manager object; handle all get/setting, defaults etc.
         
-        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, is_selected=True, icon=self.plugin.workspace_icon) #, icon = None)
+        self.editorItem = self.m.editor.addApp(self, position=position)
+        self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, icon=self.plugin.workspace_icon) #, icon = None)
+
+        self.addSelfToolBar() # Everything has one
+
 
     def register_url_handler(self, url_handler):
         self.m.register_url_handler( self.id, url_handler ) 
@@ -562,14 +595,12 @@ class GenericApp( QMainWindow ):
         
     def delete(self):
         self.m.removeWorkspaceItem(self)
+        self.m.editor.removeApp(self)
         # Tear down the config and data objects
         self.data.reset()
         self.config.reset()
-        # Delete all threads (remove references)
-        # FIXME: Wait for nice cleanup
-        #self.thread = None
         # Close the window obj
-        self.m.views.remove( self )
+        self.m.apps.remove( self )
         # Trigger notification for state change
         self.m.workspace_updated.emit()
         self.close()
@@ -581,22 +612,47 @@ class GenericApp( QMainWindow ):
             return False
         
         self.views.autoSelect() # Unfocus the help file if we've done something here
-        self.generate(*args, **kwargs)
+        self.thread_generate()
     
-    def generate(self):
-        return
+    def thread_generate(self):
+        # Automatically trigger generator using inputs
+        kwargs_dict = {}
+        for i in self.data.i.keys():
+            kwargs_dict[ i ] = self.data.get(i) # Will be 'None' if not available
+        
+        self.progress.emit(0.)
+        self.worker = threads.Worker(self.generate, **kwargs_dict)
+        self.start_worker_thread(self.worker, callback=self._generate_worker_result_callback)
     
+            
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
-        return
+        # Automated pass on generated data if matching output port names
+        for o in self.data.o.keys():
+            if o in kwargs:
+                self.data.put( o, kwargs[o])
         
-    def _worker_result_callback(self, kwargs_dict):
+    def prerender(self, output=None, **kwargs):
+        return {'View':dict( {'dso':output}.items() + kwargs.items() ) } 
+    
+    def _generate_worker_result_callback(self, kwargs_dict):
+        self.generated( **kwargs_dict)
+        self.progress.emit(1.)
         self.status.emit('render')
-        self.generated(**kwargs_dict)  
-        self.status.emit('done')
+        self.prerender_worker = threads.Worker(self.prerender, **kwargs_dict)
+        self.start_worker_thread(self.prerender_worker, callback=self._prerender_worker_result_callback)
         
-
-    def _worker_error_callback(self):
+    def _prerender_worker_result_callback(self, kwargs):
+        self.views.data = kwargs
+        self.views.source_data_updated.emit()
+        #self.views.redraw()
+        self.progress.emit(1.)
+        self.status.emit('done')
+        self.views.updated.emit()
+        
+    def _worker_error_callback(self, error=None):
+        self._latest_exception = error[1]
+        self.progress.emit(1.)
         self.status.emit('error')
 
     def _worker_status_callback(self, s):
@@ -607,52 +663,27 @@ class GenericApp( QMainWindow ):
         
     def start_worker_thread(self, worker, callback=None):
         if callback == None:
-            callback = self._worker_result_callback
-
-        #if self.thread != None: # Handle nicer; wait or similar
-        #    return False
-
-            
-        #thread = QThread()
-        #self.thread = thread #(thread, worker)
+            callback = self._generate_worker_result_callback
         
-        #print "%s thread stack @%d" % (self.name, len(self.threads) )
-         
-        worker.signals.result.connect( self._worker_result_callback )
-
+        worker.signals.result.connect( callback )
         worker.signals.error.connect( self._worker_error_callback )
-        #worker.signals.error.connect( worker.deleteLater )
-        #worker.signals.error.connect( thread.quit )
 
-        #worker.signals.finished.connect( worker.deleteLater )
-        #worker.signals.finished.connect( thread.quit )
-
-        #thread.finished.connect( thread.deleteLater )
-        #thread.finished.connect( self._thread_finished_callback )
-        
-        #worker.status.connect( self.setWorkspaceStatus )
-        '''
-        thread.worker = worker
-        thread.started.connect( worker.run )
-        worker.moveToThread(thread)
-        thread.start()
-        '''
-        
         self.status.emit('active')
         self.m.threadpool.start(worker)
 
+    def store_views_data(self, kwargs_dict):
+        self.views.source_data = kwargs_dict
         
     def set_name(self, name):
         self.name = name
+        self.setWindowTitle( name )
+        self.nameChanged.emit(name)
+
         try:
             self.workspace_item.setText(0, name)
         except:
             pass
 
-        try: # Notify the mainview of the workspace change
-            self.m.workspace_updated.emit()            
-        except:
-            pass
 
     def updateProgress(self, progress):
         self.m.updateProgress( self.workspace_item, progress)
@@ -666,23 +697,6 @@ class GenericApp( QMainWindow ):
     def onDelete(self):
         self.delete()
             
-    def onPopOutToggle(self, status):
-        if status and not self._floating: # Only pop out if in
-            # Pop us out
-            #stack_index = self.m.stack.addWidget( self )
-            self._parent = self.parent()
-            self._floating = True
-            self._placeholder = QWidget()
-            self.m.stack.insertWidget(self.m.stack.currentIndex(), self._placeholder ) # Keep space in the stack prevent flow-over
-            self.setParent(self.m, Qt.Window)
-            self.show()
-        elif self._floating: # Only pop in if out
-            # Pop us in
-            self._floating = False
-            self.m.stack.addWidget(self)
-            self.m.stack.removeWidget(self._placeholder)
-            #self.setParent(self._parent, Qt.Window)
-
     def addSelfToolBar(self):            
         t = self.addToolBar('App')
         t.setIconSize( QSize(16,16) )
@@ -692,12 +706,12 @@ class GenericApp( QMainWindow ):
         delete_selfAction.triggered.connect(self.onDelete)
         t.addAction(delete_selfAction)
 
-        popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
-        popout_selfAction.setStatusTip('Open this app in a separate window')
-        popout_selfAction.setCheckable(True)
-        popout_selfAction.setChecked(False)
-        popout_selfAction.toggled.connect(self.onPopOutToggle)
-        t.addAction(popout_selfAction)
+        #popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
+        #popout_selfAction.setStatusTip('Open this app in a separate window')
+        #popout_selfAction.setCheckable(True)
+        #popout_selfAction.setChecked(False)
+        #popout_selfAction.toggled.connect(self.onPopOutToggle)
+        #t.addAction(popout_selfAction)
         
         self.toolbars['self'] = t        
 
@@ -740,13 +754,13 @@ class GenericApp( QMainWindow ):
             for cb in dialog.lw_consumeri: # Get list of comboboxes
                 i = cb.currentIndex() # Get selected item
                 consumer_def = cb.consumer_def
-                print consumer_def.target, i, len(cb.datasets)
+
                 if i > 0: # Something in the list (-1) and not 'No data'
                     dso = cb.datasets[i]
                     self.data.consume_with(dso, consumer_def)  
                     
                 else: # Stop consuming through this interface
-                    self.data.stop_consuming( consumer_def.target )
+                    self.data.unget( consumer_def.target )
              
             # Trigger notification for data source change; re-render inheritance map        
             #self.m.onDataInheritanceChanged()
@@ -759,9 +773,9 @@ class GenericApp( QMainWindow ):
         dialog = DialogDataOutput(parent=self, view=self)        
         dialog.exec_()
 
-    def closeEvent(self, event):
-        self.onPopOutToggle(False)
-        event.ignore()
+    def closeEvent(self, e):
+        self._previous_size = self.size()
+        super(GenericApp, self).closeEvent(e)
 
     def getCreatedToolbar(self, name, id):
         if id not in self.toolbars:       
@@ -827,18 +841,14 @@ class GenericApp( QMainWindow ):
         
         # Load dialog for image export dimensions and resolution
         # TODO: dialog!
-        sizedialog = ExportImageDialog(self, size=cw.size() )
+        sizedialog = ExportImageDialog(self, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save )
         ok = sizedialog.exec_()
         if ok:
-            size = sizedialog.get_pixel_dimensions()
-            dpm =  sizedialog.get_dots_per_meter()
-            resample =  sizedialog.get_resample()
-        
-            cw.saveAsImage(size, dpm, resample)        
+            cw.saveAsImage(sizedialog)        
 
 
     def onRecalculate(self):
-        self.generate()
+        self.thread_generate()
         
     def onBrowserNav(self, url):
         self.m.onBrowserNav(url)
@@ -857,184 +867,22 @@ class GenericApp( QMainWindow ):
                 # Add the pathway and regenerate
                 self.onSelectDataSource()        
 
-        
-    def _build_entity_cmp(self,s,e,l):
-        return e == None
 
-    def _build_label_cmp(self,s,e,l):
-        return e != None or l == None or str(s) == l
-
-    def build_markers(self, zo, i, cmp_fn):
-        accumulator = []
-        last_v = None
-        no = 0
-        for n, (s,e,l) in enumerate(zo):
-            v = zo[n][i]
-            if cmp_fn(s, e, l):
-                last_v = None
-                continue
-            no += 1
-            if last_v == None or v != accumulator[-1][2]:
-                accumulator.append( [s,s,v] )
-            else:
-                accumulator[-1][1] = s
-            
-            last_v = v
-        
-        print "%s reduced to %s" % ( no, len(accumulator) ) 
-        return accumulator
-
-# Workspace overview (Home) class
-
-class HomeApp( GenericApp ):
-
-    def __init__(self, parent, **kwargs):
-        super(GenericApp, self).__init__(parent, **kwargs) # We're overriding all of the GenericApp Init, so super it
+    def sizeHint(self):
+        if self._previous_size:
+            return self._previous_size
+        return QSize(600,400)
     
-        self.plugin = None
-        self.m = parent
-        
-        self._floating = False
-    
-        self.id = 'home' #str( id( self ) )
-        self.name = "Home"
 
-        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        
-        self.views = ViewManager(self)
-
-        view = D3HomeView(self)
-        self.m.workspace_updated.connect( view.render )
-        self.views.addView(view,'Workflow')
-        
-        
-        # Display welcome file
-        self.help = QWebViewExtend(self, self.m.onBrowserNav) # Watch browser for external nav
-        self.views.addView(self.help,'?', unfocus_on_refresh=True)            
-        template = self.m.templateEngine.get_template('welcome.html')
-        self.help.setHtml( template.render( {
-                    'htmlbase': os.path.join( utils.scriptdir,'html'),
-                    } ), QUrl("~") 
-                    )
-
-        self.workspace = QWebViewExtend( self, onNavEvent=self.m.onBrowserNav )
-        #self.views.addView(self.workspace,'Workspace')
-
-        self.toolbars = {}
-        self.addSelfToolBar() # Everything has one
-        self.controls = defaultdict( dict ) # Store accessible controls
-        
-        self.register_url_handler( self.workspace_url_handler )
-        self.setCentralWidget(self.views)
-        
-        self.config = QSettings()
-        
-        self.addFigureToolBar()
-        
-        self.workspace_item = self.m.addWorkspaceItem(self, None, self.name, is_selected=True, icon=QIcon( os.path.join( utils.scriptdir,'icons','home.png' )) )#, icon = None)
-
-    
-    # Url handler for all default plugin-related actions; making these accessible to all plugins
-    # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
-    def workspace_url_handler(self, url):
-
-        kind, id, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames           
-        print "Workspace handler: %s" % url
-        # url is Qurl kind
-        # Add an object to the current view
-        if kind == "view":
-            if action == 'view':
-                for v in self.m.views:
-                    if v.id == id:
-                        # We've got the view object; find index in the stack
-                        si = self.m.stack.indexOf(v)
-                        if si:
-                            self.m.stack.setCurrentIndex(si)
-                            # Find the tree item and select it
-                            self.m.workspace.setCurrentItem( v._workspace_tree_widget )
-                        break      
-
-            elif action == "connect":
-                #"metapath://home/view/4545179728:scores,4545247392:input/connect"                          
-                #id = origin:int,dest:int
-                origin, dest = [o.split(':') for o in id.split(',')]
-                #o/d[0] == view, [1] == interface
-                # We have the view ids; so find the real things
-                for v in self.m.views:
-                    if v.id == origin[0]:
-                        origin[0] = v
-                        break
-
-                for v in self.m.views:
-                    if v.id == dest[0]:
-                        dest[0] = v
-                        break
-                
-                # Get the origin data
-                source_data = origin[0].data.o[origin[1]]
-                
-                # We now have the two views
-                for d in dest[0].data.consumer_defs:
-                    if d.target == dest[1]:
-                        dest[0].data.consume_with(source_data, d)
-                        break
-                                    
 
 # Data view prototypes
 
 class DataApp(GenericApp):
-    def __init__(self, plugin, parent, **kwargs):
-        super(DataApp, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, **kwargs):
+        super(DataApp, self).__init__(**kwargs)
 
-        self.summary = QWebViewExtend(self)
-        self.table = QTableView()
-        self.viewer = QWebViewExtend(self, onNavEvent=self.m.onBrowserNav) # Optional viewer; activate only if there is scale data
-
+        self.table = TableView()
         self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True )
-        self.viewer_tab_index = self.views.addView(self.viewer, tr('View'))
-        self.views.setTabEnabled( self.viewer_tab_index, False)
-        #self.views.addView(self.summary, 'Summary')
-
-    def render(self, metadata={}):
-        # If we have scale data, enable and render the Viewer tab
-        #FIXME: Must be along the top axis 
-        if 'output' in self.data.o:
-            dso = self.data.o['output']
-
-            if float in [type(t) for t in dso.scales[1]]:
-                self.views.setTabEnabled( self.viewer_tab_index, True)
-            
-                print "Scale data up top; make a spectra view"
-                metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-            
-                dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
-
-                # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
-                dsot = dso.as_summary(dim=0, match_attribs=['classes'])
-
-                # Copy to sort without affecting original
-                scale = np.array(dso.scales[1])
-                data = np.array(dsot.data)
-                
-                # Sort along x axis
-                sp = np.argsort( scale )
-                scale = scale[sp]
-                data = data[:,sp]
-                
-                metadata['figure'] = {
-                    'data':zip( scale, data.T ), # (ppm, [data,data,data])
-                    'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
-                    'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
-                }
-
-                template = self.m.templateEngine.get_template('d3/spectra.svg')
-                self.viewer.setSVG(template.render( metadata ))
-                
-                f = open('/Users/mxf793/Desktop/test3.svg','w')
-                f.write( template.render( metadata ) )
-                f.close()
-
-        return
         
 
 # Import Data viewer
@@ -1045,21 +893,34 @@ class ImportDataApp( DataApp ):
     import_filename_filter = tr("All Files") + " (*.*);;"
     import_description =  tr("Open experimental data from file")
     
-    def __init__(self, plugin, parent, **kwargs):
-        super(ImportDataApp, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, filename=None, **kwargs):
+        super(ImportDataApp, self).__init__(**kwargs)
     
         self.data.add_output('output') # Add output slot
         self.table.setModel(self.data.o['output'].as_table)
+        self.views.addTab(MplSpectraView(self), 'View')
         
         self.addImportDataToolbar()
         
-        #fn = self.onImportData()
+        if filename:
+            self.load_datafile( filename )
+         
+    # Data file import handlers (#FIXME probably shouldn't be here)
+    def thread_load_datafile(self, filename, type=None):
+        if type:
+            self.worker = threads.Worker(self.load_datafile_by_type, filename, type)
+        else:        
+            self.worker = threads.Worker(self.load_datafile, filename)
+        self.start_worker_thread(self.worker)      
+        
+    def prerender(self, output=None):
+        return {'View':{'dso':output} }
 
     def onImportData(self):
         """ Open a data file"""
         filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, '', self.import_filename_filter)
         if filename:
-            self.load_datafile( filename )
+            self.thread_load_datafile( filename )
 
             self.file_watcher = QFileSystemWatcher()            
             self.file_watcher.fileChanged.connect( self.onFileChanged )
@@ -1070,8 +931,9 @@ class ImportDataApp( DataApp ):
         return False
 
     def onFileChanged(self, file):
+        self.load_datafile( file )
         pass
-        #self.load_datafile( file )
+        
 
     def addImportDataToolbar(self):   
         t = self.getCreatedToolbar( tr('External Data'),'external-data')
@@ -1086,34 +948,16 @@ class ImportDataApp( DataApp ):
 
 
 # Analysis/Visualisation view prototypes
-
-
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
 class AnalysisApp(GenericApp):
-    def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisApp, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, **kwargs):
+        super(AnalysisApp, self).__init__(**kwargs)
 
-        self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
-        self.views.addView(self.browser, tr('View') )
-    
-    def render(self, metadata, template='d3/figure.svg', target=None):
-        if target == None:
-            target = self.browser
-            
-        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-
-        template = self.m.templateEngine.get_template(template)
-        target.setSVG(template.render( metadata ))
-        
-                
-        f = open("/Users/mxf793/Desktop/test.svg","w")
-        f.write(template.render( metadata ))
-        f.close()                
-                
 
     # Build change table 
     def build_change_table_of_classes(self, dso, objs, classes):
+        print dso.shape
         
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
@@ -1128,30 +972,26 @@ class AnalysisApp(GenericApp):
         dso = dso.as_filtered( labels=objs)
 
         #data = data.as_class_grouped(classes=classes)
-        data = np.zeros( (len(objs), len(classes)) )
-
-        for y,l in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
-            for x,c in enumerate(classes):
-                try:
-                    #e = self.m.db.index[o] # Get entity for lookup
-                    data[y,x] = dso.data[ dso.classes[0].index(c), dso.labels[1].index(l) ]
-                except: # Can't find it
-                    pass
+        data = np.zeros( (len(classes),len(objs)) )
+        
+        for x,l in enumerate(objs): #[u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
+            for y,c in enumerate(classes):
+                #e = self.m.db.index[o] # Get entity for lookup
+                data[y,x] = dso.data[ dso.classes[0].index(c), dso.labels[1].index(l) ]
                 
-        return data
+        return data.T
   
   
     def build_change_table_of_entitytypes(self, dso, objs, entityt):
         
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
-        
         entities = []
         for o in objs:
             entities.extend( [ self.m.db.index[id] for id in o if id in self.m.db.index] )
+            
         # Filter for the things we're displaying
         dso = dso.as_filtered( entities=entities)
-
         #data = data.as_class_grouped(classes=classes)
         data = np.zeros( (len(objs), len(entityt)) )
 
@@ -1182,6 +1022,66 @@ class AnalysisApp(GenericApp):
                 data[y,x] = np.mean( self.parent.data.quantities[yl][xl] ) - np.mean( self.parent.data.quantities[ yl ][ self.parent.experiment['control'] ] )
     
         return data
+
+    def build_heatmap_dso(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
+        
+        dso = DataSet( size=( len(labelsY), len(labelsX) ) )
+        dso.data = data
+        dso.labels[0] = labelsY
+        dso.labels[1] = labelsX
+        return dso
+
+
+    #self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
+    def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
+        buckets = []
+
+        if remove_empty_rows:
+            mask = ~np.isnan(data).all(axis=1)
+            data = data[mask]
+            labelsY = [l for l,m in zip(labelsY,mask) if m]
+
+        elif remove_incomplete_rows:
+            mask = ~np.isnan(data).any(axis=1)
+            data = data[mask]
+            labelsY = [l for l,m in zip(labelsY,mask) if m]
+
+
+        # Broken, fix if needed
+        #if remove_empty_cols:
+        #    mask = ~np.isnan(data).all(axis=0)
+        #    data = data.T[mask.T]
+        #    labelsX = [l for l,m in zip(labelsX,mask) if m]
+
+        if sort_data:
+            # Preferable would be to sort by the total for each row
+            # can then use that to sort the labels list also
+            totals = np.ma.masked_invalid(data).sum(1).data # Get sum for rows, ignoring NaNs
+            si = totals.argsort()[::-1]
+            data = data[si] # Sort
+            labelsY = list( np.array( labelsY )[si] ) # Sort Ylabels via numpy array.
+        
+        for x, xL in enumerate(labelsX):
+            for y, yL in enumerate(labelsY):  
+
+                if data[y][x] != np.nan:
+                    buckets.append([ xL, yL, data[y][x] ] )
+
+        return buckets    
+        
+        
+    def build_matrix(self, targets, target_links):
+
+        data = []
+        for mx in targets:
+            row = []
+            for my in targets:
+                n = len( list( target_links[my] & target_links[mx] ) )
+                row.append( n )
+    
+            data.append( row )
+        return data, targets
+                
 
     def get_fig_tempfile(self, fig):
         tf = QTemporaryFile()
@@ -1262,204 +1162,6 @@ class AnalysisApp(GenericApp):
         self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
         self.generate()
     
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class AnalysisD3App(AnalysisApp):
-        
-    def render(self, metadata, debug=False, template_name='figure'):
-        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-        
-        template = self.m.templateEngine.get_template('d3/%s.svg' % template_name)
-        self.browser.setSVG(template.render( metadata ))
-        self.m.workspace_updated.emit()
-
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class D3App(AnalysisApp):
-    def __init__(self, plugin, parent, **kwargs):
-        super(D3App, self).__init__(plugin, parent, **kwargs)        
-    
-        self.parent = parent
-        self.browser = QWebViewExtend( self.views, onNavEvent=parent.onBrowserNav )
-    
-    def generate(self):
-        current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
-        # Iterate pathways and get a list of all metabolites (list, for index)
-        metabolites = []
-        reactions = []
-        metabolite_pathway_groups = {}
-        for p in current_pathways:
-
-            for r in p.reactions:
-                ms = r.mtins + r.mtouts
-                for m in ms:
-                    if m not in metabolites:
-                        metabolites.append(m)
-
-                for m in ms:
-                    metabolite_pathway_groups[m] = current_pathways.index(p)
-
-                for mi in r.mtins:
-                    for mo in r.mtouts:
-                        reactions.append( [ metabolites.index(mi), metabolites.index(mo) ] )
-                
-        
-        # Get list of all reactions
-        # In template:
-        # Loop metabolites (nodes; plus their groups)
-    
-    
-        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
-                     'pathways':[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')],
-                     'metabolites':metabolites,
-                     'metabolite_pathway_groups':metabolite_pathway_groups, 
-                     'reactions':reactions,
-                     }
-        template = self.parent.templateEngine.get_template('d3/force.svg')
-
-        self.browser.setSVG(template.render( metadata ))
-
-          
-
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class AnalysisHeatmapApp(AnalysisD3App):
-
-    #self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
-    def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
-        buckets = []
-
-        if remove_empty_rows:
-            mask = ~np.isnan(data).all(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-        elif remove_incomplete_rows:
-            mask = ~np.isnan(data).any(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-
-        # Broken, fix if needed
-        #if remove_empty_cols:
-        #    mask = ~np.isnan(data).all(axis=0)
-        #    data = data.T[mask.T]
-        #    labelsX = [l for l,m in zip(labelsX,mask) if m]
-
-        if sort_data:
-            # Preferable would be to sort by the total for each row
-            # can then use that to sort the labels list also
-            totals = np.ma.masked_invalid(data).sum(1).data # Get sum for rows, ignoring NaNs
-            si = totals.argsort()[::-1]
-            data = data[si] # Sort
-            labelsY = list( np.array( labelsY )[si] ) # Sort Ylabels via numpy array.
-        
-        for x, xL in enumerate(labelsX):
-            for y, yL in enumerate(labelsY):  
-
-                if data[y][x] != np.nan:
-                    buckets.append([ xL, yL, data[y][x] ] )
-
-        return buckets    
-
-
-
-class AnalysisCircosApp(AnalysisD3App):
-    def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisCircosApp, self).__init__(plugin, parent, **kwargs)        
-        self.parent = parent
-        self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
-
-    def build_matrix(self, targets, target_links):
-
-        data = []
-        for mx in targets:
-            row = []
-            for my in targets:
-                n = len( list( target_links[my] & target_links[mx] ) )
-                row.append( n )
-    
-            data.append( row )
-        return data, targets
-
-
-
-
-
-
-
-class AnalysisCircosPathwayApp(AnalysisHeatmapApp):
-    def __init__(self, plugin, parent, **kwargs):
-        super(AnalysisCircosPathwayApp, self).__init__(plugin, parent, **kwargs)        
-
-        self.parent = parent
-        self.browser = QWebViewExtend( self, onNavEvent=parent.onBrowserNav )
-
-
-    def build_matrix(self, targets, target_links):
-
-        data = []
-        for mx in targets:
-            row = []
-            for my in targets:
-                n = len( list( target_links[my] & target_links[mx] ) )
-                row.append( n )
-    
-            data.append( row )
-        return data, targets
-
-
-    def generate(self):
-        pathways = self.parent.db.pathways.keys()
-        pathway_metabolites = dict()
-        
-        for k,p in self.parent.db.pathways.items():
-            pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
-
-        data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
-
-        pathway_reactions = dict()
-        
-        for k,p in self.parent.db.pathways.items():
-            pathway_reactions[p.id] = set( [m for m in p.reactions] )
-
-        data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
-
-
-        pathway_active_reactions = dict()
-        pathway_active_metabolites = dict()
-        active_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
-        active_pathways_id = []
-        
-        for p in active_pathways:
-            pathway_active_reactions[p.id] = set( [r for r in p.reactions] )
-            pathway_active_metabolites[p.id] = set( [r for r in p.metabolites] )
-            active_pathways_id.append(p.id)
-    
-
-        data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
-        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_metabolites)
-
-
-        self.render( {
-            'htmlbase': os.path.join( utils.scriptdir,'html'),
-            'figures': [[
-                        {
-                            'type':'circos',
-                            'data': data_ar,
-                            'labels': labels_ar,
-                            'n':1,  
-                            'legend':('Metabolic pathway reaction interconnections','Links between pathways indicate proportions of shared reactions between the two pathways in MetaCyc database')                             
-                        },
-                        {
-                            'type':'circos',
-                            'data': data_am,
-                            'labels': labels_am,
-                            'n':2,  
-                            'legend':('Metabolic pathway metabolite interconnections','Links between pathways indicate proportions of shared metabolites between the two pathways in MetaCyc database')
-                        },                                             
-                    ]],
-                    }, debug=True)
 
 
 class remoteQueryDialog(genericDialog):

@@ -28,6 +28,7 @@ import operator
 import ui, utils, db, threads
 from data import DataSet, DataDefinition
 from db import ReactionIntermediate
+from views import SVGView
 
 PRUNE_ALL = lambda a, b, c, d: (a,b,c)
 PRUNE_IDENTICAL = lambda a, b, c, d: (a,b,c,d)    
@@ -584,32 +585,34 @@ class dialogPathwaysShow(ui.genericDialog):
         #all_pathways = parent.db.pathways.keys()
         self.all_pathways = sorted( [p.name for p in parent.m.db.pathways.values()] )
 
-        self.tabs = QTabWidget()
+        self.views = QTabWidget()
         self.tab = defaultdict(dict)
         selected_pathways = str( parent.config.get('/Pathways/Show') ).split(',')
         page1 = self.setupTabPage('show', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
         selected_pathways = str( parent.config.get('/Pathways/Hide') ).split(',')
         page2 = self.setupTabPage('hide', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
 
-        self.tabs.addTab(page1, 'Show' )
-        self.tabs.addTab(page2, 'Hide' )
+        self.views.addTab(page1, 'Show' )
+        self.views.addTab(page2, 'Hide' )
 
-        self.layout.addWidget(self.tabs)
+        self.layout.addWidget(self.views)
         
         # Stack it all up, with extra buttons
         self.dialogFinalise()
 
 
 
-class MetaVizView(ui.AnalysisView):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(MetaVizView, self).__init__(plugin, parent, **kwargs)
+class MetaVizApp(ui.AnalysisApp):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(MetaVizApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
         
         self.data.add_input('suggested_pathways') # Add input slot
         self.data.add_input('data') # Add input slot
+        
+        self.views.addView( SVGView(self), 'View')
         
         # Setup data consumer options
         self.data.consumer_defs.extend([
@@ -627,16 +630,16 @@ class MetaVizView(ui.AnalysisView):
             '/Pathways/Show': 'GLYCOLYSIS',
             '/Pathways/Hide': '',
             '/Pathways/ShowLinks': False,
-            # View
-            '/View/ShowEnzymes': True,
-            '/View/Show2nd': True,
-            '/View/ShowMolecular': True,
-            '/View/ShowAnalysis': True,
+            # App
+            '/App/ShowEnzymes': True,
+            '/App/Show2nd': True,
+            '/App/ShowMolecular': True,
+            '/App/ShowAnalysis': True,
 
-            '/View/HighlightPathways': True,
-            '/View/HighlightRegions': True,
+            '/App/HighlightPathways': True,
+            '/App/HighlightRegions': True,
 
-            '/View/ClusterBy': 'pathway',
+            '/App/ClusterBy': 'pathway',
         })
 
 
@@ -655,44 +658,44 @@ class MetaVizView(ui.AnalysisView):
         showenzymesAction = QAction('Show proteins/enzymes', self.m)
         showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
         showenzymesAction.setCheckable( True )
-        #showenzymesAction.setChecked( bool( self.config.value('/View/ShowEnzymes' ) ) )
-        self.config.add_handler('/View/ShowEnzymes', showenzymesAction )
+        #showenzymesAction.setChecked( bool( self.config.value('/App/ShowEnzymes' ) ) )
+        self.config.add_handler('/App/ShowEnzymes', showenzymesAction )
         
         show2ndAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') ), 'Show 2° compounds', self.m)
         show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
         show2ndAction.setCheckable( True )
-        #show2ndAction.setChecked( bool( self.config.value('/View/Show2nd' ) ) )
-        self.config.add_handler('/View/Show2nd', show2ndAction )
+        #show2ndAction.setChecked( bool( self.config.value('/App/Show2nd' ) ) )
+        self.config.add_handler('/App/Show2nd', show2ndAction )
 
         showmolecularAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') ),'Show molecular structures', self.m)
         showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
         showmolecularAction.setCheckable( True )
-        #showmolecularAction.setChecked( bool( self.config.value('/View/ShowMolecular' ) ) )
-        self.config.add_handler('/View/ShowMolecular', showmolecularAction )
+        #showmolecularAction.setChecked( bool( self.config.value('/App/ShowMolecular' ) ) )
+        self.config.add_handler('/App/ShowMolecular', showmolecularAction )
 
         showanalysisAction = QAction('Show network analysis', self.m)
         showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
         showanalysisAction.setCheckable( True )
-        #showanalysisAction.setChecked( bool( self.config.value('/View/ShowAnalysis' ) ) )
-        self.config.add_handler('/View/ShowAnalysis', showanalysisAction )
+        #showanalysisAction.setChecked( bool( self.config.value('/App/ShowAnalysis' ) ) )
+        self.config.add_handler('/App/ShowAnalysis', showanalysisAction )
 
         highlightcolorsAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight Reaction Pathways', self.m)
         highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
         highlightcolorsAction.setCheckable( True )
-        #highlightcolorsAction.setChecked( bool( self.config.value('/View/HighlightPathways' ) ) )
-        self.config.add_handler('/View/HighlightPathways', highlightcolorsAction )
+        #highlightcolorsAction.setChecked( bool( self.config.value('/App/HighlightPathways' ) ) )
+        self.config.add_handler('/App/HighlightPathways', highlightcolorsAction )
 
         highlightregionAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight pathway/compartment regions', self.m)
         highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
         highlightregionAction.setCheckable( True )
-        #highlightregionAction.setChecked( bool( self.config.value('/View/HighlightRegions' ) ) )
-        self.config.add_handler('/View/HighlightRegions', highlightregionAction )
+        #highlightregionAction.setChecked( bool( self.config.value('/App/HighlightRegions' ) ) )
+        self.config.add_handler('/App/HighlightRegions', highlightregionAction )
         
 
         self.cluster_control = QComboBox()
         self.cluster_control.addItems(['pathway','compartment'])
         #self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
-        self.config.add_handler('/View/ClusterBy', self.cluster_control )
+        self.config.add_handler('/App/ClusterBy', self.cluster_control )
 
         t = self.addToolBar('MetaViz')
         self.setIconSize( QSize(16,16) )
@@ -709,8 +712,6 @@ class MetaVizView(ui.AnalysisView):
         
         self.toolbars['metaviz'] = t
 
-        self.tabs.addTab(self.browser,'View')
-        #self.tabs.addTab(self.overview,'Overview')
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
         if auto_consume_data:
@@ -746,7 +747,7 @@ class MetaVizView(ui.AnalysisView):
                 pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.append( urllib2.unquote(id) )
                 self.config.set('/Pathways/Show', ','.join(pathways) )
-                self.generateGraphView()   
+                self.generateGraphApp()   
 
         # Remove an object to the current view
         if action == 'remove':
@@ -757,27 +758,15 @@ class MetaVizView(ui.AnalysisView):
                 pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.remove( urllib2.unquote(id) )
                 self.config.set('/Pathways/Show', ','.join(pathways))
-                self.generateGraphView()
+                self.generateGraphApp()
 
 
-    def generate(self):
-        dso = self.data.get('input') # Get the dataset
-        self.worker = threads.Worker(self.generator, dso=dso)
-        self.start_worker_thread(self.worker)
-
-    def generated(self, svg):
-        self.browser.setSVG(svg) #,"~") 
-
-    def get_filename_with_counter(self, filename):
-        fn, ext = os.path.splitext(filename)
-        return fn + "-%s" + ext
-
-    def generator(self, dso):
-
+    def generate(self, suggested_pathways=None, data=None):
+        dso = data
         # By default use the generated metapath file to view
         filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
         
-        tps = self.generateGraph(filename=filename, format='svg')
+        tps = self.generateGraph(filename=filename, suggested_pathways=suggested_pathways,  data=dso, format='svg')
         if tps == None:
             svg_source = [ open(filename).read().decode('utf8') ]
             tps = [0]
@@ -793,12 +782,19 @@ class MetaVizView(ui.AnalysisView):
 
         #self.browser.setSVG(svg_source[0]) #,"~") 
         self.progress.emit(90)
-
         return {
             'svg': svg_source[0],
         }
+        
+    def prerender(self, svg=''):
+        return {'View':{'svg':svg} }
 
-    def generateGraph(self, filename, format = 'svg'): 
+    def get_filename_with_counter(self, filename):
+        fn, ext = os.path.splitext(filename)
+        return fn + "-%s" + ext
+
+
+    def generateGraph(self, filename, suggested_pathways=[], data=None, format = 'svg'): 
         # Build options-like structure for generation of graph
         # (compatibility with command line version, we need to fake it)
         options = Values()
@@ -809,14 +805,14 @@ class MetaVizView(ui.AnalysisView):
             #'not_pathways':'',
             'show_all': False, #self.config.ReadBool('/Pathways/ShowAll'),
             'search':'',
-            'cluster_by': self.config.get('/View/ClusterBy'),
-            'show_enzymes': self.config.get('/View/ShowEnzymes'), #self.config.ReadBool('/View/ShowEnzymes'),
-            'show_secondary': self.config.get('/View/Show2nd'),
-            'show_molecular': self.config.get('/View/ShowMolecular'),
-            'show_network_analysis': self.config.get('/View/ShowAnalysis'),
+            'cluster_by': self.config.get('/App/ClusterBy'),
+            'show_enzymes': self.config.get('/App/ShowEnzymes'), #self.config.ReadBool('/App/ShowEnzymes'),
+            'show_secondary': self.config.get('/App/Show2nd'),
+            'show_molecular': self.config.get('/App/ShowMolecular'),
+            'show_network_analysis': self.config.get('/App/ShowAnalysis'),
 
-            'highlightpathways': self.config.get('/View/HighlightPathways'),
-            'highlightregions': self.config.get('/View/HighlightRegions'),
+            'highlightpathways': self.config.get('/App/HighlightPathways'),
+            'highlightregions': self.config.get('/App/HighlightRegions'),
 
             'splines': 'true',
             'focus':False,
@@ -827,7 +823,6 @@ class MetaVizView(ui.AnalysisView):
         })
                 
         #pathway_ids = self.config.value('/Pathways/Show').split(',')
-        suggested_pathways = self.data.get('suggested_pathways')
         if suggested_pathways:
             pathway_ids = [p.id for p in suggested_pathways.entities[1] ]
         else:
@@ -848,7 +843,7 @@ class MetaVizView(ui.AnalysisView):
         if pathway_ids == []:
             return None        
             
-        dsi = self.data.get('data')
+        dsi = data
         if dsi:
             #if self.m.data.analysis_timecourse:
             #    # Generate the multiple views
@@ -878,13 +873,13 @@ class MetaVizView(ui.AnalysisView):
             
             graph = generator( pathways, options, self.m.db, analysis=node_colors) #, layout=self.layout) 
             self.status.emit('waiting')
-            self.progress.emit(50)
+            self.progress.emit(0.5)
             graph.write(filename, format=options.output, prog='neato')
             return None
         else:
             graph = generator( pathways, options, self.m.db) #, layout=self.layout) 
             self.status.emit('waiting')
-            self.progress.emit(50)
+            self.progress.emit(0.5)
             graph.write(filename, format=options.output, prog='neato')
             return None
 
@@ -894,10 +889,7 @@ class MetaViz(VisualisationPlugin):
 
     def __init__(self, **kwargs):
         super(MetaViz, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    # Create a new instance of the plugin viewer object to handle all behaviours
-    def app_launcher(self, **kwargs):
-        return MetaVizView( self, self.m, **kwargs )
+        MetaVizApp.plugin = self
+        self.register_app_launcher( MetaVizApp )
 
                      

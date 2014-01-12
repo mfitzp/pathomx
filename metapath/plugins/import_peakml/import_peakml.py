@@ -26,13 +26,13 @@ import ui, db
 from data import DataSet
 
 
-class ImportPeakMLView( ui.ImportDataView ):
+class ImportPeakMLApp( ui.ImportDataApp ):
 
     import_filename_filter = "PeakML (MzMatch) Data Files (*.peakml);;All files (*.*)"
     import_description =  "Open experimental data from PeakML data files"
 
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(ImportPeakMLView, self).__init__(plugin, parent, **kwargs)
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(ImportPeakMLApp, self).__init__(**kwargs)
 
        
 
@@ -51,12 +51,7 @@ class ImportPeakMLView( ui.ImportDataView ):
     # Data file import handlers (#FIXME probably shouldn't be here)
         
     def load_datafile(self, filename):
-    
         # Determine if we've got a csv or peakml file (extension)
-        print "Loading... %s" %filename
-        self.setWorkspaceStatus('active')
-
-    
         #self.data.o['output'].empty()
         dso = DataSet()
 
@@ -135,14 +130,9 @@ class ImportPeakMLView( ui.ImportDataView ):
 
         dso.name = os.path.basename( filename )
         dso.description = 'Imported PeakML file'
-
         self.set_name( dso.name )
-        
-        self.setWorkspaceStatus('done')
-        self.data.put('output', dso)
 
-        self.clearWorkspaceStatus()
-        
+        return {'output':dso}
 
 
         
@@ -151,7 +141,4 @@ class ImportPeakML(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(ImportPeakML, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return ImportPeakMLView( self, self.m )
+        self.register_app_launcher( ImportPeakMLApp )

@@ -68,12 +68,11 @@ class dialogMiningSettings(ui.genericDialog):
          
 
 
-class PathwayMiningView( ui.AnalysisView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(PathwayMiningView, self).__init__(plugin, parent, **kwargs)
+class PathwayMiningApp( ui.AnalysisApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(PathwayMiningApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
-        
         self.addDataToolBar()
         self.addExperimentToolBar()
         
@@ -96,7 +95,7 @@ class PathwayMiningView( ui.AnalysisView ):
         self.table = QTableView()        
         self.table.setModel( self.data.o['output'].as_table )
         
-        self.tabs.addTab(self.table, 'Table')
+        self.views.addTab(self.table, 'Table')
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -109,59 +108,15 @@ class PathwayMiningView( ui.AnalysisView ):
             self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
         self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
 
-    def generate(self):
-        self.suggest()
-
-
-    def onMiningSettings(self):
-        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogMiningSettings(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            self.config.set('/Data/MiningDepth', dialog.sb_miningDepth.value() )
-            self.config.set('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
-            self.config.set('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
-            self.config.set('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
-
-            # Update the toolbar dropdown to match
-            self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
-
-    def onModifyMiningDepth(self):
-        """ Change mine depth via toolbar spinner """    
-        self.config.set('/Data/MiningDepth', self.sb_miningDepth.value())
-
-            
-    def onDefineExperiment(self):
-        """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogDefineExperiment(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            # Regenerate the graph view
-            self.config.set('experiment_control', dialog.cb_control.currentText() )
-            self.config.set('experiment_test', dialog.cb_test.currentText() )
-        
-            # Update toolbar to match any change caused by timecourse settings
-            self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
-            self.cb_control.clear()
-            self.cb_test.clear()
-
-            self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
-            self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
-    
-
-    # Generate pathway suggestions from the database based on a given data analysis (use set options)
-    def suggest(self):
-        self.setWorkspaceStatus('active')
-
+    def generate(self, input=None):
+        dsi = input
         # Iterate all the compounds in the current analysis
         # Assign score to each of the compound's pathways
         # Sum up, crop and return a list of pathway_ids to display
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
-        dsi = self.data.get('input')
         if dsi == False:
-            self.setWorkspaceStatus('error')
-            return False
+            raise BaseException
             
         db = self.m.db
 
@@ -249,17 +204,51 @@ class PathwayMiningView( ui.AnalysisView ):
     
         dso.labels[0][0] = "Pathway mining scores"
 
-        self.data.put('output',dso)
 
-        self.setWorkspaceStatus('done')
-        self.clearWorkspaceStatus()
+        return {'output':dso}
+        
+
+    def onMiningSettings(self):
+        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
+        dialog = dialogMiningSettings(parent=self)
+        ok = dialog.exec_()
+        if ok:
+            self.config.set('/Data/MiningDepth', dialog.sb_miningDepth.value() )
+            self.config.set('/Data/MiningType', METAPATH_MINING_TYPE_CODE[ dialog.cb_miningType.currentIndex() ] )
+            self.config.set('/Data/MiningRelative', dialog.xb_miningRelative.isChecked() )
+            self.config.set('/Data/MiningShared', dialog.xb_miningShared.isChecked() )
+
+            # Update the toolbar dropdown to match
+            self.sb_miningDepth.setValue( dialog.sb_miningDepth.value() )        
+
+    def onModifyMiningDepth(self):
+        """ Change mine depth via toolbar spinner """    
+        self.config.set('/Data/MiningDepth', self.sb_miningDepth.value())
+
+            
+    def onDefineExperiment(self):
+        """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
+        dialog = dialogDefineExperiment(parent=self)
+        ok = dialog.exec_()
+        if ok:
+            # Regenerate the graph view
+            self.config.set('experiment_control', dialog.cb_control.currentText() )
+            self.config.set('experiment_test', dialog.cb_test.currentText() )
+        
+            # Update toolbar to match any change caused by timecourse settings
+            self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
+            self.cb_control.clear()
+            self.cb_test.clear()
+
+            self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
+            self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
+    
+
         
         
 class PathwayMining(AnalysisPlugin):
 
     def __init__(self, **kwargs):
         super(PathwayMining, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return PathwayMiningView( self, self.m, **kwargs ) 
+        PathwayMiningApp.plugin = self
+        self.register_app_launcher( PathwayMiningApp )

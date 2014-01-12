@@ -10,12 +10,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import traceback
+import sys,traceback
 
 class WorkerSignals(QObject):
         
     finished = pyqtSignal()
-    error = pyqtSignal()
+    error = pyqtSignal(tuple)
     result = pyqtSignal(dict)
     status = pyqtSignal(str)
     
@@ -36,7 +36,8 @@ class Worker(QRunnable):
             result = self.callback(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
-            self.signals.error.emit()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit( (exctype, value, traceback.format_exc() ) )
         else:
             self.signals.result.emit(result) # Return the result of the processing
         finally:                

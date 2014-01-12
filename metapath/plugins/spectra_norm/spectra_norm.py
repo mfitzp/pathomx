@@ -18,11 +18,11 @@ import nmrglue as ng
 
 import ui, db, utils, threads
 from data import DataSet, DataDefinition
+from views import MplSpectraView, MplDifferenceView
 
-
-class SpectraNormView( ui.DataView ):
-    def __init__(self, plugin, parent, auto_consume_data=True, **kwargs):
-        super(SpectraNormView, self).__init__(plugin, parent, **kwargs)
+class SpectraNormApp( ui.DataApp ):
+    def __init__(self, auto_consume_data=True, **kwargs):
+        super(SpectraNormApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -31,8 +31,8 @@ class SpectraNormView( ui.DataView ):
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
 
-        self.difference =  ui.QWebViewExtend(self)
-        self.tabs.addTab(self.difference, 'Difference')
+        self.views.addView( MplSpectraView(self), 'View')
+        self.views.addView( MplDifferenceView(self), 'Difference')
         
         # Setup data consumer options
         self.data.consumer_defs.append( 
@@ -43,58 +43,40 @@ class SpectraNormView( ui.DataView ):
             })
         )
         
-        self._peak_threshold = 0.05
-            
         th = self.addToolBar('Spectra normalisation')
-        self._norm_algorithm = 'PQN'
 
         self.algorithms = {
             'PQN':self.pqn,
             'TSA':self.tsa,
         }
 
+        self.config.set_defaults({
+            'algorithm':'PQN',
+        })
+        
         self.algorithm_cb = QComboBox()
         self.algorithm_cb.addItems( [k for k,v in self.algorithms.items() ] )
-        self.algorithm_cb.currentIndexChanged.connect(self.onChangePeakParameters)
+        self.config.add_handler('algorithm', self.algorithm_cb)
+
         tl = QLabel('Algorithm')
         tl.setIndent(5)
         th.addWidget(tl)
         th.addWidget(self.algorithm_cb)        
 
         self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        if auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
 
 
-    def render(self, metadata):
-        super(SpectraNormView, self).render({})
-        dsi = self.data.get('input')
-        dso = self.data.o['output']
+    def generate(self, input=None):
+        return {'output': self.normalise(dsi=input),
+                'input': input }
 
-        if float in [type(t) for t in dso.scales[1]]:
-            metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-            
-            # Get common scales
-            datai = np.mean( dsi.data, 0) # Mean flatten
-            datao = np.mean( dso.data, 0) # Mean flatten
-
-            metadata['figure'] = {
-                'data':zip( dsi.scales[1], datai.T, datao.T ), # (ppm, [dataa,datab])
-            }
-
-            template = self.m.templateEngine.get_template('d3/difference.svg')
-            self.difference.setSVG(template.render( metadata ))
-
-    def generate(self):
-        self.worker = threads.Worker(self.normalise, dsi=self.data.get('input'))
-        self.start_worker_thread(self.worker)
-        
-    def generated(self, dso):
-        self.data.put('output',dso)
-        self.render({})
-
-    def onChangePeakParameters(self):
-        self._norm_algorithm = self.algorithm_cb.currentText()
-        self.generate()
+    def prerender(self, input=None, output=None):
+        return {'View':{'dso':output},
+                'Difference':{'dso_a':input, 'dso_b':output},
+                }
 
     def tsa(self,data):
         # Abs the data (so account for negative peaks also)
@@ -125,19 +107,17 @@ class SpectraNormView( ui.DataView ):
         dso = DataSet( size=dsi.shape )
         dso.import_data(dsi)
         
-        dso.data = self.algorithms[ self._norm_algorithm ](dso.data)
+        dso.data = self.algorithms[ self.config.get('algorithm') ](dso.data)
 
         # -- optionally use the line widths and take max within each of these for each spectra (peak shiftiness)
         # Filter the original data with those locations and output\
         
-        return {'dso':dso}
+        return dso
 
  
 class SpectraNorm(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(SpectraNorm, self).__init__(**kwargs)
-        self.register_app_launcher( self.app_launcher )
-
-    def app_launcher(self, **kwargs):
-        return SpectraNormView( self, self.m, **kwargs )
+        SpectraNormApp.plugin = self
+        self.register_app_launcher( SpectraNormApp )
