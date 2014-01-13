@@ -5,7 +5,7 @@ from copy import copy
 
 from setuptools import setup, find_packages
 
-version_string = '1.5.0'
+version_string = '2.0.0'
 
 sys.path.insert(0,'metapath')
 
