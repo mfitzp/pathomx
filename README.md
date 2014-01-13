@@ -1,4 +1,4 @@
-# Introduction
+# MetaPath
 
 **Stable** The current trunk of MetaPath is stable and can be built using cx_Freeze (with some tweaks). The latest version (2.0.0) is now available to download
 [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
