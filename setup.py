@@ -24,6 +24,7 @@ default_build_options=dict(
         'icoshift',
         'nmrglue.fileio.fileiobase',
         'matplotlib',
+        'dateutil',
         ],
     includes=[
         'sip',
