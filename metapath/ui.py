@@ -918,7 +918,7 @@ class ImportDataApp( DataApp ):
 
     def onImportData(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self.m, self.import_description, '', self.import_filename_filter)
+        filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
         if filename:
             self.thread_load_datafile( filename )
 
