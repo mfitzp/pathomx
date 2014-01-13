@@ -1,6 +1,6 @@
 # Introduction
 
-**Stable** The current trunk of MetaPath is stable and can be built using cx_Freeze (with some tweaks). The latest version (1.0.0) is now available to download
+**Stable** The current trunk of MetaPath is stable and can be built using cx_Freeze (with some tweaks). The latest version (2.0.0) is now available to download
 [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
 MetaPath is an interactive tool for the analysis and visualisation of metabolic data.
@@ -30,8 +30,8 @@ and government use.
  [metapath-github]: https://github.com/mfitzp/metapath/issues
  [metapath-github-issues]: https://github.com/mfitzp/metapath
  [metacyc]: http://metacyc.org
- [metapath-mac]: http://download.getmetapath.org/MetaPath-1.0.0.dmg
- [metapath-windows]: http://download.getmetapath.org/MetaPath-1.0.0-amd64.msi
+ [metapath-mac]: http://download.getmetapath.org/MetaPath-2.0.0.dmg
+ [metapath-windows]: http://download.getmetapath.org/MetaPath-2.0.0-amd64.msi
  [metapath-pypi]: https://pypi.python.org/pypi/metapath 
  [graphviz]: http://www.graphviz.org/
  
