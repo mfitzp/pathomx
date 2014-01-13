@@ -152,7 +152,7 @@ else:
 
 setup(
 
-    name='MetaPath',
+    name='metapath',
     version=version_string,
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
@@ -191,7 +191,7 @@ setup(
 
     keywords='bioinformatics metabolomics research analysis science',
     license='GPL',
-    classifiers=['Development Status :: 4 - Beta',
+    classifiers=['Development Status :: 5 - Production/Stable',
                'Natural Language :: English',
                'Operating System :: OS Independent',
                'Programming Language :: Python :: 2',

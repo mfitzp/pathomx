@@ -3,6 +3,8 @@
 **Stable** The current trunk of MetaPath is stable and can be built using cx_Freeze (with some tweaks). The latest version (2.0.0) is now available to download
 [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
+![Screenshot](http://getmetapath.org/images/software/metapath/metapath-v2-visual-editor.png)
+
 MetaPath is an interactive tool for the analysis and visualisation of metabolic data.
 Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
 through configurable and extensible plugin. Multiple annotations from the MetaCyc database are 
