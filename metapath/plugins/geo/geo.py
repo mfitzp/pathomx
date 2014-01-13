@@ -29,9 +29,6 @@ class GEOApp( ui.ImportDataApp ):
     import_filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
     import_description =  "Open experimental data from downloaded data"
 
-    def __init__(self, auto_consume_data=True, **kwargs):
-        super(GEOApp, self).__init__(**kwargs)
-
     # Data file import handlers (#FIXME probably shouldn't be here)
     def load_datafile(self, filename):
     

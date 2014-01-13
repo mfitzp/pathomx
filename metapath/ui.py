@@ -903,7 +903,7 @@ class ImportDataApp( DataApp ):
         self.addImportDataToolbar()
         
         if filename:
-            self.load_datafile( filename )
+            self.thread_load_datafile( filename )
          
     # Data file import handlers (#FIXME probably shouldn't be here)
     def thread_load_datafile(self, filename, type=None):
