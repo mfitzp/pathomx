@@ -15,6 +15,8 @@ targeted pathways. Pathways can be mined and removed algorithmically to identify
 regulated pathways within in a given dataset providing a simper route to metabolic
 function.
 
+It is developed in Python, using Qt5/PyQt5, Matplotlib (for graphing), numpy/scipy (for number handling), nmrglue (for NMR data import), scikit-learn (for statistical analysis methods) and the d3.js visualisation engine for pretty interactive graphs. **Developers are very welcome to contribute, just get in touch!**
+
 **Download** [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
 
 > MetaPath requires installation of [Graphviz][graphviz] for pathway drawing.
