@@ -120,7 +120,7 @@ class ToolItem(BaseItem):
         self.label = QGraphicsTextItem(parent=self)
         self.label.setDefaultTextColor( QColor(TEXT_COLOR) )
         self.label.setTextInteractionFlags( Qt.TextEditable )
-        self.label.setTextWidth(96)
+        self.label.setTextWidth(100)
         opt = QTextOption(Qt.AlignHCenter)
         opt.setWrapMode( QTextOption.WrapAtWordBoundaryOrAnywhere )
         self.label.document().setDefaultTextOption( opt )

@@ -529,80 +529,150 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
 
 
 
+# Dialog box for Metabohunter search options
+class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
-            
-class dialogPathwaysShow(ui.genericDialog):
+    def __init__(self, *args, **kwargs):
+        super(MetaVizPathwayConfigPanel, self).__init__(*args, **kwargs)        
 
+        #all_pathways = parent.db.pathways.keys()
+        self.all_pathways = sorted( [p.name for p in self.m.db.pathways.values()] )
+
+        self.label = defaultdict(dict)
+        selected_pathways = str( self.config.get('/Pathways/Show') ).split(',')
+        self.setupSection('Show', selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
+        selected_pathways = str( self.config.get('/Pathways/Hide') ).split(',')
+        self.setupSection('Hide', selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
+
+        self.finalise()
+    
     def onRegexpAdd(self):
-        tab = self.sender().objectName()
-        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
+        label = self.sender().objectName()
+        items = self.label[ label ]['lw_pathways'].findItems( self.label[label]['lw_regExp'].text(), Qt.MatchContains )
         for i in items:
             i.setSelected( True )            
     
     def onRegexpRemove(self):
-        tab = self.sender().objectName()
-        items = self.tab[ tab ]['lw_pathways'].findItems( self.tab[tab]['lw_regExp'].text(), Qt.MatchContains )
+        label = self.sender().objectName()
+        items = self.label[ label ]['lw_pathways'].findItems( self.label[label]['lw_regExp'].text(), Qt.MatchContains )
         for i in items:
             i.setSelected( False )            
     
-    def setupTabPage(self, tab, selected_pathways = []):
+    def setupSection(self, label, selected_pathways = []):
         # SHOW PATHWAYS
-        page = QWidget()
+        gb = QGroupBox(label)
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.tab[tab]['lw_pathways'] = QListWidget()
-        self.tab[tab]['lw_pathways'].setSelectionMode( QAbstractItemView.ExtendedSelection)
-        self.tab[tab]['lw_pathways'].addItems( self.all_pathways )
+        self.label[label]['lw_pathways'] = QListWidget()
+        self.label[label]['lw_pathways'].setSelectionMode( QAbstractItemView.ExtendedSelection)
+        self.label[label]['lw_pathways'].addItems( self.all_pathways )
 
         for p in selected_pathways:
-            self.tab[tab]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
-        self.tab[tab]['lw_regExp'] = QLineEdit()
+            self.label[label]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
+        self.label[label]['lw_regExp'] = QLineEdit()
 
-        vbox.addWidget(self.tab[tab]['lw_pathways'])
+        vbox.addWidget(self.label[label]['lw_pathways'])
         vbox.addWidget( QLabel( 'Select/deselect matching pathways by name:') )   
         vboxh = QHBoxLayout()
-        vboxh.addWidget(self.tab[tab]['lw_regExp'])
+        
+        vboxh.addWidget(self.label[label]['lw_regExp'])
+        
         addfr = QPushButton('-')
         addfr.clicked.connect( self.onRegexpRemove )
-        addfr.setObjectName(tab)
+        addfr.setObjectName(label)
+        addfr.setFixedWidth(24)
+
         remfr = QPushButton('+')
         remfr.clicked.connect( self.onRegexpAdd)
-        remfr.setObjectName(tab)
+        remfr.setObjectName(label)
+        remfr.setFixedWidth(24)
 
         vboxh.addWidget( addfr )
         vboxh.addWidget( remfr )
         vbox.addLayout(vboxh)   
 
-        page.setLayout(vbox)
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
+
+
+    
+
+
+
+# Dialog box for Metabohunter search options
+class MetaVizViewConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, *args, **kwargs):
+        super(MetaVizViewConfigPanel, self).__init__(*args, **kwargs)        
+
+        show_pathway_linksAction = QPushButton( QIcon( os.path.join( utils.scriptdir,'icons','node-select-all.png') ), ' Show Links to Hidden Pathways', self.m)
+        show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
+        show_pathway_linksAction.setCheckable( True )
+        self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
         
-        return page
-
-    def __init__(self, parent, **kwargs):
-        super(dialogPathwaysShow, self).__init__(parent, **kwargs)
+        showenzymesAction = QPushButton('Show proteins/enzymes', self.m)
+        showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
+        showenzymesAction.setCheckable( True )
+        self.config.add_handler('/App/ShowEnzymes', showenzymesAction )
         
-        self.setWindowTitle( "Select Pathways to Display" )
+        show2ndAction = QPushButton( QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') ), ' Show 2° compounds', self.m)
+        show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
+        show2ndAction.setCheckable( True )
+        self.config.add_handler('/App/Show2nd', show2ndAction )
 
-        #all_pathways = parent.db.pathways.keys()
-        self.all_pathways = sorted( [p.name for p in parent.m.db.pathways.values()] )
+        showmolecularAction = QPushButton( QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') ),' Show molecular structures', self.m)
+        showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
+        showmolecularAction.setCheckable( True )
+        self.config.add_handler('/App/ShowMolecular', showmolecularAction )
 
-        self.views = QTabWidget()
-        self.tab = defaultdict(dict)
-        selected_pathways = str( parent.config.get('/Pathways/Show') ).split(',')
-        page1 = self.setupTabPage('show', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
-        selected_pathways = str( parent.config.get('/Pathways/Hide') ).split(',')
-        page2 = self.setupTabPage('hide', selected_pathways=[p.name for p in parent.m.db.pathways.values() if p.id in selected_pathways] )
+        showanalysisAction = QPushButton('Show network analysis', self.m)
+        showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
+        showanalysisAction.setCheckable( True )
+        self.config.add_handler('/App/ShowAnalysis', showanalysisAction )
 
-        self.views.addTab(page1, 'Show' )
-        self.views.addTab(page2, 'Hide' )
+        highlightcolorsAction = QPushButton( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), ' Highlight Reaction Pathways', self.m)
+        highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
+        highlightcolorsAction.setCheckable( True )
+        self.config.add_handler('/App/HighlightPathways', highlightcolorsAction )
 
-        self.layout.addWidget(self.views)
+        highlightregionAction = QPushButton( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), ' Highlight regions', self.m)
+        highlightregionAction.setStatusTip('Highlight regions')
+        highlightregionAction.setCheckable( True )
+        self.config.add_handler('/App/HighlightRegions', highlightregionAction )
         
-        # Stack it all up, with extra buttons
-        self.dialogFinalise()
+
+        self.cluster_control = QComboBox()
+        self.cluster_control.addItems(['pathway','compartment'])
+        self.config.add_handler('/App/ClusterBy', self.cluster_control )
+
+        
+        vw = QVBoxLayout()
+        vw.addWidget(show_pathway_linksAction)
+        vw.addWidget(showenzymesAction)
+        vw.addWidget(show2ndAction)
+        vw.addWidget(showmolecularAction)
+        vw.addWidget(showanalysisAction)
+        gb = QGroupBox('Annotate')
+        gb.setLayout(vw)
+        
+        self.layout.addWidget(gb)
+
+        vw = QVBoxLayout()
+        vw.addWidget(highlightcolorsAction)
+        vw.addWidget(highlightregionAction)
+        vw.addWidget(self.cluster_control)
+        gb = QGroupBox('Highlight')
+        gb.setLayout(vw)
+        
+        self.layout.addWidget(gb)
+        
+        
+        self.finalise()
 
 
 
 class MetaVizApp(ui.AnalysisApp):
+
     def __init__(self, auto_consume_data=True, **kwargs):
         super(MetaVizApp, self).__init__(**kwargs)
 
@@ -642,83 +712,11 @@ class MetaVizApp(ui.AnalysisApp):
             '/App/ClusterBy': 'pathway',
         })
 
+        self.addConfigPanel( MetaVizPathwayConfigPanel, 'Pathways')
+        self.addConfigPanel( MetaVizViewConfigPanel, 'Settings')
 
-        show_pathwaysAction = QAction(  QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Show/Hide Pathways', self.m)
-        show_pathwaysAction.setStatusTip('Show/hide specific pathways')
-        show_pathwaysAction.triggered.connect( self.onPathwaysShow )
-        #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
-        #self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
+        self.finalise()
         
-        show_pathway_linksAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','node-select-all.png') ), 'Show Links to Hidden Pathways', self.m)
-        show_pathway_linksAction.setStatusTip('Show links to pathways currently not visible')
-        show_pathway_linksAction.setCheckable( True )
-        #show_pathway_linksAction.setChecked( self.get.value('/Pathways/ShowLinks' ) )
-        self.config.add_handler('/Pathways/ShowLinks', show_pathway_linksAction )
-        
-        showenzymesAction = QAction('Show proteins/enzymes', self.m)
-        showenzymesAction.setStatusTip('Show protein/enzymes on reactions')
-        showenzymesAction.setCheckable( True )
-        #showenzymesAction.setChecked( bool( self.config.value('/App/ShowEnzymes' ) ) )
-        self.config.add_handler('/App/ShowEnzymes', showenzymesAction )
-        
-        show2ndAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compounds-small.png') ), 'Show 2° compounds', self.m)
-        show2ndAction.setStatusTip('Show 2° compounds on reaction paths')
-        show2ndAction.setCheckable( True )
-        #show2ndAction.setChecked( bool( self.config.value('/App/Show2nd' ) ) )
-        self.config.add_handler('/App/Show2nd', show2ndAction )
-
-        showmolecularAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','compound-structure.png') ),'Show molecular structures', self.m)
-        showmolecularAction.setStatusTip('Show molecular structures instead of names on pathway maps')
-        showmolecularAction.setCheckable( True )
-        #showmolecularAction.setChecked( bool( self.config.value('/App/ShowMolecular' ) ) )
-        self.config.add_handler('/App/ShowMolecular', showmolecularAction )
-
-        showanalysisAction = QAction('Show network analysis', self.m)
-        showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
-        showanalysisAction.setCheckable( True )
-        #showanalysisAction.setChecked( bool( self.config.value('/App/ShowAnalysis' ) ) )
-        self.config.add_handler('/App/ShowAnalysis', showanalysisAction )
-
-        highlightcolorsAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight Reaction Pathways', self.m)
-        highlightcolorsAction.setStatusTip('Highlight pathway reactions by color')
-        highlightcolorsAction.setCheckable( True )
-        #highlightcolorsAction.setChecked( bool( self.config.value('/App/HighlightPathways' ) ) )
-        self.config.add_handler('/App/HighlightPathways', highlightcolorsAction )
-
-        highlightregionAction = QAction( QIcon( os.path.join( utils.scriptdir,'icons','visualization.png') ), 'Highlight pathway/compartment regions', self.m)
-        highlightregionAction.setStatusTip('Highlight pathway/cell compartment regions')
-        highlightregionAction.setCheckable( True )
-        #highlightregionAction.setChecked( bool( self.config.value('/App/HighlightRegions' ) ) )
-        self.config.add_handler('/App/HighlightRegions', highlightregionAction )
-        
-
-        self.cluster_control = QComboBox()
-        self.cluster_control.addItems(['pathway','compartment'])
-        #self.cluster_control.currentIndexChanged.connect(self.onModifyCluster)
-        self.config.add_handler('/App/ClusterBy', self.cluster_control )
-
-        t = self.addToolBar('MetaViz')
-        self.setIconSize( QSize(16,16) )
-
-        t.addAction(show_pathwaysAction)
-        t.addAction(show_pathway_linksAction)
-        t.addAction(showenzymesAction)
-        t.addAction(show2ndAction)
-        t.addAction(showmolecularAction)
-        t.addAction(showanalysisAction)
-        t.addAction(highlightcolorsAction)
-        t.addAction(highlightregionAction)
-        t.addWidget(self.cluster_control)
-        
-        self.toolbars['metaviz'] = t
-
-
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration changes
-       
-       
     def onPathwaysShow(self):
         dialog = dialogPathwaysShow(self)
         ok = dialog.exec_()

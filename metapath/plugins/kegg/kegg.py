@@ -40,10 +40,12 @@ import urllib, urllib2
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
 class KEGGPathwayApp(ui.AnalysisApp):
-    def __init__(self, gpml=None, svg=None, auto_consume_data=True, **kwargs):
+
+
+    def __init__(self, gpml=None, svg=None, **kwargs):
         super(KEGGPathwayApp, self).__init__( **kwargs)
 
-        self.svg = svg # Rendered GPML file as SVG
+        self.svg = None # Rendered GPML file as SVG
         self.metadata = {}
 
         #self.browser = ui.QWebViewExtend(self)
@@ -70,9 +72,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
         t.setIconSize( QSize(16,16) )
         t.addWidget( self.kegg_pathway_t)
          
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] )
-                
+        self.finalise()      
 
     def generate(self, input=None):
         dsi = input

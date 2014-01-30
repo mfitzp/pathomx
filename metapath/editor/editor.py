@@ -32,11 +32,17 @@ class WorkspaceEditor(QGraphicsView):
         self.setBackgroundBrush(QBrush(image))
         
     def resizeEvent(self,e):
-        print e
         self._scene_extreme_rect.setRect( QRectF(
                 self.mapToScene( QPoint(0, 0) ), 
                 self.mapToScene( QPoint(self.width(), self.height()) )
                 ) )
+
+
+        #self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
+        #self.image.fill(Qt.transparent)
+        #painter = QPainter(self.image)
+        #self.scene.render(painter)
+        #self.image.save('/Users/mxf793/Desktop/workspace-view.png')
 
     def addApp(self, app, position=None):
         i = ToolItem(self.scene, app, position=position)
@@ -79,4 +85,7 @@ class WorkspaceEditor(QGraphicsView):
                     self.centerOn(a.editorItem)
                     e.accept() 
 
+        
+        
+        
         

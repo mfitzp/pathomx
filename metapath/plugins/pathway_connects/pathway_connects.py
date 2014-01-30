@@ -19,7 +19,8 @@ from views import D3CircosView
 
 
 class PathwayConnectsApp(ui.AnalysisApp):
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+    def __init__(self, **kwargs):
         super(PathwayConnectsApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
@@ -35,10 +36,7 @@ class PathwayConnectsApp(ui.AnalysisApp):
         self.views.addView( D3CircosView(self), 'Reactions')
         self.views.addView( D3CircosView(self), 'Metabolites')
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
+        self.finalise()
 
     def url_handler(self, url):
 

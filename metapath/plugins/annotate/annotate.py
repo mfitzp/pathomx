@@ -82,8 +82,6 @@ class AnnotateApp( ui.DataApp ):
     import_description =  "Import data annotations (classes, labels, scales) for current dataset"
 
 
-
-
     def __init__(self, **kwargs):
         super(AnnotateApp, self).__init__(**kwargs)
         # Annotations is a list of dicts; each list a distinct annotation        
@@ -123,9 +121,7 @@ class AnnotateApp( ui.DataApp ):
             })
         )
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
+        self.finalise()
 
     def onLoadAnnotations(self):
         """ Open a annotations file"""

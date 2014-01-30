@@ -18,16 +18,37 @@ import os, time
 from copy import copy
 
 import numpy as np
-from sklearn.decomposition import PCA, KernelPCA
+from sklearn.decomposition import PCA
 
 import ui, db, utils, threads
 from data import DataSet, DataDefinition
 from views import MplScatterView, MplSpectraView
 
 
+     
+# Dialog box for Metabohunter search options
+class PCAConfigPanel(ui.ConfigPanel):
+
+
+    
+    def __init__(self, *args, **kwargs):
+        super(PCAConfigPanel, self).__init__(*args, **kwargs)        
+
+        row = QVBoxLayout()
+        cl = QLabel('Number of components')
+        cb = QSpinBox()
+        cb.setRange(0,10)
+        row.addWidget(cl)
+        row.addWidget(cb)
+        self.config.add_handler('number_of_components', cb)
+        self.layout.addLayout(row)
+                    
+        self.finalise()
+    
+
 
 class PCAApp( ui.AnalysisApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(PCAApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -38,6 +59,9 @@ class PCAApp( ui.AnalysisApp ):
         self.views.addView(MplScatterView(self),'Scores')
         self.views.addView(MplSpectraView(self),'PC1')
         self.views.addView(MplSpectraView(self),'PC2')
+        self.views.addView(MplSpectraView(self),'PC3')
+        self.views.addView(MplSpectraView(self),'PC4')
+        self.views.addView(MplSpectraView(self),'PC5')
         
         self.data.add_input('input') # Add input slot
         
@@ -50,16 +74,21 @@ class PCAApp( ui.AnalysisApp ):
 #            'labels_n':   (None,['Pathway']), 
             })
         )
+        
+        
+        self.config.set_defaults({
+            'number_of_components': 2,
+        })
 
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
-
+        self.addConfigPanel( PCAConfigPanel, 'PCA')
+                
+        
+        self.finalise()
+        
     def generate(self, input=None):
         data = input.data
         
-        pca = PCA(n_components=2)
+        pca = PCA(n_components=self.config.get('number_of_components'))
         pca.fit(data.T) # Transpose it, as vars need to along the top
         
         weights = pca.transform(data.T) # Get weights?
@@ -99,11 +128,14 @@ class PCAApp( ui.AnalysisApp ):
             'dso_z': dso_z,        
         }.items() + dso_pc.items() )
         
-    def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, **kwargs):
+    def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, pc3=None, pc4=None, pc5=None, **kwargs):
         return {
             'Scores':{'dso': scores}, 
             'PC1':{'dso':pc1},
-            'PC2':{'dso':pc2}, #zip( dso.classes[0], pca.components_[0], pca.components_[1])}
+            'PC2':{'dso':pc2},
+            'PC3':{'dso':pc3},
+            'PC4':{'dso':pc4},
+            'PC5':{'dso':pc5},
             }
     
         

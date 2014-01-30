@@ -20,8 +20,29 @@ import ui, db, utils, threads
 from data import DataSet, DataDefinition
 from views import MplSpectraView, MplDifferenceView
 
+
+
+# Dialog box for Metabohunter search options
+class SpectraNormConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(SpectraNormConfigPanel, self).__init__(*args, **kwargs)        
+
+        self.algorithm_cb = QComboBox()
+        self.algorithm_cb.addItems( [k for k,v in self.v.algorithms.items() ] )
+        self.config.add_handler('algorithm', self.algorithm_cb)
+
+        tl = QLabel('Scaling algorithm')
+        tl.setIndent(5)
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.algorithm_cb)        
+
+        self.finalise()
+
+
+
 class SpectraNormApp( ui.DataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(SpectraNormApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -53,21 +74,10 @@ class SpectraNormApp( ui.DataApp ):
         self.config.set_defaults({
             'algorithm':'PQN',
         })
+
+        self.addConfigPanel( SpectraNormConfigPanel, 'Settings')
         
-        self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems( [k for k,v in self.algorithms.items() ] )
-        self.config.add_handler('algorithm', self.algorithm_cb)
-
-        tl = QLabel('Algorithm')
-        tl.setIndent(5)
-        th.addWidget(tl)
-        th.addWidget(self.algorithm_cb)        
-
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
-
+        self.finalise()
 
     def generate(self, input=None):
         return {'output': self.normalise(dsi=input),

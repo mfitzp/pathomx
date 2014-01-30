@@ -20,8 +20,38 @@ from data import DataSet, DataDefinition
 from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
+
+# Dialog box for Metabohunter search options
+class BinningConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(BinningConfigPanel, self).__init__(*args, **kwargs)        
+
+        self.binsize_spin = QDoubleSpinBox()
+        self.binsize_spin.setDecimals(3)
+        self.binsize_spin.setRange(0.005,0.5)
+        self.binsize_spin.setSuffix('ppm')
+        self.binsize_spin.setSingleStep(0.005)
+        tl = QLabel( self.tr('Bin width') )
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.binsize_spin)
+        self.config.add_handler('bin_size', self.binsize_spin)
+
+        self.binoffset_spin = QDoubleSpinBox()
+        self.binoffset_spin.setDecimals(3)
+        self.binoffset_spin.setRange(-0.5,0.5)
+        self.binoffset_spin.setSuffix('ppm')
+        self.binoffset_spin.setSingleStep(0.001)
+        tl = QLabel( self.tr('Bin offset (start)') )
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.binoffset_spin)
+        self.config.add_handler('bin_offset', self.binoffset_spin)
+        
+        self.finalise()
+        
+
 class BinningApp( ui.DataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(BinningApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -51,34 +81,10 @@ class BinningApp( ui.DataApp ):
             'bin_offset': 0,
         })
                         
-            
-        th = self.addToolBar( self.tr('Binning') )
-        self.binsize_spin = QDoubleSpinBox()
-        self.binsize_spin.setDecimals(3)
-        self.binsize_spin.setRange(0.005,0.5)
-        self.binsize_spin.setSuffix('ppm')
-        self.binsize_spin.setSingleStep(0.005)
-        tl = QLabel( self.tr('Size') )
-        th.addWidget(tl)
-        th.addWidget(self.binsize_spin)
-        self.config.add_handler('bin_size', self.binsize_spin)
+        self.addConfigPanel( BinningConfigPanel, 'Settings')
 
-        self.binoffset_spin = QDoubleSpinBox()
-        self.binoffset_spin.setDecimals(3)
-        self.binoffset_spin.setRange(-0.5,0.5)
-        self.binoffset_spin.setSuffix('ppm')
-        self.binoffset_spin.setSingleStep(0.001)
-        tl = QLabel( self.tr('Offset') )
-        tl.setIndent(5)
-        th.addWidget(tl)
-        th.addWidget(self.binoffset_spin)
-        self.config.add_handler('bin_offset', self.binoffset_spin)
+        self.finalise()
 
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
-    
     def generate(self, input=None):
         return {'output': self.binning(dsi=input), 'input':input }
 

@@ -25,13 +25,7 @@ from data import DataSet
 import nmrglue as ng
 
 class NMRApp( ui.ImportDataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
-        super(NMRApp, self).__init__(**kwargs)
-    
-        self.data.add_output('output') # Add output slot
-        self.table.setModel(self.data.o['output'].as_table)
         
-
     def load_datafile_by_type(self, fn, type="bruker"):
     
         _callbacks = {

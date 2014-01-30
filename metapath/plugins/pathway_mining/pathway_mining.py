@@ -34,42 +34,38 @@ METAPATH_MINING_TYPE_TEXT = (
 )
 
 
+# Dialog box for Metabohunter search options
+class PathwayMiningConfigPanel(ui.ConfigPanel):
     
-class dialogMiningSettings(ui.genericDialog):
-
-    def __init__(self, parent=None, auto_consume_data=True, **kwargs):
-        super(dialogMiningSettings, self).__init__(parent, **kwargs)        
+    def __init__(self, *args, **kwargs):
+        super(PathwayMiningConfigPanel, self).__init__(*args, **kwargs)        
         
-        self.setWindowTitle("Setup for Data-based Pathway Mining")
-        self.parent = parent
-
         self.cb_miningType = QComboBox()
         self.cb_miningType.addItems( METAPATH_MINING_TYPE_TEXT )
-        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( parent.config.get('/Data/MiningType') ) )
+        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( self.config.get('/Data/MiningType') ) )
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
-        self.xb_miningRelative.setChecked( bool(parent.config.get('/Data/MiningRelative') ) )
+        self.xb_miningRelative.setChecked( bool(self.config.get('/Data/MiningRelative') ) )
 
         self.xb_miningShared = QCheckBox('Share compound scores between pathways') 
-        self.xb_miningShared.setChecked( bool(parent.config.get('/Data/MiningShared') ) )
+        self.xb_miningShared.setChecked( bool(self.config.get('/Data/MiningShared') ) )
                         
 
         self.sb_miningDepth = QSpinBox()
         self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( parent.config.get('/Data/MiningDepth') ) )
+        self.sb_miningDepth.setValue( int( self.config.get('/Data/MiningDepth') ) )
         
         self.layout.addWidget(self.cb_miningType)
         self.layout.addWidget(self.xb_miningRelative)
         self.layout.addWidget(self.xb_miningShared)
         self.layout.addWidget(self.sb_miningDepth)
         
-        # Stack it all up, with extra buttons
-        self.dialogFinalise()
+        self.finalise()
          
 
 
 class PathwayMiningApp( ui.AnalysisApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(PathwayMiningApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -84,11 +80,11 @@ class PathwayMiningApp( ui.AnalysisApp ):
             '/Data/MiningShared': True,
         })
 
-        t = self.getCreatedToolbar('Pathway mining', 'pathway_mining')
-        miningSetup = QAction( QIcon( os.path.join( self.plugin.path, 'icon-16.png' ) ), 'Set up pathway mining \u2026', self.m)
-        miningSetup.setStatusTip('Set parameters for pathway mining')
-        miningSetup.triggered.connect(self.onMiningSettings)
-        t.addAction(miningSetup)
+        #t = self.getCreatedToolbar('Pathway mining', 'pathway_mining')
+        #miningSetup = QAction( QIcon( os.path.join( self.plugin.path, 'icon-16.png' ) ), 'Set up pathway mining \u2026', self.m)
+        #miningSetup.setStatusTip('Set parameters for pathway mining')
+        #miningSetup.triggered.connect(self.onMiningSettings)
+        #t.addAction(miningSetup)
 
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
@@ -103,10 +99,9 @@ class PathwayMiningApp( ui.AnalysisApp ):
             }, title='Source compound, gene or protein data')
         )
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
+        self.addConfigPanel( PathwayMiningConfigPanel, 'Pathway Mining')
+
+        self.finalise()
 
     def generate(self, input=None):
         dsi = input

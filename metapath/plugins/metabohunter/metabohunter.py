@@ -27,71 +27,12 @@ from collections import OrderedDict
 
 
 import csv
-
 import poster 
-
 #import urllib, urllib2, cookielib
-
 import requests
-
+            
 # Dialog box for Metabohunter search options
-class DialogMetabohunter(ui.genericDialog):
-
-    
-    #noise
-    #thres
-    #neighbourhood
-    
-    def __init__(self, parent=None, view=None, **kwargs):
-        super(DialogMetabohunter, self).__init__(parent, **kwargs)        
-        
-        self.v = view
-        self.m = view.m
-        
-        self.setWindowTitle("Set MetaboHunter parameters")
-
-        self.lw_combos = {}
-        for n, o in self.v.options.items():
-            row = QVBoxLayout()
-            cl = QLabel(n)
-            cb = QComboBox()
-            
-            cb.addItems( o.keys() )
-            row.addWidget(cl)
-            row.addWidget(cb)
-            self.lw_combos[ n ] = cb # For read out on exit
-
-            current = self.v.config.get(n)
-            cb.setCurrentText(current)
-
-            self.layout.addLayout(row)
-        
-        row = QGridLayout()
-        self.lw_spin = {}
-        for n, o in enumerate(['Noise Threshold','Confidence Threshold','Tolerance']):
-            cl = QLabel(o)
-            cb = QDoubleSpinBox()
-            cb.setDecimals(2)
-            cb.setRange(0,0.5)
-            cb.setSingleStep(0.01)
-            cb.setValue( float(self.v.config.get(o) ) )
-            
-            row.addWidget(cl, 0, n)
-            row.addWidget(cb, 1, n)
-            self.lw_spin[ o ] = cb
-            
-        self.layout.addLayout(row)
-            
-        self.setMinimumSize( QSize(600,100) )
-        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
-        
-        # Build dialog layout
-        self.dialogFinalise()
-        
-    
-
-
-class MetaboHunterApp( ui.DataApp ):
+class MetaboHunterConfigPanel(ui.ConfigPanel):
 
 
     options = {
@@ -110,9 +51,7 @@ class MetaboHunterApp( ui.DataApp ):
         },
     'Sample pH': {
         '10.00 - 10.99':'ph7',
-        '9.00 - 9.99':'ph7',
-        '8.00 - 8.99':'ph7',
-        '7.00 - 7.99':'ph7',
+        '7.00 - 9.99':'ph7',
         '6.00 - 6.99':'ph6',
         '5.00 - 5.99':'ph5',
         '4.00 - 4.99':'ph4',
@@ -139,8 +78,50 @@ class MetaboHunterApp( ui.DataApp ):
         'MH5: Greedy selection of metabolites with disjoint peaks and heights':'Greedy2Heights',
     },
     }
+    
+    def __init__(self, *args, **kwargs):
+        super(MetaboHunterConfigPanel, self).__init__(*args, **kwargs)        
+    
+        self.lw_combos = {}
+        
+        for o in ['Metabotype','Database Source','Sample pH','Solvent','Frequency','Method']:
+            row = QVBoxLayout()
+            cl = QLabel(o)
+            cb = QComboBox()
+            
+            cb.addItems( self.options[o].keys() )
+            row.addWidget(cl)
+            row.addWidget(cb)
+            self.config.add_handler(o, cb, self.options[o] )
 
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+            self.layout.addLayout(row)
+        
+        row = QGridLayout()
+        self.lw_spin = {}
+        for n, o in enumerate(['Noise Threshold','Confidence Threshold','Tolerance']):
+            cl = QLabel(o)
+            cb = QDoubleSpinBox()
+            cb.setDecimals(2)
+            cb.setRange(0,0.5)
+            cb.setSingleStep(0.01)
+            cb.setValue( float(self.config.get(o) ) )
+            row.addWidget(cl, 0, n)
+            row.addWidget(cb, 1, n)
+            
+            self.config.add_handler(o, cb)
+            
+        self.layout.addLayout(row)
+                    
+        self.finalise()
+    
+
+
+class MetaboHunterApp( ui.DataApp ):
+
+
+
+    def __init__(self, **kwargs):
         super(MetaboHunterApp, self).__init__(**kwargs)
 
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -154,24 +135,21 @@ class MetaboHunterApp( ui.DataApp ):
         
         self.views.addView(MplSpectraView(self), 'View')
         
-        t = self.getCreatedToolbar('MetaboHunter', 'metabohunter')
-        metabohunterSetup = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Set up MetaboHunter \u2026', self.m)
-        metabohunterSetup.setStatusTip('Set parameters for MetaboHunter matching')
-        metabohunterSetup.triggered.connect(self.onMetaboHunterSettings)
-        t.addAction(metabohunterSetup)
         
         self.config.set_defaults({
             'Metabotype': 'All',
-            'Database Source': 'Human Metabolome Database (HMDB)',
-            'Sample pH':'7.00 - 7.99',
-            'Solvent': 'Water',
-            'Frequency': 'All',
-            'Method': 'MH2: Highest number of matched peaks with shift tolerance',
+            'Database Source': 'HMDB',
+            'Sample pH':'ph7',
+            'Solvent': 'water',
+            'Frequency': 'all',
+            'Method': 'HighestNumberNeighbourhood',
             'Noise Threshold':0.0,
             'Confidence Threshold':0.4,
             'Tolerance':0.1,
         })
         
+        self.addConfigPanel( MetaboHunterConfigPanel, 'MetaboHunter')
+
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
@@ -180,22 +158,21 @@ class MetaboHunterApp( ui.DataApp ):
             })
         )
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.finalise()
+        
 
-    def onMetaboHunterSettings(self):
-        dialog = DialogMetabohunter(parent=self, view=self)
-        ok = dialog.exec_()
-        if ok:
-            # Extract the settings and from the dialog
-            for n, o in self.options.items():
-                self.config.set(n, dialog.lw_combos[n].currentText() )
-
-            for n in ['Noise Threshold','Hit Threshold','Tolerance']:
-                self.config.set(n, dialog.lw_spin[n].value() )
-
-            self.autogenerate()            
+    #def onMetaboHunterSettings(self):
+    #    dialog = DialogMetabohunter(parent=self, view=self)
+    #    ok = dialog.exec_()
+    #    if ok:
+    #        # Extract the settings and from the dialog
+    #        for n, o in self.options.items():
+    #            self.config.set(n, dialog.lw_combos[n].currentText() )
+    #
+    #        for n in ['Noise Threshold','Hit Threshold','Tolerance']:
+    #            self.config.set(n, dialog.lw_spin[n].value() )#
+    #
+    #           self.autogenerate()            
     
     def generate(self, input=None):
         return {'output': self.metabohunter(dso=input) }
@@ -223,12 +200,12 @@ class MetaboHunterApp( ui.DataApp ):
                   'posturl'       : 'upload_file.php',
                   'useall'        : 'yes',
                   'peaks_list'    : peaks_list,
-                  'dbsource'      : self.options['Database Source'][ self.config.get('Database Source') ],
-                  'metabotype'    : self.options['Metabotype'][ self.config.get('Metabotype') ],
-                  'sampleph'      : self.options['Sample pH'][ self.config.get('Sample pH') ],
-                  'solvent'       : self.options['Solvent'][ self.config.get('Solvent') ],
-                  'freq'          : self.options['Frequency'][ self.config.get('Frequency') ],
-                  'method'        : self.options['Method'][ self.config.get('Method') ],
+                  'dbsource'      : self.config.get('Database Source'),
+                  'metabotype'    : self.config.get('Metabotype'),
+                  'sampleph'      : self.config.get('Sample pH'),
+                  'solvent'       : self.config.get('Solvent'),
+                  'freq'          : self.config.get('Frequency'),
+                  'method'        : self.config.get('Method'),
                   'noise'         : self.config.get('Noise Threshold'),
                   'thres'         : self.config.get('Confidence Threshold'),
                   'neighbourhood' : self.config.get('Tolerance'), #tolerance, # Use same tolerance as for shift

@@ -108,11 +108,8 @@ class FilterApp( ui.DataApp ):
         
         self.config.set_default('filters',{'':''}) 
         
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
-        self.data.source_updated.connect( self.generate ) # Auto-regenerate if the source data is modified
-        self.generate()
-    
+        self.finalise()
+        
     
     def onDefineFilter(self):
         """ Open a data file"""

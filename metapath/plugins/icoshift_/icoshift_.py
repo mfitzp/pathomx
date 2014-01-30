@@ -20,8 +20,93 @@ import ui, db, utils
 from data import DataSet, DataDefinition
 from views import MplSpectraView, MplDifferenceView
 
+
+
+
+# Dialog box for Metabohunter search options
+class IcoshiftConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(IcoshiftConfigPanel, self).__init__(*args, **kwargs)        
+
+        vw = QVBoxLayout()
+        self.target_cb = QComboBox()
+        self.target_cb.addItems( ['average', 'median', 'max', 'average2'] )
+        self.config.add_handler('target', self.target_cb )
+        vw.addWidget(self.target_cb)        
+
+        gb = QGroupBox('Algorithm')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)
+        
+        vw = QVBoxLayout()
+        self.mode_cb = QComboBox()
+        self.mode_cb.addItems( ['whole', 'number_of_intervals', 'length_of_intervals', 'define', 'reference_signal'] )
+        self.config.add_handler('alignment_mode', self.mode_cb )
+        vw.addWidget(self.mode_cb)        
+
+        gb = QGroupBox('Intervals')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)        
+
+        vw = QVBoxLayout()
+        self.mode_cb = QComboBox()
+        self.mode_cb.addItems( ['n', 'b', 'f'] )
+        self.config.add_handler('maximum_shift', self.mode_cb )
+        vw.addWidget(self.mode_cb)        
+
+        gb = QGroupBox('Maximum shift')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)        
+
+
+        vw = QVBoxLayout()
+        
+        self.coshift_btn = QCheckBox( 'Enable co-shift preprocessing', self.m)
+        #self.coshift_btn.setCheckable( True )
+        self.config.add_handler('coshift_proprocess', self.coshift_btn )
+        vw.addWidget(self.coshift_btn)        
+                
+        
+        self.mode_cb = QComboBox()
+        self.mode_cb.addItems( ['n', 'b', 'f'] )
+        self.config.add_handler('mode', self.mode_cb )
+        vw.addWidget(self.mode_cb)        
+
+        gb = QGroupBox('Co-shift preprocessing')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)        
+
+
+
+
+
+        self.finalise()
+'''
+ALL OPTIONS
+[algorithm]
+xT: 'average', 'median', 'max', 'average2'
+n: maximum shift, best 'b', fast 'f'
+[/]
+
+[intervals]
+inter: 'whole', number_of_intervals, 'ndata', [interval_list:(a b), (a b),], reference signal refs:refe, refs-refe
+intervals_in_ppm
+[/]
+
+[co shift preprocessing]
+enable_coshift_preprocessing
+max shift
+[/]
+
+[misc]
+filling: NaN, previous point
+[/]
+'''
+
 class IcoshiftApp( ui.DataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+    def __init__(self, **kwargs):
         super(IcoshiftApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -30,7 +115,6 @@ class IcoshiftApp( ui.DataApp ):
         self.data.add_input('input') # Add input slot        
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
-        self.difference =  ui.QWebViewExtend(self)
 
         self.views.addView( MplSpectraView(self), 'Spectra' )
         self.views.addView( MplDifferenceView(self), 'Shift' )
@@ -44,9 +128,17 @@ class IcoshiftApp( ui.DataApp ):
             'scales_t': (None, ['float']),
             })
         )
+        
+        self.config.set_defaults({
+            'target': 'average',
+            'alignment_mode': 'whole',
+            'maximum_shift': 'f', 
+        })        
 
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.addConfigPanel( IcoshiftConfigPanel, 'Settings')
+
+        self.finalise()
+
     
     def generate(self, input=None):
         return {
@@ -63,7 +155,7 @@ class IcoshiftApp( ui.DataApp ):
         # Calculate the number of bins at binsize across range
         spectra = dsi.data
         print spectra
-        xCS,ints,ind,target = icoshift.icoshift('average', spectra)
+        xCS,ints,ind,target = icoshift.icoshift(self.config.get('target'), spectra, inter=self.config.get('alignment_mode'),  n=self.config.get('maximum_shift'))
         dsi.data = xCS
         return dsi
         

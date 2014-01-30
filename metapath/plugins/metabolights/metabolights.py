@@ -28,10 +28,6 @@ class ImportMetabolightsApp( ui.ImportDataApp ):
     import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     import_description =  "Open experimental data from Metabolights experimental datasets"
 
-    def __init__(self, auto_consume_data=True, **kwargs):
-        super(ImportMetabolightsApp, self).__init__(**kwargs)
-
-       
     # Data file import handlers (#FIXME probably shouldn't be here)
         
     def load_datafile(self, filename):

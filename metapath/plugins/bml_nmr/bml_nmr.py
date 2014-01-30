@@ -27,7 +27,7 @@ class BMLNMRApp( ui.ImportDataApp ):
     import_filename_filter = "Compressed Files (*.zip);;All files (*.*)"
     import_description =  "Open BML-NMR FIMA .zip output"
 
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(BMLNMRApp, self).__init__(**kwargs)
     
         self.data.add_output('Raw') # Add output slot
@@ -38,6 +38,8 @@ class BMLNMRApp( ui.ImportDataApp ):
         self.t.setIconSize( QSize(16,16) )
 
         self.table.setModel(self.data.o['Raw'].as_table)
+
+        self.finalise()
 
         
     def onFileChanged(self, file):

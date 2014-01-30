@@ -20,8 +20,86 @@ import ui, db, utils
 from data import DataSet, DataDefinition
 from views import MplSpectraView
 
+
+# Dialog box for Metabohunter search options
+class PeakAdjConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(PeakAdjConfigPanel, self).__init__(*args, **kwargs)        
+
+        self.peak_targets = {
+            'TMSP': (0.0, 0.25),
+            'Creatinine @4.0': (4.045, 0.25),
+            'Creatinine @3.0': (3.030, 0.25),
+            'Custom': (None, None),
+        }
+        
+        vw = QGridLayout()
+        self.peak_target_cb = QComboBox()
+        self.peak_target_cb.addItems( [k for k,v in self.peak_targets.items() ] )
+        self.peak_target_cb.currentIndexChanged.connect(self.onSetPredefinedTarget)
+        self.config.add_handler('peak_target', self.peak_target_cb )
+        vw.addWidget(self.peak_target_cb,0,0,1,2)        
+
+        self.ppm_spin = QDoubleSpinBox()
+        self.ppm_spin.setDecimals(2)
+        self.ppm_spin.setRange(-1,15)
+        self.ppm_spin.setSuffix('ppm')
+        self.ppm_spin.setSingleStep(0.05)
+        self.ppm_spin.valueChanged.connect(self.onSetCustomTarget) # Additional; to handle alternation
+        self.config.add_handler('peak_target_ppm', self.ppm_spin )
+        vw.addWidget(self.ppm_spin,1,1,1,1)
+
+        self.ppm_tolerance_spin = QDoubleSpinBox()
+        self.ppm_tolerance_spin.setDecimals(2)
+        self.ppm_tolerance_spin.setRange(0,1)
+        self.ppm_tolerance_spin.setSuffix('ppm')
+        self.ppm_tolerance_spin.setSingleStep(0.05)
+        self.ppm_tolerance_spin.valueChanged.connect(self.onSetCustomTarget) # Additional; to handle alternation
+        self.config.add_handler('peak_target_ppm_tolerance', self.ppm_tolerance_spin )
+        tl = QLabel('±')
+        tl.setAlignment(Qt.AlignRight)
+        vw.addWidget(tl,2,0,1,1)
+        vw.addWidget(self.ppm_tolerance_spin,2,1,1,1)
+
+        gb = QGroupBox('Peak target')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)
+
+        vw = QVBoxLayout()
+        self.toggle_shift = QPushButton( QIcon( os.path.join(  self.v.plugin.path, 'icon-16.png' ) ), 'Shift spectra', self.m)
+        self.toggle_shift.setCheckable( True )
+        self.config.add_handler('shifting_enabled', self.toggle_shift )
+        vw.addWidget(self.toggle_shift)
+        
+        self.toggle_scale = QPushButton( QIcon( os.path.join(  self.v.plugin.path, 'icon-16.png' ) ), 'Scale spectra', self.m)
+        self.toggle_scale.setCheckable( True )
+        self.config.add_handler('scaling_enabled', self.toggle_scale )
+        vw.addWidget(self.toggle_scale)    
+         
+        gb = QGroupBox('Toggle shift and scale')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)
+        
+        self.finalise()
+        
+
+    def onSetCustomTarget(self):
+        if self._automated_update_config == False:
+            self.peak_target_cb.setCurrentText('Custom')        
+         
+    def onSetPredefinedTarget(self):
+        ppm, ppm_tol = self.peak_targets[ self.peak_target_cb.currentText() ]
+        if ppm is not None:
+            self._automated_update_config = True
+            self.config.set('peak_target_ppm', ppm)
+            self.config.set('peak_target_ppm_tolerance', ppm_tol)
+            self._automated_update_config = False
+
+
 class NMRPeakAdjApp( ui.DataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+    def __init__(self, **kwargs):
         super(NMRPeakAdjApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -61,59 +139,12 @@ class NMRPeakAdjApp( ui.DataApp ):
 
         th = self.addToolBar('Peak Adjustments')
 
-        self.peak_targets = {
-            'TMSP': (0.0, 0.25),
-            'Creatinine @4.0': (4.045, 0.25),
-            'Creatinine @3.0': (3.030, 0.25),
-            'Custom': (None, None),
-        }
-        
         self.region_dso = None
 
         self._automated_update_config = False
-        self.peak_target_cb = QComboBox()
-        self.peak_target_cb.addItems( [k for k,v in self.peak_targets.items() ] )
-        self.peak_target_cb.currentIndexChanged.connect(self.onSetPredefinedTarget)
-        self.config.add_handler('peak_target', self.peak_target_cb )
-        tl = QLabel('Target')
-        tl.setIndent(5)
-        th.addWidget(tl)
-        th.addWidget(self.peak_target_cb)        
 
-        self.ppm_spin = QDoubleSpinBox()
-        self.ppm_spin.setDecimals(2)
-        self.ppm_spin.setRange(-1,15)
-        self.ppm_spin.setSuffix('ppm')
-        self.ppm_spin.setSingleStep(0.05)
-        self.ppm_spin.valueChanged.connect(self.onSetCustomTarget) # Additional; to handle alternation
-        self.config.add_handler('peak_target_ppm', self.ppm_spin )
-        th.addWidget(tl)
-        th.addWidget(self.ppm_spin)
+        self.addConfigPanel( PeakAdjConfigPanel, 'Settings')
 
-        self.ppm_tolerance_spin = QDoubleSpinBox()
-        self.ppm_tolerance_spin.setDecimals(2)
-        self.ppm_tolerance_spin.setRange(0,1)
-        self.ppm_tolerance_spin.setSuffix('ppm')
-        self.ppm_tolerance_spin.setSingleStep(0.05)
-        self.ppm_tolerance_spin.valueChanged.connect(self.onSetCustomTarget) # Additional; to handle alternation
-        self.config.add_handler('peak_target_ppm_tolerance', self.ppm_tolerance_spin )
-        tl = QLabel('±')
-        th.addWidget(tl)
-        th.addWidget(self.ppm_tolerance_spin)
-
-        th.addSeparator()  
-        
-        self.toggle_shift = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Toggle spectra shifting on and off \u2026', self.m)
-        self.toggle_shift.setStatusTip('Toggle on and off spectral alignment to reference peak')
-        self.toggle_shift.setCheckable( True )
-        self.config.add_handler('shifting_enabled', self.toggle_shift )
-        th.addAction(self.toggle_shift)
-        
-        self.toggle_scale = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Toggle spectra scaling on and off \u2026', self.m)
-        self.toggle_scale.setStatusTip('Toggle on and off spectral scaling to reference peak')
-        self.toggle_scale.setCheckable( True )
-        self.config.add_handler('scaling_enabled', self.toggle_scale )
-        th.addAction(self.toggle_scale)      
         
         th.addSeparator()  
 
@@ -122,11 +153,7 @@ class NMRPeakAdjApp( ui.DataApp ):
         #self.configuration.triggered.connect(self.onMetaboHunterSettings)
         th.addAction(self.configuration)
 
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards    
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration
-    
+        self.finalise()
     
     def generate(self,input=None):
         dso, dsor = self.shiftandscale( input ) #, self._bin_size, self._bin_offset)
@@ -138,18 +165,7 @@ class NMRPeakAdjApp( ui.DataApp ):
             'Region':{'dso':region},
             }
 
-    
-    def onSetCustomTarget(self):
-        if self._automated_update_config == False:
-            self.peak_target_cb.setCurrentText('Custom')
-    
-    def onSetPredefinedTarget(self):
-        ppm, ppm_tol = self.peak_targets[ self.peak_target_cb.currentText() ]
-        if ppm is not None:
-            self._automated_update_config = True
-            self.config.set('peak_target_ppm', ppm)
-            self.config.set('peak_target_ppm_tolerance', ppm_tol)
-            self._automated_update_config = False
+
 
 
     # Shift and scale NMR spectra to target peak

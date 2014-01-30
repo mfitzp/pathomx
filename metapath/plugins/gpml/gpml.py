@@ -51,11 +51,11 @@ class GPMLView(HTMLView):
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
 class GPMLPathwayApp(ui.AnalysisApp):
-    def __init__(self, gpml=None, svg=None, auto_consume_data=True, filename=None, **kwargs):
+    def __init__(self, gpml=None, svg=None, filename=None, **kwargs):
         super(GPMLPathwayApp, self).__init__( **kwargs)
 
-        self.gpml = gpml # Source GPML file
-        self.svg = svg # Rendered GPML file as SVG
+        self.gpml = None # Source GPML file
+        self.svg = None # Rendered GPML file as SVG
         self.metadata = {}
 
         #self.browser = ui.QWebViewExtend(self)
@@ -94,11 +94,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
         #self.o.show() 
         self.plugin.register_url_handler( self.url_handler )
 
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] )
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
-
+        self.finalise()
         
 
     def url_handler(self, url):

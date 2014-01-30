@@ -25,7 +25,7 @@ from views import MplSpectraView
 
 class TransformApp( ui.DataApp ):
 
-    def __init__(self, auto_consume_data=True,  **kwargs):
+    def __init__(self, **kwargs):
         super(TransformApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -43,33 +43,7 @@ class TransformApp( ui.DataApp ):
         
         self.views.addView( MplSpectraView(self), 'View')
             
-        #th = self.addToolBar('Transform')
-        #self.hm_control = QComboBox()
-        #th.addWidget(self.hm_control)
-        #self.transform_options = {
-        #    'log2':self._log2,
-        #    'log10':self._log10,
-        #    'Zero baseline':self._zero_baseline,
-        #    'Mean center':self._mean_center,
-        #    'Global minima':self._global_minima,
-        #    'Local minima':self._local_minima,
-        #    'Remove invalid data':self._remove_invalid_data,
-        #}
-        #
-        #self.config.set_defaults({
-        #    'apply_transform': self.transform_options.keys()[0],
-        #})
-        #                
-        #self.hm_control.addItems( [h for h in self.transform_options.keys()] )
-        #self.hm_control.currentIndexChanged.connect(self.onChangeTransform) # Updates name only
-        #
-        #self.config.add_handler('apply_transform', self.hm_control)
-
-        
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
+        self.finalise()
 
     
     def onChangeTransform(self):

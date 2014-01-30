@@ -120,7 +120,7 @@ class EntityTableInterface(TableInterface):
 
 class MapEntityApp( ui.GenericApp ):
 
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(MapEntityApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -148,8 +148,6 @@ class MapEntityApp( ui.GenericApp ):
 
         self.addExternalDataToolbar() # Add standard source data options
 
-     
-        
         self._entity_mapping_table = {}
         
         # Setup data consumer options
@@ -160,9 +158,7 @@ class MapEntityApp( ui.GenericApp ):
             })
         )
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
+        self.finalise()
 
     def onImportEntities(self):
         """ Open a data file"""

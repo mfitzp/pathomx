@@ -537,7 +537,7 @@ class GenericApp( QMainWindow ):
     #    print QApplication.focusWidget().__class__.__name__
     #    return super(GenericApp, self).event(e)
 
-    def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=False, **kwargs):
+    def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
 
         self.id = str( id( self ) )
@@ -548,10 +548,15 @@ class GenericApp( QMainWindow ):
         self.m.apps.append( self )
         
         self._pause_analysis_flag = False
+        self._latest_dock_widget = None
+        self._latest_generator_result = None
+        self._auto_consume_data = auto_consume_data
         
         self.data = data.DataManager(self.m, self)
         self.views = ViewManager(self)
         self.complete.connect(self.views.onRefreshAll)
+
+        self.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         if name == None:
             name = getattr(self, 'name', self.m.plugin_names[ id( self.plugin ) ] )
@@ -587,6 +592,15 @@ class GenericApp( QMainWindow ):
         self.addSelfToolBar() # Everything has one
 
 
+
+    def finalise(self):
+        
+        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
+        if self._auto_consume_data:
+            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
+        self.config.updated.connect( self.autoconfig ) # Auto-regenerate if the configuration changes
+
+
     def register_url_handler(self, url_handler):
         self.m.register_url_handler( self.id, url_handler ) 
 
@@ -605,6 +619,12 @@ class GenericApp( QMainWindow ):
         self.m.workspace_updated.emit()
         self.close()
 
+    def autoconfig(self, signal):
+        if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:
+            self.autogenerate()
+            
+        elif signal == config.RECALCULATE_VIEW:            
+            self.autoprerender( self._latest_generator_result )
     
     def autogenerate(self, *args, **kwargs):
         if self._pause_analysis_flag:
@@ -636,8 +656,13 @@ class GenericApp( QMainWindow ):
         return {'View':dict( {'dso':output}.items() + kwargs.items() ) } 
     
     def _generate_worker_result_callback(self, kwargs_dict):
+        self.__latest_generator_result = kwargs_dict
+        
         self.generated( **kwargs_dict)
         self.progress.emit(1.)
+        self.autoprerender( kwargs_dict )
+        
+    def autoprerender(self, kwargs_dict):
         self.status.emit('render')
         self.prerender_worker = threads.Worker(self.prerender, **kwargs_dict)
         self.start_worker_thread(self.prerender_worker, callback=self._prerender_worker_result_callback)
@@ -696,6 +721,20 @@ class GenericApp( QMainWindow ):
 
     def onDelete(self):
         self.delete()
+            
+    
+    def addConfigPanel(self, Panel, name):
+        dw = QDockWidget( name )
+        dw.setWidget( Panel(self) )
+        dw.setMinimumWidth(300)
+        dw.setMaximumWidth(300)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea, dw)
+        if self._latest_dock_widget:
+            self.tabifyDockWidget( dw, self._latest_dock_widget)
+            
+        self._latest_dock_widget = dw
+        dw.raise_()
             
     def addSelfToolBar(self):            
         t = self.addToolBar('App')
@@ -871,7 +910,7 @@ class GenericApp( QMainWindow ):
     def sizeHint(self):
         if self._previous_size:
             return self._previous_size
-        return QSize(600,400)
+        return QSize(600+300,400+100)
     
 
 
@@ -883,7 +922,6 @@ class DataApp(GenericApp):
 
         self.table = TableView()
         self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True )
-        
 
 # Import Data viewer
 
@@ -1203,6 +1241,42 @@ class remoteQueryDialog(genericDialog):
 
 
 
-    
+class ConfigPanel( QWidget ):
 
+    def __init__(self, parent, *args, **kwargs):
+        super(ConfigPanel, self).__init__( parent, *args, **kwargs)        
+        
+        self.v = parent
+        self.m = parent.m
+        self.config = parent.config
+    
+        self.layout = QVBoxLayout()
+        
+
+    def finalise(self):
+            
+        self.layout.addStretch()
+        self.setLayout(self.layout)
+
+    def setListControl(self, control, list, checked):
+        # Automatically set List control checked based on current options list
+        items = control.GetItems()
+        try:
+            idxs = [items.index(e) for e in list]
+            for idx in idxs:
+                if checked:
+                    control.Select(idx)
+                else:
+                    control.Deselect(idx)
+        except:
+            pass
+
+
+            
+            
+class WebPanel( QWebView ):
+
+    def __init__(self, parent, *args, **kwargs):
+        super(WebPanel, self).__init__(parent, *args, **kwargs)        
+            
     

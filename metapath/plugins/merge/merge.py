@@ -23,7 +23,7 @@ from data import DataSet, DataDefinition
 
 class MergeApp( ui.DataApp ):
 
-    def __init__(self, auto_consume_data=True, **kwargs):
+    def __init__(self, **kwargs):
         super(MergeApp, self).__init__(**kwargs)
 
         self.addDataToolBar()
@@ -45,10 +45,7 @@ class MergeApp( ui.DataApp ):
             ]
         )
         
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-
+        self.finalise()
 
     def generate(self, **kwargs):
         

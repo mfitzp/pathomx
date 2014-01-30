@@ -24,8 +24,46 @@ import ui, db, utils, threads
 from data import DataSet, DataDefinition
 from views import MplScatterView, MplSpectraView
 
+
+         
+# Dialog box for Metabohunter search options
+class PLSDAConfigPanel(ui.ConfigPanel):
+
+
+    
+    def __init__(self, *args, **kwargs):
+        super(PLSDAConfigPanel, self).__init__(*args, **kwargs)        
+    
+        #row = QVBoxLayout()
+        #cl = QLabel('Algorithm')
+        #cb = QComboBox()
+        #cb.addItems( ['NIPALS','SVD'] )
+        #row.addWidget(cl)
+        #row.addWidget(cb)
+        #self.config.add_handler('algorithm', cb)
+        #self.layout.addLayout(row)
+        
+        cb = QCheckBox('Autoscale input data')
+        self.config.add_handler('autoscale', cb)
+        self.layout.addWidget(cb)
+
+        row = QVBoxLayout()
+        cl = QLabel('Number of components')
+        cb = QSpinBox()
+        cb.setRange(0,10)
+        row.addWidget(cl)
+        row.addWidget(cb)
+        self.config.add_handler('number_of_components', cb)
+        self.layout.addLayout(row)
+                    
+        self.finalise()
+    
+
+
+
 class PLSDAApp( ui.AnalysisApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+    def __init__(self, **kwargs):
         super(PLSDAApp, self).__init__(**kwargs)
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
@@ -44,16 +82,21 @@ class PLSDAApp( ui.AnalysisApp ):
         
         self.data.add_input('input') # Add input slot
         
+        self.config.set_defaults({
+            'number_of_components': 2,
+            'autoscale': False,
+            'algorithm':'NIPALS',
+        })
+
+        self.addConfigPanel( PLSDAConfigPanel, 'PLSDA')
+        
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {})
         )
-
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Auto-regenerate if the configuration is changed
         
+        self.finalise()
+                
     # Do the PCA analysis
     def generate(self, input=None):   
         dso = input
@@ -63,7 +106,7 @@ class PLSDAApp( ui.AnalysisApp ):
                 
         data = dso.data
         
-        plsr = PLSRegression(n_components=2, scale=False)
+        plsr = PLSRegression(n_components=self.config.get('number_of_components'), scale=self.config.get('autoscale')) #, algorithm=self.config.get('algorithm'))
         Y = np.array([0 if c == _experiment_control else 1 for c in dso.classes[0] ])
         #Y = Y.reshape( (len(dso.classes[0]),1) )
 

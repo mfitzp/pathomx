@@ -267,10 +267,6 @@ class WebView(QWebView, BaseView):
         self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" )
     
     def getSize(self):
-        print self.w.size()
-        print 
-        print self.size()
-        
         if self.w.size() == QSize(100,30):
             return self.w.sizeHint()
         else:
@@ -818,7 +814,24 @@ class MplCategoryBarView(MplView):
         #data = dso.data[:,0:limit_to]
         data = np.array( [ dso.data[ :, dso.labels[1].index( l ) ] for l in labels ] ).T[:,:limit_to]
 
-        x = np.arange( 0, len(data.T)*(len(classes)+1), len(classes)+1 )            
+        #0,1,-,4,5,-,6,7
+        
+        # 2 classes
+        # 3 data points
+        
+        # 3*2 = 6;  3*(2+1) = 9
+        
+        # Build spaced sets (around middle value)
+        # 0 -0.5->+0.5, 
+
+        xa = []        
+        for n,ag in enumerate( data.T ): # Axis groups (can reverse with classes; later)
+            xa.append( np.arange(0, len(classes) ) + n*(len(classes)+1) ) # Build table
+            
+        x = np.array(xa).reshape( len(data.T), len(classes) )
+                
+        self.ax.set_xlim( np.min(x)-1, np.max(x)+1 )
+                  
         for n,c in enumerate(classes):
             cdata = data[n]
             if 'error' in dso.statistics:
@@ -832,9 +845,10 @@ class MplCategoryBarView(MplView):
                 yerr = None
 
             color = next(colors)
-            sp[c] = self.ax.bar(x+n, cdata, align='center', color=color, yerr=yerr, ecolor=color )
+            sp[c] = self.ax.bar(x[:,n], cdata, align='center', color=color, yerr=yerr, ecolor=color )
 
-        self.ax.set_xticks( x )
+        xticks = np.mean(x,axis=1)
+        self.ax.set_xticks( xticks )
         self.ax.set_xticklabels(labels, rotation=45, ha='right', rotation_mode='anchor' )
 
         self.ax.legend(sp.values(),

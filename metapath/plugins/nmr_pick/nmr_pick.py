@@ -21,8 +21,53 @@ from data import DataSet, DataDefinition
 from views import MplSpectraView
 
 
+
+# Dialog box for Metabohunter search options
+class PeakPickConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(PeakPickConfigPanel, self).__init__(*args, **kwargs)        
+
+
+        self.threshold_spin = QDoubleSpinBox()
+        self.threshold_spin.setDecimals(5)
+        self.threshold_spin.setRange(0.0001,1)
+        self.threshold_spin.setSuffix('rel')
+        self.threshold_spin.setSingleStep(0.0001)
+        tl = QLabel('Threshold')
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.threshold_spin)
+        self.config.add_handler('peak_threshold', self.threshold_spin)
+
+        self.separation_spin = QDoubleSpinBox()
+        self.separation_spin.setDecimals(1)
+        self.separation_spin.setRange(0,5)
+        self.separation_spin.setSingleStep(0.5)
+        tl = QLabel('Peak separation')
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.separation_spin)
+        self.config.add_handler('peak_separation', self.separation_spin)
+
+        self.algorithms = {
+            'Connected':'connected',
+            'Threshold':'thres',
+            'Threshold (fast)':'thres-fast',
+            'Downward':'downward',
+        }
+
+        self.algorithm_cb = QComboBox()
+        self.algorithm_cb.addItems( [k for k,v in self.algorithms.items() ] )
+        tl = QLabel('Algorithm')
+        self.layout.addWidget(tl)
+        self.layout.addWidget(self.algorithm_cb)  
+        self.config.add_handler('algorithm', self.algorithm_cb)
+
+        self.finalise()
+        
+
 class NMRPeakPickingApp( ui.DataApp ):
-    def __init__(self, auto_consume_data=True, **kwargs):
+
+    def __init__(self, **kwargs):
         super(NMRPeakPickingApp, self).__init__(**kwargs)
         
         self.addDataToolBar()
@@ -49,47 +94,11 @@ class NMRPeakPickingApp( ui.DataApp ):
             'peak_separation': 0.5,
             'peak_algorithm': 'Threshold',
         })
-        
-        th = self.addToolBar('Peak Picking')
-        self.threshold_spin = QDoubleSpinBox()
-        self.threshold_spin.setDecimals(5)
-        self.threshold_spin.setRange(0.0001,1)
-        self.threshold_spin.setSuffix('rel')
-        self.threshold_spin.setSingleStep(0.0001)
-        tl = QLabel('Threshold')
-        th.addWidget(tl)
-        th.addWidget(self.threshold_spin)
-        self.config.add_handler('peak_threshold', self.threshold_spin)
 
-        self.separation_spin = QDoubleSpinBox()
-        self.separation_spin.setDecimals(1)
-        self.separation_spin.setRange(0,5)
-        self.separation_spin.setSingleStep(0.5)
-        tl = QLabel('Separation')
-        tl.setIndent(5)
-        th.addWidget(tl)
-        th.addWidget(self.separation_spin)
-        self.config.add_handler('peak_separation', self.separation_spin)
+        self.addConfigPanel( PeakPickConfigPanel, 'Settings')
 
-        self.algorithms = {
-            'Connected':'connected',
-            'Threshold':'thres',
-            'Threshold (fast)':'thres-fast',
-            'Downward':'downward',
-        }
 
-        self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems( [k for k,v in self.algorithms.items() ] )
-        tl = QLabel('Algorithm')
-        tl.setIndent(5)
-        th.addWidget(tl)
-        th.addWidget(self.algorithm_cb)  
-        self.config.add_handler('algorithm', self.algorithm_cb)
-              
-        self.data.source_updated.connect( self.autogenerate ) # Auto-regenerate if the source data is modified        
-        if auto_consume_data:
-            self.data.consume_any_of( self.m.datasets[::-1] ) # Try consume any dataset; work backwards
-        self.config.updated.connect( self.autogenerate ) # Regenerate if the configuration is changed
+        self.finalise()
 
     def generate(self, input=None): #, config, algorithms):
         # Generate bin values for range start_scale to end_scale
