@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 version_string = '2.1.0'
 
-sys.path.insert(0,'metapath')
+sys.path.insert(0,'pathomx')
 
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
@@ -63,24 +63,24 @@ else:
     bdist_msi = dict()
 
     build_all['include_files']=[
-        ('metapath/static', 'static'),
-        ('metapath/database', 'database'),
-        ('metapath/plugins', 'plugins'),
-        ('metapath/identities', 'identities'),
-        ('metapath/html', 'html'),
-        ('metapath/icons', 'icons'),
+        ('pathomx/static', 'static'),
+        ('pathomx/database', 'database'),
+        ('pathomx/plugins', 'plugins'),
+        ('pathomx/identities', 'identities'),
+        ('pathomx/html', 'html'),
+        ('pathomx/icons', 'icons'),
         ]
 
     build_exe = copy(build_all)
     build_mac = copy(build_all)
     
-    build_mac['iconfile'] = 'metapath/static/icon.icns'
+    build_mac['iconfile'] = 'pathomx/static/icon.icns'
     
     base = None
     if sys.platform == "win32":
         base = "Win32GUI"
         build_exe['include_msvcr'] = True
-        build_exe['icon'] = 'metapath/static/icon.ico'
+        build_exe['icon'] = 'pathomx/static/icon.ico'
         # FIXME: The following is a hack to correctly copy all files required for 
         # numpy, scipy and nmrglue on Windows. At present cx_Freeze misses a number of 
         # the .pyd files. The fix is to copy *all* of them regardless if they're used.
@@ -104,9 +104,9 @@ else:
         shortcut_table = [
             ("DesktopShortcut",        # Shortcut
              "DesktopFolder",          # Directory_
-             "MetaPath",           # Name
+             "Pathomx",           # Name
              "TARGETDIR",              # Component_
-             "[TARGETDIR]MetaPath.exe",# Target
+             "[TARGETDIR]Pathomx.exe",# Target
              None,                     # Arguments
              None,                     # Description
              None,                     # Hotkey
@@ -117,9 +117,9 @@ else:
              ),
             ("Shortcut",        # Shortcut
              "ProgramMenuFolder",          # Directory_
-             "MetaPath",           # Name
+             "Pathomx",           # Name
              "TARGETDIR",              # Component_
-             "[TARGETDIR]MetaPath.exe",# Target
+             "[TARGETDIR]Pathomx.exe",# Target
              None,                     # Arguments
              None,                     # Description
              None,                     # Hotkey
@@ -137,11 +137,11 @@ else:
     # console application).
     executables=[
         Executable(
-            "metapath/MetaPath.py",
+            "pathomx/Pathomx.py",
             base=base,
             copyDependentFiles=True,
             replacePaths=True,
-            #shortcutName="MetaPath",
+            #shortcutName="Pathomx",
             #shortcutDir="ProgramMenuFolder",
             )]
 
@@ -152,14 +152,14 @@ else:
 
 setup(
 
-    name='metapath',
+    name='Pathomx',
     version=version_string,
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
-    url='https://github.com/mfitzp/metapath',
-    download_url='https://github.com/mfitzp/metapath/zipball/master',
+    url='https://github.com/pathomx/pathomx',
+    download_url='https://github.com/pathomx/pathomx/zipball/master',
     description='Metabolic pathway visualisation and analysis.',
-    long_description='MetaPath is a tool for the analysis of metabolic pathway and \
+    long_description='Pathomx is a tool for the analysis of metabolic pathway and \
         associated visualisation of experimental data. Built on the MetaCyc database it \
         provides an interactive map in which multiple pathways can be simultaneously \
         visualised. Multiple annotations from the MetaCyc database are available including \
@@ -176,17 +176,14 @@ setup(
 
     entry_points = {
         'gui_scripts': [
-            'MetaPath = metapath.MetaPath:main',
+            'Pathomx = pathomx.Pathomx:main',
         ]
     },
 
     install_requires = [
-#            'PySide>=1.1.1',
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>=0.1.0',
-#            'sip',
-#            'matplotlib>=1.2.1'
             ],
 
     keywords='bioinformatics metabolomics research analysis science',
@@ -209,7 +206,7 @@ setup(
         "bdist_msi": bdist_msi,
         #"py2app": build_py2app
     },
-    app=[ 'metapath/MetaPath.py' ],
+    app=[ 'pathomx/Pathomx.py' ],
     #setup_requires=["py2app"],
 
     )

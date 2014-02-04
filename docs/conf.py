@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# MetaPath documentation build configuration file, created by
+# Pathomx documentation build configuration file, created by
 # sphinx-quickstart on Thu Dec 12 15:30:39 2013.
 #
 # This file is execfile()d with the current directory set to its
@@ -43,7 +43,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'MetaPath'
+project = u'Pathomx'
 copyright = u'2013, Martin A. Fitzpatrick, Catherine M. McGrath, Graham R. Wallace, Stephen P. Young'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -176,7 +176,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MetaPathdoc'
+htmlhelp_basename = 'Pathomxdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -196,7 +196,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'MetaPath.tex', u'MetaPath Documentation',
+  ('index', 'Pathomx.tex', u'Pathomx Documentation',
    u'Martin A. Fitzpatrick, Catherine M. McGrath, Graham R. Wallace, Stephen P. Young', 'manual'),
 ]
 
@@ -226,7 +226,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'metapath', u'MetaPath Documentation',
+    ('index', 'pathomx', u'Pathomx Documentation',
      [u'Martin A. Fitzpatrick, Catherine M. McGrath, Graham R. Wallace, Stephen P. Young'], 1)
 ]
 
@@ -240,8 +240,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'MetaPath', u'MetaPath Documentation',
-   u'Martin A. Fitzpatrick, Catherine M. McGrath, Graham R. Wallace, Stephen P. Young', 'MetaPath', 'One line description of project.',
+  ('index', 'Pathomx', u'Pathomx Documentation',
+   u'Martin A. Fitzpatrick, Catherine M. McGrath, Graham R. Wallace, Stephen P. Young', 'Pathomx', 'One line description of project.',
    'Miscellaneous'),
 ]
 
