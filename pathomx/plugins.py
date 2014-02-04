@@ -80,7 +80,7 @@ class dialogPluginManagement(ui.genericDialog):
 
     def get_available_plugins(self):
         # Download the plugin list if not updated <1 day ago
-        f = urllib2.urlopen('http://plugins.getmetapath.org/plugins.list')
+        f = urllib2.urlopen('http://plugins.pathomx.org/plugins.list')
         plugin_list = f.readlines()
         f.close()
 
@@ -137,9 +137,9 @@ class dialogPluginManagement(ui.genericDialog):
         # Download and unzip the zip file to the user-specific plugins location
         # Trigger plugin-install hook (need to implement; define out of main)
         plugin_version = self.available_plugins[ plugin_shortname ]['version']
-        url = 'http://plugins.getmetapath.org/downloads/%s/%s-%s.zip' % (plugin_shortname, plugin_shortname, plugin_version)
+        url = 'http://plugins.pathomx.org/downloads/%s/%s-%s.zip' % (plugin_shortname, plugin_shortname, plugin_version)
         plugin_save_path = self.m.user_plugin_path
-        local_filename = os.path.join( QDir.tempPath(), 'metapath-temp-download.zip')
+        local_filename = os.path.join( QDir.tempPath(), 'pathomx-temp-download.zip')
         
         try:
             # NOTE the stream=True parameter
@@ -155,7 +155,7 @@ class dialogPluginManagement(ui.genericDialog):
         else:
             return True
         
-        #http://plugins.getmetapath.org/downloads/zeitgeist/zeitgeist-0.0.1.tgz
+        #http://plugins.pathomx.org/downloads/zeitgeist/zeitgeist-0.0.1.tgz
                 
     def do_uninstall(self, plugin_shortname):
         if plugin_shortname in self.installed_plugins and not self.installed_plugins[plugin_shortname]['is_core_plugin']:
@@ -191,7 +191,7 @@ class dialogPluginManagement(ui.genericDialog):
 
         msgBox = QMessageBox(self)
         if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) installed. To complete installation please restart MetaPath" % successful_count))
+            msgBox.setText(tr("%d plugin(s) installed. To complete installation please restart Pathomx" % successful_count))
         else:
             msgBox.setText(tr("No plugins installed."))        
         
@@ -206,7 +206,7 @@ class dialogPluginManagement(ui.genericDialog):
             
         msgBox = QMessageBox(self)
         if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) upgraded. To complete upgrade please restart MetaPath" % successful_count ))
+            msgBox.setText(tr("%d plugin(s) upgraded. To complete upgrade please restart Pathomx" % successful_count ))
         else:
             msgBox.setText(tr("No plugins upgraded."))        
         msgBox.exec_()
@@ -220,7 +220,7 @@ class dialogPluginManagement(ui.genericDialog):
 
         msgBox = QMessageBox(self)
         if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) uninstalled. To complete uninstallation please restart MetaPath" % successful_count ))
+            msgBox.setText(tr("%d plugin(s) uninstalled. To complete uninstallation please restart Pathomx" % successful_count ))
         else:
             msgBox.setText(tr("No plugins uninstalled."))        
         msgBox.exec_()

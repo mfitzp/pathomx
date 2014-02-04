@@ -11,7 +11,7 @@ import operator
 #import HTMLParser
 #pars = HTMLParser.HTMLParser()
 
-# MetaPath classes and handlers
+# Pathomx classes and handlers
 import utils, db
 from db import ReactionIntermediate
 
@@ -24,11 +24,11 @@ PRUNE_IDENTICAL = lambda a, b, c, d: (a,b,c,d)
 #REACTION_URL = ''
 
 # Internal URLS
-METABOLITE_URL = 'metapath://db/metabolite/%s/view'
-PATHWAY_URL = 'metapath://db/pathway/%s/view'
-REACTION_URL = 'metapath://db/reaction/%s/view'
-PROTEIN_URL = 'metapath://db/protein/%s/view'
-GENE_URL = 'metapath://db/gene/%s/view'
+METABOLITE_URL = 'pathomx://db/metabolite/%s/view'
+PATHWAY_URL = 'pathomx://db/pathway/%s/view'
+REACTION_URL = 'pathomx://db/reaction/%s/view'
+PROTEIN_URL = 'pathomx://db/protein/%s/view'
+GENE_URL = 'pathomx://db/gene/%s/view'
 
 # Paper sizes for print scaling printing
 METAPATH_PAPER_SIZES = {
@@ -375,7 +375,7 @@ def generator( pathways, options, db, analysis = None, layout = None, verbose = 
             fillcolor = 'black'
             border = 0
             width, height = 0.01, 0.01
-            url = 'metapath://null/%s' # Null, don't navigate FIXME
+            url = 'pathomx://null/%s' # Null, don't navigate FIXME
             
         elif m.type=='pathway':
             shape='point'

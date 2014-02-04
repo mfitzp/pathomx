@@ -2,7 +2,7 @@
 
 <html>
     <head>
-        <title>Welcome to MetaPath</title>
+        <title>Welcome to Pathomx</title>
 
     <link rel="stylesheet" type="text/css" href="foundation.min.css">
 
@@ -66,7 +66,7 @@
         QtWebView.delegateLink(url);
     }
     
-    function _metapath_foundation_trigger(){
+    function _pathomx_foundation_trigger(){
         $(document).foundation();
     }
 </script>        
@@ -86,11 +86,11 @@
             <h2 data-magellan-destination="@category!s">@category</h2>
             <ul class="small-block-grid-3 medium-block-grid-4 large-block-grid-6">
                 @for app in apps[ category ]:
-                    <li class="radius"><a class="app" href="metapath://app-manager/@app['id']/add"
+                    <li class="radius"><a class="app" href="pathomx://app-manager/@app['id']/add"
                                 @if app['image']:
                                     style="background:url('file:///@app['image_forward_slashes']') center center no-repeat;"
                                 @endif
-                                    onclick="return true; delegateLink('metapath://app-manager/@app['id']/add');">
+                                    onclick="return true; delegateLink('pathomx://app-manager/@app['id']/add');">
                             <div class="meta">
                                 <div class="name">@app['name']</div>
                                 <div class="description">@app['description']</div>

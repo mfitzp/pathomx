@@ -106,7 +106,7 @@ var force = d3.layout.force()
       .text(function(d) { return d.name; }); */
     node.on("contextmenu", rclicknode)
     node.on("click", function(d){
-        delegateLink('metapath://db/metabolite/'+d.name+'/view');
+        delegateLink('pathomx://db/metabolite/'+d.name+'/view');
     });
 
 var drag = force.drag()

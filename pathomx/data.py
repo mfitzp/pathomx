@@ -1000,7 +1000,7 @@ class DataSet( QObject ):
     def to_XML(self):
         
         root = et.Element("DataSet")
-        root.set('xmlns', "http://getmetapath.org/schema/DataSet/2013a")
+        root.set('xmlns', "http://pathomx.org/schema/DataSet/2013a")
         
         manager = et.SubElement(root, "Manager")
         manager.set('id', self.manager.id)

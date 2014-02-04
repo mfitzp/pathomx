@@ -41,7 +41,7 @@ class ImportTextApp( ui.ImportDataApp ):
             print "Loading... %s" %fe
             dso=formats[fe](filename)
             if dso == None:
-                raise MetaPathIncorrectFileStructureException("Data not loaded, check file structure.") 
+                raise PathomxIncorrectFileStructureException("Data not loaded, check file structure.") 
             
             dso.name = os.path.basename( filename )
                                 
@@ -51,7 +51,7 @@ class ImportTextApp( ui.ImportDataApp ):
             return {'output':dso}
             
         else:
-            raise MetaPathIncorrectFileFormatException("Unsupported file format.")
+            raise PathomxIncorrectFileFormatException("Unsupported file format.")
         
 ###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
 
@@ -68,7 +68,7 @@ class ImportTextApp( ui.ImportDataApp ):
             else:
                 return self.load_csv_C(filename)
 
-        raise MetaPathIncorrectFileStructureException("Data not loaded, check file structure.") 
+        raise PathomxIncorrectFileStructureException("Data not loaded, check file structure.") 
 
 ###### LOAD HANDLERS
 

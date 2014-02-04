@@ -15,7 +15,7 @@ from collections import defaultdict
 
 import os, urllib, urllib2, copy, re, json, importlib, sys, traceback
 
-# MetaPath classes
+# Pathomx classes
 import utils, threads
 
 import numpy as np
@@ -196,7 +196,7 @@ class RenderPageToFile(QWebPage):
 
         frame = self.mainFrame()
         if self.resample: # If resampling we need to regenerate the graph
-            frame.evaluateJavaScript( "_metapath_render_trigger();" )
+            frame.evaluateJavaScript( "_pathomx_render_trigger();" )
 
         #self.size = frame.contentsSize()#        self.setViewportSize(self.size)
         image = QImage(self.size, QImage.Format_ARGB32)
@@ -264,7 +264,7 @@ class WebView(QWebView, BaseView):
         sizer = self.w.views.size()
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
         self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
-        self.page().currentFrame().evaluateJavaScript( "_metapath_render_trigger();" )
+        self.page().currentFrame().evaluateJavaScript( "_pathomx_render_trigger();" )
     
     def getSize(self):
         if self.w.size() == QSize(100,30):

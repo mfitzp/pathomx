@@ -207,14 +207,14 @@ def find_packager():
         return '<unknown packager: %r>' % (frozen,) 
         
 
-# Get current running script folder (MetaPath app folder)
+# Get current running script folder (Pathomx app folder)
 pkg = find_packager()
 if pkg == None:
     scriptdir = os.path.dirname( os.path.realpath(__file__) ) #.rpartition('/')[0]
 elif pkg == True:
     scriptdir = os.path.dirname(sys.executable)
 elif pkg == 'py2app':
-    #'/Applications/MetaPath.app/Contents/Resources'
+    #'/Applications/Pathomx.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']
 elif pkg == 'py2exe':
     scriptdir = os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding( )))

@@ -50,7 +50,7 @@ class GEOApp( ui.ImportDataApp ):
             return {'output':dso}
 
         else:
-            raise MetaPathIncorrectFileFormatException("Unsupported file format.")
+            raise PathomxIncorrectFileFormatException("Unsupported file format.")
         
 ###### LOAD HANDLERS
     

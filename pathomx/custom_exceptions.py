@@ -1,8 +1,8 @@
 from exceptions import Exception
 
-class MetaPathIncorrectFileFormatException(Exception):
+class PathomxIncorrectFileFormatException(Exception):
     pass
     
     
-class MetaPathIncorrectFileStructureException(Exception):
+class PathomxIncorrectFileStructureException(Exception):
     pass

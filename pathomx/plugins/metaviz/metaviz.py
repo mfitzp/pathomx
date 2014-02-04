@@ -24,7 +24,7 @@ import copy
 
 import operator
 
-# MetaPath classes and handlers
+# Pathomx classes and handlers
 import ui, utils, db, threads
 from data import DataSet, DataDefinition
 from db import ReactionIntermediate
@@ -34,11 +34,11 @@ PRUNE_ALL = lambda a, b, c, d: (a,b,c)
 PRUNE_IDENTICAL = lambda a, b, c, d: (a,b,c,d)    
 
 # Internal URLS
-COMPOUND_URL = 'metapath://db/compound/%s/view'
-PATHWAY_URL = 'metapath://db/pathway/%s/view'
-REACTION_URL = 'metapath://db/reaction/%s/view'
-PROTEIN_URL = 'metapath://db/protein/%s/view'
-GENE_URL = 'metapath://db/gene/%s/view'
+COMPOUND_URL = 'pathomx://db/compound/%s/view'
+PATHWAY_URL = 'pathomx://db/pathway/%s/view'
+REACTION_URL = 'pathomx://db/reaction/%s/view'
+PROTEIN_URL = 'pathomx://db/protein/%s/view'
+GENE_URL = 'pathomx://db/gene/%s/view'
 
 # Paper sizes for print scaling printing
 METAPATH_PAPER_SIZES = {
@@ -383,7 +383,7 @@ def generator( pathways, options, db, analysis = None, layout=None, verbose = Tr
             fillcolor = 'black'
             border = 0
             width, height = 0.01, 0.01
-            url = 'metapath://null/%s' # Null, don't navigate FIXME
+            url = 'pathomx://null/%s' # Null, don't navigate FIXME
             
         elif m.type=='pathway':
             shape='point'
@@ -761,8 +761,8 @@ class MetaVizApp(ui.AnalysisApp):
 
     def generate(self, suggested_pathways=None, data=None):
         dso = data
-        # By default use the generated metapath file to view
-        filename = os.path.join(QDir.tempPath(),'metapath-generated-pathway.svg')
+        # By default use the generated pathomx file to view
+        filename = os.path.join(QDir.tempPath(),'pathomx-generated-pathway.svg')
         
         tps = self.generateGraph(filename=filename, suggested_pathways=suggested_pathways,  data=dso, format='svg')
         if tps == None:

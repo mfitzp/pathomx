@@ -68,9 +68,9 @@
             @for label, entity in entities:
                 <li>
                     @if entity == None:
-                    <div href="metapath://entities/" class="entity entity-not-mapped">
+                    <div href="pathomx://entities/" class="entity entity-not-mapped">
                     @else:
-                    <a href="metapath://db/@entity.type/@entity.id/view" class="entity">
+                    <a href="pathomx://db/@entity.type/@entity.id/view" class="entity">
                     @endif
                     @if hasattr(entity,'image'):
                         <img src="file:///@entity.image">

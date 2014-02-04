@@ -56,7 +56,7 @@ class WorkspaceEditor(QGraphicsView):
         app.editorItem = None
         
     def dragEnterEvent(self, e):
-        if e.mimeData().hasFormat('application/x-metapath-app') or e.mimeData().hasFormat('text/uri-list'):
+        if e.mimeData().hasFormat('application/x-pathomx-app') or e.mimeData().hasFormat('text/uri-list'):
             e.accept()
         else:
             e.ignore() 
@@ -67,9 +67,9 @@ class WorkspaceEditor(QGraphicsView):
     def dropEvent(self, e):
         scenePos = self.mapToScene( e.pos() ) - QPointF(32,32)
 
-        if e.mimeData().hasFormat('application/x-metapath-app'):
+        if e.mimeData().hasFormat('application/x-pathomx-app'):
         
-            app_id = str( e.mimeData().data('application/x-metapath-app') )
+            app_id = str( e.mimeData().data('application/x-pathomx-app') )
         
             a = self.m.app_launchers[ app_id ](position=scenePos, auto_focus=False)
             self.centerOn(a.editorItem)

@@ -38,13 +38,13 @@ class GPMLView(HTMLView):
 
         # Add our urls to the defaults
         xref_urls = {
-            'MetaCyc compound': 'metapath://db/compound/%s/view',
-            'MetaCyc gene': 'metapath://db/gene/%s/view',
-            'MetaCyc protein': 'metapath://db/protein/%s/view',
-            'WikiPathways': 'metapath://wikipathway/%s/import',
+            'MetaCyc compound': 'pathomx://db/compound/%s/view',
+            'MetaCyc gene': 'pathomx://db/gene/%s/view',
+            'MetaCyc protein': 'pathomx://db/protein/%s/view',
+            'WikiPathways': 'pathomx://wikipathway/%s/import',
         }
         if gpml:
-            svg, metadata = gpml2svg.gpml2svg( gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add MetaPath required customisations here
+            svg, metadata = gpml2svg.gpml2svg( gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add Pathomx required customisations here
             self.setHtml(svg,QUrl("~")) 
             self.w.set_name( metadata['Name'] )
 

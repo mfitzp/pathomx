@@ -25,7 +25,7 @@ except ImportError:
 import utils
 from utils import UnicodeReader, UnicodeWriter
 
-# MetaPath classes
+# Pathomx classes
 import db, utils
 
 parser = OptionParser()
@@ -38,7 +38,7 @@ parser.add_option("-r", "--reactions", dest="reactions", default='',
                   
 
 parser.add_option("-i", "--iterate", action="store_true", dest="recursive", default=False,
-                  help="iterate tree to find subpathways recursively (on metapathways only)")
+                  help="iterate tree to find subpathways recursively (on pathomxways only)")
 
 parser.add_option("-s", "--search", dest="search", default=None,
                   help="only load pathways matching this regex")
@@ -454,7 +454,7 @@ if options.pathways:
 
         xreactionls = xml.iterfind('Pathway/reaction-list/Reaction')
     
-        if reactions_this_pathway == 0: # Check if we're a 'metapathway'
+        if reactions_this_pathway == 0: # Check if we're a 'pathomxway'
             continue
 
         print "Found %d reactions." % ( reactions_this_pathway )                

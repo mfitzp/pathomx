@@ -19,14 +19,14 @@ database_link_synonyms = [
 ]
 
 # Internal URLS
-COMPOUND_URL = 'metapath://db/compound/%s/view'
-PATHWAY_URL = 'metapath://db/pathway/%s/view'
-REACTION_URL = 'metapath://db/reaction/%s/view'
-PROTEIN_URL = 'metapath://db/protein/%s/view'
-GENE_URL = 'metapath://db/gene/%s/view'
+COMPOUND_URL = 'pathomx://db/compound/%s/view'
+PATHWAY_URL = 'pathomx://db/pathway/%s/view'
+REACTION_URL = 'pathomx://db/reaction/%s/view'
+PROTEIN_URL = 'pathomx://db/protein/%s/view'
+GENE_URL = 'pathomx://db/gene/%s/view'
 
-# Global MetaPath db object class to simplify object display, synonym referencing, etc. 
-class _MetaPathObject(object):
+# Global Pathomx db object class to simplify object display, synonym referencing, etc. 
+class _PathomxObject(object):
     def __unicode__(self):
         return self.name
         
@@ -62,7 +62,7 @@ class _MetaPathObject(object):
     
 
 # Dummy wrapper classes for readability
-class Compound(_MetaPathObject):
+class Compound(_PathomxObject):
     type = 'compound'
     type_name = tr('Compound')
     def as_csv(self):
@@ -75,7 +75,7 @@ class Compound(_MetaPathObject):
     def url(self):
         return COMPOUND_URL % self.id
 
-class Pathway(_MetaPathObject):
+class Pathway(_PathomxObject):
     type = 'pathway'
     type_name = tr('Pathway')    
     def as_csv(self):
@@ -87,7 +87,7 @@ class Pathway(_MetaPathObject):
     def url(self):
         return PATHWAY_URL % self.id
 
-class Reaction(_MetaPathObject):
+class Reaction(_PathomxObject):
     type = 'reaction'
     type_name = tr('Reaction')        
     def as_csv(self):
@@ -115,7 +115,7 @@ class Reaction(_MetaPathObject):
     def secondary_compounds(self):
         return self.smtins + self.smtouts
         
-class Protein(_MetaPathObject):
+class Protein(_PathomxObject):
     type = 'protein'
     type_name = tr('Protein')    
     def as_csv(self):
@@ -130,7 +130,7 @@ class Protein(_MetaPathObject):
     def url(self):
         return PROTEIN_URL % self.id
 
-class Gene(_MetaPathObject):
+class Gene(_PathomxObject):
     type = 'gene'
     type_name = tr('Gene')        
     def as_csv(self):
@@ -146,7 +146,7 @@ class Gene(_MetaPathObject):
 
             
 # Dummy class to handle reaction intermediate compounds/reaction steps
-class ReactionIntermediate(_MetaPathObject):
+class ReactionIntermediate(_PathomxObject):
     # Standard values
     type = 'dummy'
     type_name = 'n/a'

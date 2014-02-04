@@ -16,7 +16,7 @@ from collections import defaultdict
 import os, urllib, urllib2, copy, re, json, importlib, sys
 import numpy as np
 
-# MetaPath classes
+# Pathomx classes
 import utils, data, config, threads
 from data import DataSet
 
@@ -893,7 +893,7 @@ class GenericApp( QMainWindow ):
         self.m.onBrowserNav(url)
 
     # Url handler for all default plugin-related actions; making these accessible to all plugins
-    # from a predefined url structure: metapath://<view.id>/default_actions/data_source/add
+    # from a predefined url structure: pathomx://<view.id>/default_actions/data_source/add
     def default_url_handler(self, url):
 
         kind, id, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames           
