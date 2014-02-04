@@ -3,7 +3,7 @@
 **Stable** The current trunk of Pathomx is stable and can be built using cx_Freeze (as-is on Windows, with some tweaks on Mac). The latest version (2.0.0) is now available to download
 [Windows 7 & 8 (x64)][pathomx-windows] &bull; [Mac OS X Mountain Lion .app][pathomx-mac] &bull; [Github][pathomx-github] &bull; [Python .eggs or .gz source][pathomx-pypi].
 
-![Screenshot](http://getpathomx.org/images/software/pathomx/pathomx-v2-visual-editor.png)
+![Screenshot](http://pathomx.org/images/software/pathomx/pathomx-v2-visual-editor.png)
 
 Pathomx is an interactive tool for the analysis and visualisation of metabolic data.
 Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
@@ -31,11 +31,11 @@ MetaCyc API and stored locally. Licenses for the entire MetaCyc database
 [are also available](http://metacyc.org/contact.shtml) free of charge for academic
 and government use.
 
- [pathomx-github]: https://github.com/mfitzp/pathomx/issues
- [pathomx-github-issues]: https://github.com/mfitzp/pathomx
+ [pathomx-github]: https://github.com/pathomx/pathomx
+ [pathomx-github-issues]: https://github.com/pathomx/pathomx/issues
  [metacyc]: http://metacyc.org
- [pathomx-mac]: http://download.getpathomx.org/Pathomx-2.0.0.dmg
- [pathomx-windows]: http://download.getpathomx.org/Pathomx-2.0.0-amd64.msi
- [pathomx-pypi]: https://pypi.python.org/pypi/pathomx 
+ [pathomx-mac]: http://download.pathomx.org/Pathomx-2.1.0.dmg
+ [pathomx-windows]: http://download.pathomx.org/Pathomx-2.0.0-amd64.msi
+ [pathomx-pypi]: https://pypi.python.org/pypi/Pathomx 
  [graphviz]: http://www.graphviz.org/
  
