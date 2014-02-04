@@ -838,11 +838,14 @@ class MplCategoryBarView(MplView):
                 err = dso.statistics['error']['stddev'][:,:limit_to][n]
                 yperr = [(0,1)[e>0] for e in cdata ]
                 ynerr = [(0,1)[e<0] for e in cdata ]
+                
                 yperr = np.array(yperr) * err
                 ynerr = np.array(ynerr) * err
                 yerr = (ynerr, yperr)
             else:
                 yerr = None
+                
+            print yerr
 
             color = next(colors)
             sp[c] = self.ax.bar(x[:,n], cdata, align='center', color=color, yerr=yerr, ecolor=color )

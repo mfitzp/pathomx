@@ -53,14 +53,6 @@ class ConfigManager( QObject ):
             return self.defaults[key]
         else:
             return None
-    
-    # Get mapped config (pass through translation)        
-    def getm(self, key):
-        if key in self.maps:
-            return self.maps[key]( self.get(key) )
-        else:
-            return self.get(key)
-    
 
     def set(self, key, value, trigger_update=True):
         if key in self.config and self.config[key] == value:
@@ -124,16 +116,18 @@ class ConfigManager( QObject ):
         
     def add_handler(self, key, handler, mapper = (lambda x: x, lambda x: x) ):
     
-        self.handlers[key] = handler
-        print "Add handler %s for %s" % ( handler.__class__.__name__, key )
-        fn = getattr(self, '_event_%s' % handler.__class__.__name__, False)
-        fn( handler ).connect( lambda x: self.set(key, x) )
 
         # Add map handler for converting displayed values to internal config data
         if type(mapper) == dict: # By default allow dict types to be used
             mapper = build_dict_mapper( mapper )
             
         handler._get_map, handler._set_map = mapper
+
+        self.handlers[key] = handler
+        print "Add handler %s for %s" % ( handler.__class__.__name__, key )
+        fn = getattr(self, '_event_%s' % handler.__class__.__name__, False)
+        fn( handler ).connect( lambda x: self.set(key, handler._get_map(x) ) )
+
         
         # Keep handler and data consistent
         if key not in self.config:
@@ -147,8 +141,7 @@ class ConfigManager( QObject ):
                 fn = getattr(self, '_get_%s' % handler.__class__.__name__, False)
                 self.config[key] = fn( handler )
 
-        
-            
+    
     def add_handlers(self, keyhandlers):
         for key, handler in keyhandlers.items():
             self.add_handler( key, handler )
@@ -164,7 +157,6 @@ class ConfigManager( QObject ):
         return o.currentTextChanged
 
     # QCheckBox
-    
     def _get_QCheckBox(self, o):
         return o.isChecked()
 
@@ -175,34 +167,26 @@ class ConfigManager( QObject ):
         return o.stateChanged
         
     # QAction
-    
     def _get_QAction(self, o):
-        print 'o', o.isChecked()
         return o.isChecked()
 
     def _set_QAction(self, o, v):
-        print 'o', o.isChecked()
         o.setChecked(v)
 
     def _event_QAction(self, o):
         return o.toggled
 
     # QAction
-            
     def _get_QPushButton(self, o):
-        print 'o', o.isChecked()
         return o.isChecked()
 
     def _set_QPushButton(self, o, v):
-        print 'o', o.isChecked()
         o.setChecked(v)
 
     def _event_QPushButton(self, o):
         return o.toggled
                 
-        
     # QSpinBox
-    
     def _get_QSpinBox(self, o):
         return o.value()
 
@@ -213,7 +197,6 @@ class ConfigManager( QObject ):
         return o.valueChanged        
         
     # QDoubleSpinBox
-    
     def _get_QDoubleSpinBox(self, o):
         return o.value()
 
@@ -224,7 +207,6 @@ class ConfigManager( QObject ):
         return o.valueChanged                
         
     # JSON
-    
     def json_dumps(self):
         return json.dumps( self.config ) 
     

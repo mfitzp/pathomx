@@ -18,6 +18,7 @@ import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
+import scipy as sp
 
 import ui, db, utils, threads
 from data import DataSet
@@ -77,10 +78,15 @@ class NMRApp( ui.ImportDataApp ):
                 fids.append( r )
         
         total_fids = len(fids)
+        pc_init = None
+        pc_history = []
         for n,fid in enumerate(fids):
             self.progress.emit( float(n)/total_fids )
             
-            dic, data = self.load_bruker_fid( fid )
+            dic, data, pc = self.load_bruker_fid( fid, pc_init )
+            # Store previous phase correction outputs to speed up subsequent runs
+            pc_history.append( pc )
+            pc_init = np.median( np.array( pc_history ), axis=0 )
         
             if data is not None:
                 label = os.path.basename(fid)
@@ -142,7 +148,7 @@ class NMRApp( ui.ImportDataApp ):
         
         
 
-    def load_bruker_fid(self, fn):
+    def load_bruker_fid(self, fn, pc_init=None ):
 
         try:
             print "Reading %s" % fn
@@ -152,22 +158,96 @@ class NMRApp( ui.ImportDataApp ):
             print "...fail"
             return None, None
         else:
+
             # remove the digital filter
             data = ng.bruker.remove_digital_filter(dic, data)
 
             # process the spectrum
             data = ng.proc_base.zf_size(data, 32768)    # zero fill to 32768 points
             data = ng.process.proc_bl.sol_boxcar(data, w=16, mode='same') # Solvent removal
+            
+            # autophase correct the data
+
             data = ng.proc_base.fft(data)               # Fourier transform
-            data = ng.proc_base.ps(data, p0=75, p1=-10)      # phase correction
+            data, pc = self.autophase( data, pc_init )  # Automatic phase correction
+
             data = ng.proc_base.di(data)                # discard the imaginaries
             data = ng.proc_base.rev(data)               # reverse the data
             
-            # This should be in a processing plugin?
-            data = ng.process.proc_bl.med(data, mw=24, sf=16, sigma=5.0) # Baseline correction
-            data = data / 10000000.
-            return dic, data
+            #data = data / 10000000.
+            return dic, data, pc
+            
+    def autophase(self, nmr_data, pc_init=None, algorithm='Peak_minima'):
+        if pc_init == None:
+            pc_init = [0,0]
+
+        fn = {
+            'ACME': self.autophase_ACME,
+            'Peak_minima': self.autophase_PeakMinima,
+        }[ algorithm ]
         
+        opt = sp.optimize.fmin( fn, x0=pc_init, args=( nmr_data.reshape(1,-1)[:500], ) )
+        print "Phase correction optimised to: %s" % opt
+        return ng.process.proc_base.ps( nmr_data, p0=opt[0], p1=opt[1] ), opt
+
+            
+    def autophase_ACME(self, x, s): 
+        # Based on the ACME algorithm by Chen Li et al. Journal of Magnetic Resonance 158 (2002) 164–168
+
+        stepsize=1 
+    
+        n,l = s.shape
+        phc0, phc1 = x
+        
+        s0 = ng.process.proc_base.ps( s, p0=phc0, p1=phc1 )
+        s = np.real(s0)
+        maxs=np.max(s)
+
+        # Calculation of first derivatives 
+        ds1 = np.abs( ( s[2:l]-s[0:l-1] )/(stepsize*2) )
+        p1 = ds1 / np.sum(ds1)
+        
+        # Calculation of entropy
+        m,k = p1.shape
+        
+        for i in range(0,m):
+            for j in range(0,k):
+                if (p1[i,j]==0): #%in case of ln(0)
+                   p1[i,j]=1
+
+        h1  = -p1 * np.log(p1)
+        h1s  = np.sum(h1)
+
+        # Calculation of penalty
+        pfun	= 0.0
+        as_     = s - np.abs(s)
+        sumas   = np.sum(as_)
+        
+        if (sumas < 0):
+           pfun = pfun + np.sum( (as_/2)**2 )
+
+        p       = 1000*pfun
+
+        # The value of objective function
+        return h1s+p
+
+    def autophase_PeakMinima(self, x, s): 
+        # Based on the ACME algorithm by Chen Li et al. Journal of Magnetic Resonance 158 (2002) 164–168
+
+        stepsize=1 
+    
+        phc0, phc1 = x
+        
+        s0 = ng.process.proc_base.ps( s, p0=phc0, p1=phc1 )
+        s = np.real(s0).flatten()
+        
+        i = np.argmax(s)
+        peak = s[i]
+        mina = np.min( s[i-100:i] )
+        minb = np.min( s[i:i+100] )
+
+        return np.abs( mina-minb )
+
 class NMRGlue(ImportPlugin):
 
     def __init__(self, **kwargs):

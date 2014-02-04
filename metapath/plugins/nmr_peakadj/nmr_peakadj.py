@@ -137,21 +137,10 @@ class NMRPeakAdjApp( ui.DataApp ):
         })        
         
 
-        th = self.addToolBar('Peak Adjustments')
-
         self.region_dso = None
-
         self._automated_update_config = False
 
         self.addConfigPanel( PeakAdjConfigPanel, 'Settings')
-
-        
-        th.addSeparator()  
-
-        self.configuration = QAction( QIcon( os.path.join(  self.plugin.path, 'icon-16.png' ) ), 'Configure scale and shift parameters \u2026', self.m)
-        self.configuration.setStatusTip('Set parameters for scaling and shifting to reference peak')
-        #self.configuration.triggered.connect(self.onMetaboHunterSettings)
-        th.addAction(self.configuration)
 
         self.finalise()
     
