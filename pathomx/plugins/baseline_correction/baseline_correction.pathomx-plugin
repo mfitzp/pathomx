@@ -1,0 +1,9 @@
+[Core]
+Name = Baseline Correction
+Module = baseline_correction
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Baseline correct NMR spectra
