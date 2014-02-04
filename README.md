@@ -1,9 +1,9 @@
 # Pathomx
 
 **Stable** The current trunk of Pathomx is stable and can be built using cx_Freeze (as-is on Windows, with some tweaks on Mac). The latest version (2.0.0) is now available to download
-[Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+[Windows 7 & 8 (x64)][pathomx-windows] &bull; [Mac OS X Mountain Lion .app][pathomx-mac] &bull; [Github][pathomx-github] &bull; [Python .eggs or .gz source][pathomx-pypi].
 
-![Screenshot](http://getmetapath.org/images/software/metapath/metapath-v2-visual-editor.png)
+![Screenshot](http://getpathomx.org/images/software/pathomx/pathomx-v2-visual-editor.png)
 
 Pathomx is an interactive tool for the analysis and visualisation of metabolic data.
 Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
@@ -17,7 +17,7 @@ function.
 
 It is developed in Python, using Qt5/PyQt5, Matplotlib (for graphing), numpy/scipy (for number handling), nmrglue (for NMR data import), scikit-learn (for statistical analysis methods) and the d3.js visualisation engine for pretty interactive graphs. **Developers are very welcome to contribute, just get in touch!**
 
-**Download** [Windows 7 & 8 (x64)][metapath-windows] &bull; [Mac OS X Mountain Lion .app][metapath-mac] &bull; [Github][metapath-github] &bull; [Python .eggs or .gz source][metapath-pypi].
+**Download** [Windows 7 & 8 (x64)][pathomx-windows] &bull; [Mac OS X Mountain Lion .app][pathomx-mac] &bull; [Github][pathomx-github] &bull; [Python .eggs or .gz source][pathomx-pypi].
 
 > Pathomx requires installation of [Graphviz][graphviz] for pathway drawing.
 
@@ -31,11 +31,11 @@ MetaCyc API and stored locally. Licenses for the entire MetaCyc database
 [are also available](http://metacyc.org/contact.shtml) free of charge for academic
 and government use.
 
- [metapath-github]: https://github.com/mfitzp/metapath/issues
- [metapath-github-issues]: https://github.com/mfitzp/metapath
+ [pathomx-github]: https://github.com/mfitzp/pathomx/issues
+ [pathomx-github-issues]: https://github.com/mfitzp/pathomx
  [metacyc]: http://metacyc.org
- [metapath-mac]: http://download.getmetapath.org/Pathomx-2.0.0.dmg
- [metapath-windows]: http://download.getmetapath.org/Pathomx-2.0.0-amd64.msi
- [metapath-pypi]: https://pypi.python.org/pypi/metapath 
+ [pathomx-mac]: http://download.getpathomx.org/Pathomx-2.0.0.dmg
+ [pathomx-windows]: http://download.getpathomx.org/Pathomx-2.0.0-amd64.msi
+ [pathomx-pypi]: https://pypi.python.org/pypi/pathomx 
  [graphviz]: http://www.graphviz.org/
  
