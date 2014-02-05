@@ -5,7 +5,7 @@ from copy import copy
 
 from setuptools import setup, find_packages
 
-version_string = '2.1.0'
+version_string = '2.2.0'
 
 sys.path.insert(0,'pathomx')
 
