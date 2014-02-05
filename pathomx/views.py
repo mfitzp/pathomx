@@ -29,6 +29,8 @@ from translate import tr
 
 from numpy import arange, sin, pi
 from backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+#from backend_qt5agg import NavigationToolbar2QTAgg
+from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
 import matplotlib.cm as cm
@@ -122,6 +124,7 @@ class BaseView():
     
     _offers_rerender_on_save = False
     is_floatable_view = False
+    is_mpl_toolbar_enabled = False
 
     @property
     def data(self):
@@ -228,7 +231,7 @@ class QWebPageExtend(QWebPage):
         
 class TableView(QTableView):
     is_floatable_view = False
-
+    is_mpl_toolbar_enabled = False
 
 class WebView(QWebView, BaseView):
 
@@ -332,13 +335,33 @@ class WheezyView(WebView):
         self.setHtml(template.render( metadata ),QUrl("~")) 
 
 
+class MplNavigationHandler(NavigationToolbar2):
+    def _init_toolbar(self):
+        pass
+        
+    def draw_rubberband(self, event, x0, y0, x1, y1):
+        height = self.canvas.figure.bbox.height
+        y1 = height - y1
+        y0 = height - y0
+
+        w = abs(x1 - x0)
+        h = abs(y1 - y0)
+
+        rect = [int(val)for val in (min(x0, x1), min(y0, y1), w, h)]
+        self.canvas.drawRectangle(rect)
+        
+
+
 # Matplotlib-based views handler. Extend with render call for specific views (e.g. bar, scatter, heatmap)
 class MplView(FigureCanvas, BaseView):
 
     is_floatable_view = True
+    is_mpl_toolbar_enabled = True
 
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent, width=5, height=4, dpi=100, **kwargs):
+
+        self.v = parent
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.add_subplot(111)
@@ -356,6 +379,11 @@ class MplView(FigureCanvas, BaseView):
                                    QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+        
+        # Install navigation handler; we need to provide a Qt interface that can handle multiple 
+        # plots in a window under separate tabs
+        self.navigation = MplNavigationHandler( self )
+        self.navigation.zoom()
 
     def generate(self):
         pass

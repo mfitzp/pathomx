@@ -167,11 +167,11 @@ class NMRApp( ui.ImportDataApp ):
             data = ng.process.proc_bl.sol_boxcar(data, w=16, mode='same') # Solvent removal
             
             data = ng.proc_base.fft(data)               # Fourier transform
-            data = ng.proc_base.di(data)                # discard the imaginaries
-            data = ng.proc_base.rev(data)               # reverse the data
 
             data, pc = self.autophase( data, pc_init )  # Automatic phase correction
 
+            data = ng.proc_base.di(data)                # discard the imaginaries
+            data = ng.proc_base.rev(data)               # reverse the data
             
             #data = data / 10000000.
             return dic, data, pc

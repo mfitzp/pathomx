@@ -53,8 +53,6 @@ class PCAApp( ui.AnalysisApp ):
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         
-        self.addDataToolBar()
-        self.addFigureToolBar()
         
         self.views.addView(MplScatterView(self),'Scores')
         self.views.addView(MplSpectraView(self),'PC1')
@@ -62,7 +60,10 @@ class PCAApp( ui.AnalysisApp ):
         self.views.addView(MplSpectraView(self),'PC3')
         self.views.addView(MplSpectraView(self),'PC4')
         self.views.addView(MplSpectraView(self),'PC5')
-        
+
+        self.addDataToolBar()
+        self.addFigureToolBar()
+                
         self.data.add_input('input') # Add input slot
         
         self.data.add_output('scores')

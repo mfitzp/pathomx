@@ -27,6 +27,8 @@ from translate import tr
 
 
 from numpy import arange, sin, pi
+from matplotlib.backend_bases import NavigationToolbar2
+from backend_qt5agg import NavigationToolbar2QTAgg
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -84,6 +86,8 @@ class genericDialog(QDialog):
                     control.Deselect(idx)
         except:
             pass
+
+   
 
 class ExportImageDialog(genericDialog):
     
@@ -831,23 +835,13 @@ class GenericApp( QMainWindow ):
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
 
-        printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
-        printAction.setShortcut('Ctrl+P')
-        printAction.setStatusTip( tr('Print current figure') )
+        #printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
+        #printAction.setShortcut('Ctrl+P')
+        #printAction.setStatusTip( tr('Print current figure') )
         #printAction.triggered.connect(self.onPrint)
-        t.addAction(printAction)        
-                        
-        zoominAction = QAction(QIcon.fromTheme("zoom-in", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-in.png') )), tr('&Zoom in'), self)
-        zoominAction.setShortcut('Ctrl++')
-        zoominAction.setStatusTip( tr('Zoom in') )
-        #zoominAction.triggered.connect(self.onZoomIn)
-        t.addAction(zoominAction)
-
-        zoomoutAction = QAction(QIcon.fromTheme("zoom-out", QIcon( os.path.join( utils.scriptdir,'icons', 'zoom-out.png') )), tr('&Zoom out'), self)
-        zoomoutAction.setShortcut('Ctrl+-')
-        zoomoutAction.setStatusTip( tr('Zoom out') )
-        #zoomoutAction.triggered.connect(self.onZoomOut)
-        t.addAction(zoomoutAction)
+        #t.addAction(printAction)      
+        
+        self.addMplToolBarExtensions()  
 
 
     def addExternalDataToolbar(self):     
@@ -861,8 +855,63 @@ class GenericApp( QMainWindow ):
         t.addAction(watch_fileAction)
         self._autoload_source_files_on_change = False
 
+    def addMplToolBarExtensions(self):
+        if 'figure' in self.toolbars: # Never more than one
+            t = self.getCreatedToolbar( tr('Figure'),'figure')
 
+            toolitems = (
+                ('Home', 'Reset original view', 'home.png', 'home'),
+                ('Back', 'Back to  previous view','back.png', 'back'),
+                ('Forward', 'Forward to next view','forward.png', 'forward'),
+                ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png','pan'),
+                ('Zoom', 'Zoom to rectangle','zoom_to_rect.png', 'zoom'),
+            )  
+            
+            t._mpl_specific_actions = []
+            t._checkable_actions = {}
+            t.modeActionGroup = QActionGroup(t)
+            
+            for text, tooltip_text, image_file, callback in toolitems:
+                act = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', image_file ) ), text, self)
+
+                def make_callback(callback):
+                    return lambda e: self.dispatchMplEvent(e,callback)
+                act.triggered.connect( make_callback( callback ) ) 
+            
+                t._mpl_specific_actions.append(act)
+
+                if callback in ['zoom', 'pan']:
+                    act.setCheckable(True)
+                    t._checkable_actions[callback] = act
+                    act.setActionGroup( t.modeActionGroup )
+                    
+                if tooltip_text is not None:
+                    act.setToolTip(tooltip_text)
+
+                act.setEnabled(False) # Disable by default; nonstandard
+                t.addAction(act)
+            
+            self.views.currentChanged.connect( self.onMplToolBarCanvasChanged )
+            #self.addToolBar( t )
     
+    def dispatchMplEvent(self, e, callback):
+        selected_view = self.views.widget( self.views.currentIndex() )
+        if selected_view.is_mpl_toolbar_enabled:
+            getattr(selected_view.navigation, callback)(e)
+            
+    def onMplToolBarCanvasChanged(self, w):
+        selected_view = self.views.widget(w)
+        if selected_view.is_mpl_toolbar_enabled:
+            # Reset buttons to current view state for the selected tabs' Canvas
+            for c,m in [('zoom','ZOOM'),('pan','PAN')]:
+                self.toolbars['figure']._checkable_actions[c].setChecked( selected_view.navigation._active == m )
+                
+            for act in self.toolbars['figure']._mpl_specific_actions:
+                act.setEnabled(True)
+        else:
+            for act in self.toolbars['figure']._mpl_specific_actions:
+                act.setEnabled(False)
+                    
     def onWatchSourceDataToggle(self, checked):
         self._autoload_source_files_on_change = checked
 
@@ -939,6 +988,7 @@ class ImportDataApp( DataApp ):
         self.views.addTab(MplSpectraView(self), 'View')
         
         self.addImportDataToolbar()
+        self.addFigureToolBar()
         
         if filename:
             self.thread_load_datafile( filename )

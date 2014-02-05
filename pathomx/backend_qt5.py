@@ -333,7 +333,7 @@ class FigureCanvasQT(QtWidgets.QWidget, FigureCanvasBase):
             return None
 
         if event.key() < 256:
-            key = six.text_type(event.text())
+            key = str(event.text())
             # if the control key is being pressed, we don't get the correct
             # characters, so interpret them directly from the event.key().
             # Unfortunately, this means that we cannot handle key's case
@@ -537,6 +537,17 @@ class FigureManagerQT(FigureManagerBase):
 
 class NavigationToolbar2QT(QtWidgets.QToolBar, NavigationToolbar2):
     message = QtCore.pyqtSignal(str)
+    
+    toolitems = (
+        ('Home', 'Reset original view', 'home.png', 'home'),
+        ('Back', 'Back to  previous view','back.png', 'back'),
+        ('Forward', 'Forward to next view','forward.png', 'forward'),
+        ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png','pan'),
+        ('Zoom', 'Zoom to rectangle','zoom_to_rect.png', 'zoom'),
+        (None, None, None, None),
+        ('Subplots', 'Configure subplots','subplots.png', 'configure_subplots'),
+        ('Save', 'Save the figure','filesave.png', 'save_figure'),
+        )    
 
     def __init__(self, canvas, parent, coordinates=True):
         """ coordinates: should we show the coordinates on the right? """
@@ -544,7 +555,6 @@ class NavigationToolbar2QT(QtWidgets.QToolBar, NavigationToolbar2):
         self.coordinates = coordinates
         self._actions = {}
         """A mapping of toolitem method names to their QActions"""
-
         super(NavigationToolbar2QT, self).__init__(canvas=canvas, parent=parent)
 
     def _icon(self, name):
@@ -615,7 +625,7 @@ class NavigationToolbar2QT(QtWidgets.QToolBar, NavigationToolbar2):
                                                           titles,
                                                           0, False)
                 if ok:
-                    axes = allaxes[titles.index(six.text_type(item))]
+                    axes = allaxes[titles.index( str(item) ) ]
                 else:
                     return
 
@@ -679,7 +689,7 @@ class NavigationToolbar2QT(QtWidgets.QToolBar, NavigationToolbar2):
 
     def save_figure(self, *args):
         filetypes = self.canvas.get_supported_filetypes_grouped()
-        sorted_filetypes = list(six.iteritems(filetypes))
+        sorted_filetypes = list(filetypes.items())
         sorted_filetypes.sort()
         default_filetype = self.canvas.get_default_filetype()
 
@@ -704,9 +714,9 @@ class NavigationToolbar2QT(QtWidgets.QToolBar, NavigationToolbar2):
             else:
                 # save dir for next time
                 matplotlib.rcParams['savefig.directory'] = os.path.dirname(
-                    six.text_type(fname))
+                    str(fname) )
             try:
-                self.canvas.print_figure(six.text_type(fname))
+                self.canvas.print_figure(str(fname))
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     self, "Error saving file", str(e),
