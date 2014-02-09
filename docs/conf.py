@@ -35,6 +35,13 @@ class Mock(object):
 
 MOCK_MODULES = [
         'PyQt5',
+        'PyQt5.QtGui',
+        'PyQt5.QtCore',
+        'PyQt5.QtWebKit',
+        'PyQt5.QtNetwork',
+        'PyQt5.QtWidgets',
+        'PyQt5.QtWebKitWidgets',
+        'PyQt5.QtPrintSupport',
         'numpy',
         'scipy',
         'nmrglue',
