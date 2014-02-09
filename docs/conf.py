@@ -32,6 +32,9 @@ class Mock(object):
             return mockType
         else:
             return Mock()
+            
+    def __getitem__(self, key):
+        return None
 
 MOCK_MODULES = [
         'PyQt5',
