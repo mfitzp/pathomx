@@ -29,12 +29,11 @@ class Mock(object):
         elif name[0] == name[0].upper():
             mockType = type(name, (), {})
             mockType.__module__ = __name__
+            mockType.__getitem__ = lambda key: None
             return mockType
         else:
             return Mock()
             
-    def __getitem__(self, key):
-        return None
 
 MOCK_MODULES = [
         'PyQt5',
