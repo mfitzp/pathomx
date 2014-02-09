@@ -29,7 +29,7 @@ class Mock(object):
         elif name[0] == name[0].upper():
             mockType = type(name, (), {})
             mockType.__module__ = __name__
-            mockType.__getitem__ = lambda key: return '__mock_module_%s' % str(key) 
+            mockType.__getitem__ = lambda key: '__mock_module_%s' % str(key) 
             return mockType
         else:
             return Mock()
