@@ -27,14 +27,13 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = Mock(name, (), {})
+            mockType = type(name, (), {})
             mockType.__module__ = __name__
+            mockType.__getitem__ = lambda key: return '__mock_module_%s' % str(key) 
             return mockType
         else:
             return Mock()
-            
-    def __getitem__(self, key):
-        return '__mock_module_%s' % str(key)
+
 
 MOCK_MODULES = [
         'PyQt5',
