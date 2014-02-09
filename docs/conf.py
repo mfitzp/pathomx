@@ -34,7 +34,7 @@ class Mock(object):
             return Mock()
             
     def __getitem__(self, key):
-        return key
+        return '__mock_module_%s' % str(key)
 
 MOCK_MODULES = [
         'PyQt5',
