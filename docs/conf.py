@@ -34,10 +34,10 @@ class Mock(object):
             return Mock()
             
     def __getitem__(self, key):
-        return None
-            
+        return ''
 
 MOCK_MODULES = [
+        'PyQt5',
         'PyQt5.QtGui',
         'PyQt5.QtCore',
         'PyQt5.QtWebKit',
@@ -45,7 +45,6 @@ MOCK_MODULES = [
         'PyQt5.QtWidgets',
         'PyQt5.QtWebKitWidgets',
         'PyQt5.QtPrintSupport',
-        'PyQt5',
         'numpy',
         'scipy',
         'nmrglue',
