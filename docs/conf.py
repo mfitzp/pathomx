@@ -36,7 +36,6 @@ class Mock(object):
             
 
 MOCK_MODULES = [
-        'PyQt5',
         'PyQt5.QtGui',
         'PyQt5.QtCore',
         'PyQt5.QtWebKit',
