@@ -27,9 +27,8 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = type(name, (), {})
+            mockType = Mock(name, (), {})
             mockType.__module__ = __name__
-            mockType.__getitem__ = lambda key: None
             return mockType
         else:
             return Mock()
@@ -43,6 +42,7 @@ MOCK_MODULES = [
         'PyQt5.QtWidgets',
         'PyQt5.QtWebKitWidgets',
         'PyQt5.QtPrintSupport',
+        'PyQt5',
         'numpy',
         'scipy',
         'nmrglue',
