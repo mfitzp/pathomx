@@ -17,10 +17,7 @@ import os
 
 class MockType(object):
     def __init__(self, name, *args, **kwargs):
-        self.name = name
-    
-    def __name__(self):
-        return self.name
+        self.__name__ = name
 
     def __getitem__(self, key):
         return '__mock_module_%s' % str(key) 
