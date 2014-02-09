@@ -15,6 +15,16 @@
 import sys
 import os
 
+class MockType(object):
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
+    
+    def __str__(self):
+        return str(self.name)
+
+    def __getitem__(self, key):
+        return '__mock_module_%s' % str(key) 
+
 class Mock(object):
     def __init__(self, *args, **kwargs):
         pass
@@ -27,9 +37,8 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = type(name, (), {})
+            mockType = MockType(name)
             mockType.__module__ = __name__
-            mockType.__getitem__ = lambda key: '__mock_module_%s' % str(key) 
             return mockType
         else:
             return Mock()
