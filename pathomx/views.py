@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
+"""
+.. module:: views
+   :synopsis: Handler classes for displaying views and exporting images
+.. moduleauthor:: Martin Fitzpatrick <mfitzp@pathomx.org>
+"""
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -215,8 +221,9 @@ class RenderPageToFile(QWebPage):
 
 class QWebPageJSLog(QWebPage):
     """
-Makes it possible to use a Python logger to print javascript console messages
-"""
+    Redirects Javascript errors to the console (STDOUT) for debugging.
+    """
+
     def __init__(self, parent=None, **kwargs):
         super(QWebPageJSLog, self).__init__(parent, **kwargs)
 
@@ -230,10 +237,17 @@ class QWebPageExtend(QWebPage):
 
         
 class TableView(QTableView):
+    """
+    Modified QTableView with additional metadata for internal use.
+    """
     is_floatable_view = False
     is_mpl_toolbar_enabled = False
 
 class WebView(QWebView, BaseView):
+    """
+    Modified QWebView with internal navigation handling, loadfinished-resize triggers
+    for SVG, HTML, etc.
+    """
 
     def __init__(self, parent, **kwargs):
         super(WebView, self).__init__(None, **kwargs)        
@@ -289,6 +303,11 @@ class WebView(QWebView, BaseView):
 
 class D3View(WebView):
 
+    """
+    Modified QWebView (via WebView) with d3 generated SVG image saving handler.
+    Use this as a basis for any custom d3-based rendering views.
+    """
+
     d3_template = 'd3/figure.svg'
     _offers_rerender_on_save = True
 
@@ -310,7 +329,9 @@ class D3View(WebView):
 
 
 class HTMLView(WebView):
-
+    """
+    Convenience wrapper for WebView for HTML viewing.
+    """
     def __init__(self, parent, html=None, **kwargs):
         super(HTMLView, self).__init__(parent, **kwargs)        
         if html:
@@ -320,6 +341,10 @@ class HTMLView(WebView):
         self.setHtml(html, QUrl('file:///')) 
         
 class StaticHTMLView(HTMLView):
+    """
+    Convenience wrapper for WebView for HTML viewing of non-dynamic content.
+    This is used for tool help files which do not need to refresh on data update.
+    """
     autogenerate = False
 
 
