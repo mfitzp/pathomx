@@ -31,6 +31,7 @@ class Mock(object):
         elif name[0] == name[0].upper():
             mockType = type(name, (), {})
             mockType.__module__ = __name__
+            mockType.__all__ = []        
             return mockType
         else:
             return Mock()
