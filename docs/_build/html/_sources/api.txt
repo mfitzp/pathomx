@@ -7,7 +7,5 @@ API Reference
    
    views
    threads
-
-.. automodule:: threads
-   :members:
+   plugins
 

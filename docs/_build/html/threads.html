@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Pathomx 2.2.0 documentation" href="index.html" />
     <link rel="up" title="API Reference" href="api.html" />
+    <link rel="next" title="Plugins" href="plugins.html" />
     <link rel="prev" title="Views" href="views.html" /> 
   </head>
   <body>
@@ -37,6 +38,9 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="views.html" title="Views"
              accesskey="P">previous</a> |</li>
@@ -52,6 +56,30 @@
             
   <div class="section" id="module-threads">
 <span id="threads"></span><h1>Threads<a class="headerlink" href="#module-threads" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="threads.Worker">
+<em class="property">class </em><tt class="descclassname">threads.</tt><tt class="descname">Worker</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#threads.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Worker thread</p>
+<p>Inherits from QRunnable to handler worker thread setup, signals and wrap-up.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="threads.WorkerSignals">
+<em class="property">class </em><tt class="descclassname">threads.</tt><tt class="descname">WorkerSignals</tt><a class="headerlink" href="#threads.WorkerSignals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the signals available from a running worker thread.</p>
+<p>Supported signals are:</p>
+<dl class="docutils">
+<dt>finished</dt>
+<dd>No data</dd>
+<dt>error</dt>
+<dd><cite>tuple</cite> (exctype, value, traceback.format_exc() )</dd>
+<dt>result</dt>
+<dd><cite>dict</cite> data returned from processing</dd>
+<dt>status</dt>
+<dd><cite>str</cite> one of standard status flag message types</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -63,6 +91,9 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="views.html"
                         title="previous chapter">Views</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plugins.html"
+                        title="next chapter">Plugins</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/threads.txt"
@@ -94,6 +125,9 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             >next</a> |</li>
         <li class="right" >
           <a href="views.html" title="Views"
              >previous</a> |</li>

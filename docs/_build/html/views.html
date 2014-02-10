@@ -89,6 +89,50 @@ This is used for tool help files which do not need to refresh on data update.</p
 </dd></dl>
 
 <dl class="class">
+<dt id="views.ViewManager">
+<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">ViewManager</tt><big>(</big><em>parent</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manager class for the tool views.</p>
+<p>Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
+is overridden to wrap addView. All other QTabWidget methods and attributes are available.</p>
+<dl class="method">
+<dt id="views.ViewManager.addTab">
+<tt class="descname">addTab</tt><big>(</big><em>widget</em>, <em>name</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager.addTab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overridden to redirect addTab calls to addView method. Do not use.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="views.ViewManager.addView">
+<tt class="descname">addView</tt><big>(</big><em>widget</em>, <em>name</em>, <em>focused=True</em>, <em>unfocus_on_refresh=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager.addView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a view to this view manager.</p>
+<p>Adds the specified widget to the ViewManager under a named tab.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>widget</strong> (<em>object inherited from QWidget or views.BaseView</em>) &#8211; The widget to add as a view.</li>
+<li><strong>name</strong> (<em>str</em>) &#8211; The name of the widget, will be shown on the tab and used as a data-redirector selector.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int tab/view index</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="views.ViewManager.autoSelect">
+<tt class="descname">autoSelect</tt><big>(</big><big>)</big><a class="headerlink" href="#views.ViewManager.autoSelect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Autoselect one of the current views.</p>
+<p>Iterates through all current views and selects the first that is not flagged <cite>_unfocus_on_refresh</cite>. 
+This is used primarily to unfocus the help tabs following successful data calculation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="views.WebView">
 <em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">WebView</tt><big>(</big><em>parent</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.WebView" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modified QWebView with internal navigation handling, loadfinished-resize triggers

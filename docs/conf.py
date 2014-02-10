@@ -15,57 +15,12 @@
 import sys
 import os
 
-class MockType(type):
-
-    getSaveFileName = None
-    SizeAllCursor = None
-    PointingHandCursor = None
-    ArrowCursor = None
-    CrossCursor = None
-
-    Key_Control = 'control'
-    Key_Shift = 'shift'
-    Key_Alt = 'alt'
-    Key_Meta = 'super'
-    Key_Return = 'enter'
-    Key_Left = 'left'
-    Key_Up = 'up'
-    Key_Right = 'right'
-    Key_Down = 'down'
-    Key_Escape = 'escape'
-    Key_F1 = 'f1'
-    Key_F2 = 'f2'
-    Key_F3 = 'f3'
-    Key_F4 = 'f4'
-    Key_F5 = 'f5'
-    Key_F6 = 'f6'
-    Key_F7 = 'f7'
-    Key_F8 = 'f8'
-    Key_F9 = 'f9'
-    Key_F10 = 'f10'
-    Key_F11 = 'f11'
-    Key_F12 = 'f12'
-    Key_Home = 'home'
-    Key_End = 'end'
-    Key_PageUp = 'pageup'
-    Key_PageDown = 'pagedown'
-
-    MetaModifier = None
-    AltModifier = None
-    ControlModifier = None
-    LeftButton = None
-    RightButton = None
-    MidButton = None
-    
-    start_event_loop_default = None
-    stop_event_loop_default = None
-
 class Mock(object):
     __all__ = [
         'QAbstractOpenGLFunctions', 'QAbstractTextDocumentLayout', 'QActionEvent', 'QBackingStore', 'QBitmap', 'QBrush', 'QClipboard', 'QCloseEvent', 'QColor', 'QConicalGradient', 'QContextMenuEvent', 'QCursor', 'QDesktopServices', 'QDoubleValidator', 'QDrag', 'QDragEnterEvent', 'QDragLeaveEvent', 'QDragMoveEvent', 'QDropEvent', 'QEnterEvent', 'QExposeEvent', 'QFileOpenEvent', 'QFocusEvent', 'QFont', 'QFontDatabase', 'QFontInfo', 'QFontMetrics', 'QFontMetricsF', 'QGlyphRun', 'QGradient', 'QGuiApplication', 'QHelpEvent', 'QHideEvent', 'QHoverEvent', 'QIcon', 'QIconDragEvent', 'QIconEngine', 'QImage', 'QImageIOHandler', 'QImageReader', 'QImageWriter', 'QInputEvent', 'QInputMethod', 'QInputMethodEvent', 'QInputMethodQueryEvent', 'QIntValidator', 'QKeyEvent', 'QKeySequence', 'QLinearGradient', 'QMatrix2x2', 'QMatrix2x3', 'QMatrix2x4', 'QMatrix3x2', 'QMatrix3x3', 'QMatrix3x4', 'QMatrix4x2', 'QMatrix4x3', 'QMatrix4x4', 'QMouseEvent', 'QMoveEvent', 'QMovie', 'QOffscreenSurface', 'QOpenGLBuffer', 'QOpenGLContext', 'QOpenGLContextGroup', 'QOpenGLDebugLogger', 'QOpenGLDebugMessage', 'QOpenGLFramebufferObject', 'QOpenGLFramebufferObjectFormat', 'QOpenGLPaintDevice', 'QOpenGLShader', 'QOpenGLShaderProgram', 'QOpenGLTimeMonitor', 'QOpenGLTimerQuery', 'QOpenGLVersionProfile', 'QOpenGLVertexArrayObject', 'QPagedPaintDevice', 'QPaintDevice', 'QPaintEngine', 'QPaintEngineState', 'QPaintEvent', 'QPainter', 'QPainterPath', 'QPainterPathStroker', 'QPalette', 'QPdfWriter', 'QPen', 'QPicture', 'QPictureIO', 'QPixmap', 'QPixmapCache', 'QPolygon', 'QPolygonF', 'QQuaternion', 'QRadialGradient', 'QRawFont', 'QRegExpValidator', 'QRegion', 'QRegularExpressionValidator', 'QResizeEvent', 'QScreen', 'QScrollEvent', 'QScrollPrepareEvent', 'QSessionManager', 'QShortcutEvent', 'QShowEvent', 'QStandardItem', 'QStandardItemModel', 'QStaticText', 'QStatusTipEvent', 'QStyleHints', 'QSurface', 'QSurfaceFormat', 'QSyntaxHighlighter', 'QTabletEvent', 'QTextBlock', 'QTextBlockFormat', 'QTextBlockGroup', 'QTextBlockUserData', 'QTextCharFormat', 'QTextCursor', 'QTextDocument', 'QTextDocumentFragment', 'QTextDocumentWriter', 'QTextFormat', 'QTextFragment', 'QTextFrame', 'QTextFrameFormat', 'QTextImageFormat', 'QTextInlineObject', 'QTextItem', 'QTextLayout', 'QTextLength', 'QTextLine', 'QTextList', 'QTextListFormat', 'QTextObject', 'QTextObjectInterface', 'QTextOption', 'QTextTable', 'QTextTableCell', 'QTextTableCellFormat', 'QTextTableFormat', 'QTouchDevice', 'QTouchEvent', 'QTransform', 'QValidator', 'QVector2D', 'QVector3D', 'QVector4D', 'QWhatsThisClickedEvent', 'QWheelEvent', 'QWindow', 'QWindowStateChangeEvent', 'qAlpha', 'qBlue', 'qFuzzyCompare', 'qGray', 'qGreen', 'qIsGray', 'qRed', 'qRgb', 'qRgba',
         'QAbstractButton', 'QAbstractGraphicsShapeItem', 'QAbstractItemDelegate', 'QAbstractItemView', 'QAbstractScrollArea', 'QAbstractSlider', 'QAbstractSpinBox', 'QAction', 'QActionGroup', 'QApplication', 'QBoxLayout', 'QButtonGroup', 'QCalendarWidget', 'QCheckBox', 'QColorDialog', 'QColumnView', 'QComboBox', 'QCommandLinkButton', 'QCommonStyle', 'QCompleter', 'QDataWidgetMapper', 'QDateEdit', 'QDateTimeEdit', 'QDesktopWidget', 'QDial', 'QDialog', 'QDialogButtonBox', 'QDirModel', 'QDockWidget', 'QDoubleSpinBox', 'QErrorMessage', 'QFileDialog', 'QFileIconProvider', 'QFileSystemModel', 'QFocusFrame', 'QFontComboBox', 'QFontDialog', 'QFormLayout', 'QFrame', 'QGesture', 'QGestureEvent', 'QGestureRecognizer', 'QGraphicsAnchor', 'QGraphicsAnchorLayout', 'QGraphicsBlurEffect', 'QGraphicsColorizeEffect', 'QGraphicsDropShadowEffect', 'QGraphicsEffect', 'QGraphicsEllipseItem', 'QGraphicsGridLayout', 'QGraphicsItem', 'QGraphicsItemGroup', 'QGraphicsLayout', 'QGraphicsLayoutItem', 'QGraphicsLineItem', 'QGraphicsLinearLayout', 'QGraphicsObject', 'QGraphicsOpacityEffect', 'QGraphicsPathItem', 'QGraphicsPixmapItem', 'QGraphicsPolygonItem', 'QGraphicsProxyWidget', 'QGraphicsRectItem', 'QGraphicsRotation', 'QGraphicsScale', 'QGraphicsScene', 'QGraphicsSceneContextMenuEvent', 'QGraphicsSceneDragDropEvent', 'QGraphicsSceneEvent', 'QGraphicsSceneHelpEvent', 'QGraphicsSceneHoverEvent', 'QGraphicsSceneMouseEvent', 'QGraphicsSceneMoveEvent', 'QGraphicsSceneResizeEvent', 'QGraphicsSceneWheelEvent', 'QGraphicsSimpleTextItem', 'QGraphicsTextItem', 'QGraphicsTransform', 'QGraphicsView', 'QGraphicsWidget', 'QGridLayout', 'QGroupBox', 'QHBoxLayout', 'QHeaderView', 'QInputDialog', 'QItemDelegate', 'QItemEditorCreatorBase', 'QItemEditorFactory', 'QKeyEventTransition', 'QLCDNumber', 'QLabel', 'QLayout', 'QLayoutItem', 'QLineEdit', 'QListView', 'QListWidget', 'QListWidgetItem', 'QMainWindow', 'QMdiArea', 'QMdiSubWindow', 'QMenu', 'QMenuBar', 'QMessageBox', 'QMouseEventTransition', 'QPanGesture', 'QPinchGesture', 'QPlainTextDocumentLayout', 'QPlainTextEdit', 'QProgressBar', 'QProgressDialog', 'QPushButton', 'QRadioButton', 'QRubberBand', 'QScrollArea', 'QScrollBar', 'QScroller', 'QScrollerProperties', 'QShortcut', 'QSizeGrip', 'QSizePolicy', 'QSlider', 'QSpacerItem', 'QSpinBox', 'QSplashScreen', 'QSplitter', 'QSplitterHandle', 'QStackedLayout', 'QStackedWidget', 'QStatusBar', 'QStyle', 'QStyleFactory', 'QStyleHintReturn', 'QStyleHintReturnMask', 'QStyleHintReturnVariant', 'QStyleOption', 'QStyleOptionButton', 'QStyleOptionComboBox', 'QStyleOptionComplex', 'QStyleOptionDockWidget', 'QStyleOptionFocusRect', 'QStyleOptionFrame', 'QStyleOptionGraphicsItem', 'QStyleOptionGroupBox', 'QStyleOptionHeader', 'QStyleOptionMenuItem', 'QStyleOptionProgressBar', 'QStyleOptionRubberBand', 'QStyleOptionSizeGrip', 'QStyleOptionSlider', 'QStyleOptionSpinBox', 'QStyleOptionTab', 'QStyleOptionTabBarBase', 'QStyleOptionTabWidgetFrame', 'QStyleOptionTitleBar', 'QStyleOptionToolBar', 'QStyleOptionToolBox', 'QStyleOptionToolButton', 'QStyleOptionViewItem', 'QStylePainter', 'QStyledItemDelegate', 'QSwipeGesture', 'QSystemTrayIcon', 'QTabBar', 'QTabWidget', 'QTableView', 'QTableWidget', 'QTableWidgetItem', 'QTableWidgetSelectionRange', 'QTapAndHoldGesture', 'QTapGesture', 'QTextBrowser', 'QTextEdit', 'QTimeEdit', 'QToolBar', 'QToolBox', 'QToolButton', 'QToolTip', 'QTreeView', 'QTreeWidget', 'QTreeWidgetItem', 'QTreeWidgetItemIterator', 'QUndoCommand', 'QUndoGroup', 'QUndoStack', 'QUndoView', 'QVBoxLayout', 'QWhatsThis', 'QWidget', 'QWidgetAction', 'QWidgetItem', 'QWizard', 'QWizardPage', 'qApp', 'qDrawBorderPixmap', 'qDrawPlainRect', 'qDrawShadeLine', 'qDrawShadePanel', 'qDrawShadeRect', 'qDrawWinButton', 'qDrawWinPanel',
         'QAbstractAnimation', 'QAbstractEventDispatcher', 'QAbstractItemModel', 'QAbstractListModel', 'QAbstractNativeEventFilter', 'QAbstractProxyModel', 'QAbstractState', 'QAbstractTableModel', 'QAbstractTransition', 'QAnimationGroup', 'QBasicTimer', 'QBitArray', 'QBuffer', 'QByteArray', 'QByteArrayMatcher', 'QChildEvent', 'QCoreApplication', 'QCryptographicHash', 'QDataStream', 'QDate', 'QDateTime', 'QDir', 'QDirIterator', 'QDynamicPropertyChangeEvent', 'QEasingCurve', 'QElapsedTimer', 'QEvent', 'QEventLoop', 'QEventLoopLocker', 'QEventTransition', 'QFile', 'QFileDevice', 'QFileInfo', 'QFileSystemWatcher', 'QFinalState', 'QGenericArgument', 'QGenericReturnArgument', 'QHistoryState', 'QIODevice', 'QIdentityProxyModel', 'QItemSelection', 'QItemSelectionModel', 'QItemSelectionRange', 'QLibrary', 'QLibraryInfo', 'QLine', 'QLineF', 'QLocale', 'QLockFile', 'QMargins', 'QMessageAuthenticationCode', 'QMessageLogContext', 'QMessageLogger', 'QMetaClassInfo', 'QMetaEnum', 'QMetaMethod', 'QMetaObject', 'QMetaProperty', 'QMetaType', 'QMimeData', 'QMimeDatabase', 'QMimeType', 'QModelIndex', 'QMutex', 'QMutexLocker', 'QObject', 'QObjectCleanupHandler', 'QParallelAnimationGroup', 'QPauseAnimation', 'QPersistentModelIndex', 'QPluginLoader', 'QPoint', 'QPointF', 'QProcess', 'QProcessEnvironment', 'QPropertyAnimation', 'QReadLocker', 'QReadWriteLock', 'QRect', 'QRectF', 'QRegExp', 'QRegularExpression', 'QRegularExpressionMatch', 'QRegularExpressionMatchIterator', 'QResource', 'QRunnable', 'QSaveFile', 'QSemaphore', 'QSequentialAnimationGroup', 'QSettings', 'QSharedMemory', 'QSignalMapper', 'QSignalTransition', 'QSize', 'QSizeF', 'QSocketNotifier', 'QSortFilterProxyModel', 'QStandardPaths', 'QState', 'QStateMachine', 'QStringListModel', 'QSysInfo', 'QSystemSemaphore', 'QT_TRANSLATE_NOOP', 'QT_TR_NOOP', 'QT_TR_NOOP_UTF8', 'QT_VERSION', 'QT_VERSION_STR', 'QTemporaryDir', 'QTemporaryFile', 'QTextBoundaryFinder', 'QTextCodec', 'QTextDecoder', 'QTextEncoder', 'QTextStream', 'QTextStreamManipulator', 'QThread', 'QThreadPool', 'QTime', 'QTimeLine', 'QTimer', 'QTimerEvent', 'QTranslator', 'QUrl', 'QUrlQuery', 'QUuid', 'QVariant', 'QVariantAnimation', 'QWaitCondition', 'QWriteLocker', 'QXmlStreamAttribute', 'QXmlStreamAttributes', 'QXmlStreamEntityDeclaration', 'QXmlStreamEntityResolver', 'QXmlStreamNamespaceDeclaration', 'QXmlStreamNotationDeclaration', 'QXmlStreamReader', 'QXmlStreamWriter', 'Q_ARG', 'Q_CLASSINFO', 'Q_ENUMS', 'Q_FLAGS', 'Q_RETURN_ARG', 'Qt', 'QtCriticalMsg', 'QtDebugMsg', 'QtFatalMsg', 'QtMsgType', 'QtSystemMsg', 'QtWarningMsg','pyqtBoundSignal', 'pyqtPickleProtocol', 'pyqtProperty', 'pyqtRemoveInputHook', 'pyqtRestoreInputHook', 'pyqtSetPickleProtocol', 'pyqtSignal', 'pyqtSlot', 'pyqtWrapperType', 'qAbs', 'qAddPostRoutine', 'qAddPreRoutine', 'qChecksum', 'qCompress', 'qCritical', 'qDebug', 'qErrnoWarning', 'qFatal', 'qFuzzyCompare', 'qInf', 'qInstallMessageHandler', 'qIsFinite', 'qIsInf', 'qIsNaN', 'qIsNull', 'qQNaN', 'qRegisterResourceData', 'qRemovePostRoutine', 'qRound', 'qRound64', 'qSNaN', 'qSetFieldWidth', 'qSetMessagePattern', 'qSetPadChar', 'qSetRealNumberPrecision', 'qSharedBuild', 'qUncompress', 'qUnregisterResourceData', 'qVersion', 'qWarning', 'qrand', 'qsrand', 'reset', 'right', 'scientific', 'showbase', 'uppercasebase', 'uppercasedigits', 'ws',
-        'Figure', 'QFileDialog', 'QWebPage', 'QWebView',
+        'Figure', 'QFileDialog', 'QWebPage', 'QWebView', 'IPlugin',
     ]
 
     def __init__(self, *args, **kwargs):
@@ -73,16 +28,14 @@ class Mock(object):
 
     def __call__(self, *args, **kwargs):
         return Mock()
+
+    def __add__(self, *args):
+        pass
   
     @classmethod
     def __getattr__(cls, name):
         if name in ('__file__', '__path__'):
             return '/dev/null'
-        elif name[0] == name[0].upper():
-            mockType = MockType(name, (), {})
-            mockType.__module__ = __name__
-            mockType.__all__ = [] 
-            return mockType
         else:
             return Mock()
 
@@ -115,7 +68,16 @@ MOCK_MODULES = [
         'matplotlib.cbook',
         'matplotlib.colors',
         'matplotlib.cm',
-        'dateutil']
+        'dateutil',
+        'yapsy',
+        'yapsy.IPlugin',
+        'yapsy.PluginManager',
+        'wheezy.template.engine',
+        'wheezy.template.ext',
+        'wheezy.template.ext.core',
+        'wheezy.template.ext.code',
+        'wheezy.template.loader',
+        ]
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
