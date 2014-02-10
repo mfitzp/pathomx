@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-"""
-.. module:: views
-   :synopsis: Handler classes for displaying views and exporting images
-.. moduleauthor:: Martin Fitzpatrick <mfitzp@pathomx.org>
-"""
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
