@@ -11,14 +11,13 @@ import matplotlib
 from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from backend_qt5 import QtCore
-from backend_qt5 import QtGui
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from backend_qt5 import FigureManagerQT
 from backend_qt5 import FigureCanvasQT
 from backend_qt5 import NavigationToolbar2QT
 from backend_qt5 import show
 from backend_qt5 import draw_if_interactive
-from backend_qt5 import backend_version
 
 DEBUG = False
 
@@ -79,7 +78,7 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
         self.drawRect = False
         self.rect = []
         self.blitbox = None
-        self.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
+        self.setAttribute(Qt.WA_OpaquePaintEvent)
 
     def drawRectangle(self, rect):
         self.rect = rect
@@ -103,22 +102,22 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
             # into argb format and is in a 4 byte unsigned int.  Little endian
             # system is LSB first and expects the bytes in reverse order
             # (bgra).
-            if QtCore.QSysInfo.ByteOrder == QtCore.QSysInfo.LittleEndian:
+            if QSysInfo.ByteOrder == QSysInfo.LittleEndian:
                 stringBuffer = self.renderer._renderer.tostring_bgra()
             else:
                 stringBuffer = self.renderer._renderer.tostring_argb()
 
             refcnt = sys.getrefcount(stringBuffer)
 
-            qImage = QtGui.QImage(stringBuffer, self.renderer.width,
+            qImage = QImage(stringBuffer, self.renderer.width,
                                   self.renderer.height,
-                                  QtGui.QImage.Format_ARGB32)
-            p = QtGui.QPainter(self)
-            p.drawPixmap(QtCore.QPoint(0, 0), QtGui.QPixmap.fromImage(qImage))
+                                  QImage.Format_ARGB32)
+            p = QPainter(self)
+            p.drawPixmap(QPoint(0, 0), QPixmap.fromImage(qImage))
 
             # draw the zoom rectangle to the QPainter
             if self.drawRect:
-                p.setPen(QtGui.QPen(QtCore.Qt.black, 1, QtCore.Qt.DotLine))
+                p.setPen(QPen(Qt.black, 1, Qt.DotLine))
                 p.drawRect(self.rect[0], self.rect[1],
                            self.rect[2], self.rect[3])
             p.end()
@@ -138,11 +137,11 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
             t = int(b) + h
             reg = self.copy_from_bbox(bbox)
             stringBuffer = reg.to_string_argb()
-            qImage = QtGui.QImage(stringBuffer, w, h,
-                                  QtGui.QImage.Format_ARGB32)
-            pixmap = QtGui.QPixmap.fromImage(qImage)
-            p = QtGui.QPainter(self)
-            p.drawPixmap(QtCore.QPoint(l, self.renderer.height-t), pixmap)
+            qImage = QImage(stringBuffer, w, h,
+                                  QImage.Format_ARGB32)
+            pixmap = QPixmap.fromImage(qImage)
+            p = QPainter(self)
+            p.drawPixmap(QPoint(l, self.renderer.height-t), pixmap)
             p.end()
             self.blitbox = None
         self.drawRect = False

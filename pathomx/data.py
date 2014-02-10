@@ -5,11 +5,7 @@
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-#from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
 from PyQt5.QtWidgets import *
-#from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
 
 import os, sys, re, base64
 import numpy as np
