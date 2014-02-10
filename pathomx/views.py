@@ -101,12 +101,11 @@ class ViewManager( QTabWidget ):
 
         Adds the specified widget to the ViewManager under a named tab.
 
-        :param widget: The widget to add as a view. This should probably be inherited from BaseView.
-        :type widget: Widget inhereted from QWidget or BaseView
+        :param widget: The widget to add as a view.
+        :type widget: object inherited from QWidget or views.BaseView
         :param name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
         :type name: str
-        :rtype: int tab/view index
-                    
+        :rtype: int tab/view index     
         '''
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
@@ -136,6 +135,12 @@ class ViewManager( QTabWidget ):
         self.addView(widget, name, **kwargs)
     
     def autoSelect(self):
+        '''
+        Autoselect one of the current views.
+
+        Iterates through all current views and selects the first that is not flagged `_unfocus_on_refresh`. 
+        This is used primarily to unfocus the help tabs following successful data calculation.
+        '''    
         if self._unfocus_tabs_enabled:
             cw = self.currentWidget()
             if cw._unfocus_on_refresh:
