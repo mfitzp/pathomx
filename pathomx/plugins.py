@@ -309,7 +309,14 @@ class dialogPluginManagement(ui.genericDialog):
 
 
 class BasePlugin(IPlugin):
+    '''
+    Base plugin class.
 
+    This base plugin class provides all setup and handling functions for all plugin types.
+    Sub-classes simply override the default workspace category for each.
+    
+    '''
+        
     def __init__(self, **kwargs):
         super(BasePlugin, self).__init__()
 
