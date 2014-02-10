@@ -6,8 +6,11 @@ from __future__ import unicode_literals
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-def tr(*args, **kwargs):
-    return QCoreApplication.translate('@default',*args, **kwargs)
+def tr(s, *args, **kwargs):
+    try:
+        return QCoreApplication.translate('@default', s, *args, **kwargs)
+    except:
+        return s
     
 #Workspace    
 #tr("Home")

@@ -15,6 +15,58 @@
 import sys
 import os
 
+class MockType(type):
+
+    def __init__(self, *args, **kwargs):
+        super(MockType, self).__init__(*args)
+        
+    def __call__(self, *args, **kwargs):
+        return self
+        
+    getSaveFileName = None
+    SizeAllCursor = None
+    PointingHandCursor = None
+    ArrowCursor = None
+    CrossCursor = None
+
+    Key_Control = 'control'
+    Key_Shift = 'shift'
+    Key_Alt = 'alt'
+    Key_Meta = 'super'
+    Key_Return = 'enter'
+    Key_Left = 'left'
+    Key_Up = 'up'
+    Key_Right = 'right'
+    Key_Down = 'down'
+    Key_Escape = 'escape'
+    Key_F1 = 'f1'
+    Key_F2 = 'f2'
+    Key_F3 = 'f3'
+    Key_F4 = 'f4'
+    Key_F5 = 'f5'
+    Key_F6 = 'f6'
+    Key_F7 = 'f7'
+    Key_F8 = 'f8'
+    Key_F9 = 'f9'
+    Key_F10 = 'f10'
+    Key_F11 = 'f11'
+    Key_F12 = 'f12'
+    Key_Home = 'home'
+    Key_End = 'end'
+    Key_PageUp = 'pageup'
+    Key_PageDown = 'pagedown'
+
+    MetaModifier = None
+    AltModifier = None
+    ControlModifier = None
+    LeftButton = None
+    RightButton = None
+    MidButton = None
+    
+    start_event_loop_default = None
+    stop_event_loop_default = None
+    
+    
 class Mock(object):
     __all__ = [
         'QAbstractOpenGLFunctions', 'QAbstractTextDocumentLayout', 'QActionEvent', 'QBackingStore', 'QBitmap', 'QBrush', 'QClipboard', 'QCloseEvent', 'QColor', 'QConicalGradient', 'QContextMenuEvent', 'QCursor', 'QDesktopServices', 'QDoubleValidator', 'QDrag', 'QDragEnterEvent', 'QDragLeaveEvent', 'QDragMoveEvent', 'QDropEvent', 'QEnterEvent', 'QExposeEvent', 'QFileOpenEvent', 'QFocusEvent', 'QFont', 'QFontDatabase', 'QFontInfo', 'QFontMetrics', 'QFontMetricsF', 'QGlyphRun', 'QGradient', 'QGuiApplication', 'QHelpEvent', 'QHideEvent', 'QHoverEvent', 'QIcon', 'QIconDragEvent', 'QIconEngine', 'QImage', 'QImageIOHandler', 'QImageReader', 'QImageWriter', 'QInputEvent', 'QInputMethod', 'QInputMethodEvent', 'QInputMethodQueryEvent', 'QIntValidator', 'QKeyEvent', 'QKeySequence', 'QLinearGradient', 'QMatrix2x2', 'QMatrix2x3', 'QMatrix2x4', 'QMatrix3x2', 'QMatrix3x3', 'QMatrix3x4', 'QMatrix4x2', 'QMatrix4x3', 'QMatrix4x4', 'QMouseEvent', 'QMoveEvent', 'QMovie', 'QOffscreenSurface', 'QOpenGLBuffer', 'QOpenGLContext', 'QOpenGLContextGroup', 'QOpenGLDebugLogger', 'QOpenGLDebugMessage', 'QOpenGLFramebufferObject', 'QOpenGLFramebufferObjectFormat', 'QOpenGLPaintDevice', 'QOpenGLShader', 'QOpenGLShaderProgram', 'QOpenGLTimeMonitor', 'QOpenGLTimerQuery', 'QOpenGLVersionProfile', 'QOpenGLVertexArrayObject', 'QPagedPaintDevice', 'QPaintDevice', 'QPaintEngine', 'QPaintEngineState', 'QPaintEvent', 'QPainter', 'QPainterPath', 'QPainterPathStroker', 'QPalette', 'QPdfWriter', 'QPen', 'QPicture', 'QPictureIO', 'QPixmap', 'QPixmapCache', 'QPolygon', 'QPolygonF', 'QQuaternion', 'QRadialGradient', 'QRawFont', 'QRegExpValidator', 'QRegion', 'QRegularExpressionValidator', 'QResizeEvent', 'QScreen', 'QScrollEvent', 'QScrollPrepareEvent', 'QSessionManager', 'QShortcutEvent', 'QShowEvent', 'QStandardItem', 'QStandardItemModel', 'QStaticText', 'QStatusTipEvent', 'QStyleHints', 'QSurface', 'QSurfaceFormat', 'QSyntaxHighlighter', 'QTabletEvent', 'QTextBlock', 'QTextBlockFormat', 'QTextBlockGroup', 'QTextBlockUserData', 'QTextCharFormat', 'QTextCursor', 'QTextDocument', 'QTextDocumentFragment', 'QTextDocumentWriter', 'QTextFormat', 'QTextFragment', 'QTextFrame', 'QTextFrameFormat', 'QTextImageFormat', 'QTextInlineObject', 'QTextItem', 'QTextLayout', 'QTextLength', 'QTextLine', 'QTextList', 'QTextListFormat', 'QTextObject', 'QTextObjectInterface', 'QTextOption', 'QTextTable', 'QTextTableCell', 'QTextTableCellFormat', 'QTextTableFormat', 'QTouchDevice', 'QTouchEvent', 'QTransform', 'QValidator', 'QVector2D', 'QVector3D', 'QVector4D', 'QWhatsThisClickedEvent', 'QWheelEvent', 'QWindow', 'QWindowStateChangeEvent', 'qAlpha', 'qBlue', 'qFuzzyCompare', 'qGray', 'qGreen', 'qIsGray', 'qRed', 'qRgb', 'qRgba',
@@ -28,14 +80,16 @@ class Mock(object):
 
     def __call__(self, *args, **kwargs):
         return Mock()
-
-    def __add__(self, *args):
-        pass
   
     @classmethod
     def __getattr__(cls, name):
         if name in ('__file__', '__path__'):
             return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = MockType(name, (), {})
+            mockType.__module__ = __name__
+            mockType.__all__ = [] 
+            return mockType
         else:
             return Mock()
 
