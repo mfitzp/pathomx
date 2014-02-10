@@ -16,6 +16,8 @@ import sys
 import os
 
 class Mock(object):
+    __all__ = []        
+
     def __init__(self, *args, **kwargs):
         pass
 
