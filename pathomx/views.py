@@ -101,12 +101,11 @@ class ViewManager( QTabWidget ):
 
         Adds the specified widget to the ViewManager under a named tab.
 
-        Args:
-            widget: The widget to add as a view. This should be one of the specified view widget types
-            name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
-
-        Returns:
-            The tab object.
+        :param widget: The widget to add as a view. This should probably be inherited from BaseView.
+        :type widget: Widget inhereted from QWidget or BaseView
+        :param name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
+        :type name: str
+        :rtype: int tab/view index
                     
         '''
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
