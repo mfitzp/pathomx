@@ -13,14 +13,27 @@ from PyQt5.QtCore import Qt, QObject, QRunnable, pyqtSignal, pyqtSlot
 import sys,traceback
 
 class WorkerSignals(QObject):
-        
+    '''
+    Defines the signals available from a running worker thread.
+    
+    Supported signals are:
+    
+    finished
+    error 'tuple' (exctype, value, traceback.format_exc() )
+    result 'dict' data returned from processing
+    status 'str' one of standard status flag message types
+    '''        
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
     result = pyqtSignal(dict)
     status = pyqtSignal(str)
     
 class Worker(QRunnable):
+    '''
+    Worker thread
     
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+    '''          
     def __init__(self, callback, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
