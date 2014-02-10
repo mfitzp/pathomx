@@ -19,9 +19,17 @@ class WorkerSignals(QObject):
     Supported signals are:
     
     finished
-    error 'tuple' (exctype, value, traceback.format_exc() )
-    result 'dict' data returned from processing
-    status 'str' one of standard status flag message types
+        No data
+        
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
+        
+    result
+        `dict` data returned from processing
+        
+    status
+        `str` one of standard status flag message types
+        
     '''        
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
