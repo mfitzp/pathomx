@@ -126,6 +126,8 @@ MOCK_MODULES = [
         'yapsy',
         'yapsy.IPlugin',
         'yapsy.PluginManager',
+        'wheezy',
+        'wheezy.template',
         'wheezy.template.engine',
         'wheezy.template.ext',
         'wheezy.template.ext.core',
