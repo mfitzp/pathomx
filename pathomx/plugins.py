@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+.. module:: plugins
+   :synopsis: This module defines classes for loading and interacting with plugins and plugin base classes for default behaviours.
+.. moduleauthor:: Martin Fitzpatrick <mfitzp@pathomx.org>
+"""
+
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
