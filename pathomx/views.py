@@ -97,7 +97,17 @@ class ViewManager( QTabWidget ):
     # A few wrappers to 
     def addView(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
         '''
-        Add a view to this view manager, using view widget widget and name.        
+        Add a view to this view manager.
+
+        Adds the specified widget to the ViewManager under a named tab.
+
+        Args:
+            widget: The widget to add as a view. This should be one of the specified view widget types
+            name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
+
+        Returns:
+            The tab object.
+                    
         '''
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
