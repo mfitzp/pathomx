@@ -65,7 +65,13 @@ BLANK_DEFAULT_HTML = '''
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
 class ViewManager( QTabWidget ):
-
+    ''' 
+    Manager class for the tool views.
+    
+    Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
+    is overridden to wrap addView. All other QTabWidget methods and attributes are available.
+    
+    '''
     auto_unfocus_tabs = ['?']
     # Signals
     source_data_updated = pyqtSignal()
@@ -89,7 +95,10 @@ class ViewManager( QTabWidget ):
         self.source_data_updated.connect(self.onRefreshAll)
     
     # A few wrappers to 
-    def addView(self, widget, name, focused=True, unfocus_on_refresh=False, is_dynamic = True, **kwargs):
+    def addView(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
+        '''
+        Add a view to this view manager, using view widget widget and name.        
+        '''
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
@@ -112,6 +121,9 @@ class ViewManager( QTabWidget ):
                     self.setTabEnabled( w, True)
         
     def addTab(self, widget, name, **kwargs):
+        '''
+        Overridden to redirect addTab calls to addView method. Do not use.
+        '''
         self.addView(widget, name, **kwargs)
     
     def autoSelect(self):
