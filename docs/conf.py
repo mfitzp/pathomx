@@ -15,13 +15,6 @@
 import sys
 import os
 
-class MockType(object):
-    def __init__(self, name, *args, **kwargs):
-        self.__name__ = name
-
-    def __getitem__(self, key):
-        return '__mock_module_%s' % str(key) 
-
 class Mock(object):
     def __init__(self, *args, **kwargs):
         pass
@@ -34,7 +27,7 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = MockType(name)
+            mockType = type(name, (), {})
             mockType.__module__ = __name__
             return mockType
         else:
@@ -43,13 +36,13 @@ class Mock(object):
 
 MOCK_MODULES = [
         'PyQt5',
-        'PyQt5.QtGui',
-        'PyQt5.QtCore',
-        'PyQt5.QtWebKit',
-        'PyQt5.QtNetwork',
-        'PyQt5.QtWidgets',
-        'PyQt5.QtWebKitWidgets',
-        'PyQt5.QtPrintSupport',
+#        'PyQt5.QtGui',
+#        'PyQt5.QtCore',
+#        'PyQt5.QtWebKit',
+#        'PyQt5.QtNetwork',
+#        'PyQt5.QtWidgets',
+#        'PyQt5.QtWebKitWidgets',
+#        'PyQt5.QtPrintSupport',
         'numpy',
         'scipy',
         'nmrglue',
@@ -57,9 +50,9 @@ MOCK_MODULES = [
         'poster.encode',
         'wheezy.template',
         'sklearn',
-        'sklearn.decomposition',
+#        'sklearn.decomposition',
         'icoshift',
-        'nmrglue.fileio.fileiobase',
+#        'nmrglue.fileio.fileiobase',
         'matplotlib',
         'dateutil']
 
