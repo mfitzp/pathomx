@@ -25,13 +25,13 @@ from db import Compound, Gene, Protein
 
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
-METAPATH_MINING_TYPE_TEXT = (
-    'Compound change scores for pathway',
-    'Compound up-regulation scores for pathway', 
-    'Compound down-regulation scores for pathway',
-    'Number compounds with data per pathway',
-    'Pathway overall tendency',
-)
+METAPATH_MINING_TYPES = {
+    'c':'Compound change scores for pathway',
+    'u':'Compound up-regulation scores for pathway', 
+    'd':'Compound down-regulation scores for pathway',
+    'm':'Number compounds with data per pathway',
+    't':'Pathway overall tendency',
+}
 
 
 # Dialog box for Metabohunter search options
@@ -41,19 +41,18 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
         super(PathwayMiningConfigPanel, self).__init__(*args, **kwargs)        
         
         self.cb_miningType = QComboBox()
-        self.cb_miningType.addItems( METAPATH_MINING_TYPE_TEXT )
-        self.cb_miningType.setCurrentIndex( METAPATH_MINING_TYPE_CODE.index( self.config.get('/Data/MiningType') ) )
+        self.cb_miningType.addItems( METAPATH_MINING_TYPES.values() )
+        self.config.add_handler( '/Data/MiningType', self.cb_miningType, METAPATH_MINING_TYPES )
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size') 
-        self.xb_miningRelative.setChecked( bool(self.config.get('/Data/MiningRelative') ) )
+        self.config.add_handler( '/Data/MiningRelative', self.xb_miningRelative )
 
         self.xb_miningShared = QCheckBox('Share compound scores between pathways') 
-        self.xb_miningShared.setChecked( bool(self.config.get('/Data/MiningShared') ) )
-                        
+        self.config.add_handler( '/Data/MiningShared', self.xb_miningShared )
 
         self.sb_miningDepth = QSpinBox()
         self.sb_miningDepth.setMinimum(1)
-        self.sb_miningDepth.setValue( int( self.config.get('/Data/MiningDepth') ) )
+        self.config.add_handler( '/Data/MiningDepth', self.sb_miningDepth )
         
         self.layout.addWidget(self.cb_miningType)
         self.layout.addWidget(self.xb_miningRelative)
