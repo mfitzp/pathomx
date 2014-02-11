@@ -25,13 +25,13 @@ alongside to explore relationships between enzyme regulation and metabolic proce
 Use the built-in “Pathway Mining” tools to select the most up, down, or overall 
 regulated pathways in the given system to identify the key mechanisms at work.
 
-This is the home of both the user and developer documentation for Pathomx. It's a little
-bare at the moment, but we're working on getting the API documentation in place shortly.
-
-In the meantime, there are demos available on the Pathomx website `here <http://pathomx.org/demos>`_.
+Documentation is coming soon, in the meantime there are demos available on the Pathomx website `here <http://pathomx.org/demos>`_.
 
 Developers
 ==================
+
+Below is API documentation for core/plugin developers. This is a work in progress as 
+documentation is added to the source code. You can submit patches via github.
 
 .. toctree::
    :maxdepth: 2
