@@ -254,7 +254,7 @@ function corrmatrix(id, data){
         @endfor
         ];
 
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             corrmatrix(id, data);
         }        
 </script>

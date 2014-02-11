@@ -146,7 +146,7 @@ var svg = d3.select(id)
             @endfor
             ];
             
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             stacked_area(id, data); 
         }
     </script>

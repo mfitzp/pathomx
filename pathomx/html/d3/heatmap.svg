@@ -45,7 +45,7 @@
             @endfor
             ];
 
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             heatmap(id, buckets, "log2");
         }
     </script>

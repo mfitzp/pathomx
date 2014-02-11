@@ -48,7 +48,7 @@ svg {
         QtWebView.delegateLink(url);
     }
     /*
-    function _metapath_store_graph_dimensions(){
+    function _pathomx_store_graph_dimensions(){
         d = getElementSize('#graph');
         console.log(d)
         QWebView.storeGraphDimensions( d[0], d[1] );

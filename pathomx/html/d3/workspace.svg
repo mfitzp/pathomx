@@ -163,7 +163,7 @@ d3.selectAll('.node')
             .attr('class',function(d){ return 'node node-type-' + nodes[d].type; })        
             .attr('style','cursor:pointer;')
                 // Works but interface could use some improvement:
-                .on("click",function(d){ delegateLink('metapath://home/view/'+ d + '/view'); });
+                .on("click",function(d){ delegateLink('pathomx://home/view/'+ d + '/view'); });
 
         node.selectAll('.input')
             .data( interface_x_pos( nodes[d], nodes[d].inputs ) )
@@ -223,7 +223,7 @@ function dragend(d){
     t = d3.select(t)[0][0].__data__            // '.input:hover'
     // origin, target = d.interface, d.node; t[0].interface: t[0].node
 
-    delegateLink('metapath://home/view/' + d.node.id +':' + d.interface + ','+ t.node.id +':'+ t.interface + '/connect' );
+    delegateLink('pathomx://home/view/' + d.node.id +':' + d.interface + ','+ t.node.id +':'+ t.interface + '/connect' );
         
 }
 
@@ -266,7 +266,7 @@ function dragend(d){
                 },
             @endfor
             ];
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             workspace(objects, inheritance );
         }
         </script>

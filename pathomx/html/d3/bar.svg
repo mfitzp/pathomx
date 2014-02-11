@@ -201,7 +201,7 @@ function bar(id, data, y_axis_label) {
             @endfor
             ];
 
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             bar(id, data, "µM");
         }
     </script>

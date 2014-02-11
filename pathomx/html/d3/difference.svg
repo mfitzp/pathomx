@@ -213,7 +213,7 @@ var clip = svg.append("svg:clipPath")
                 },
             @endfor
             ];
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             difference(id, data );
             }
         </script>

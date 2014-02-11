@@ -71,7 +71,7 @@ circle {
 
           x_axis_label = "@figure['x_axis_label']!s"
           y_axis_label = "@figure['y_axis_label']!s"
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             scatter(id, data, regions, x_axis_label, y_axis_label);
         }
     </script>

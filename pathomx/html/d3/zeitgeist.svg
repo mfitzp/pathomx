@@ -137,7 +137,7 @@ var svg = d3.select(id)//.insert("svg",':first-child')
                 },
             @endfor
             ];
-        function _metapath_render_trigger(){
+        function _pathomx_render_trigger(){
             zeitgeist(id, data); 
         }
     </script>
