@@ -1,0 +1,5 @@
+Plugins
+*************
+
+.. automodule:: plugins
+   :members:
