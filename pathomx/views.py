@@ -147,7 +147,13 @@ class ViewManager( QTabWidget ):
                         break
          
 class BaseView():
-    
+    """
+    Base View prototype with stubs and data-handling functions that are generically useful.
+    Sub-class from this if you want to create a new type of view, e.g. supporting an alternative
+    graph rendering engine. If you just want to create a new graph-type you should sub-class
+    from one of the backend specific stubs, e.g. MplView or D3View.
+    """
+        
     _offers_rerender_on_save = False
     is_floatable_view = False
     is_mpl_toolbar_enabled = False
@@ -325,6 +331,7 @@ class D3View(WebView):
 
     """
     Modified QWebView (via WebView) with d3 generated SVG image saving handler.
+    
     Use this as a basis for any custom d3-based rendering views.
     """
 
@@ -363,6 +370,7 @@ class HTMLView(WebView):
 class StaticHTMLView(HTMLView):
     """
     Convenience wrapper for WebView for HTML viewing of non-dynamic content.
+    
     This is used for tool help files which do not need to refresh on data update.
     """
     autogenerate = False
@@ -399,7 +407,10 @@ class MplNavigationHandler(NavigationToolbar2):
 
 # Matplotlib-based views handler. Extend with render call for specific views (e.g. bar, scatter, heatmap)
 class MplView(FigureCanvas, BaseView):
-
+    """
+    Base class for matplotlib based views. This handles graph canvas setup, toolbar initialisation
+    and figure save options. Subclass for your own graph-specific views.
+    """
     is_floatable_view = True
     is_mpl_toolbar_enabled = True
 
@@ -568,7 +579,12 @@ class D3SpectraView(D3View):
         
 
 class MplSpectraView(MplView):
-
+    """
+    A matplotlib-based spectra-like lineplot viewer, particular suited to NMR-like spectra.
+    
+    To be extended/replaced to support more generic uses (and general line-chart plotting).
+    Plots different classes in the data as distinct lines (coloured).
+    """
     def __init__(self, parent, **kwargs):
         super(MplSpectraView, self).__init__(parent, **kwargs)        
         self.ax.invert_xaxis()
@@ -619,7 +635,12 @@ class MplSpectraView(MplView):
         
         
 class D3DifferenceView(D3View):
-
+    """
+    A matplotlib-based difference-lineplot viewer.
+    
+    Takes two inputs - line A and B and plots both, highlighting the regions where they differ.
+    """
+    
     d3_template = 'd3/difference.svg'
     
     def generate(self, dso_a, dso_b):
@@ -683,7 +704,11 @@ class D3LegacyView(D3View):
 
 
 class MplScatterView(MplView):
-
+    """
+    A matplotlib-based scatter plot.
+    
+    Plots classes on a unified X,Y scatter plot.
+    """
     def __init__(self, parent, **kwargs):
         super(MplScatterView, self).__init__(parent, **kwargs)        
 
@@ -947,6 +972,11 @@ class MplCategoryBarView(MplView):
         self.draw()
         
 class MplHeatmapView(MplView):
+    """
+    A matplotlib-based heatmap plotter.
+    
+    Plots heatmap data of measurements against class groupings.
+    """
 
     def __init__(self, parent, **kwargs):
         super(MplHeatmapView, self).__init__(parent, **kwargs)        
