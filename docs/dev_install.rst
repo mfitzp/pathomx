@@ -9,22 +9,22 @@ as these can be developed against the binary installation.
 Windows
 ==================
 
-Install Python 2.7.6 Windows installer from the _Python_download_site.
+Install Python 2.7.6 Windows installer from the `Python download site`_.
 
 You can get Windows binaries for all required Python libraries from `the Pythonlibs library`_. 
-At a minimum you will need to install _NumPy, _SciPy, _Scikit_Learn, _Matplotlib. Make sure that the installed
+At a minimum you will need to install NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_. Make sure that the installed
 binaries match the architecture (32bit/64bit) of the installed Python.
 
-For NMR data processing, you will need to install _NMRGlue binaries.
+For NMR data processing, you will need to install NMRGlue_ binaries.
 
-For the dynamic pathway drawing plugin MetaViz you will also need to install _Graphviz.
+For the dynamic pathway drawing plugin MetaViz you will also need to install Graphviz_.
 
 
 MacOS X
 ==================
 
 The simplest approach to setting up a development environment is through the 
-MacOS X package manager _Homebrew. It should be feasible to build all these tools from 
+MacOS X package manager Homebrew_. It should be feasible to build all these tools from 
 source, but I'd strongly suggest you save yourself the bother.
 
 Install Homebrew as follows:
@@ -35,11 +35,11 @@ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
 .. _NMRGlue: http://code.google.com/p/nmrglue/downloads/list?q=label:Type-Installer
 .. _Graphviz: http://graphviz.org/
-.. _Python_download_site: http://www.python.org/getit/
+.. _Python download site: http://www.python.org/getit/
 .. _the Pythonlibs library: http://www.lfd.uci.edu/~gohlke/pythonlibs/
 .. _NumPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
 .. _SciPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
-.. _Scikit_Learn: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn
+.. _Scikit-Learn: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn
 .. _Matplotlib: http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib
 
 .. _Homebrew: http://brew.sh/
