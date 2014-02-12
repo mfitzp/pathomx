@@ -7,7 +7,7 @@ as these can be developed against the binary installation.
 
 
 Windows
-==================
+=======
 
 Install Qt5_ (Qt5.2) for Windows. Make the decision at this point whether you're installing
 64bit or 32bit and stick to it.
@@ -24,7 +24,7 @@ For the dynamic pathway drawing plugin MetaViz you will also need to install Gra
 
 
 MacOS X
-==================
+=======
 
 The simplest approach to setting up a development environment is through the 
 MacOS X package manager Homebrew_. It should be feasible to build all these tools from 
@@ -44,6 +44,13 @@ pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift ma
 That should be enough to get Pathomx up and running from the command line. For development a
 useful tool to install is `Total Terminal`_, which gets you access to the command line
 via a hotkey.
+
+
+Linux
+=====
+
+Coming soon.
+
 
 .. _Qt5: https://qt-project.org/downloads
 
