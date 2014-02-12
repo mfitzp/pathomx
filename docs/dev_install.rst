@@ -11,7 +11,7 @@ Windows
 
 Install Python 2.7.6 Windows installer from the _Python_download_site.
 
-You can get Windows binaries for all required Python libraries from `the Pythonlibs library`_Pythonlibs. 
+You can get Windows binaries for all required Python libraries from `the Pythonlibs library`_. 
 At a minimum you will need to install _NumPy, _SciPy, _Scikit_Learn, _Matplotlib. Make sure that the installed
 binaries match the architecture (32bit/64bit) of the installed Python.
 
@@ -36,7 +36,7 @@ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 .. _NMRGlue: http://code.google.com/p/nmrglue/downloads/list?q=label:Type-Installer
 .. _Graphviz: http://graphviz.org/
 .. _Python_download_site: http://www.python.org/getit/
-.. _Pythonlibs: http://www.lfd.uci.edu/~gohlke/pythonlibs/
+.. _the Pythonlibs library: http://www.lfd.uci.edu/~gohlke/pythonlibs/
 .. _NumPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
 .. _SciPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 .. _Scikit_Learn: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn
