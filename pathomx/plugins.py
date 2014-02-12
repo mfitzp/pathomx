@@ -430,29 +430,50 @@ class BasePlugin(IPlugin):
             f.write(str(value))
 
 class ImportPlugin(BasePlugin):
+    '''
+    Import plugin.
+    '''
     default_workspace_category = 'Import'
     pass
 
 class ProcessingPlugin(BasePlugin):
+    '''
+    Processing plugin.
+    '''
     default_workspace_category = 'Processing'
     pass
 
 class IdentificationPlugin(BasePlugin):
+    '''
+    Identification plugin.
+    '''
     default_workspace_category = 'Identification'
     pass
 
 class AnalysisPlugin(BasePlugin):
+    '''
+    Analysis plugin.
+    '''
     default_workspace_category = 'Analysis'
     pass
 
 class VisualisationPlugin(BasePlugin):
+    '''
+    Visualisation plugin.
+    '''
     default_workspace_category = 'Visualisation'
     pass
 
 class ExportPlugin(BasePlugin):
+    '''
+    Export plugin.
+    '''
     default_workspace_category = 'Export'
     pass
 
 class MiscPlugin(BasePlugin):
+    '''
+    Misc plugin.
+    '''
     default_workspace_category = 'Misc'
     pass
