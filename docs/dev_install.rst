@@ -9,6 +9,9 @@ as these can be developed against the binary installation.
 Windows
 ==================
 
+Install Qt5_ (Qt5.2) for Windows. Make the decision at this point whether you're installing
+64bit or 32bit and stick to it.
+
 Install Python 2.7.6 Windows installer from the `Python download site`_.
 
 You can get Windows binaries for all required Python libraries from `the Pythonlibs library`_. 
@@ -41,6 +44,8 @@ pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift ma
 That should be enough to get Pathomx up and running from the command line. For development a
 useful tool to install is `Total Terminal`_, which gets you access to the command line
 via a hotkey.
+
+.. _Qt5: https://qt-project.org/downloads
 
 .. _NMRGlue: http://code.google.com/p/nmrglue/downloads/list?q=label:Type-Installer
 .. _Graphviz: http://graphviz.org/
