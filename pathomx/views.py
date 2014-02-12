@@ -35,6 +35,8 @@ from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
 import matplotlib.cm as cm
 
+#import seaborn
+
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
 
@@ -439,7 +441,7 @@ class MplView(FigureCanvas, BaseView):
         # Install navigation handler; we need to provide a Qt interface that can handle multiple 
         # plots in a window under separate tabs
         self.navigation = MplNavigationHandler( self )
-        self.navigation.zoom()
+        #self.navigation.zoom()
 
     def generate(self):
         pass
@@ -629,7 +631,6 @@ class MplSpectraView(MplView):
 
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')
-        print 'OK'
         self.draw()
                 
         

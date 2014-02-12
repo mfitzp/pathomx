@@ -35,7 +35,7 @@ documentation is added to the source code. You can submit patches via github.
 
 .. toctree::
    :maxdepth: 2
-   
+   dev_install
    api
 
 Indices and tables

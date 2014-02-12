@@ -29,7 +29,7 @@ class BinningConfigPanel(ui.ConfigPanel):
 
         self.binsize_spin = QDoubleSpinBox()
         self.binsize_spin.setDecimals(3)
-        self.binsize_spin.setRange(0.005,0.5)
+        self.binsize_spin.setRange(0.001,0.5)
         self.binsize_spin.setSuffix('ppm')
         self.binsize_spin.setSingleStep(0.005)
         tl = QLabel( self.tr('Bin width') )
