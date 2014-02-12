@@ -354,11 +354,13 @@ class BasePlugin(IPlugin):
             self.help_tab_html_filename = 'readme.html'
         else:
             self.help_tab_html_filename = None
-        
-        
+    
 
     @property
     def icon(self):
+        '''
+        Return the icon for this plugin.
+        '''    
         icon_path = os.path.join( self.path, 'icon.png' )
         if os.path.exists( icon_path ):
             return QIcon( icon_path )
@@ -367,6 +369,9 @@ class BasePlugin(IPlugin):
             
     @property
     def pixmap(self):
+        '''
+        Return a pixmap of the icon for this plugin.
+        '''    
         icon_path = os.path.join( self.path, 'icon.png' )
         if os.path.exists( icon_path ):
             return QPixmap( icon_path )
@@ -375,6 +380,9 @@ class BasePlugin(IPlugin):
 
     @property
     def workspace_icon(self):
+        '''
+        Return a small 16px icon for the workspace-list view.
+        '''    
         icon_path = os.path.join( self.path, 'icon-16.png' )
         if os.path.exists( icon_path ):
             return QIcon( icon_path )
