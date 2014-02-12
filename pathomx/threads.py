@@ -43,6 +43,7 @@ class Worker(QRunnable):
     :param kwargs: Keywords to pass to the callback function
 
     '''          
+    
     def __init__(self, callback, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -53,6 +54,10 @@ class Worker(QRunnable):
 
     @pyqtSlot()
     def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''    
+    
         # Retrieve args/kwargs here; and fire processing using them
         try:
             result = self.callback(*self.args, **self.kwargs)
