@@ -31,10 +31,10 @@ Install Homebrew as follows:
 
 ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
-Once that is in place use brew install to install python, PyQt5 (which will automatically install Qt5) and graphviz.
-
-Install pip for Python and add the packages numpy, scipy, pydot, nmrglue, gpml2svg, 
-poster, wheezy, sklearn, icoshift, matplotlib. This can be done in a one liner with pip:
+Once that is in place use brew install to install python, PyQt5 (which will 
+automatically install Qt5) and graphviz. Install pip for Python and add the packages 
+numpy, scipy, pydot, nmrglue, gpml2svg, poster, wheezy, sklearn, icoshift, matplotlib. 
+This can be done in a one liner with pip:
 
 pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
 
