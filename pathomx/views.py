@@ -714,6 +714,13 @@ class MplScatterView(MplView):
         super(MplScatterView, self).__init__(parent, **kwargs)        
 
     def generate(self, dso=None): #figure_data
+        """
+        Generate an XY scatter plot from source dataset object.
+
+        :param dso: The dataset object to plot consisting of two columns (X, Y) of data.
+                    Multiple classes of data can be supplied as indicated by the axis 0 class list.
+        :type dso: DataSet object
+        """
         self.ax.cla()
         sp = {}
         colors = self.ax._get_lines.color_cycle
