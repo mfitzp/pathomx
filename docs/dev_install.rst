@@ -1,5 +1,5 @@
 Developer Installation
-*************
+**********************
 
 If you would like to help with Pathomx development you will need to install a source
 version of the code. Note: This is not necessary if you just want to contribute plugins,
