@@ -140,9 +140,9 @@ class ToolItem(BaseItem):
         self.icon = ToolIcon(parent=self)
         
         self.progressBar = ToolProgressItem(parent=self)
-        transform = QTransform()
-        transform.translate(0,59)
-        self.progressBar.setTransform(transform)
+        #transform = QTransform()
+        #transform.translate(0,59)
+        #self.progressBar.setTransform(transform)
         self.app.progress.connect( self.progressBar.updateProgress )
         self.app.status.connect( self.progressBar.updateStatus )
 
@@ -271,13 +271,15 @@ class ToolIcon(BaseInteractiveItem):
         """
         Paint the tool object
         """
-        pen = QPen()
-        pen.setColor(QColor(BORDER_COLOR))
-        pen.setCapStyle(Qt.RoundCap)
-        pen.setWidth(2)
+        pen = Qt.NoPen #()
+        #pen.setColor(QColor(BORDER_COLOR))
+        #pen.setCapStyle(Qt.RoundCap)
+        #pen.setWidth(0)
         painter.setPen(pen)
         painter.setBrush( QBrush( self.parentItem().app.plugin.icon.pixmap(self.size) ) )
         painter.drawRect( QRect(0,0,self.size.width(), self.size.height()) )
+        #painter.drawEllipse( QRect(0,0,self.size.width(), self.size.height()) )
+        #painter.drawRoundedRect( QRect(0,0,self.size.width(), self.size.height()), 5.0, 5.0 )
         
 
 class ToolInterface(BaseInteractiveItem):
@@ -428,7 +430,19 @@ class LinkItem(QGraphicsPathItem):
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
         if self.dso:
-            text = '%s (%s)' % ( self.dso.manager_interface, self.dso.name ) if self.bezierPath.length() > 250 else '%s' % self.dso.manager_interface
+            # Determine maximum length of text by horribly kludge
+            max_length = self.bezierPath.length() / 10
+            strs = [ 
+                self.dso.manager_interface,
+                "(%s)" % "x".join( [str(x) for x in self.dso.shape] ),
+                self.dso.name,
+                ]
+
+            text = ''
+            for s in strs:
+                if len( text + s ) < max_length:
+                    text += ' ' + s
+
             self.textLabelItem.setPlainText( text )
 
         path = self.bezierPath
@@ -459,7 +473,12 @@ class ToolProgressItem(BaseItem):
                 
         self.progress = None
         self.status = None
-        self.size=QSize(64,5)
+        self.thick = 6
+        self.size=QSize(64,self.thick)
+        transform = QTransform()
+        transform.translate(0,64-self.thick)
+        self.setTransform(transform)
+                
         self.setOpacity(0.5)
         
     def updateProgress(self, progress):
@@ -478,8 +497,10 @@ class ToolProgressItem(BaseItem):
         if self.progress:  # Only paint if there is 'progress' (i.e. active)
             progressSize = self.size.width() * self.progress #0-1.
             brush = QBrush( QColor( STATUS_COLORS[ self.status ] ) ) if self.status in STATUS_COLORS else QBrush( Qt.NoBrush )
+            #pen.setWidth(self.thick)
             painter.setBrush( brush )
-            painter.drawRect(0,0,progressSize,self.size.height())
+            painter.drawRect(0,0,progressSize, self.thick)
+            #painter.drawArc( QRect(0,0,64-self.thick,64-self.thick), 90*16, -self.progress * 5760)
 
         #else:
         #    painter.setBrush( QBrush( QColor( Qt.gray ) ) )
@@ -529,7 +550,7 @@ class ToolViewItem(BaseInteractiveItem):
             pen = QPen()
             pen.setColor(QColor(BORDER_COLOR))
             pen.setCapStyle(Qt.RoundCap)
-            pen.setWidth(2)
+            pen.setWidth(0)
             painter.setPen(pen)
             painter.setBrush( QBrush( self.pixmap ) )
             painter.drawRect( QRect(0,0, self.size.width(), self.size.height()) )

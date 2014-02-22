@@ -1,0 +1,29 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file:///@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>PLS Toolbox</h1>
+    <span>Powerful resources for intelligent data analysis</span><br />
+    <span class="author_list">
+        <a href="http://www.eigenvector.com/">Eigenvector Research</a> <small>(PLS_Toolbox)</small>
+        <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a> <small>(Pathomx plugin)</small>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p><a href="http://www.eigenvector.com/software/pls_toolbox.htm">PLS_Toolbox</a> software is the world’s most extensive suite of essential and advanced 
+chemometric multivariate analysis tools for use within the 
+MATLAB® computational environment.</p>
+
+<div class="panel callout radius">
+To use PLS_Toolbox you need a license available <a href="http://www.eigenvector.com/software/license_evri.html">here</a>.
+Download and install PLS_Toolbox in MATLAB before using this plugin.
+</div>
+
+<p>This plugin is a wrapper interface to a selection of the tools offered by PLS_Toolbox.
+Use of this plugin requires an installation and license for Matlab and PLS_Toolbox.
+You can download PLS_Toolbox from <a href="https://software.eigenvector.com/toolbox/download/">here</a>.</p>
+
+@end

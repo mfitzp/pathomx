@@ -1,0 +1,9 @@
+[Core]
+Name = Basic graphs
+Module = basic_graphs
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = A set of basic graph visualisations for your data

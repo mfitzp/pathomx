@@ -20,7 +20,7 @@ import numpy as np
 import utils, data, config, threads
 from data import DataSet
 
-from views import D3HomeView, HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
+from views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
 from editor.editor import WorkspaceEditor
 # Translation (@default context)
 from translate import tr
@@ -90,7 +90,23 @@ class genericDialog(QDialog):
    
 
 class ExportImageDialog(genericDialog):
+    """
+    Standard dialog to handle image export fromm any view.
     
+    Dialog box presenting a set of options for image export, including dimensions and
+    resolution. Resolution is handled as dpm (dots per metre) in keeping with 
+    internal Qt usage, but convertor functions are available.
+    
+    :param parent: Parent window to attach dialog to
+    :type QObject: object inherited from QObject
+    :param size: Default dimensions for export
+    :type size: QSize
+    :param dpm: Default dots per metre
+    :type dpm: int
+    :param show_rerender_options: Show options to re-render/scale output
+    :type show_rerender_options: bool
+    
+    """ 
     print_u = { # Qt uses pixels/meter as it's default resolution so measure relative to meters
         'in':39.3701,
         'mm':1000,
@@ -529,17 +545,23 @@ class QTabWidgetExtend( QTabWidget ):
 
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
 class GenericApp( QMainWindow ):
+    """
+    Base definition for all tools.
+    
+    This is the base implementation for all tools. It is implemented as QMainWindow
+    but this may change in future to further separate the interface from the tool
+    functionality (e.g. subclass object, put a QMainWindow as an .window attribute
+    and place the view handler within).
 
+    Performs all the standard setup for the tools, flags and interfaces. Sub-classes are
+    available to add further additional defaults (e.g. data tables, views, etc.)
+    """ 
     help_tab_html_filename = None
     status = pyqtSignal(str)
     progress = pyqtSignal(float)
     complete = pyqtSignal()
 
     nameChanged = pyqtSignal(str)
-
-    #def event(self,e):
-    #    print QApplication.focusWidget().__class__.__name__
-    #    return super(GenericApp, self).event(e)
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
@@ -767,7 +789,7 @@ class GenericApp( QMainWindow ):
         select_dataAction.triggered.connect(self.onSelectDataSource)
         t.addAction(select_dataAction)
 
-        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'arrow-circle-double.png' ) ), tr('Recalculate'), self.m)
+        select_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'play.png' ) ), tr('Calculate'), self.m)
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
@@ -1014,7 +1036,7 @@ class ImportDataApp( DataApp ):
             self.file_watcher.fileChanged.connect( self.onFileChanged )
             self.file_watcher.addPath( filename )
             
-            self.workspace_item.setText(0, os.path.basename(filename))
+            self.set_name( os.path.basename(filename) )
             
         return False
 
@@ -1033,7 +1055,57 @@ class ImportDataApp( DataApp ):
     
         self.addExternalDataToolbar()
 
+class CodeEditorTool(GenericApp):
+        
+    def addCodeEditorToolbar(self):   
+        t = self.getCreatedToolbar( tr('Code Editor'),'code-editor')
+        
+        codeedit_applyAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'script-apply.png' ) ), 'Apply changes', self.m)
+        codeedit_applyAction.triggered.connect(self.onCodeEditApply)
+        t.addAction(codeedit_applyAction)      
+        
+    def onCodeEditApply(self):
+        self.editor.sourceChangesApplied.emit( self.editor.document().toPlainText() )
 
+
+class ExportDataApp( GenericApp ):
+    def __init__(self, filename=None, **kwargs):
+        super(ExportDataApp, self).__init__(**kwargs)
+    
+        self.data.add_input('input') # Add output slot
+        
+        self.addExportDataToolbar()
+        
+        #if filename:
+        #    self.thread_load_datafile( filename )
+
+    def addExportDataToolbar(self):   
+        t = self.getCreatedToolbar( tr('Export Data'),'export-data')
+        
+        export_dataAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'disk--pencil.png' ) ), 'Export %s file…' % self.export_type, self.m)
+        export_dataAction.setStatusTip(self.export_description)
+        export_dataAction.triggered.connect(self.onExportData)
+        t.addAction(export_dataAction)
+        
+    def thread_generate(self, *args, **kwargs):
+        return False
+
+    # Data file import handlers (#FIXME probably shouldn't be here)
+    def thread_save_datafile(self, filename, dso, type=None):
+        if type:
+            self.worker = threads.Worker(self.save_datafile_by_type, filename, dso, type)
+        else:        
+            self.worker = threads.Worker(self.save_datafile, filename, dso)
+        self.start_worker_thread(self.worker)             
+    
+    def onExportData(self):
+        """ Open a data file"""
+        filename, _ = QFileDialog.getSaveFileName(self, self.export_description, '', self.export_filename_filter)
+        if filename:
+            self.thread_save_datafile( filename, self.data.get('input') )
+            self.set_name( os.path.basename(filename) )
+            
+        return False
 
 # Analysis/Visualisation view prototypes
 # Class for analysis views, using graph-based visualisations of defined datasets
@@ -1328,5 +1400,100 @@ class WebPanel( QWebView ):
 
     def __init__(self, parent, *args, **kwargs):
         super(WebPanel, self).__init__(parent, *args, **kwargs)        
-            
+        
+
+
+class LineNumberArea(QWidget):
+
+    def __init__(self, editor):
+        super(LineNumberArea, self).__init__(editor)        
+        self.codeEditor = editor
+
+    def sizeHint(self):
+        return QSize(self.codeEditor.lineNumberAreaWidth(), 0)
+
+    def paintEvent(self,event):
+        self.codeEditor.lineNumberAreaPaintEvent(event)
+
+
+class CodeEditor( QPlainTextEdit ):
+
+    sourceChangesApplied = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(CodeEditor, self).__init__(parent)        
     
+        font = QFont("Courier", 12)
+        font.setStyleHint(QFont.TypeWriter)
+        
+        self.setFont(font)
+    
+        tabStop = 4 # 4 characters
+        self.setTabStopWidth(tabStop * QFontMetrics(font).width('_'))
+    
+        self.lineNumberArea = LineNumberArea(self)
+        
+        self.blockCountChanged.connect( self.updateLineNumberAreaWidth )
+        self.updateRequest.connect( self.updateLineNumberArea )
+        #self.cursorPositionChanged.connect( self.highlightCurrentLine )
+
+        self.updateLineNumberAreaWidth(0)
+        #self.highlightCurrentLine()
+
+    def lineNumberAreaWidth(self):
+        
+        digits = len( str( max(1, self.blockCount()) ) )
+        space = QApplication.fontMetrics().width('_') * (digits+2)
+        return space
+
+    def updateLineNumberAreaWidth(self, newBlockCount):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+        self.lineNumberArea.update()
+
+    def updateLineNumberArea(self, rect, dy):
+        if (dy):
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+
+        if (rect.contains(self.viewport().rect())):
+            self.updateLineNumberAreaWidth(0)
+
+    def resizeEvent(self, e):
+        super(CodeEditor, self).resizeEvent(e)
+        cr = self.contentsRect()
+        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
+
+    def highlightCurrentLine(self):
+        selection = QTextEdit.ExtraSelection()
+
+        selection.format = QTextCharFormat()
+        selection.format.setBackground( QColor(Qt.yellow) )
+        selection.format.setForeground( QColor(Qt.red) )
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        
+        selection.cursor = QTextCursor()
+        selection.cursor.clearSelection()
+        
+        self.setExtraSelections([selection])
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QPainter(self.lineNumberArea)
+        painter.fillRect(event.rect(), Qt.lightGray)
+
+        block = self.firstVisibleBlock()
+        blockNumber = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = " %s " % str(blockNumber+1)
+                painter.setPen(Qt.black)
+                painter.drawText(0, top, self.lineNumberArea.width(), QApplication.fontMetrics().height(),
+                                 Qt.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            blockNumber += 1

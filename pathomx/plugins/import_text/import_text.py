@@ -126,16 +126,18 @@ class ImportTextApp( ui.ImportDataApp ):
                 scales.append( None )
                 mlabels.append( m )
                 
+        dso.scales[0] = [None] * len(samples)
         dso.labels[0] = samples
         dso.classes[0] = classes
         dso.entities[0] = [None] * len(samples)
 
         dso.scales[1] = scales
         dso.labels[1] = mlabels
+        dso.classes[1] = [None] * len(scales)
         dso.entities[1] = [None] * len(scales)
 
         dso.data = data
-   
+
         return dso
                 
     def load_csv_R(self, filename): # Load from csv with experiments in ROWS, metabolites in COLUMNS
@@ -202,6 +204,7 @@ class ImportTextApp( ui.ImportDataApp ):
                 scales.append( None )
                 mlabels.append( m )
                 
+        dso.scales[1] = [None] * len(samples)
         dso.labels[0] = samples
         dso.classes[0] = classes
         dso.entities[0] = [None] * len(samples)
@@ -209,6 +212,7 @@ class ImportTextApp( ui.ImportDataApp ):
         dso.scales[1] = scales
         dso.labels[1] = mlabels
         dso.entities[1] = [None] * len(scales)
+        dso.classes[1] = [None] * len(scales)
 
         dso.data = np.array( raw_data )
    

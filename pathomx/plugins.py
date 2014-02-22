@@ -41,7 +41,8 @@ class pluginListDelegate(QAbstractItemDelegate):
         ic = QIcon( index.data(Qt.DecorationRole) ) 
         title = index.data(Qt.DisplayRole) #.toString()
         description = index.data(Qt.UserRole) #.toString()
-        notice = index.data(Qt.UserRole+1) #.toString()
+        author = index.data(Qt.UserRole+1) #.toString()
+        notice = index.data(Qt.UserRole+2) #.toString()
 
         if option.state & QStyle.State_Selected:
             painter.setPen( QPalette().highlightedText().color() )
@@ -57,12 +58,22 @@ class pluginListDelegate(QAbstractItemDelegate):
             imageSpace = 55
 
         # TITLE
-        r = option.rect.adjusted(imageSpace, 0, -10, -30)
-        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignBottom|Qt.AlignLeft, title)
+        r = option.rect.adjusted(imageSpace, 5, 0, 0)
+        pen = QPen()
+        pen.setColor(QColor('black'))
+        painter.setPen(pen)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, title)
 
         # DESCRIPTION
-        r = option.rect.adjusted(imageSpace, 30, -10, 0)
+        r = option.rect.adjusted(imageSpace, 22, 0, 0)
         painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, description)           
+
+        # AUTHORS
+        r = option.rect.adjusted(imageSpace, 39, 0, 0)
+        pen = QPen()
+        pen.setColor(QColor('#888888'))
+        painter.setPen(pen)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, author)    
 
         r = option.rect.adjusted(imageSpace, 0, -10, -30)
         painter.setPen( QPalette().mid().color() )
@@ -123,10 +134,11 @@ class dialogPluginManagement(ui.genericDialog):
             
             item.setData(Qt.DisplayRole, "%s (v%s)" % (plugin['name'], plugin['version']) )
             item.setData(Qt.UserRole, plugin['description'])
+            item.setData(Qt.UserRole+1, plugin['author'])
             if self.is_upgradeable(id): #id in self.available_plugins and ( StrictVersion( str(plugin['version']) ) < StrictVersion( str(self.available_plugins[id]['version']) ) ):
-                item.setData(Qt.UserRole+1, "v%s available" % self.available_plugins[id]['version'])
+                item.setData(Qt.UserRole+2, "v%s available" % self.available_plugins[id]['version'])
             elif id in self.installed_plugins and show_installed:
-                item.setData(Qt.UserRole+1, "Installed")
+                item.setData(Qt.UserRole+2, "Installed")
 
             listwidget.addItem( item )
             
@@ -389,12 +401,15 @@ class BasePlugin(IPlugin):
         else:
             return None
                        
-    def register_app_launcher(self, app):
+    def register_app_launcher(self, app, workspace_category=None):
         app.plugin = self
         key = "%s.%s" %( self.id, app.__name__ )
         self.m.app_launchers[ key ] = app
+
+        if workspace_category == None:
+            workspace_category = self.default_workspace_category
         
-        self.m.tools[ self.default_workspace_category ].append( {
+        self.m.tools[ workspace_category ].append( {
             'id':key,
             'app': app,
             'plugin': self,
@@ -410,13 +425,13 @@ class BasePlugin(IPlugin):
         
         for entry in entries:
             if entry == None:
-                self.m.menuBar[ menu ].addSeparator()
+                self.m.menuBars[ menu ].addSeparator()
             else:            
                 menuAction = QAction(entry['title'], self.m)
                 if 'status' in entry:
                     menuAction.setStatusTip( entry['status'] )
                 menuAction.triggered.connect( entry['action'] )
-                self.m.menuBar[ menu ].addAction( menuAction )
+                self.m.menuBars[ menu ].addAction( menuAction )
          
     def generate_cache_key(self, o):
         return 'cache-' + hashlib.sha224( str(o) ).hexdigest()
@@ -477,6 +492,14 @@ class ExportPlugin(BasePlugin):
     Export plugin.
     '''
     default_workspace_category = 'Export'
+    pass
+
+
+class ScriptingPlugin(BasePlugin):
+    '''
+    Scripting plugin.
+    '''
+    default_workspace_category = 'Scripting'
     pass
 
 class MiscPlugin(BasePlugin):

@@ -539,26 +539,32 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         self.all_pathways = sorted( [p.name for p in self.m.db.pathways.values()] )
 
         self.label = defaultdict(dict)
-        selected_pathways = str( self.config.get('/Pathways/Show') ).split(',')
-        self.setupSection('Show', selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
-        selected_pathways = str( self.config.get('/Pathways/Hide') ).split(',')
-        self.setupSection('Hide', selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
+        #selected_pathways = str(  ).split(',')
+        self.setupSection('Show', '/Pathways/Show' ) #selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
+        #selected_pathways = str( self.config.get() ).split(',')
+        self.setupSection('Hide', '/Pathways/Hide' ) # selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )        
 
         self.finalise()
     
     def onRegexpAdd(self):
         label = self.sender().objectName()
         items = self.label[ label ]['lw_pathways'].findItems( self.label[label]['lw_regExp'].text(), Qt.MatchContains )
+        block = self.label[ label ]['lw_pathways'].blockSignals(True)
         for i in items:
             i.setSelected( True )            
+        self.label[ label ]['lw_pathways'].blockSignals(block)
+        self.label[ label ]['lw_pathways'].itemSelectionChanged.emit()
     
     def onRegexpRemove(self):
         label = self.sender().objectName()
         items = self.label[ label ]['lw_pathways'].findItems( self.label[label]['lw_regExp'].text(), Qt.MatchContains )
+        block = self.label[ label ]['lw_pathways'].blockSignals(True)
         for i in items:
             i.setSelected( False )            
-    
-    def setupSection(self, label, selected_pathways = []):
+        self.label[ label ]['lw_pathways'].blockSignals(block)
+        self.label[ label ]['lw_pathways'].itemSelectionChanged.emit()
+            
+    def setupSection(self, label, pathway_config):
         # SHOW PATHWAYS
         gb = QGroupBox(label)
         vbox = QVBoxLayout()
@@ -566,9 +572,15 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         self.label[label]['lw_pathways'] = QListWidget()
         self.label[label]['lw_pathways'].setSelectionMode( QAbstractItemView.ExtendedSelection)
         self.label[label]['lw_pathways'].addItems( self.all_pathways )
+        
+        fwd_map = lambda x: self.m.db.synrev[x].id
+        rev_map = lambda x: self.m.db.pathways[x].name
+        
+        self.config.add_handler( pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map) )
 
-        for p in selected_pathways:
-            self.label[label]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
+        #for p in selected_pathways:
+        #    self.label[label]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
+
         self.label[label]['lw_regExp'] = QLineEdit()
 
         vbox.addWidget(self.label[label]['lw_pathways'])
@@ -697,8 +709,8 @@ class MetaVizApp(ui.AnalysisApp):
         # Define default settings for pathway rendering
         self.config.set_defaults({
             # Pathways
-            '/Pathways/Show': 'GLYCOLYSIS',
-            '/Pathways/Hide': '',
+            '/Pathways/Show': ['GLYCOLYSIS'],
+            '/Pathways/Hide': [],
             '/Pathways/ShowLinks': False,
             # App
             '/App/ShowEnzymes': True,
@@ -717,19 +729,6 @@ class MetaVizApp(ui.AnalysisApp):
 
         self.finalise()
         
-    def onPathwaysShow(self):
-        dialog = dialogPathwaysShow(self)
-        ok = dialog.exec_()
-        if ok:
-            # Show
-            idx = dialog.tab['show']['lw_pathways'].selectedItems()
-            pathways = [self.m.db.synrev[ x.text() ].id for x in idx]
-            self.config.set('/Pathways/Show', ','.join(pathways) )
-            # Hide
-            idx = dialog.tab['hide']['lw_pathways'].selectedItems()
-            pathways = [self.m.db.synrev[ x.text() ].id for x in idx]
-            self.config.set('/Pathways/Hide', ','.join(pathways) )
-   
 
     def url_handler(self, url):
 
@@ -826,12 +825,14 @@ class MetaVizApp(ui.AnalysisApp):
         else:
             pathway_ids = []
             
+        print self.config.get('/Pathways/Show')
+            
         # Add the manually Shown pathways
-        pathway_ids_show = self.config.get('/Pathways/Show').split(',')
+        pathway_ids_show = self.config.get('/Pathways/Show')
         pathway_ids.extend( pathway_ids_show )
            
         # Now remove the Hide pathways
-        pathway_ids_hide = self.config.get('/Pathways/Hide').split(',')
+        pathway_ids_hide = self.config.get('/Pathways/Hide')
         pathway_ids = [p for p in pathway_ids if p not in pathway_ids_hide]
 
         # Convert pathways_ids to pathways

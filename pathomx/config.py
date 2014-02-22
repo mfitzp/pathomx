@@ -13,6 +13,7 @@ from PyQt5.QtPrintSupport import *
 
 import os, sys, re, base64
 import numpy as np
+import types
 
 from collections import defaultdict
 import operator, json
@@ -30,6 +31,103 @@ def build_dict_mapper(mdict):
         lambda x: rdict[x] if x in rdict else x,
         )
 
+
+# CUSTOM HANDLERS
+
+# QComboBox
+def _get_QComboBox(self):
+    return self._get_map( self.currentText() )
+
+def _set_QComboBox(self, v):
+    self.setCurrentText( self._set_map( v ) )
+
+def _event_QComboBox(self):
+    return self.currentTextChanged
+
+# QCheckBox
+def _get_QCheckBox(self):
+    return self.isChecked()
+
+def _set_QCheckBox(self, v):
+    self.setChecked(v)
+
+def _event_QCheckBox(self):
+    return self.stateChanged
+
+# QAction
+def _get_QAction(self):
+    return self.isChecked()
+
+def _set_QAction(self, v):
+    self.setChecked(v)
+
+def _event_QAction(self):
+    return self.toggled
+
+# QAction
+def _get_QPushButton(self):
+    return self.isChecked()
+
+def _set_QPushButton(self, v):
+    self.setChecked(v)
+
+def _event_QPushButton(self):
+    return self.toggled
+        
+# QSpinBox
+def _get_QSpinBox(self):
+    return self.value()
+
+def _set_QSpinBox(self, v):
+    self.setValue(v)
+
+def _event_QSpinBox(self):
+    return self.valueChanged        
+
+# QDoubleSpinBox
+def _get_QDoubleSpinBox(self):
+    return self.value()
+
+def _set_QDoubleSpinBox(self, v):
+    self.setValue(v)
+
+def _event_QDoubleSpinBox(self):
+    return self.valueChanged                
+
+# QPlainTextEdit
+def _get_QPlainTextEdit(self):
+    return self.document().toPlainText()
+
+def _set_QPlainTextEdit(self, v):
+    self.setPlainText(v)
+
+def _event_QPlainTextEdit(self):
+    return self.sourceChangesApplied
+
+# CodeEditor
+def _get_CodeEditor(self):
+    return self._get_QPlainTextEdit(o)
+
+def _set_CodeEditor(self, v):
+    self._set_QPlainTextEdit(o, v)
+
+def _event_CodeEditor(self):
+    return self._event_QPlainTextEdit(o)
+
+# QListWidget
+def _get_QListWidget(self):
+    print 'selected:',[self._get_map(s.text()) for s in self.selectedItems() ]
+    return [self._get_map(s.text()) for s in self.selectedItems() ]
+
+def _set_QListWidget(self, v):
+    if v:
+        for s in v:
+            self.findItems(self._set_map(s), Qt.MatchExactly)[0].setSelected(True)
+
+def _event_QListWidget(self):
+    return self.itemSelectionChanged 
+        
+        
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file (for workspace saving)
@@ -63,11 +161,11 @@ class ConfigManager( QObject ):
 
         if key in self.handlers:
             # Trigger handler to update the view
-            getter = getattr(self, '_get_%s' % self.handlers[key].__class__.__name__, False)
-            setter = getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
+            getter = self.handlers[key].getter #(self, '_get_%s' % self.handlers[key].__class__.__name__, False)
+            setter = self.handlers[key].setter #getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
         
-            if setter and getter( self.handlers[key] ) != self.config[key]:
-                setter( self.handlers[key], self.config[key] )
+            if setter and getter() != self.config[key]:
+                setter( self.config[key] )
 
         # Trigger update notification
         if trigger_update:
@@ -124,88 +222,37 @@ class ConfigManager( QObject ):
         handler._get_map, handler._set_map = mapper
 
         self.handlers[key] = handler
+    
+        handler.setter = types.MethodType( globals().get('_set_%s' % handler.__class__.__name__), handler, handler.__class__ )
+        handler.getter = types.MethodType( globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__ )
+        handler.updater = types.MethodType( globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__ )
+        
         print "Add handler %s for %s" % ( handler.__class__.__name__, key )
-        fn = getattr(self, '_event_%s' % handler.__class__.__name__, False)
-        fn( handler ).connect( lambda x: self.set(key, handler._get_map(x) ) )
-
+        handler.updater().connect( lambda x=None: self.set(key, handler.getter() ) )
         
         # Keep handler and data consistent
         if key not in self.config:
             # If the key is in defaults; set the handler to the default state (but don't add to config)
             if key in self.defaults:
-                fn = getattr(self, '_set_%s' % handler.__class__.__name__, False)
-                fn( handler, self.defaults[key] )
+                handler.setter( self.defaults[key] )
             
             # If the key is not in defaults, set the config to match the handler
             else:
-                fn = getattr(self, '_get_%s' % handler.__class__.__name__, False)
-                self.config[key] = fn( handler )
+                self.config[key] = handler.getter()
 
     
     def add_handlers(self, keyhandlers):
         for key, handler in keyhandlers.items():
             self.add_handler( key, handler )
         
-    # QComboBox
-    def _get_QComboBox(self, o):
-        return o._get_map( o.currentText() )
 
-    def _set_QComboBox(self, o, v):
-        return o.setCurrentText( o._set_map( v ) )
 
-    def _event_QComboBox(self, o):
-        return o.currentTextChanged
 
-    # QCheckBox
-    def _get_QCheckBox(self, o):
-        return o.isChecked()
 
-    def _set_QCheckBox(self, o, v):
-        o.setChecked(v)
 
-    def _event_QCheckBox(self, o):
-        return o.stateChanged
-        
-    # QAction
-    def _get_QAction(self, o):
-        return o.isChecked()
 
-    def _set_QAction(self, o, v):
-        o.setChecked(v)
 
-    def _event_QAction(self, o):
-        return o.toggled
-
-    # QAction
-    def _get_QPushButton(self, o):
-        return o.isChecked()
-
-    def _set_QPushButton(self, o, v):
-        o.setChecked(v)
-
-    def _event_QPushButton(self, o):
-        return o.toggled
                 
-    # QSpinBox
-    def _get_QSpinBox(self, o):
-        return o.value()
-
-    def _set_QSpinBox(self, o, v):
-        o.setValue(v)
-
-    def _event_QSpinBox(self, o):
-        return o.valueChanged        
-        
-    # QDoubleSpinBox
-    def _get_QDoubleSpinBox(self, o):
-        return o.value()
-
-    def _set_QDoubleSpinBox(self, o, v):
-        o.setValue(v)
-
-    def _event_QDoubleSpinBox(self, o):
-        return o.valueChanged                
-        
     # JSON
     def json_dumps(self):
         return json.dumps( self.config ) 

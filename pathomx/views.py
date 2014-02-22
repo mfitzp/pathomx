@@ -429,6 +429,8 @@ class MplView(FigureCanvas, BaseView):
         self.ax.get_xaxis().tick_bottom()
         self.ax.get_yaxis().tick_left()
 
+        self.fig.tight_layout()
+
         FigureCanvas.__init__(self, self.fig)
 
         self.setParent(parent.views)
@@ -442,6 +444,7 @@ class MplView(FigureCanvas, BaseView):
         # plots in a window under separate tabs
         self.navigation = MplNavigationHandler( self )
         #self.navigation.zoom()
+        
 
     def generate(self):
         pass
@@ -458,6 +461,7 @@ class MplView(FigureCanvas, BaseView):
             dpi = settings.get_dots_per_inch()
             prev_size = self.fig.get_size_inches()
             self.fig.set_size_inches(*size)
+            self.fig.tight_layout()
             self.fig.savefig(filename, dpi=dpi)
             self.fig.set_size_inches(*prev_size)
             self.redraw()
@@ -466,6 +470,9 @@ class MplView(FigureCanvas, BaseView):
         #FIXME: Ugly hack to refresh the canvas
         self.resize( self.size() - QSize(1,1) )
         self.resize( self.size() + QSize(1,1) )
+        
+    def resizeEvent(self,e):
+        FigureCanvas.resizeEvent(self,e)
             
     
 class D3PrerenderedView(D3View):
@@ -473,33 +480,7 @@ class D3PrerenderedView(D3View):
     def generate(self, metadata, template):
         self.d3_template = template
         self.generate_d3( metadata )
-            
-                
-class D3HomeView(D3View):
-
-    d3_template = 'd3/workspace.svg'
-
-    def generate(self):
-        objects = []
-        for a in self.m.apps:
-            objects.append( (a.id, a) )
-
-        inheritance = [] # Inter datasetmanager links; used for view hierarchy
-        for a in self.m.apps:
-            # v.id = origin
-            for i,ws in a.data.watchers.items():
-                for w in ws:
-                    inheritance.append( (a.id, w.v.id) ) # watcher->app>id
-                    
-        links = [] # Links inputs -> outputs (dso links)
-        
-
-        template = self.m.templateEngine.get_template(self.d3_template)
-        self.setSVG(template.render( {'htmlbase': os.path.join( utils.scriptdir,'html'), 'objects':objects, 'inheritance':inheritance} )) 
-
-
-
-
+    
 
 class D3ForceView(D3View):
 
@@ -529,7 +510,6 @@ class D3ForceView(D3View):
         # Get list of all reactions
         # In template:
         # Loop metabolites (nodes; plus their groups)
-    
     
         metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
                      'pathways':[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')],
@@ -590,6 +570,7 @@ class MplSpectraView(MplView):
     def __init__(self, parent, **kwargs):
         super(MplSpectraView, self).__init__(parent, **kwargs)        
         self.ax.invert_xaxis()
+        
 
     def generate(self, dso=None):
         if not float in [type(t) for t in dso.scales[1]]:   
@@ -631,8 +612,10 @@ class MplSpectraView(MplView):
 
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')
+                
         self.draw()
                 
+        self.fig.tight_layout()
         
         
 class D3DifferenceView(D3View):

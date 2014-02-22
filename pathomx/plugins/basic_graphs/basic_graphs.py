@@ -7,28 +7,25 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebKit import *
 from PyQt5.QtNetwork import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import numpy as np
-
-# Renderer for GPML as SVG
-from gpml2svg import gpml2svg
-
+import os, copy
 
 from plugins import VisualisationPlugin
 
-import os
-import ui, utils
+import numpy as np
+
+import ui, db, utils, threads
 from data import DataSet, DataDefinition
-from views import D3BarView, MplCategoryBarView
+from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
-# Class for data visualisations using GPML formatted pathways
-# Supports loading from local file and WikiPathways
-class BarApp(ui.AnalysisApp):
+
+# Graph data as a bar chart
+class BarTool(ui.AnalysisApp):
+    name = "Bar"
     def __init__(self, **kwargs):
-        super(BarApp, self).__init__(**kwargs)
+        super(BarTool, self).__init__(**kwargs)
          
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -63,9 +60,44 @@ class BarApp(ui.AnalysisApp):
         
         return {'View':{'dso':dso} }
         
-class Bar(VisualisationPlugin):
+# Graph a spectra
+class SpectraTool( ui.DataApp ):
+    name = "Spectra"
+    def __init__(self, **kwargs):
+        super(SpectraTool, self).__init__(**kwargs)
+        
+        self.addDataToolBar()
+        self.addFigureToolBar()
+        
+        self.data.add_input('input') # Add input slot        
+
+        self.views.addTab(MplSpectraView(self), 'View')
+        
+        # Setup data consumer options
+        self.data.consumer_defs.append( 
+            DataDefinition('input', {
+            'labels_n':     ('>1', None),
+            'entities_t':   (None, None), 
+            'scales_t': (None, ['float']),
+            })
+        )
+
+        self.finalise()
+
+    def generate(self, input=None):
+        return {'input':input}
+
+    def prerender(self, input=None):
+        return {
+            'View':{'dso':input },
+            }
+    
+    
+ 
+ 
+class Spectra(VisualisationPlugin):
 
     def __init__(self, **kwargs):
-        super(Bar, self).__init__(**kwargs)
-        BarApp.plugin = self
-        self.register_app_launcher( BarApp )
+        super(Spectra, self).__init__(**kwargs)
+        self.register_app_launcher( BarTool )
+        self.register_app_launcher( SpectraTool )

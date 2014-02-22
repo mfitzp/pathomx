@@ -1,9 +1,9 @@
 [Core]
-Name = Bar
-Module = bar
+Name = Python
+Module = python
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Visualise data in bar charts
+Description = Python scripting

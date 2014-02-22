@@ -1,0 +1,25 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+<div class="header">
+    <div class="header-icon"><img src="file:///@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+    <div class="header-text"><h1>MATLAB®</h1>
+    <span>Run MATLAB scripts from within Pathomx, and load and save data from MATLAB</span><br />
+    <span class="author_list">
+        <a href="http://www.mathworks.co.uk/">The Mathworks Inc.</a> <small>MATLAB</small>
+        <a href="http://martinfitzpatrick.name/">Martin Fitzpatrick</a> <small>Pathomx Plugin</small>
+    </span>    
+    </div>
+</div>
+<h2>Introduction</h2>
+<p><a href="http://www.mathworks.co.uk/">MATLAB®</a> is a numerical computing 
+environment and fourth-generation programming language. Developed by MathWorks, MATLAB 
+allows matrix manipulations, plotting of functions and data, implementation of algorithms, 
+creation of user interfaces, and interfacing with programs written in other languages, 
+including C, C++, Java, and Fortran. MATLAB is a registered trademark of <a href="http://www.mathworks.co.uk/">The MathWorks, Inc.</a></p>
+
+<p>This plugin provides functions to run scripts, and import/export data between MATLAB and Pathomx,
+based on the Numpy MATLAB IO functions.</p>
+
+@end
