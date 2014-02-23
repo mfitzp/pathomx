@@ -12,7 +12,8 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
-   views
-   threads
+   config
    plugins
+   threads
+   views
 
