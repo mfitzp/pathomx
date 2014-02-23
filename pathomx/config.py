@@ -260,6 +260,12 @@ class ConfigManager(QObject):
 
     # Get config
     def get(self, key):
+        """ 
+            Get config value for a given key from the config manager.
+            
+            Returns the value that matches the supplied key. If the value is not set a
+            default value will be returned as set by set_defaults.
+        """
         if key in self.config:
             return self.config[key]
         elif key in self.defaults:
@@ -268,6 +274,13 @@ class ConfigManager(QObject):
             return None
 
     def set(self, key, value, trigger_update=True):
+        """ 
+            Set config value for a given key in the config manager.
+            
+            Set key to value. The optional trigger_update determines whether event hooks
+            will fire for this key (and so re-calculation). It is useful to suppress these
+            when updating multiple values for example.
+        """    
         if key in self.config and self.config[key] == value:
             return False  # Not updating
 
