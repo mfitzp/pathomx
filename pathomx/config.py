@@ -130,15 +130,15 @@ def _event_QPlainTextEdit(self):
 
 # CodeEditor
 def _get_CodeEditor(self):
-    return self._get_QPlainTextEdit(o)
+    _get_QPlainTextEdit(self, o)
 
 
 def _set_CodeEditor(self, v):
-    self._set_QPlainTextEdit(o, v)
+    _set_QPlainTextEdit(self, v)
 
 
 def _event_CodeEditor(self):
-    return self._event_QPlainTextEdit(o)
+    return _event_QPlainTextEdit(self)
 
 
 # QListWidget
