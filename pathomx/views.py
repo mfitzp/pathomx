@@ -62,13 +62,12 @@ BLANK_DEFAULT_HTML = '''
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
 class ViewManager( QTabWidget ):
-    ''' 
+    """ 
     Manager class for the tool views.
     
     Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
     is overridden to wrap addView. All other QTabWidget methods and attributes are available.
-    
-    '''
+    """
     auto_unfocus_tabs = ['?']
     # Signals
     source_data_updated = pyqtSignal()
