@@ -416,7 +416,7 @@ class dialogDefineExperiment(ui.genericDialog):
         else:
             self.cb_control.setCurrentIndex(0)
             self.cb_test.setCurrentIndex(0)
-            
+
         self.le_timecourseRegExp = qt5.QLineEdit()
         self.le_timecourseRegExp.setText(parent.experiment['timecourse'] if 'timecourse' in parent.experiment else '')
         self.le_timecourseRegExp.textChanged.connect(self.filter_classes_by_timecourse_regexp)
@@ -450,7 +450,7 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
             painter.fillRect(option.rect, qt5.QBrush(qt5.QPalette().highlight().color()))
         else:
             painter.setPen(qt5.QPalette().text().color())
-        
+
         icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), qt5.Qt.AlignVCenter | qt5.Qt.AlignLeft)
 
         text_rect = option.rect.adjusted(0, 64, 0, 0)
@@ -528,7 +528,6 @@ class ToolPanel(qt5.QListWidget):
 
         mimeData = qt5.QMimeData()
         mimeData.setData('application/x-pathomx-app', item.data['id'])
-        
 
         drag = qt5.QDrag(self)
         drag.setMimeData(mimeData)
@@ -838,7 +837,7 @@ class MainWindow(qt5.QMainWindow):
         self.dataView = qt5.QTreeView(self)
         self.dataModel = data.DataTreeModel(self.datasets)
         self.dataView.setModel(self.dataModel)
-        
+
         self.dataView.hideColumn(0)
 
         self.dataDock = qt5.QDockWidget(tr('Data'))
@@ -1028,7 +1027,7 @@ class MainWindow(qt5.QMainWindow):
             if self.data:
                 self.data.translate(self.db)
                 self.generateGraphView(regenerate_analysis=True)
-    
+
     def onSaveAs(self):
         """ Save a copy of the graph as one of the supported formats"""
         # Note this will regenerate the graph with the current settings, with output type specified appropriately
@@ -1055,7 +1054,7 @@ class MainWindow(qt5.QMainWindow):
 
     def onRefresh(self):
         self.generateGraphView()
- 
+
     def generatedbBrowserView(self, template='base.html', data={'title': '', 'object': {}, 'data': {}}):
         metadata = {
             'htmlbase': os.path.join(utils.scriptdir, 'html'),
@@ -1104,7 +1103,7 @@ class MainWindow(qt5.QMainWindow):
     def removeWorkspaceItem(self, widget):
         del self.workspace_index[widget._workspace_index]
         widget._workspace_section.removeChild(widget._workspace_tree_widget)
-    
+
     def setWorkspaceStatus(self, workspace_item, status):
         status_icons = {
             'active': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-green.png')),
@@ -1135,10 +1134,10 @@ class MainWindow(qt5.QMainWindow):
             self.updateProgress(workspace_item, 1)
             statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')
             workspace_item.status_timeout = qt5.QTimer.singleShot(1000, statusclearCallback)
-        
+
     def clearWorkspaceStatus(self, workspace_item):
         self.setWorkspaceStatus(workspace_item, 'clear')
-        
+
     def updateProgress(self, workspace_item, progress):
 
         if progress == None:
@@ -1198,7 +1197,7 @@ class MainWindow(qt5.QMainWindow):
         filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current workflow', '', "Pathomx Workflow Format (*.mpf)")
         if filename:
             self.saveWorkflow(filename)
-        
+
     def saveWorkflow(self, fn):
 
         root = et.Element("Workflow")
@@ -1242,7 +1241,7 @@ class MainWindow(qt5.QMainWindow):
 
         tree = et.ElementTree(root)
         tree.write(fn)  # , pretty_print=True)
-        
+
     def onOpenWorkflow(self):
         """ Open a data file"""
         filename, _ = qt5.QFileDialog.getOpenFileName(self, 'Open new workflow', '', "Pathomx Workflow Format (*.mpf)")

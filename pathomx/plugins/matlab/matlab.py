@@ -8,8 +8,8 @@ from PyQt5.QtWebKit import *
 from PyQt5.QtNetwork import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtPrintSupport import *
-
-import os, copy
+import os
+import copy
 
 from plugins import ImportPlugin
 from ui import ImportDataApp, ExportDataApp, CodeEditorTool
@@ -17,35 +17,35 @@ from ui import ImportDataApp, ExportDataApp, CodeEditorTool
 import numpy as np
 import scipy as sp
 import mlabwrap
-
-
-import ui, db, utils, threads
+import ui
+import db
+import utils
+import threads
 from data import DataSet, DataDefinition
 from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
-
-class MATLABTool( ui.DataApp ):
+class MATLABTool(ui.DataApp):
     def __init__(self, **kwargs):
         super(MATLABTool, self).__init__(**kwargs)
-        
+
         self.addDataToolBar()
         self.addFigureToolBar()
-        
-        self.data.add_input('input') # Add input slot        
+
+        self.data.add_input('input')  # Add input slot
         self.data.add_output('output')
         self.table.setModel(self.data.o['output'].as_table)
 
         self.views.addTab(MplSpectraView(self), 'View')
-        
+
         # Start matlab interface
         self.matlab = mlabwrap.init()
 
         # Setup data consumer options
-        self.data.consumer_defs.append( 
+        self.data.consumer_defs.append(
             DataDefinition('input', {
-            'labels_n':     ('>1', None),
-            'entities_t':   (None, None), 
+            'labels_n': ('>1', None),
+            'entities_t': (None, None),
             'scales_t': (None, ['float']),
             })
         )
@@ -54,30 +54,27 @@ class MATLABTool( ui.DataApp ):
             'bin_size': 0.01,
             'bin_offset': 0,
         })
-                        
-    def __exit__(self,ext_type,exc_value,traceback):
+
+    def __exit__(self, ext_type, exc_value, traceback):
         self.matlab.stop()
 
 
- 
-class MATLABInputTool( ImportDataApp ):
+class MATLABInputTool(ImportDataApp):
     name = "MATLAB"
 
     def __init__(self, **kwargs):
         super(MATLABInputTool, self).__init__(**kwargs)
-        
+
         self.config.set_defaults({
         })
-        
+
         self.finalise()
-        
+
     def generate(self, input):
         pass
-        
 
-     
-        
-class MATLABOutputTool( ExportDataApp ):
+
+class MATLABOutputTool(ExportDataApp):
     name = "MATLAB"
     export_type = "MATLAB"
     export_description = "Export data to MATLAB® format file"
@@ -85,37 +82,37 @@ class MATLABOutputTool( ExportDataApp ):
 
     def __init__(self, **kwargs):
         super(MATLABOutputTool, self).__init__(**kwargs)
-        self.data.add_input('input') # Add input slot        
-        self.data.consumer_defs.append( 
+        self.data.add_input('input')  # Add input slot
+        self.data.consumer_defs.append(
             DataDefinition('input', {
             })
         )
-        
+
         self.config.set_defaults({
-            'filename':None,
+            'filename': None,
         })
-        
+
         self.finalise()
-                
+
     def save_datafile(self, filename, dso):
         # Build a dict representing the data to be written to disk
         mdict = {
             'data': dso.data,
-            #'labels': 
+            #'labels':
             #'entities': [str(x) if x != None else '' for x in dso.entities],
             #'scales': [x if x != None else np.nan for x in dso.scales],
             #'classes': [str(x) if x != None else '' for x in dso.classes],
-        }        
+        }
 
-        for n,_ in enumerate( dso.scales ):
-            l = len( dso.scales[n] )
-            r = np.zeros((l,), dtype=('(%d,)f8, (%d,)a20, (%d,)a20, (%d,)a20' % (l,l,l,l) ) )
-            
-            mdict['scales_%d' % n] = np.array([ x if x != None else np.nan for x in dso.scales[n] ])
-            mdict['classes_%d' % n] = [ x if x != None else ''  for x in dso.classes[n] ]
-            mdict['labels_%d' % n] = [ x if x != None else ''  for x in dso.labels[n] ]
-            mdict['entities_%d' % n] = [ str(x) if x != None else '' for x in dso.entities[n] ]
-                    
+        for n, _ in enumerate(dso.scales):
+            l = len(dso.scales[n])
+            r = np.zeros((l, ), dtype=('(%d,)f8, (%d,)a20, (%d,)a20, (%d,)a20' % (l, l, l, l)))
+
+            mdict['scales_%d' % n] = np.array([x if x != None else np.nan for x in dso.scales[n]])
+            mdict['classes_%d' % n] = [x if x != None else ''  for x in dso.classes[n]]
+            mdict['labels_%d' % n] = [x if x != None else ''  for x in dso.labels[n]]
+            mdict['entities_%d' % n] = [str(x) if x != None else '' for x in dso.entities[n]]
+
             #l = len( dso.scales[n] )
             #dt = np.dtype('(%d,)f8, (%d,)a20, (%d,)a20, (%d,)a20' % (l,l,l,l) )
             #dt.names = (b'scales',b'classes',b'labels',b'entities' )
@@ -127,102 +124,103 @@ class MATLABOutputTool( ExportDataApp ):
             #    np.array([ str(x) if x != None else '' for x in dso.entities[n] ]),
             #    )
             #mdict['axis_%d' % n] = r
-                    
-                    
+
+
         # Write the file to disk using Numpy IO for Matlab
-        sp.io.savemat( filename, mdict )
-        return {'complete':True}        
-        
+        sp.io.savemat(filename, mdict)
+        return {'complete': True}
+
         
 class HighlightingRule():
-  def __init__( self, pattern, format ):
-    self.pattern = pattern
-    self.format = format
+    def __init__(self, pattern, format):
+        self.pattern = pattern
+        self.format = format
 
-class MATLABHighlighter( QSyntaxHighlighter ):
 
-    def __init__( self, parent ):
-        QSyntaxHighlighter.__init__( self, parent )
+class MATLABHighlighter(QSyntaxHighlighter):
+
+    def __init__(self, parent):
+        QSyntaxHighlighter.__init__(self, parent)
         self.parent = parent
         self.highlightingRules = []
 
         keyword = QTextCharFormat()
-        keyword.setForeground( Qt.darkBlue )
-        keyword.setFontWeight( QFont.Bold )
-        keywords=['break','case','catch','continue','else','elseif','end','for','function','global','if','otherwise','persistent','return','switch','try','while']
+        keyword.setForeground(Qt.darkBlue)
+        keyword.setFontWeight(QFont.Bold)
+        keywords = ['break', 'case', 'catch', 'continue', 'else', 'elseif', 'end', 'for', 'function', 'global', 'if', 'otherwise', 'persistent', 'return', 'switch', 'try', 'while']
         for word in keywords:
             pattern = QRegExp("\\b" + word + "\\b")
-            rule = HighlightingRule( pattern, keyword )
-            self.highlightingRules.append( rule )
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
 
         reservedClasses = QTextCharFormat()
-        reservedClasses.setForeground( Qt.darkRed )
-        reservedClasses.setFontWeight( QFont.Bold )
-        keywords = [ "array", "character", "complex",
+        reservedClasses.setForeground(Qt.darkRed)
+        reservedClasses.setFontWeight(QFont.Bold)
+        keywords = ["array", "character", "complex",
                                   "data.frame", "double", "factor",
                                   "function", "integer", "list",
                                   "logical", "matrix", "numeric",
-                                  "vector" ]
+                                  "vector"]
         for word in keywords:
             pattern = QRegExp("\\b" + word + "\\b")
-            rule = HighlightingRule( pattern, reservedClasses )
-            self.highlightingRules.append( rule )
-        
-        assignmentOperator = QTextCharFormat()
-        pattern = QRegExp( "(<){1,2}-" )
-        assignmentOperator.setForeground( Qt.green )
-        assignmentOperator.setFontWeight( QFont.Bold )
-        rule = HighlightingRule( pattern, assignmentOperator )
-        self.highlightingRules.append( rule )
-        number = QTextCharFormat()
-        pattern = QRegExp( "[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?" )
-        pattern.setMinimal( True )
-        number.setForeground( Qt.blue )
-        rule = HighlightingRule( pattern, number )
-        self.highlightingRules.append( rule )
-        
-        self.comments = QTextCharFormat()
-        self.comments.setFontWeight( QFont.Normal )
-        self.comments.setForeground( Qt.darkYellow )
+            rule = HighlightingRule(pattern, reservedClasses)
+            self.highlightingRules.append(rule)
 
-    def highlightBlock( self, text ):
-    
+        assignmentOperator = QTextCharFormat()
+        pattern = QRegExp("(<){1,2}-")
+        assignmentOperator.setForeground(Qt.green)
+        assignmentOperator.setFontWeight(QFont.Bold)
+        rule = HighlightingRule(pattern, assignmentOperator)
+        self.highlightingRules.append(rule)
+        number = QTextCharFormat()
+        pattern = QRegExp("[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?")
+        pattern.setMinimal(True)
+        number.setForeground(Qt.blue)
+        rule = HighlightingRule(pattern, number)
+        self.highlightingRules.append(rule)
+
+        self.comments = QTextCharFormat()
+        self.comments.setFontWeight(QFont.Normal)
+        self.comments.setForeground(Qt.darkYellow)
+
+    def highlightBlock(self, text):
+
         for rule in self.highlightingRules:
-            expression = QRegExp( rule.pattern )
-            index = expression.indexIn( text )
+            expression = QRegExp(rule.pattern)
+            index = expression.indexIn(text)
             while index >= 0:
                 length = expression.matchedLength()
-                self.setFormat( index, length, rule.format )
+                self.setFormat(index, length, rule.format)
                 try:
-                    index = text.index( str(expression), index + length )
+                    index = text.index(str(expression), index + length)
                 except:
                     break
-                    
+
         if '%' in text:
             i = text.index('%')
-            self.setFormat( i, len(text)-i, self.comments )
-                    
-        self.setCurrentBlockState( 0 )
+            self.setFormat(i, len(text) - i, self.comments)
+
+        self.setCurrentBlockState(0)
 
 
-class MATLABScriptTool( CodeEditorTool ):
+class MATLABScriptTool(CodeEditorTool):
 
     def __init__(self, **kwargs):
         super(MATLABScriptTool, self).__init__(**kwargs)
 
         self.addDataToolBar()
-        self.addCodeEditorToolbar()        
+        self.addCodeEditorToolbar()
 
-        self.data.add_input('input') # Add input slot
-        self.data.add_output('output') # Add output slot
+        self.data.add_input('input')  # Add input slot
+        self.data.add_output('output')  # Add output slot
         # We need an input filter for this type; accepting *anything*
-        self.data.consumer_defs.append( 
+        self.data.consumer_defs.append(
             DataDefinition('input', {
             })
         )
 
         self.config.set_defaults({
-            'source':'''
+            'source': '''
 % %%%%% MATLAB Scripting for Pathomx %%%%
 % 
 % Source data from input ports is available as same-named variables in the MATLAB
@@ -234,35 +232,33 @@ class MATLABScriptTool( CodeEditorTool ):
 % Have fun!
 '''
         })
-        
+
         self.editor = ui.CodeEditor()
         self.config.add_handler('source', self.editor)
-        highlighter = MATLABHighlighter( self.editor.document() )
-        self.views.addView( self.editor, 'Editor' )
+        highlighter = MATLABHighlighter(self.editor.document())
+        self.views.addView(self.editor, 'Editor')
 
         self.matlab = mlabwrap.init()
 
         self.finalise()
 
-        
     def generate(self, input):
         # Horribly insecure
         self.matlab._set("input_data", input.data)
         #self.matlab._set("pmx_classes", input.classes)
         #self.matlab._set("pmx_scales", input.scales)
         self.progress.emit(0.25)
-        self.matlab._do( self.editor.document().toPlainText(), nout=0)
+        self.matlab._do(self.editor.document().toPlainText(), nout=0)
         self.progress.emit(0.50)
-        input.data = self.matlab.output_data.reshape( input.data.shape )
+        input.data = self.matlab.output_data.reshape(input.data.shape)
         self.progress.emit(0.75)
-        return {'output': input }
+        return {'output': input}
 
         
-
 class MATLAB(ImportPlugin):
 
     def __init__(self, **kwargs):
         super(MATLAB, self).__init__(**kwargs)
         #self.register_app_launcher( MATLABInputApp, 'Import' )
-        self.register_app_launcher( MATLABOutputTool, 'Export' )
-        self.register_app_launcher( MATLABScriptTool, 'Scripting' )
+        self.register_app_launcher(MATLABOutputTool, 'Export')
+        self.register_app_launcher(MATLABScriptTool, 'Scripting')

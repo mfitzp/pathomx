@@ -6,13 +6,14 @@ from __future__ import unicode_literals
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
+
 def tr(s, *args, **kwargs):
     try:
         return QCoreApplication.translate('@default', s, *args, **kwargs)
     except:
         return s
-    
-#Workspace    
+
+#Workspace
 #tr("Home")
 #tr("Data")
 #tr("Processing")

@@ -10,15 +10,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-
 from plugins import VisualisationPlugin
-
-import os, re
-import ui, utils
+import os
+import re
+import ui
+import utils
 from data import DataSet, DataDefinition
 from views import HTMLView
 
@@ -34,33 +33,32 @@ except ImportError:
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 import StringIO
-import urllib, urllib2
+import urllib
+import urllib2
 
 
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
 class KEGGPathwayApp(ui.AnalysisApp):
 
-
     def __init__(self, gpml=None, svg=None, **kwargs):
-        super(KEGGPathwayApp, self).__init__( **kwargs)
+        super(KEGGPathwayApp, self).__init__(**kwargs)
 
-        self.svg = None # Rendered GPML file as SVG
+        self.svg = None  # Rendered GPML file as SVG
         self.metadata = {}
-
         #self.browser = ui.QWebViewExtend(self)
         #self.views.addTab(self.browser,'App')
 
-        self.data.add_input('input') # Add input slot
+        self.data.add_input('input')  # Add input slot
         # Setup data consumer options
-        self.data.consumer_defs.append( 
+        self.data.consumer_defs.append(
             DataDefinition('input', {
-            'entities_t':   (None, ['Compound','Gene']), 
-            },'Relative concentration data'),
+            'entities_t': (None, ['Compound', 'Gene']),
+            }, 'Relative concentration data'),
         )
 
-        self.views.addView( HTMLView(self), 'View')
-                
+        self.views.addView(HTMLView(self), 'View')
+
         self.addDataToolBar(default_pause_analysis=True)
         self.addFigureToolBar()
 
@@ -69,10 +67,10 @@ class KEGGPathwayApp(ui.AnalysisApp):
         self.kegg_pathway_t.textChanged.connect(self.autogenerate)
 
         t = self.addToolBar('KEGG')
-        t.setIconSize( QSize(16,16) )
-        t.addWidget( self.kegg_pathway_t)
-         
-        self.finalise()      
+        t.setIconSize(QSize(16, 16))
+        t.addWidget(self.kegg_pathway_t)
+
+        self.finalise()
 
     def generate(self, input=None):
         dsi = input
@@ -83,39 +81,39 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
         node_colors = {}
         if dsi:
-            mini, maxi = min( abs( np.median(dsi.data) ), 0 ), max( abs( np.median(dsi.data) ), 0) 
-            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
-            scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
+            mini, maxi = min(abs(np.median(dsi.data)), 0), max(abs(np.median(dsi.data)), 0)
+            mini, maxi = -2.0, +2.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
 
             #for n, m in enumerate(dsi.entities[1]):
             #    xref = self.get_xref( m )
 
             for n, m in enumerate(dsi.entities[1]):
                 if m:
-                
+
                     if 'LIGAND-CPD' in m.databases:
                         kegg_id = m.databases['LIGAND-CPD']
-                        ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
+                        ecol = utils.calculate_rdbu9_color(scale, dsi.data[0, n])
                         if kegg_id is not None and ecol is not None:
-                            node_colors[ kegg_id ] = ecol
+                            node_colors[kegg_id] = ecol
 
                     elif 'NCBI-GENE' in m.databases:
                         kegg_id = m.databases['NCBI-GENE']
-                        ecol = utils.calculate_rdbu9_color( scale, dsi.data[0,n] )
+                        ecol = utils.calculate_rdbu9_color(scale, dsi.data[0, n])
                         if kegg_id is not None and ecol is not None:
-                            node_colors[ kegg_id ] = ecol
-               
-        tmp = open( os.path.join(QDir.tempPath(),'kegg-pathway-data.txt') , 'w')
+                            node_colors[kegg_id] = ecol
+
+        tmp = open(os.path.join(QDir.tempPath(), 'kegg-pathway-data.txt'), 'w')
         tmp.write('#hsa\tData\n')
-        for k,c in node_colors.items():
-            tmp.write('%s\t%s\n' % (k,c[0]) )
-        tmp = open( os.path.join(QDir.tempPath(),'kegg-pathway-data.txt') , 'r')
+        for k, c in node_colors.items():
+            tmp.write('%s\t%s\n' % (k, c[0]))
+        tmp = open(os.path.join(QDir.tempPath(), 'kegg-pathway-data.txt'), 'r')
 
         values = {
-                  'map'          : self.kegg_pathway_t.text(),
-                  'mapping_list' : tmp,
-                  'mode'         : 'color',
-                  'submit'       : 'Exec',
+                  'map': self.kegg_pathway_t.text(),
+                  'mapping_list': tmp,
+                  'mode': 'color',
+                  'submit': 'Exec',
                  }
 
         self.status.emit('waiting')
@@ -130,8 +128,8 @@ class KEGGPathwayApp(ui.AnalysisApp):
         except urllib2.HTTPError, e:
             print e
             return
-            
-        return {'html':response.read()}
+
+        return {'html': response.read()}
 
     def prerender(self, html=''):
 
@@ -142,32 +140,27 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
         m = re.search('^KEGG PATHWAY: (.*)$', html, flags=re.MULTILINE)
         title = m.group(1)
-        self.set_name( title )
+        self.set_name(title)
         output_html = '<html><body><img src="http://www.kegg.jp%s"></body></html>' % img
 
-        return {'View':{'html':output_html} }
-
-
-
-
+        return {'View': {'html': output_html}}
 
 
 class dialogWikiPathways(ui.remoteQueryDialog):
     def __init__(self, parent=None, query_target=None, **kwargs):
-        super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)        
-    
+        super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)
+
         self.setWindowTitle("Load GPML pathway from WikiPathways")
 
     def parse(self, data):
         result = {}
-        tree = et.fromstring( data.encode('utf-8') )
+        tree = et.fromstring(data.encode('utf-8'))
         pathways = tree.iterfind('{http://www.wso2.org/php/xsd}result')
-    
-        for p in pathways:
-            result[ '%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text ) ] = p.find('{http://www.wikipathways.org/webservice}id').text
-        
-        return result        
 
+        for p in pathways:
+            result['%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text)] = p.find('{http://www.wikipathways.org/webservice}id').text
+
+        return result
 
 
 class KEGG(VisualisationPlugin):
@@ -175,4 +168,4 @@ class KEGG(VisualisationPlugin):
     def __init__(self, **kwargs):
         super(KEGG, self).__init__(**kwargs)
         KEGGPathwayApp.plugin = self
-        self.register_app_launcher( KEGGPathwayApp )
+        self.register_app_launcher(KEGGPathwayApp)

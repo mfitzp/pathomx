@@ -19,7 +19,6 @@ from matplotlib.backend_bases import ShowBase
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.figure import Figure
 
-
 from matplotlib.widgets import SubplotTool
 try:
     import matplotlib.backends.qt5_editor.figureoptions as figureoptions
@@ -31,6 +30,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 _getSaveFileName = QFileDialog.getSaveFileName
+
 
 def fn_name():
     return sys._getframe(1).f_code.co_name
@@ -117,6 +117,7 @@ class TimerQT(TimerBase):
         upon timer events. This list can be manipulated directly, or the
         functions add_callback and remove_callback can be used.
     """
+
     def __init__(self, *args, **kwargs):
         super(TimerQT, self).__init__(*args, **kwargs)
 
@@ -254,7 +255,7 @@ class FigureCanvasQT(QWidget, FigureCanvasBase):
             FigureCanvasBase.button_press_event(self, x, y,
                                                 button, dblclick=True)
         if DEBUG:
-            print ('button doubleclicked:', event.button())
+            print('button doubleclicked:', event.button())
 
     def mouseMoveEvent(self, event):
         x = event.x()
@@ -279,10 +280,10 @@ class FigureCanvasQT(QWidget, FigureCanvasBase):
         y = self.figure.bbox.height - event.y()
         # from QWheelEvent::delta doc
         if event.pixelDelta().x() == 0 and event.pixelDelta().y() == 0:
-            steps = event.angleDelta().y()/120
+            steps = event.angleDelta().y() / 120
         else:
             steps = event.pixelDelta().y()
-        
+
         if steps != 0:
             FigureCanvasBase.scroll_event(self, x, y, steps)
             if DEBUG:
@@ -312,8 +313,8 @@ class FigureCanvasQT(QWidget, FigureCanvasBase):
             print('resize (%d x %d)' % (w, h))
             print("FigureCanvasQt.resizeEvent(%d, %d)" % (w, h))
         dpival = self.figure.dpi
-        winch = w/dpival
-        hinch = h/dpival
+        winch = w / dpival
+        hinch = h / dpival
         self.figure.set_size_inches(winch, hinch)
         FigureCanvasBase.resize_event(self)
         self.draw()
@@ -522,9 +523,9 @@ class FigureManagerQT(FigureManagerBase):
         self.window.destroyed.connect(self._widgetclosed)
 
         if self.toolbar:
-                self.toolbar.destroy()
+            self.toolbar.destroy()
         if DEBUG:
-                print("destroy figure manager")
+            print("destroy figure manager")
         self.window.close()
 
     def get_window_title(self):
@@ -536,17 +537,17 @@ class FigureManagerQT(FigureManagerBase):
 
 class NavigationToolbar2QT(QToolBar, NavigationToolbar2):
     message = pyqtSignal(str)
-    
+
     toolitems = (
         ('Home', 'Reset original view', 'home.png', 'home'),
-        ('Back', 'Back to  previous view','back.png', 'back'),
-        ('Forward', 'Forward to next view','forward.png', 'forward'),
-        ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png','pan'),
-        ('Zoom', 'Zoom to rectangle','zoom_to_rect.png', 'zoom'),
+        ('Back', 'Back to  previous view', 'back.png', 'back'),
+        ('Forward', 'Forward to next view', 'forward.png', 'forward'),
+        ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png', 'pan'),
+        ('Zoom', 'Zoom to rectangle', 'zoom_to_rect.png', 'zoom'),
         (None, None, None, None),
-        ('Subplots', 'Configure subplots','subplots.png', 'configure_subplots'),
-        ('Save', 'Save the figure','filesave.png', 'save_figure'),
-        )    
+        ('Subplots', 'Configure subplots', 'subplots.png', 'configure_subplots'),
+        ('Save', 'Save the figure', 'filesave.png', 'save_figure'),
+        )
 
     def __init__(self, canvas, parent, coordinates=True):
         """ coordinates: should we show the coordinates on the right? """
@@ -624,7 +625,7 @@ class NavigationToolbar2QT(QToolBar, NavigationToolbar2):
                                                           titles,
                                                           0, False)
                 if ok:
-                    axes = allaxes[titles.index( str(item) ) ]
+                    axes = allaxes[titles.index(str(item))]
                 else:
                     return
 
@@ -713,7 +714,7 @@ class NavigationToolbar2QT(QToolBar, NavigationToolbar2):
             else:
                 # save dir for next time
                 matplotlib.rcParams['savefig.directory'] = os.path.dirname(
-                    str(fname) )
+                    str(fname))
             try:
                 self.canvas.print_figure(str(fname))
             except Exception as e:
@@ -743,7 +744,7 @@ class SubplotToolQt(QWidget, SubplotTool):
         self.slidertop.valueChanged.connect(self.sliderbottom.setMaximum)
 
         sliders = (self.sliderleft, self.sliderbottom, self.sliderright,
-                   self.slidertop, self.sliderwspace, self.sliderhspace,)
+                   self.slidertop, self.sliderwspace, self.sliderhspace, )
         adjustments = ('left:', 'bottom:', 'right:',
                        'top:', 'wspace:', 'hspace:')
 
@@ -792,16 +793,16 @@ class SubplotToolQt(QWidget, SubplotTool):
 
         self.setLayout(layout)
 
-        self.sliderleft.setSliderPosition(int(targetfig.subplotpars.left*1000))
+        self.sliderleft.setSliderPosition(int(targetfig.subplotpars.left * 1000))
         self.sliderbottom.setSliderPosition(
-            int(targetfig.subplotpars.bottom*1000))
+            int(targetfig.subplotpars.bottom * 1000))
         self.sliderright.setSliderPosition(
-            int(targetfig.subplotpars.right*1000))
-        self.slidertop.setSliderPosition(int(targetfig.subplotpars.top*1000))
+            int(targetfig.subplotpars.right * 1000))
+        self.slidertop.setSliderPosition(int(targetfig.subplotpars.top * 1000))
         self.sliderwspace.setSliderPosition(
-            int(targetfig.subplotpars.wspace*1000))
+            int(targetfig.subplotpars.wspace * 1000))
         self.sliderhspace.setSliderPosition(
-            int(targetfig.subplotpars.hspace*1000))
+            int(targetfig.subplotpars.hspace * 1000))
 
         self.sliderleft.valueChanged.connect(self.funcleft)
         self.sliderbottom.valueChanged.connect(self.funcbottom)
@@ -813,38 +814,38 @@ class SubplotToolQt(QWidget, SubplotTool):
     def funcleft(self, val):
         if val == self.sliderright.value():
             val -= 1
-        self.targetfig.subplots_adjust(left=val/1000.)
+        self.targetfig.subplots_adjust(left=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
     def funcright(self, val):
         if val == self.sliderleft.value():
             val += 1
-        self.targetfig.subplots_adjust(right=val/1000.)
+        self.targetfig.subplots_adjust(right=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
     def funcbottom(self, val):
         if val == self.slidertop.value():
             val -= 1
-        self.targetfig.subplots_adjust(bottom=val/1000.)
+        self.targetfig.subplots_adjust(bottom=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
     def functop(self, val):
         if val == self.sliderbottom.value():
             val += 1
-        self.targetfig.subplots_adjust(top=val/1000.)
+        self.targetfig.subplots_adjust(top=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
     def funcwspace(self, val):
-        self.targetfig.subplots_adjust(wspace=val/1000.)
+        self.targetfig.subplots_adjust(wspace=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
     def funchspace(self, val):
-        self.targetfig.subplots_adjust(hspace=val/1000.)
+        self.targetfig.subplots_adjust(hspace=val / 1000.)
         if self.drawon:
             self.targetfig.canvas.draw()
 
@@ -872,6 +873,5 @@ def exception_handler(type, value, tb):
 
     if len(msg):
         error_msg_qt(msg)
-
 
 FigureManager = FigureManagerQT

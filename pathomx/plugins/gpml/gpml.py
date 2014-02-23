@@ -10,15 +10,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
-
 
 from plugins import VisualisationPlugin
 
 import os
-import ui, utils
+import ui
+import utils
 from data import DataSet, DataDefinition
 from views import HTMLView
 
@@ -33,8 +32,8 @@ except ImportError:
 
 
 class GPMLView(HTMLView):
-    
-    def generate(self, gpml=None, node_colors = None):
+
+    def generate(self, gpml=None, node_colors=None):
 
         # Add our urls to the defaults
         xref_urls = {
@@ -44,38 +43,38 @@ class GPMLView(HTMLView):
             'WikiPathways': 'pathomx://wikipathway/%s/import',
         }
         if gpml:
-            svg, metadata = gpml2svg.gpml2svg( gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors ) # Add Pathomx required customisations here
-            self.setHtml(svg,QUrl("~")) 
-            self.w.set_name( metadata['Name'] )
+            svg, metadata = gpml2svg.gpml2svg(gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors)  # Add Pathomx required customisations here
+            self.setHtml(svg, QUrl("~"))
+            self.w.set_name(metadata['Name'])
+
 
 # Class for data visualisations using GPML formatted pathways
 # Supports loading from local file and WikiPathways
 class GPMLPathwayApp(ui.AnalysisApp):
     def __init__(self, gpml=None, svg=None, filename=None, **kwargs):
-        super(GPMLPathwayApp, self).__init__( **kwargs)
+        super(GPMLPathwayApp, self).__init__(**kwargs)
 
-        self.gpml = None # Source GPML file
-        self.svg = None # Rendered GPML file as SVG
+        self.gpml = None  # Source GPML file
+        self.svg = None  # Rendered GPML file as SVG
         self.metadata = {}
 
         #self.browser = ui.QWebViewExtend(self)
-        self.views.addView(GPMLView(self),'View')
+        self.views.addView(GPMLView(self), 'View')
 
-        self.data.add_input('input') # Add input slot
+        self.data.add_input('input')  # Add input slot
         # Setup data consumer options
-        self.data.consumer_defs.append( 
+        self.data.consumer_defs.append(
             DataDefinition('input', {
-            'entities_t':   (None, ['Compound','Gene']), 
-            },'Relative concentration data'),
+            'entities_t': (None, ['Compound', 'Gene']),
+            }, 'Relative concentration data'),
         )
 
-
-        load_gpmlAction = QAction( QIcon( os.path.join( self.plugin.path,'document-open-gpml.png' ) ), 'Load a GPML pathway file\u2026', self.m)
+        load_gpmlAction = QAction(QIcon(os.path.join(self.plugin.path, 'document-open-gpml.png')), 'Load a GPML pathway file\u2026', self.m)
         load_gpmlAction.setShortcut('Ctrl+Q')
         load_gpmlAction.setStatusTip('Load a GPML pathway file')
         load_gpmlAction.triggered.connect(self.onLoadGPMLPathway)
 
-        load_wikipathwaysAction = QAction( QIcon( os.path.join( self.plugin.path,'wikipathways-open.png' ) ), 'Load pathway map from WikiPathways\u2026', self.m)
+        load_wikipathwaysAction = QAction(QIcon(os.path.join(self.plugin.path, 'wikipathways-open.png')), 'Load pathway map from WikiPathways\u2026', self.m)
         load_wikipathwaysAction.setShortcut('Ctrl+Q')
         load_wikipathwaysAction.setStatusTip('Load a GPML pathway from WikiPathways service')
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
@@ -84,24 +83,23 @@ class GPMLPathwayApp(ui.AnalysisApp):
         self.addFigureToolBar()
 
         t = self.addToolBar('GPML')
-        t.setIconSize( QSize(16,16) )
+        t.setIconSize(QSize(16, 16))
         t.addAction(load_gpmlAction)
         t.addAction(load_wikipathwaysAction)
-         
+
         if filename:
-            self.load_gpml_file( filename )
-        
-        #self.o.show() 
-        self.plugin.register_url_handler( self.url_handler )
+            self.load_gpml_file(filename)
+
+        #self.o.show()
+        self.plugin.register_url_handler(self.url_handler)
 
         self.finalise()
-        
 
     def url_handler(self, url):
 
         #http://@app['id']/app/create
-        kind, action = url.split('/') # FIXME: Can use split here once stop using pathwaynames   
-        # Probably want to move to url strings &n= etc. for logicalness        
+        kind, action = url.split('/')  # FIXME: Can use split here once stop using pathwaynames   
+        # Probably want to move to url strings &n= etc. for logicalness
 
         if action == 'create':
             self.add_viewer()
@@ -110,23 +108,21 @@ class GPMLPathwayApp(ui.AnalysisApp):
         if action == 'import':
             if kind == 'wikipathway':
                 # Create a new GPML viewer entity, delegating it to the parent plugin
-                g = gpmlPathwayApp( self.plugin, self.m )
+                g = gpmlPathwayApp(self.plugin, self.m)
                 g.load_gpml_wikipathways(id)
                 g.generate()
-                self.plugin.instances.append( g )
-                
-                
-        
+                self.plugin.instances.append(g)
+
     def load_gpml_file(self, filename):
-        f = open(filename,'r')
+        f = open(filename, 'r')
         self.gpml = f.read()
         f.close()
-    
+
     def load_gpml_wikipathways(self, pathway_id):
-        f = urllib2.urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id )
+        f = urllib2.urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id)
         self.gpml = f.read()
         f.close()
-    
+
     def get_xref_via_unification(self, database, id):
         xref_translate = {
             'Kegg Compound': 'LIGAND-CPD',
@@ -135,67 +131,61 @@ class GPMLPathwayApp(ui.AnalysisApp):
             'CAS': 'CAS',
             }
         if database in xref_translate:
-            obj = self.m.db.get_via_unification( xref_translate[database], id )
+            obj = self.m.db.get_via_unification(xref_translate[database], id)
             if obj:
-                return ('MetaCyc %s' % obj.type, obj.id )
+                return ('MetaCyc %s' % obj.type, obj.id)
         return None
-        
+
     def get_extended_xref_via_unification_list(self, xrefs):
         if xrefs:
-            for xref,id in xrefs.items():
-                xref_extra = self.get_xref_via_unification( xref, id )
+            for xref, id in xrefs.items():
+                xref_extra = self.get_xref_via_unification(xref, id)
                 if xref_extra:
-                    xrefs[ xref_extra[0] ] = xref_extra[1]
+                    xrefs[xref_extra[0]] = xref_extra[1]
         return xrefs
-            
+
     def get_xref(self, obj):
         if obj is not None:
             return ('MetaCyc %s' % obj.type, obj.id)
-    
 
     def generate(self, input=None):
 
         if self.gpml == None:
             # No pathway loaded; check config for stored source to use
             if self.config.get('gpml_file'):
-                self.load_gpml_file( self.config.get('gpml_file') )
-                
-            elif self.config.get('gpml_wikipathways_id'):
-                self.load_gpml_wikipathways( self.config.get('gpml_wikipathways_id') )
-            
-        return {'dso':input, 'gpml':self.gpml}
+                self.load_gpml_file(self.config.get('gpml_file'))
 
-    
+            elif self.config.get('gpml_wikipathways_id'):
+                self.load_gpml_wikipathways(self.config.get('gpml_wikipathways_id'))
+
+        return {'dso': input, 'gpml': self.gpml}
+
     def prerender(self, dso=None, gpml=None):
 
         node_colors = {}
-    
+
         if dso:
-            mini, maxi = min( abs( np.median(dso.data) ), 0 ), max( abs( np.median(dso.data) ), 0) 
-            mini, maxi = -2.0, +2.0 #Fudge; need an intelligent way to determine (2*median? 2*mean?)
-            scale = utils.calculate_scale( [ mini, 0, maxi ], [9,1], out=np.around) # rdbu9 scale
+            mini, maxi = min(abs(np.median(dso.data)), 0), max(abs(np.median(dso.data)), 0)
+            mini, maxi = -2.0, +2.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
 
             for n, m in enumerate(dso.entities[1]):
-                xref = self.get_xref( m )
-                ecol = utils.calculate_rdbu9_color( scale, dso.data[0,n] )
+                xref = self.get_xref(m)
+                ecol = utils.calculate_rdbu9_color(scale, dso.data[0, n])
                 #print xref, ecol
                 if xref is not None and ecol is not None:
-                    node_colors[ xref ] = ecol
+                    node_colors[xref] = ecol
 
-        return {'View':{'gpml':gpml,'node_colors':node_colors} }
-
-
-
+        return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)
 
     def onLoadGPMLPathway(self):
         """ Open a GPML pathway file """
-        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open GPML pathway file', '','GenMAPP Pathway Markup Language (*.gpml)')
+        filename, _ = QFileDialog.getOpenFileName(self.m, 'Open GPML pathway file', '', 'GenMAPP Pathway Markup Language (*.gpml)')
         if filename:
             self.load_gpml_file(filename)
             self.generate()
             self.config.set('gpml_file', filename)
-            
 
     def onLoadGPMLWikiPathways(self):
         dialog = dialogWikiPathways(parent=self.m, query_target='http://www.wikipathways.org/wpi/webservice/webservice.php/findPathwaysByText?query=%s')
@@ -206,31 +196,27 @@ class GPMLPathwayApp(ui.AnalysisApp):
             for x in idx:
                 #gpmlpathway = gpmlPathwayApp( self.m )
                 pathway_id = dialog.data[x.text()]
-            
+
                 self.load_gpml_wikipathways(pathway_id)
                 self.generate()
-                self.config.set('gpml_wikipathways_id', pathway_id)                
-                
-
-
+                self.config.set('gpml_wikipathways_id', pathway_id)
 
 
 class dialogWikiPathways(ui.remoteQueryDialog):
     def __init__(self, parent=None, query_target=None, **kwargs):
-        super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)        
-    
+        super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)
+
         self.setWindowTitle("Load GPML pathway from WikiPathways")
 
     def parse(self, data):
         result = {}
-        tree = et.fromstring( data.encode('utf-8') )
+        tree = et.fromstring(data.encode('utf-8'))
         pathways = tree.iterfind('{http://www.wso2.org/php/xsd}result')
-    
-        for p in pathways:
-            result[ '%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text ) ] = p.find('{http://www.wikipathways.org/webservice}id').text
-        
-        return result        
 
+        for p in pathways:
+            result['%s (%s)' % (p.find('{http://www.wikipathways.org/webservice}name').text, p.find('{http://www.wikipathways.org/webservice}species').text)] = p.find('{http://www.wikipathways.org/webservice}id').text
+
+        return result
 
 
 class GPML(VisualisationPlugin):
@@ -238,5 +224,5 @@ class GPML(VisualisationPlugin):
     def __init__(self, **kwargs):
         super(GPML, self).__init__(**kwargs)
         GPMLPathwayApp.plugin = self
-        self.register_app_launcher( GPMLPathwayApp )
-        self.register_file_handler( GPMLPathwayApp, 'gpml' )
+        self.register_app_launcher(GPMLPathwayApp)
+        self.register_file_handler(GPMLPathwayApp, 'gpml')

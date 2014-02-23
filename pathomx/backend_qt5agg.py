@@ -141,7 +141,7 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
                                   QImage.Format_ARGB32)
             pixmap = QPixmap.fromImage(qImage)
             p = QPainter(self)
-            p.drawPixmap(QPoint(l, self.renderer.height-t), pixmap)
+            p.drawPixmap(QPoint(l, self.renderer.height - t), pixmap)
             p.end()
             self.blitbox = None
         self.drawRect = False
@@ -164,7 +164,7 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
         self.blitbox = bbox
         l, b, w, h = bbox.bounds
         t = b + h
-        self.repaint(l, self.renderer.height-t, w, h)
+        self.repaint(l, self.renderer.height - t, w, h)
 
     def print_figure(self, *args, **kwargs):
         FigureCanvasAgg.print_figure(self, *args, **kwargs)
