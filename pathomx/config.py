@@ -39,209 +39,209 @@ def build_dict_mapper(mdict):
 
 # QComboBox
 def _get_QComboBox(self):
-    '''
+    """
         Get value QCombobox via re-mapping filter
-    '''
+    """
     return self._get_map(self.currentText())
 
 
 def _set_QComboBox(self, v):
-    '''
+    """
         Set value QCombobox via re-mapping filter
-    '''
+    """
     self.setCurrentText(self._set_map(v))
 
 
 def _event_QComboBox(self):
-    '''
+    """
         Return QCombobox change event signal
-    '''
+    """
     return self.currentTextChanged
 
 
 # QCheckBox
 def _get_QCheckBox(self):
-    '''
+    """
         Get state of QCheckbox
-    '''
+    """
     return self.isChecked()
 
 
 def _set_QCheckBox(self, v):
-    '''
+    """
         Set state of QCheckbox
-    '''
+    """
     self.setChecked(v)
 
 
 def _event_QCheckBox(self):
-    '''
+    """
         Return state change signal for QCheckbox
-    '''
+    """
     return self.stateChanged
 
 
 # QAction
 def _get_QAction(self):
-    '''
+    """
         Get checked state of QAction
-    '''
+    """
     return self.isChecked()
 
 
 def _set_QAction(self, v):
-    '''
+    """
         Set checked state of QAction
-    '''
+    """
     self.setChecked(v)
 
 
 def _event_QAction(self):
-    '''
+    """
         Return state change signal for QAction
-    '''
+    """
     return self.toggled
 
 
 # QAction
 def _get_QPushButton(self):
-    '''
+    """
         Get checked state of QPushButton
-    '''
+    """
     return self.isChecked()
 
 
 def _set_QPushButton(self, v):
-    '''
+    """
         Set checked state of QPushButton
-    '''
+    """
     self.setChecked(v)
 
 
 def _event_QPushButton(self):
-    '''
+    """
         Return state change signal for QPushButton
-    '''
+    """
     return self.toggled
 
 
 # QSpinBox
 def _get_QSpinBox(self):
-    '''
+    """
         Get current value for QSpinBox
-    '''
+    """
     return self.value()
 
 
 def _set_QSpinBox(self, v):
-    '''
+    """
         Set current value for QSpinBox
-    '''
+    """
     self.setValue(v)
 
 
 def _event_QSpinBox(self):
-    '''
+    """
         Return value change signal for QSpinBox
-    '''
+    """
     return self.valueChanged
 
 
 # QDoubleSpinBox
 def _get_QDoubleSpinBox(self):
-    '''
+    """
         Get current value for QDoubleSpinBox
-    '''
+    """
     return self.value()
 
 
 def _set_QDoubleSpinBox(self, v):
-    '''
+    """
         Set current value for QDoubleSpinBox
-    '''
+    """
     self.setValue(v)
 
 
 def _event_QDoubleSpinBox(self):
-    '''
+    """
         Return value change signal for QDoubleSpinBox
-    '''
+    """
     return self.valueChanged
 
 
 # QPlainTextEdit
 def _get_QPlainTextEdit(self):
-    '''
+    """
         Get current document text for QPlainTextEdit
-    '''
+    """
     return self.document().toPlainText()
 
 
 def _set_QPlainTextEdit(self, v):
-    '''
+    """
         Set current document text for QPlainTextEdit
-    '''
+    """
     self.setPlainText(v)
 
 
 def _event_QPlainTextEdit(self):
-    '''
+    """
         Return current value changed signal for QPlainTextEdit box.
         
         Note that this is not a native Qt signal but a signal manually fired on 
         the user's pressing the "Apply changes" to the code button. Attaching to the 
         modified signal would trigger recalculation on every key-press.
-    '''
+    """
     return self.sourceChangesApplied
 
 
 # CodeEditor
 def _get_CodeEditor(self):
-    '''
+    """
         Get current document text for CodeEditor. Wraps _get_QPlainTextEdit.
-    '''
+    """
     _get_QPlainTextEdit(self, o)
 
 
 def _set_CodeEditor(self, v):
-    '''
+    """
         Set current document text for CodeEditor. Wraps _set_QPlainTextEdit.
-    '''
+    """
     _set_QPlainTextEdit(self, v)
 
 
 def _event_CodeEditor(self):
-    '''
+    """
         Return current value changed signal for CodeEditor box. Wraps _event_QPlainTextEdit.
-    '''
+    """
     return _event_QPlainTextEdit(self)
 
 
 # QListWidget
 def _get_QListWidget(self):
-    '''
+    """
         Get currently selected values in QListWidget via re-mapping filter.
         
         Selected values are returned as a list.
-    '''
+    """
     return [self._get_map(s.text()) for s in self.selectedItems()]
 
 
 def _set_QListWidget(self, v):
-    '''
+    """
         Set currently selected values in QListWidget via re-mapping filter.
         
         Supply values to be selected as a list.
-    '''
+    """
     if v:
         for s in v:
             self.findItems(self._set_map(s), Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
-    '''
+    """
         Return current selection changed signal for QListWidget.
-    '''
+    """
     return self.itemSelectionChanged
 
 
