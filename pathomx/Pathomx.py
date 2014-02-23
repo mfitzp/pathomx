@@ -55,7 +55,7 @@ from distutils.version import StrictVersion
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-version_string = '2.2.0'
+VERSION_STRING = '2.2.0'
 
 
 class DialogAbout(qt5.QDialog):
@@ -872,10 +872,10 @@ class MainWindow(qt5.QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(self.config.value('/Pathomx/Latest_version')) < StrictVersion(version_string):
+        if StrictVersion(self.config.value('/Pathomx/Latest_version')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             self.onAbout()
-            self.config.setValue('/Pathomx/Latest_version', version_string)
+            self.config.setValue('/Pathomx/Latest_version', VERSION_STRING)
 
         if self.config.value('/Pathomx/Offered_registration', False) != True:
             self.onDoRegister()
