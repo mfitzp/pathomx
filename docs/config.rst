@@ -1,4 +1,4 @@
-Views
+Config
 *************
 
 .. automodule:: config
