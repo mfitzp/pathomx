@@ -3,13 +3,8 @@
 # Loads a csv data file and extracts key information into usable structures for analysis
 
 # Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-#from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-#from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
+import qt5
+
 import os
 import sys
 import re
@@ -247,10 +242,10 @@ def _event_QListWidget(self):
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file (for workspace saving)
-class ConfigManager(QObject):
+class ConfigManager(qt5.QObject):
 
     # Signals
-    updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
+    updated = qt5.pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
 
     def __init__(self, defaults={}, *args, **kwargs):
         super(ConfigManager, self).__init__(*args, **kwargs)
@@ -303,11 +298,26 @@ class ConfigManager(QObject):
 
     # Defaults are used in absence of a set value (use for base settings)
     def set_default(self, key, value, eventhook=RECALCULATE_ALL):
+        """
+        Set the default value for a given key.
+        
+        This will be returned if the value is 
+        not set in the current config. It is important to include defaults for all 
+        possible config values for backward compatibility with earlier versions of a plugin.
+        """
+        
         self.defaults[key] = value
         self.eventhooks[key] = eventhook
         self.updated.emit(eventhook)
 
     def set_defaults(self, keyvalues, eventhook=RECALCULATE_ALL):
+        """
+        Set the default value for a set of keys.
+        
+        These will be returned if the value is 
+        not set in the current config. It is important to include defaults for all 
+        possible config values for backward compatibility with earlier versions of a plugin.
+        """
         for key, value in keyvalues.items():
             self.defaults[key] = value
             self.eventhooks[key] = eventhook
@@ -322,6 +332,13 @@ class ConfigManager(QObject):
         self.set_many(keyvalues)
 
     def set_many(self, keyvalues, trigger_update=True):
+        """
+        Set the value of multiple config settings simultaneously.
+        
+        This postpones the 
+        triggering of the update signal until all values are set to prevent excess signals.
+        The trigger_update option can be set to False to prevent any update at all.
+        """
         has_updated = False
         for k, v in keyvalues.items():
             u = self.set(k, v, trigger_update=False)
@@ -330,6 +347,7 @@ class ConfigManager(QObject):
 
         if has_updated and trigger_update:
             self.updated.emit(RECALCULATE_ALL)
+            
     # HANDLERS
 
     # Handlers are UI elements (combo, select, checkboxes) that automatically update
@@ -337,7 +355,12 @@ class ConfigManager(QObject):
     # changes and ensuring that elements remain in sync
 
     def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x)):
+        """
+        Add a handler (UI element) for a given config key.
+        
+        
 
+        """
 
     # Add map handler for converting displayed values to internal config data
         if type(mapper) == dict:  # By default allow dict types to be used

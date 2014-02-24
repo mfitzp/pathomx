@@ -357,10 +357,12 @@ class DialogRegister(qt5.QDialog):
         bx.addWidget(qt5.QLabel('Email address'), 5, 0)
         bx.addWidget(self.email, 5, 1)
 
-        self.register = qt5.QCheckBox()
-        self.register.setChecked(True)
-        bx.addWidget(qt5.QLabel('Email me about new releases'), 6, 0)
-        bx.addWidget(self.register, 6, 1)
+        bx.addItem(qt5.QSpacerItem(0, 20), 6, 0)
+
+        self.releases = qt5.QComboBox()
+        self.releases.addItems(['Check automatically (weekly)', 'Subscribe to mailing list', 'Don\'t check'])
+        bx.addWidget(qt5.QLabel('Software updates'), 7, 0)
+        bx.addWidget(self.releases, 7, 1)
 
         self.layout.addLayout(bx)
 
