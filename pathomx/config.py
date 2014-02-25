@@ -314,6 +314,14 @@ class ConfigManager(qt5.QObject):
         This will be returned if the value is 
         not set in the current config. It is important to include defaults for all 
         possible config values for backward compatibility with earlier versions of a plugin.
+        
+        :param key: The configuration key to set
+        :type key: str
+        :param value: The value to set the configuration key to
+        :type value: Any supported (str, int, bool, list-of-supported-types)
+        :param eventhook: Attach either a full recalculation trigger (default), or a view-only recalculation trigger to these values.
+        :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
+        
         """
         
         self.defaults[key] = value
@@ -327,6 +335,12 @@ class ConfigManager(qt5.QObject):
         These will be returned if the value is 
         not set in the current config. It is important to include defaults for all 
         possible config values for backward compatibility with earlier versions of a plugin.
+        
+        :param keyvalues: A dictionary of keys and values to set as defaults
+        :type key: dict
+        :param eventhook: Attach either a full recalculation trigger (default), or a view-only recalculation trigger to these values.
+        :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
+        
         """
         for key, value in keyvalues.items():
             self.defaults[key] = value
@@ -348,6 +362,11 @@ class ConfigManager(qt5.QObject):
         This postpones the 
         triggering of the update signal until all values are set to prevent excess signals.
         The trigger_update option can be set to False to prevent any update at all.
+            
+        :param keyvalues: A dictionary of keys and values to set.
+        :type key: dict
+        :param trigger_update: Flag whether to trigger a config update (+recalculation) after all values are set. 
+        :type trigger_update: bool
         """
         has_updated = False
         for k, v in keyvalues.items():
