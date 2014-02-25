@@ -683,7 +683,9 @@ class MetaVizApp(ui.AnalysisApp):
         self.addFigureToolBar()
 
         self.data.add_input('suggested_pathways')  # Add input slot
-        self.data.add_input('data')  # Add input slot
+        self.data.add_input('compound_data')  # Add input slot
+        self.data.add_input('gene_data')  # Add input slot
+        self.data.add_input('protein_data')  # Add input slot
 
         self.views.addView(SVGView(self), 'View')
 
@@ -692,9 +694,16 @@ class MetaVizApp(ui.AnalysisApp):
             DataDefinition('suggested_pathways', {
             'entities_t': (None, ['Pathway']),
             }, 'Show pathways'),
-            DataDefinition('data', {
-            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
-            }, 'Relative concentration data')
+            DataDefinition('compound_data', {
+            'entities_t': (None, ['Compound',])
+            }, 'Relative compound (metabolite) concentration data'),
+            DataDefinition('gene_data', {
+            'entities_t': (None, ['Gene', 'Protein'])
+            }, 'Relative gene expression data'),
+            DataDefinition('protein_data', {
+            'entities_t': (None, ['Protein']),
+            }, 'Relative protein concentration data'),
+
         ])
 
         # Define default settings for pathway rendering
@@ -747,12 +756,11 @@ class MetaVizApp(ui.AnalysisApp):
                 self.config.set('/Pathways/Show', ','.join(pathways))
                 self.generateGraphApp()
 
-    def generate(self, suggested_pathways=None, data=None):
-        dso = data
+    def generate(self, suggested_pathways=None, compound_data=None, gene_data=None, protein_data=None):
         # By default use the generated pathomx file to view
         filename = os.path.join(QDir.tempPath(), 'pathomx-generated-pathway.svg')
 
-        tps = self.generateGraph(filename=filename, suggested_pathways=suggested_pathways, data=dso, format='svg')
+        tps = self.generateGraph(filename=filename, suggested_pathways=suggested_pathways, compound_data=compound_data, gene_data=gene_data, protein_data=protein_data, format='svg')
         if tps == None:
             svg_source = [open(filename).read().decode('utf8')]
             tps = [0]
@@ -779,7 +787,7 @@ class MetaVizApp(ui.AnalysisApp):
         fn, ext = os.path.splitext(filename)
         return fn + "-%s" + ext
 
-    def generateGraph(self, filename, suggested_pathways=[], data=None, format='svg'):
+    def generateGraph(self, filename, suggested_pathways=[], compound_data=None, gene_data=None, protein_data=None, format='svg'):
         # Build options-like structure for generation of graph
         # (compatibility with command line version, we need to fake it)
         options = Values()
@@ -830,33 +838,39 @@ class MetaVizApp(ui.AnalysisApp):
         if pathway_ids == []:
             return None
 
-        dsi = data
-        if dsi:
-            #if self.m.data.analysis_timecourse:
-            #    # Generate the multiple views
-            #    tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )
-            #    # Insert counter variable into the filename
-            #    filename = self.get_filename_with_counter(filename)
-            #    print "Generate timecourse..."
-            #    for tp in tps:
-            #        print "%s" % tp
-            #        graph = generator( pathways, options, self.m.db, analysis=self.m.data.analysis_timecourse[ tp ]) #, layout=self.layout)
-            #        graph.write(filename % tp, format=options.output, prog='neato')
-            #    return tps
-            #else:
-            print "Generate map for single control:test..."
-            # Build analysis lookup dict; we want a single color for each metabolite
-            mini, maxi = min(abs(np.median(dsi.data)), 0), max(abs(np.median(dsi.data)), 0)
-            mini, maxi = -1.0, +1.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
-            scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
-
+        
+        if compound_data or gene_data or protein_data:
+        
+            # Generate independent scales
             node_colors = {}
-            for n, m in enumerate(dsi.entities[1]):
-                if m is not None:
-                    ecol = utils.calculate_rdbu9_color(scale, dsi.data[0, n])
-                    #print xref, ecol
-                    if ecol is not None:
-                        node_colors[m.id] = ecol
+    
+            for dsi in compound_data, gene_data, protein_data: 
+                if dsi == None:
+                    continue           
+                #if self.m.data.analysis_timecourse:
+                #    # Generate the multiple views
+                #    tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )
+                #    # Insert counter variable into the filename
+                #    filename = self.get_filename_with_counter(filename)
+                #    print "Generate timecourse..."
+                #    for tp in tps:
+                #        print "%s" % tp
+                #        graph = generator( pathways, options, self.m.db, analysis=self.m.data.analysis_timecourse[ tp ]) #, layout=self.layout)
+                #        graph.write(filename % tp, format=options.output, prog='neato')
+                #    return tps
+                #else:
+                print "Generate map for single control:test..."
+                # Build analysis lookup dict; we want a single color for each metabolite
+                mini, maxi = min(abs(np.median(dsi.data)), 0), max(abs(np.median(dsi.data)), 0)
+                mini, maxi = -1.0, +1.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
+                scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
+
+                for n, m in enumerate(dsi.entities[1]):
+                    if m is not None:
+                        ecol = utils.calculate_rdbu9_color(scale, dsi.data[0, n])
+                        #print xref, ecol
+                        if ecol is not None:
+                            node_colors[m.id] = ecol
 
             graph = generator(pathways, options, self.m.db, analysis=node_colors)  # , layout=self.layout)
             self.status.emit('waiting')

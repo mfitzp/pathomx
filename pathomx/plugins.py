@@ -324,6 +324,8 @@ class BasePlugin(IPlugin):
     This base plugin class provides all setup and handling functions for all plugin types.
     Sub-classes simply override the default workspace category for each.
     '''
+    
+    default_workspace_category = None
 
     def __init__(self, **kwargs):
         super(BasePlugin, self).__init__()

@@ -64,7 +64,7 @@ class DialogAbout(qt5.QDialog):
 
         self.setWindowTitle('About Pathomx')
 
-        self.help = ui.qt5.QWebViewExtend(self, parent.onBrowserNav)
+        self.help = ui.QWebViewExtend(self, parent.onBrowserNav)
         template = parent.templateEngine.get_template('about.html')
         self.help.setHtml(template.render({
                     'htmlbase': os.path.join(utils.scriptdir, 'html'),
@@ -537,6 +537,62 @@ class ToolPanel(qt5.QListWidget):
         drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
 
         dropAction = drag.exec_(qt5.Qt.MoveAction)
+
+
+def _convert_list_type_from_XML(vs):
+    '''
+    Lists are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    vlist = vs.findall('ConfigListItem')
+    l = []
+    for xconfig in vlist:
+        v = xconfig.text
+        if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
+            # Recursive; woo!
+            v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
+        l.append( v )
+    return l
+
+def _convert_list_type_to_XML(co,vs):
+    '''
+    Lists are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    for cv in vs:
+        c = et.SubElement(co, "ConfigListItem")
+        t = type(cv).__name__
+        c.set("type", t)
+        c = CONVERT_TYPE_TO_XML[t](c, cv)    
+    return co
+    
+
+def _apply_text_str(co, s):
+    co.text = str(s)
+    return co
+
+CONVERT_TYPE_TO_XML = {
+    'str': _apply_text_str,
+    'unicode': _apply_text_str,
+    'int': _apply_text_str,
+    'float': _apply_text_str,
+    'bool': _apply_text_str,
+    'list': _convert_list_type_to_XML
+}
+
+
+CONVERT_TYPE_FROM_XML = {
+    'str': lambda x: str(x.text),
+    'unicode': lambda x: str(x.text),
+    'int': lambda x: int(x.text),
+    'float': lambda x: float(x.text),
+    'bool': lambda x: bool(x.text),
+    'list': _convert_list_type_from_XML
+}
+
+
+
+
 
      
 class MainWindow(qt5.QMainWindow):
@@ -1225,12 +1281,12 @@ class MainWindow(qt5.QMainWindow):
             position.set("y", str(v.editorItem.y()))
 
             config = et.SubElement(app, "Config")
-            print v.config.config
             for ck, cv in v.config.config.items():
                 co = et.SubElement(config, "ConfigSetting")
                 co.set("id", ck)
+                t = type(cv).__name__
                 co.set("type", type(cv).__name__)
-                co.text = str(cv)
+                co = CONVERT_TYPE_TO_XML[t](co, cv)
 
             datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
@@ -1249,7 +1305,10 @@ class MainWindow(qt5.QMainWindow):
         filename, _ = qt5.QFileDialog.getOpenFileName(self, 'Open new workflow', '', "Pathomx Workflow Format (*.mpf)")
         if filename:
             self.openWorkflow(filename)
+    
+    
 
+            
     def openWorkflow(self, fn):
         print "Loading workflow..."
         # Wipe existing workspace
@@ -1257,12 +1316,6 @@ class MainWindow(qt5.QMainWindow):
         # Load from file
         tree = et.parse(fn)
         workflow = tree.getroot()
-
-        type_converter = {
-            'int': int,
-            'float': float,
-            'bool': bool,
-        }
 
         appref = {}
         print "...Loading apps."
@@ -1280,9 +1333,8 @@ class MainWindow(qt5.QMainWindow):
             config = {}
             for xconfig in xapp.findall('Config/ConfigSetting'):
                 #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
-                v = xconfig.text
-                if xconfig.get('type') in type_converter:
-                    v = type_converter[xconfig.get('type')](v)
+                if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
+                    v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
                 config[xconfig.get('id')] = v
 
             app.config.set_many(config, trigger_update=False)
@@ -1346,7 +1398,7 @@ def main():
 
     # Set Matplotlib defaults for nice looking charts
     mpl.rcParams['figure.facecolor'] = 'white'
-    #mpl.rcParams['figure.autolayout'] = True
+    mpl.rcParams['figure.autolayout'] = True
     mpl.rcParams['lines.linewidth'] = 0.25
     mpl.rcParams['lines.color'] = 'black'
     mpl.rcParams['lines.markersize'] = 10

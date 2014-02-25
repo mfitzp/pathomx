@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 import os
 import signal
 import sys
+import re
 
 import matplotlib
 
@@ -28,6 +29,8 @@ except ImportError:
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
+from PyQt5 import QtWidgets
 
 _getSaveFileName = QFileDialog.getSaveFileName
 

@@ -195,7 +195,7 @@ def _get_CodeEditor(self):
     """
         Get current document text for CodeEditor. Wraps _get_QPlainTextEdit.
     """
-    _get_QPlainTextEdit(self, o)
+    _get_QPlainTextEdit(self)
 
 
 def _set_CodeEditor(self, v):
@@ -230,7 +230,7 @@ def _set_QListWidget(self, v):
     """
     if v:
         for s in v:
-            self.findItems(self._set_map(s), Qt.MatchExactly)[0].setSelected(True)
+            self.findItems(self._set_map(s), qt5.Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
@@ -260,6 +260,10 @@ class ConfigManager(qt5.QObject):
             
             Returns the value that matches the supplied key. If the value is not set a
             default value will be returned as set by set_defaults.
+            
+            :param key: The configuration key to return a config value for
+            :type key: str
+            :rtype: Any supported (str, int, bool, list-of-supported-types)
         """
         if key in self.config:
             return self.config[key]
@@ -275,6 +279,12 @@ class ConfigManager(qt5.QObject):
             Set key to value. The optional trigger_update determines whether event hooks
             will fire for this key (and so re-calculation). It is useful to suppress these
             when updating multiple values for example.
+            
+            :param key: The configuration key to set
+            :type key: str
+            :param value: The value to set the configuration key to
+            :type value: Any supported (str, int, bool, list-of-supported-types)
+            :rtype: bool (success)              
         """    
         if key in self.config and self.config[key] == value:
             return False  # Not updating
@@ -358,7 +368,13 @@ class ConfigManager(qt5.QObject):
         """
         Add a handler (UI element) for a given config key.
         
+        The supplied handler should be a QWidget or QAction through which the user
+        can change the config setting. An automatic getter, setter and change-event
+        handler is attached which will keep the widget and config in sync. The attached
+        handler will default to the correct value from the current config.
         
+        An optional mapper may also be provider to handler translation from the values
+        shown in the UI and those saved/loaded from the config.
 
         """
 

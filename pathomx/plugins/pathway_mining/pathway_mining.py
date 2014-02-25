@@ -67,7 +67,7 @@ class PathwayMiningApp(ui.AnalysisApp):
 
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
         self.addDataToolBar()
-        self.addExperimentToolBar()
+        #self.addExperimentToolBar()
 
         self.config.set_defaults({
             '/Data/MiningActive': False,
@@ -82,32 +82,42 @@ class PathwayMiningApp(ui.AnalysisApp):
         #miningSetup.triggered.connect(self.onMiningSettings)
         #t.addAction(miningSetup)
 
-        self.data.add_input('input')  # Add input slot
+        self.data.add_input('input_1')  # Add input slot
+        self.data.add_input('input_2')  # Add input slot
+        self.data.add_input('input_3')  # Add input slot
+        self.data.add_input('input_4')  # Add input slot
         self.data.add_output('output')
         self.table = QTableView()
         self.table.setModel(self.data.o['output'].as_table)
 
         self.views.addTab(self.table, 'Table')
         # Setup data consumer options
-        self.data.consumer_defs.append(
-            DataDefinition('input', {
+        self.data.consumer_defs.extend([
+            DataDefinition('input_1', {
             'entities_t': (None, ['Compound', 'Gene', 'Protein']),
-            }, title='Source compound, gene or protein data')
-        )
+            }, title='Source compound, gene or protein data'),
+            DataDefinition('input_2', {
+            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            }, title='Source compound, gene or protein data'),
+            DataDefinition('input_3', {
+            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            }, title='Source compound, gene or protein data'),
+            DataDefinition('input_4', {
+            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            }, title='Source compound, gene or protein data'),
+        ])
 
         self.addConfigPanel(PathwayMiningConfigPanel, 'Pathway Mining')
 
         self.finalise()
 
-    def generate(self, input=None):
-        dsi = input
+    def generate(self, input_1=None, input_2=None, input_3=None, input_4=None):
+        #dsi = input
         # Iterate all the compounds in the current analysis
         # Assign score to each of the compound's pathways
         # Sum up, crop and return a list of pathway_ids to display
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
-        if dsi == False:
-            raise BaseException
 
         db = self.m.db
 
@@ -115,57 +125,68 @@ class PathwayMiningApp(ui.AnalysisApp):
         mining_type = self.config.get('/Data/MiningType')
 
         pathway_scores = defaultdict(int)
-        print "Mining using '%s'" % mining_type
 
-        for n, entity in enumerate(dsi.entities[1]):
-            if entity == None:
-                continue  # Skip
-
-            score = dsi.data[0, n]
-            #score = self.analysis[ m_id ]['score']
-
-            # 1' neighbours; 2' neighbours etc. add score
-            # Get a list of methods in connected reactions, add their score % to this compound
-            # if m_id in db.compounds.keys():
-            #    n_compounds = [r.compounds for r in db.compounds[ m_id ].reactions ]
-            #     print n_compounds
-            #     n_compounds = [m for ml in n_compounds for m in ml if n_m.id in self.analysis and m.id != m_id ]
-            #     for n_m in n_compounds:
-            #         score += self.analysis[ n_m.id ]['score'] * 0.5
-
-            # Get the entity's pathways
-            pathways = entity.pathways
-            if pathways == []:
+        for dsi in input_1, input_2, input_3, input_4:
+            if dsi == None:
                 continue
 
-            if self.config.get('/Data/MiningShared'):
-                # Share the change score between the associated pathways
-                # this prevents compounds having undue influence
-                score = score / len(pathways)
+            print "Mining using '%s'" % mining_type
 
-            for p in pathways:
-                mining_val = {
-                    'c': abs(score),
-                    'u': max(0, score),
-                    'd': abs(min(0, score)),
-                    'm': 1.0,
-                    't': score,
-                    }
-                pathway_scores[p] += mining_val[mining_type]
+            for n, entity in enumerate(dsi.entities[1]):
+                if entity == None:
+                    continue  # Skip
+
+                score = dsi.data[0, n]
+                #score = self.analysis[ m_id ]['score']
+
+                # 1' neighbours; 2' neighbours etc. add score
+                # Get a list of methods in connected reactions, add their score % to this compound
+                # if m_id in db.compounds.keys():
+                #    n_compounds = [r.compounds for r in db.compounds[ m_id ].reactions ]
+                #     print n_compounds
+                #     n_compounds = [m for ml in n_compounds for m in ml if n_m.id in self.analysis and m.id != m_id ]
+                #     for n_m in n_compounds:
+                #         score += self.analysis[ n_m.id ]['score'] * 0.5
+
+                # Get the entity's pathways
+                pathways = entity.pathways
+                if pathways == []:
+                    continue
+
+                if self.config.get('/Data/MiningShared'):
+                    # Share the change score between the associated pathways
+                    # this prevents compounds having undue influence
+                    score = score / len(pathways)
+
+                for p in pathways:
+                    mining_val = {
+                        'c': abs(score),
+                        'u': max(0, score),
+                        'd': abs(min(0, score)),
+                        'm': 1.0,
+                        't': score,
+                        }
+                    pathway_scores[p] += mining_val[mining_type]
 
 
-        # If we're using tendency scaling; abs the scores here
-        if mining_type == 't':
-            for p, v  in pathway_scores.items():
-                pathway_scores[p] = abs(v)
+            # If we're using tendency scaling; abs the scores here
+            if mining_type == 't':
+                for p, v  in pathway_scores.items():
+                    pathway_scores[p] = abs(v)
 
 
-        # If we're pruning, then remove any pathways not in keep_pathways
-        if self.config.get('/Data/MiningRelative'):
-            print "Scaling pathway scores to pathway sizes..."
-            for p, v in pathway_scores.items():
-                pathway_scores[p] = float(v) / len(p.reactions)
+            # If we're pruning, then remove any pathways not in keep_pathways
+            if self.config.get('/Data/MiningRelative'):
+                print "Scaling pathway scores to pathway sizes..."
+                for p, v in pathway_scores.items():
+                    pathway_scores[p] = float(v) / len(p.reactions)
 
+        
+        if not pathway_scores:
+            # No data
+            raise BaseException
+
+        # Now take the accumulated scores; and create the output
         pathway_scorest = pathway_scores.items()  # Switch it to a dict so we can sort
         pathway_scorest = [(p, v) for p, v in pathway_scorest if v > 0]  # Remove any scores of 0
         pathway_scorest.sort(key=lambda tup: tup[1], reverse=True)  # Sort by scores (either system)

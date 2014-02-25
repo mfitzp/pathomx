@@ -422,8 +422,6 @@ class MplView(FigureCanvas, BaseView):
         self.ax.get_xaxis().tick_bottom()
         self.ax.get_yaxis().tick_left()
 
-        self.fig.tight_layout()
-
         FigureCanvas.__init__(self, self.fig)
 
         self.setParent(parent.views)
@@ -436,7 +434,6 @@ class MplView(FigureCanvas, BaseView):
         # Install navigation handler; we need to provide a qt5.Qt interface that can handle multiple 
         # plots in a window under separate tabs
         self.navigation = MplNavigationHandler( self )
-        #self.navigation.zoom()
         
 
     def generate(self):
@@ -454,7 +451,7 @@ class MplView(FigureCanvas, BaseView):
             dpi = settings.get_dots_per_inch()
             prev_size = self.fig.get_size_inches()
             self.fig.set_size_inches(*size)
-            self.fig.tight_layout()
+            
             self.fig.savefig(filename, dpi=dpi)
             self.fig.set_size_inches(*prev_size)
             self.redraw()
@@ -608,7 +605,7 @@ class MplSpectraView(MplView):
                 
         self.draw()
                 
-        self.fig.tight_layout()
+        
         
         
 class D3DifferenceView(D3View):
@@ -952,7 +949,7 @@ class MplCategoryBarView(MplView):
         # Add some padding either side of graphs
         #plt.xlim( ind[0]-1, ind[-1]+1)
     
-        self.fig.tight_layout()
+        
         self.draw()
         
 class MplHeatmapView(MplView):
@@ -987,6 +984,6 @@ class MplHeatmapView(MplView):
         self.ax.set_yticklabels( dso.labels[0], size=7 )
         self.ax.set_xticklabels( dso.labels[1], rotation=60, rotation_mode='anchor', ha="left", size=7 )
     
-        self.fig.tight_layout()
+        
         self.draw()
         
