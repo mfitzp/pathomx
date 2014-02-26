@@ -351,7 +351,20 @@ class ConfigManager(qt5.QObject):
         self.updated.emit(eventhook)
     # Completely replace current config (wipe all other settings)
 
-    def replace(self, keyvalues):
+    def replace(self, keyvalues, trigger_update=True):
+        """
+        Completely reset the config with a set of key values.
+        
+        Note that this does not wipe handlers or triggers, it simply replaces the values
+        in the config entirely. It is the equivalent of unsetting all keys, followed by a
+        set_many. Anything not in the supplied keyvalues will revert to default.
+        
+        :param keyvalues: A dictionary of keys and values to set as defaults
+        :type keyvalues: dict
+        :param trigger_update: Flag whether to trigger a config update (+recalculation) after all values are set. 
+        :type trigger_update: bool
+        
+        """    
         self.config = []
         self.set_many(keyvalues)
 
