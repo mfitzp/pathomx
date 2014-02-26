@@ -355,7 +355,7 @@ class ConfigManager(qt5.QObject):
         """
         Completely reset the config with a set of key values.
         
-        Note that this does not wipe handlers or triggers, it simply replaces the values
+        Note that this does not wipe handlers or triggers (see reset), it simply replaces the values
         in the config entirely. It is the equivalent of unsetting all keys, followed by a
         set_many. Anything not in the supplied keyvalues will revert to default.
         
@@ -447,6 +447,11 @@ class ConfigManager(qt5.QObject):
         self.config = json.loads(json)
 
     def reset(self):
+        """ 
+            Reset the config manager to it's initialised state.
+            
+            This clears all values, unsets all defaults and removes all handlers, maps, and hooks.
+        """    
         self.config = {}
         self.handlers = {}
         self.defaults = {}
