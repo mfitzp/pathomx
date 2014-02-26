@@ -23,6 +23,17 @@ RECALCULATE_VIEW = 2
 
 
 def build_dict_mapper(mdict):
+    """
+        Build a map function pair for forward and reverse mapping from a specified dict
+        
+        Mapping requires both a forward and reverse (get, set) mapping function. This function
+        is used to automatically convert a supplied dict to a forward and reverse paired lambda.
+        
+        :param mdict: A dictionary of display values (keys) and stored values (values)
+        :type mdict: dict
+        :rtype: 2-tuple of lambdas that perform forward and reverse map
+                
+    """
     rdict = {v: k for k, v in mdict.iteritems()}
     return (
         lambda x: mdict[x] if x in mdict else x,
