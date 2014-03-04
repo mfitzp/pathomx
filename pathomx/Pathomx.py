@@ -400,7 +400,7 @@ class dialogDefineExperiment(ui.genericDialog):
         self.cb_test.clear()
         self.cb_test.addItems(filtered_classes)
         # Ensure something remains selected
-        self.cb_control.setC 'PluginInfo' object has no attribute '_PluginInfo__details'urrentIndex(0)
+        self.cb_control.setCurrentIndex(0)
         self.cb_test.setCurrentIndex(0)
 
     def __init__(self, parent=None, **kwargs):
