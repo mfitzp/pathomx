@@ -145,14 +145,14 @@ class UnicodeReader:
         #self.reader = csv.reader(f, dialect=dialect, **kwds)
 
     def __next__(self):
-        row = self.reader.next() 
+        row = self.reader.__next__() 
         return [unicode(c, self.encoding) for c in row]
 
     def __iter__(self):
         return self
         
     def next(self):
-        row = self.reader._next_() 
+        row = self.reader.next() 
         return [unicode(c, self.encoding) for c in row]
 
 
