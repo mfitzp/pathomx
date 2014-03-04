@@ -1,5 +1,7 @@
-from exceptions import Exception
+import sys
 
+if sys.version_info < (3, 0): # Python 2 only
+    from exceptions import Exception
 
 class PathomxIncorrectFileFormatException(Exception):
     pass

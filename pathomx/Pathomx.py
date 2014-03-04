@@ -13,12 +13,9 @@ import functools
 
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
-try:
-    # Python 2 only
+
+if sys.version_info < (3, 0): # Python 2 only
     reload(sys).setdefaultencoding('utf8')
-except:
-    pass
-    
 
 from . import qt5
 import textwrap
