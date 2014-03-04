@@ -14,10 +14,11 @@ import functools
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 try:
-    # Python 2 only
-    reload(sys).setdefaultencoding('utf8')
+    # Python 3 only
+    from imp import reload
 except:
     pass
+reload(sys).setdefaultencoding('utf8')
     
 
 from . import qt5
