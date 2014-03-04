@@ -42,7 +42,7 @@ class _PathomxObject(object):
         return self.name
 
     def __repr__(self):
-        return str(self)
+        return self.__unicode__
 
     def __init__(self, **entries):
         object.__init__(self)
@@ -56,7 +56,7 @@ class _PathomxObject(object):
 
     def get_piped_str(self, l):
         l = list(set(l))  # Remove duplicates from list when saving
-        return '|'.join([o if type(o) is str or type(o) is str else str(o.id) for o in l])
+        return '|'.join([o if type(o) is str or type(o) is unicode else str(o.id) for o in l])
 
     def get_db_str(self, dbs):
         if dbs:
