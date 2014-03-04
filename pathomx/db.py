@@ -3,6 +3,7 @@
 # Loads compounds, reactions and pathways on initialisation. Provides interface to
 # filter sets, list etc.
 # Database is a key-based store of each dataset
+from __future__ import unicode_literals
 
 import os
 import sys
@@ -234,10 +235,8 @@ class databaseManager():
         if len(identities_files) > 0:
             print("Loading additional synonyms:")
             for filename in identities_files:
-                print(".")
                 print("- %s" % filename)
-                print(".")
-                reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'synonyms', filename), 'rU'), delimiter=',', dialect='excel')
+                reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'synonyms', filename), 'rU'), delimiter=b',', dialect='excel')
                 for id, identity in reader:
                     self.add_identity(id, identity)
             print("Done.")
@@ -248,7 +247,7 @@ class databaseManager():
             print("Loading additional xrefs:")
             for filename in identities_files:
                 print("- %s" % filename)
-                reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'xrefs', filename), 'rU'), delimiter=',', dialect='excel')
+                reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'xrefs', filename), 'rU'), delimiter=b',', dialect='excel')
                 for id, db, key in reader:
                     #self.add_xref(id, db, key)
                     self.add_db_synonyms(id, {db: key})  # Hack, fix this up
@@ -257,13 +256,13 @@ class databaseManager():
     # Synonym interface for compounds, reactions and pathways (shared namespace)
     # Can call with filename to load a specific synonym file, e.g. containing peak ids
     def load_synonyms(self, filename=os.path.join(utils.scriptdir, 'database/synonyms')):
-        reader = UnicodeReader(open(filename, 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(filename, 'rU'), delimiter=b',', dialect='excel')
         for id, name in reader:
             if id in self.synfwd:  # Protection 
                 self.add_synonym(id, name)
 
     def load_compounds(self):
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/compounds'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/compounds'), 'rU'), delimiter=b',', dialect='excel')
         for id, name, type, db_unification in reader:
             self.add_compound(id, {
                 'name': name,
@@ -272,7 +271,7 @@ class databaseManager():
                 })
 
     def load_reactions(self):
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/reactions'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/reactions'), 'rU'), delimiter=b',', dialect='excel')
         for id, name, origin, dest, smtins, smtouts, proteins, dir, pathways, db_unification in reader:
             self.add_reaction(id, {
                 'name': name,
@@ -289,7 +288,7 @@ class databaseManager():
             })
 
     def load_pathways(self):
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/pathways'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/pathways'), 'rU'), delimiter=b',', dialect='excel')
         for id, name, db_unification in reader:
             self.add_pathway(id, {
                 'name': name,
@@ -297,7 +296,7 @@ class databaseManager():
             })
 
     def load_proteins(self):
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/proteins'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/proteins'), 'rU'), delimiter=b',', dialect='excel')
         for id, name, genes, compartments, db_unification in reader:
             self.add_protein(id, {
                 'name': name,
@@ -307,7 +306,7 @@ class databaseManager():
                 })
 
     def load_genes(self):
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/genes'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/genes'), 'rU'), delimiter=b',', dialect='excel')
         for id, name, db_unification in reader:
             self.add_gene(id, {
                 'name': name,
@@ -319,7 +318,7 @@ class databaseManager():
         def sum_gibbs_in_outs(key, ins, outs):
             return sum([m.gibbs[key] for m in ins if hasattr(m, 'gibbs')]) - sum([m.gibbs[key] for m in outs if hasattr(m, 'gibbs')])
 
-        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/gibbs'), 'rU'), delimiter=',', dialect='excel')
+        reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/gibbs'), 'rU'), delimiter=b',', dialect='excel')
 
         # Add reactions from each compound that we have gibbs data for
         gibbs_reactions = set()
@@ -501,32 +500,32 @@ class databaseManager():
 
     # Output the current database to disk (Overwrite completely)
     def save_compounds(self):
-        writer = UnicodeWriter(open('./database/compounds', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/compounds', 'wb'), delimiter=b',')
         for compound in list(self.compounds.values()):
             writer.writerow(compound.as_csv())
 
     def save_reactions(self):
-        writer = UnicodeWriter(open('./database/reactions', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/reactions', 'wb'), delimiter=b',')
         for reaction in list(self.reactions.values()):
             writer.writerow(reaction.as_csv())
 
     def save_pathways(self):
-        writer = UnicodeWriter(open('./database/pathways', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/pathways', 'wb'), delimiter=b',')
         for pathway in list(self.pathways.values()):
             writer.writerow(pathway.as_csv())
 
     def save_proteins(self):
-        writer = UnicodeWriter(open('./database/proteins', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/proteins', 'wb'), delimiter=b',')
         for protein in list(self.proteins.values()):
             writer.writerow(protein.as_csv())
 
     def save_genes(self):
-        writer = UnicodeWriter(open('./database/genes', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/genes', 'wb'), delimiter=b',')
         for gene in list(self.genes.values()):
             writer.writerow(gene.as_csv())
 
     def save_synonyms(self):
-        writer = UnicodeWriter(open('./database/synonyms', 'wb'), delimiter=',')
+        writer = UnicodeWriter(open('./database/synonyms', 'wb'), delimiter=b',')
         for synk, synv in list(self.synfwd.items()):
             for syn in synv:
                 row = [synk, syn]
