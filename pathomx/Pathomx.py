@@ -825,8 +825,8 @@ class MainWindow(qt5.QMainWindow):
 
                 if not os.path.isfile(plugin_image):
                     plugin_image = None
-
-                plugin_path = plugin.details.get('Core', 'Module')
+                
+                plugin_path = plugin.path #plugin.details.get('Core', 'Module')
 
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__,  # __module__,
