@@ -131,59 +131,66 @@ def nonull(stream):
 
 
 
+if sys.version_info < (3, 0): # Python 2 only
 
-class UnicodeReader:
-    """
-    A CSV reader which will iterate over lines in the CSV file "f",
-    which is encoded in the given encoding.
-    """
+    class UnicodeReader:
+        """
+        A CSV reader which will iterate over lines in the CSV file "f",
+        which is encoded in the given encoding.
+        """
 
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
-        self.reader = csv.reader(f, **kwargs)
-        self.encoding = encoding
-        #f = UTF8Recoder(f, encoding)
-        #self.reader = csv.reader(f, dialect=dialect, **kwds)
+        def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
+            self.reader = csv.reader(f, **kwargs)
+            self.encoding = encoding
+            #f = UTF8Recoder(f, encoding)
+            #self.reader = csv.reader(f, dialect=dialect, **kwds)
 
-    def __next__(self):
-        row = self.reader.__next__() 
-        return [str(c, self.encoding) for c in row]
+        def __next__(self):
+            row = self.reader.__next__() 
+            return [str(c, self.encoding) for c in row]
 
-    def __iter__(self):
-        return self
+        def __iter__(self):
+            return self
         
-    def next(self):
-        row = self.reader.next() 
-        return [unicode(c, self.encoding) for c in row]
+        def next(self):
+            row = self.reader.next() 
+            return [unicode(c, self.encoding) for c in row]
 
 
-class UnicodeWriter:
-    """
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
-    """
+    class UnicodeWriter:
+        """
+        A CSV writer which will write rows to CSV file "f",
+        which is encoded in the given encoding.
+        """
 
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
-        # Redirect output to a queue
-        self.queue = io.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwargs)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
+        def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
+            # Redirect output to a queue
+            self.queue = io.StringIO()
+            self.writer = csv.writer(self.queue, dialect=dialect, **kwargs)
+            self.stream = f
+            self.encoder = codecs.getincrementalencoder(encoding)()
 
-    def writerow(self, row):
-        self.writer.writerow([s.encode("utf-8") for s in row])
-        # Fetch UTF-8 output from the queue ...
-        data = self.queue.getvalue()
-        data = data.decode("utf-8")
-        # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
-        # write to the target stream
-        self.stream.write(data)
-        # empty queue
-        self.queue.truncate(0)
+        def writerow(self, row):
+            self.writer.writerow([s.encode("utf-8") for s in row])
+            # Fetch UTF-8 output from the queue ...
+            data = self.queue.getvalue()
+            data = data.decode("utf-8")
+            # ... and reencode it into the target encoding
+            data = self.encoder.encode(data)
+            # write to the target stream
+            self.stream.write(data)
+            # empty queue
+            self.queue.truncate(0)
 
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
+        def writerows(self, rows):
+            for row in rows:
+                self.writerow(row)
+    
+else:
+    
+    import csv.reader as UnicodeReader
+    import csv.writer as UnicodeWriter
+    
 
 
 def mkdir_p(path):
