@@ -146,7 +146,7 @@ class UnicodeReader:
 
     def __next__(self):
         row = self.reader.__next__() 
-        return [unicode(c, self.encoding) for c in row]
+        return [str(c, self.encoding) for c in row]
 
     def __iter__(self):
         return self
