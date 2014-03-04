@@ -152,7 +152,7 @@ class UnicodeReader:
         return self
         
     def next(self):
-        row = self.reader.next() 
+        row = self.reader._next_() 
         return [unicode(c, self.encoding) for c in row]
 
 
