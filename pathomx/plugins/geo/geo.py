@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -12,16 +11,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-import threads
-from data import DataSet
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+
+from pathomx.data import DataSet
+from pathomx.plugins import ImportPlugin
 
 
 class GEOApp(ui.ImportDataApp):
@@ -38,8 +40,8 @@ class GEOApp(ui.ImportDataApp):
                 '.soft': self.load_soft_dataset,
             }
 
-        if fe in formats.keys():
-            print "Loading... %s" % fe
+        if fe in list(formats.keys()):
+            print("Loading... %s" % fe)
 
             dso = formats[fe](filename)
 
@@ -110,7 +112,7 @@ class GEOApp(ui.ImportDataApp):
             # Rewrite to account for null values; skip header (left column)
             row_data = row
             row_data[1:] = [self.get_float(x) for x in row[1:]]
-            data[row[0]] = dict(zip(headers, row_data))
+            data[row[0]] = dict(list(zip(headers, row_data)))
 
         return data
 
@@ -130,7 +132,7 @@ class GEOApp(ui.ImportDataApp):
         dataset_data = {}
         subsets = {}
 
-        for section, rows in soft_data.items():
+        for section, rows in list(soft_data.items()):
 
             if section.startswith('^DATABASE'):
                 database = self.get_soft_metadata(rows)
@@ -148,12 +150,12 @@ class GEOApp(ui.ImportDataApp):
         # We now have the entire dataset loaded; but in a bit of a messed up format
         # Build a dataset object to fit and map the data in
         sample_ids = []
-        for k, subset in subsets.items():
+        for k, subset in list(subsets.items()):
             sample_ids.extend(subset['subset_sample_id'])
         sample_ids = sorted(sample_ids)  # Get the samples sorted so we keep everything lined up
 
         class_lookup = {}
-        for class_id, s in subsets.items():
+        for class_id, s in list(subsets.items()):
             for s_id in s['subset_sample_id']:
                 class_lookup[s_id] = "%s (%s)" % (s['subset_description'] if 'subset_description' in s else '', class_id)
 
@@ -191,7 +193,7 @@ class GEOApp(ui.ImportDataApp):
         samples = {}
         sample_data = {}
 
-        for section, rows in soft_data.items():
+        for section, rows in list(soft_data.items()):
 
             if section.startswith('^DATABASE'):
                 database = self.get_soft_metadata(rows)

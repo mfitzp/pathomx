@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,21 +10,30 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import qt5
 
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-from plugins import VisualisationPlugin
-
 import os
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import HTMLView
 
-import urllib2
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+import pathomx.qt5 as qt5
 
+from pathomx.plugins import VisualisationPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import HTMLView
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
+    
+    
 import numpy as np
 
 try:
@@ -129,7 +138,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
         f.close()
 
     def load_gpml_wikipathways(self, pathway_id):
-        f = urllib2.urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id)
+        f = urlopen('http://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:%s&revision=0' % pathway_id)
         self.gpml = f.read()
         f.close()
 
@@ -148,7 +157,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
 
     def get_extended_xref_via_unification_list(self, xrefs):
         if xrefs:
-            for xref, id in xrefs.items():
+            for xref, id in list(xrefs.items()):
                 xref_extra = self.get_xref_via_unification(xref, id)
                 if xref_extra:
                     xrefs[xref_extra[0]] = xref_extra[1]
@@ -189,7 +198,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
                     
-        print node_colors
+        print(node_colors)
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)

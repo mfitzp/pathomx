@@ -251,10 +251,10 @@ class DataManager( QObject ):
         return False
     
     def unput(self, interface):
-        print 'UNPUTTING'
+        print('UNPUTTING')
         # Trigger _unconsume on all watchers
         for w in list( self.watchers[interface] ):
-            for i,d in w.i.items():
+            for i,d in list(w.i.items()):
                 w.unget( i )
         
         self.watchers[interface] = set()
@@ -329,7 +329,7 @@ class DataManager( QObject ):
             
         # Don't add data which belongs to a child
         if self in data.previously_managed_by:
-            print data.previously_managed_by
+            print(data.previously_managed_by)
             return False
 
         for consumer_def in consumer_defs:
@@ -354,7 +354,7 @@ class DataManager( QObject ):
     def _unconsume(self, data):
         if data and self in data.manager.watchers[ data.manager_interface ]:
             data.manager.watchers[ data.manager_interface ].remove( self )
-            for interface,d in self.i.items():
+            for interface,d in list(self.i.items()):
                 if d == data:
                     self.unconsumed.emit( (data.manager, data.manager_interface), (self, interface) )
 
@@ -433,10 +433,10 @@ class DataManager( QObject ):
 
 
     def reset(self):
-        for i in self.i.keys():
+        for i in list(self.i.keys()):
             self.unget(i)
         
-        for i in self.o.keys():
+        for i in list(self.o.keys()):
             self.unput(i)
             
         
@@ -476,7 +476,7 @@ class DataDefinition( QObject ):
             return self.cmp_map['aloeic'], s
             
         s = str(s) # Treat all input as strings
-        for k,v in self.cmp_map.items():
+        for k,v in list(self.cmp_map.items()):
             if k in s:
                 return v, s.replace(k,'')
         return self.cmp_map['='], s
@@ -491,20 +491,20 @@ class DataDefinition( QObject ):
         # if we fail at any point return False
         # self.interface holds the interface for this 
         # Test each option; if we get to the bottom we're alright!
-        print "CONSUME? [%s]" % data.name
-        print self.definition
-        for k,v in self.definition.items():
+        print("CONSUME? [%s]" % data.name)
+        print(self.definition)
+        for k,v in list(self.definition.items()):
             t = getattr( data, k )
-            print " COMPARE: %s %s %s" % (k,v,t)
+            print(" COMPARE: %s %s %s" % (k,v,t))
             # t = (1d,2d,3d)
             # Dimensionality check
             if len(v) != len(t):
-                print "  dimensionality failure %s %s" %( len(v), len(t) )
+                print("  dimensionality failure %s %s" %( len(v), len(t) ))
                 return False
                 
             for n, cr in enumerate(v):
                 if cr == None: # No restriction on this definition
-                    print '  pass'
+                    print('  pass')
                     continue 
 
                 cmp_fn, crr = self.get_cmp_fn( cr )
@@ -512,15 +512,15 @@ class DataDefinition( QObject ):
                     crr = type(t[n])(crr) 
                 except:
                     # If we can't match equivalent types; it's nonsense so fail
-                    print "  type failure %s %s" %( type(t[n]), type(crr) )
+                    print("  type failure %s %s" %( type(t[n]), type(crr) ))
                     return False
 
                 "  comparison %s %s %s = %s" %( t[n], cmp_fn, crr, cmp_fn( t[n], crr))
                 if not cmp_fn( t[n], crr):
-                    print "  comparison failure %s %s %s" %( t[n], cmp_fn, crr )
+                    print("  comparison failure %s %s %s" %( t[n], cmp_fn, crr ))
                     return False                                
             
-        print " successful"
+        print(" successful")
         return True
 
 
@@ -821,7 +821,7 @@ class DataSet( QObject ):
         
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )
         new_shape[ dim ] = len( unique )
-        print 'Reshape from %s to %s' % (old_shape,new_shape)
+        print('Reshape from %s to %s' % (old_shape,new_shape))
         dso.crop( new_shape )
         
         # OPTIMISE?
@@ -885,7 +885,7 @@ class DataSet( QObject ):
             
         new_shape[dim] = list(mask).count(True) # New size of it
 
-        print 'Reshape from %s to %s' % (old_shape,new_shape)
+        print('Reshape from %s to %s' % (old_shape,new_shape))
         dso.crop( new_shape )
         # FIXME: Hacky; what about 3d arrays
         if dim == 0:
@@ -946,7 +946,7 @@ class DataSet( QObject ):
             if d == 1:
                 self.data = self.data[ :,mask ]            
 
-        print self.labels
+        print(self.labels)
                     
     # JSON
     

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from plugins import AnalysisPlugin
+from pathomx.plugins import AnalysisPlugin
 
 from collections import defaultdict
 
@@ -20,12 +20,14 @@ from copy import copy
 import numpy as np
 from sklearn.decomposition import PCA
 
-import ui, db, utils, threads
-from data import DataSet, DataDefinition
-from views import MplScatterView, MplSpectraView
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
 
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplScatterView, MplSpectraView
 
-     
 # Dialog box for Metabohunter search options
 class PCAConfigPanel(ui.ConfigPanel):
 
@@ -97,7 +99,7 @@ class PCAApp( ui.AnalysisApp ):
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( weights), axis=1 )
 
-        dso_z = zip( input.scales[1], input.entities[1], input.labels[1] )
+        dso_z = list(zip( input.scales[1], input.entities[1], input.labels[1] ))
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
         
         dso_z = [x for x, wmx in dso_z ]  
@@ -120,14 +122,14 @@ class PCAApp( ui.AnalysisApp ):
             pcd.data = weights[:,n:n+1].T
             dso_pc['pc%s' % (n+1)] = pcd
         
-        return dict( {
+        return dict( list({
             'dso': input,
             'pca': pca,
             'scores': scored,
             #'weights': weights,
             'wmx': wmx,
             'dso_z': dso_z,        
-        }.items() + dso_pc.items() )
+        }.items()) + list(dso_pc.items()) )
         
     def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, pc3=None, pc4=None, pc5=None, **kwargs):
         return {

@@ -7,13 +7,21 @@
 import os
 import sys
 import re
-from utils import UnicodeReader, UnicodeWriter
+from .utils import UnicodeReader, UnicodeWriter
 from collections import defaultdict
 
-import utils
+from . import utils
 import numpy as np
 
-from translate import tr
+from .translate import tr
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
+
 
 # Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
@@ -34,7 +42,7 @@ class _PathomxObject(object):
         return self.name
 
     def __repr__(self):
-        return unicode(self)
+        return str(self)
 
     def __init__(self, **entries):
         object.__init__(self)
@@ -48,12 +56,12 @@ class _PathomxObject(object):
 
     def get_piped_str(self, l):
         l = list(set(l))  # Remove duplicates from list when saving
-        return '|'.join([o if type(o) is str or type(o) is unicode else str(o.id) for o in l])
+        return '|'.join([o if type(o) is str or type(o) is str else str(o.id) for o in l])
 
     def get_db_str(self, dbs):
         if dbs:
             dbtbl = list()
-            for k, v in dbs.items():
+            for k, v in list(dbs.items()):
                 dbtbl.append('%s:%s' % (k, v))
             return ';'.join(dbtbl)
         else:
@@ -224,25 +232,25 @@ class databaseManager():
     def load_identities(self):
         identities_files = os.listdir(os.path.join(utils.scriptdir, 'identities', 'synonyms'))
         if len(identities_files) > 0:
-            print "Loading additional synonyms:"
+            print("Loading additional synonyms:")
             for filename in identities_files:
-                print "- %s" % filename
+                print("- %s" % filename)
                 reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'synonyms', filename), 'rU'), delimiter=',', dialect='excel')
                 for id, identity in reader:
                     self.add_identity(id, identity)
-            print "Done."
+            print("Done.")
 
     def load_xrefs(self):
         identities_files = os.listdir(os.path.join(utils.scriptdir, 'identities', 'xrefs'))
         if len(identities_files) > 0:
-            print "Loading additional xrefs:"
+            print("Loading additional xrefs:")
             for filename in identities_files:
-                print "- %s" % filename
+                print("- %s" % filename)
                 reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'xrefs', filename), 'rU'), delimiter=',', dialect='excel')
                 for id, db, key in reader:
                     #self.add_xref(id, db, key)
                     self.add_db_synonyms(id, {db: key})  # Hack, fix this up
-            print "Done."
+            print("Done.")
 
     # Synonym interface for compounds, reactions and pathways (shared namespace)
     # Can call with filename to load a specific synonym file, e.g. containing peak ids
@@ -253,7 +261,6 @@ class databaseManager():
                 self.add_synonym(id, name)
 
     def load_compounds(self):
-        import urllib
         reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'database/compounds'), 'rU'), delimiter=',', dialect='excel')
         for id, name, type, db_unification in reader:
             self.add_compound(id, {
@@ -367,19 +374,19 @@ class databaseManager():
 
     def add_db_synonyms(self, id, databases):
         if id in self.index:
-            self.add_synonyms(id, ['%s:%s' % (db, key) for db, key in databases.items()])
-            self.add_synonyms(id, ['%s' % (key) for db, key in databases.items() if db in database_link_synonyms])
+            self.add_synonyms(id, ['%s:%s' % (db, key) for db, key in list(databases.items())])
+            self.add_synonyms(id, ['%s' % (key) for db, key in list(databases.items()) if db in database_link_synonyms])
 
-            for db, key in databases.items():
+            for db, key in list(databases.items()):
                 self.index[id].databases[db] = key
 
             # Add unification links
-            for db, key in databases.items():
+            for db, key in list(databases.items()):
                 self.unification[db][key] = self.index[id]
 
     def add_reaction(self, id, attr):
         self.reactions[id] = Reaction(**dict(
-            {'id': id, 'synonyms': self.synfwd[id]}.items() + attr.items())
+            list({'id': id, 'synonyms': self.synfwd[id]}.items()) + list(attr.items()))
         )
 
         # Store id and names in the synonym database
@@ -424,7 +431,7 @@ class databaseManager():
 
     def add_pathway(self, id, attr):
         self.pathways[id] = Pathway(**dict(
-            {'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'compounds': [], 'proteins': [], 'genes': [], }.items() + attr.items())
+            list({'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'compounds': [], 'proteins': [], 'genes': [], }.items()) + list(attr.items()))
         )
 
         # Store id and names in the synonym database
@@ -433,7 +440,7 @@ class databaseManager():
 
     def add_compound(self, id, attr):
         self.compounds[id] = Compound(**dict(
-            {'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items() + attr.items())
+            list({'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items()) + list(attr.items()))
         )
 
         # Store id and name in the synonym database
@@ -442,13 +449,13 @@ class databaseManager():
         self.add_db_synonyms(id, self.compounds[id].databases)
 
         # Check if we have a compound image for this compound (KEGG Sourced)
-        if 'LIGAND-CPD' in self.compounds[id].databases.keys():
+        if 'LIGAND-CPD' in list(self.compounds[id].databases.keys()):
             self.compounds[id].image = os.path.join(utils.scriptdir, 'database', 'figures', '%s.png' % id)
             self.compounds[id].imagecolor = os.path.join(utils.scriptdir, 'database', 'figures', '%d', '%s.png' % id)
 
     def add_protein(self, id, attr):
         self.proteins[id] = Protein(**dict(
-            {'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items() + attr.items())
+            list({'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items()) + list(attr.items()))
         )
 
         # Store id and name in the synonym database
@@ -458,7 +465,7 @@ class databaseManager():
 
     def add_gene(self, id, attr):
         self.genes[id] = Gene(**dict(
-            {'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items() + attr.items())
+            list({'id': id, 'synonyms': self.synfwd[id], 'reactions': [], 'pathways': [], }.items()) + list(attr.items()))
         )
 
         # Store id and name in the synonym database
@@ -493,32 +500,32 @@ class databaseManager():
     # Output the current database to disk (Overwrite completely)
     def save_compounds(self):
         writer = UnicodeWriter(open('./database/compounds', 'wb'), delimiter=',')
-        for compound in self.compounds.values():
+        for compound in list(self.compounds.values()):
             writer.writerow(compound.as_csv())
 
     def save_reactions(self):
         writer = UnicodeWriter(open('./database/reactions', 'wb'), delimiter=',')
-        for reaction in self.reactions.values():
+        for reaction in list(self.reactions.values()):
             writer.writerow(reaction.as_csv())
 
     def save_pathways(self):
         writer = UnicodeWriter(open('./database/pathways', 'wb'), delimiter=',')
-        for pathway in self.pathways.values():
+        for pathway in list(self.pathways.values()):
             writer.writerow(pathway.as_csv())
 
     def save_proteins(self):
         writer = UnicodeWriter(open('./database/proteins', 'wb'), delimiter=',')
-        for protein in self.proteins.values():
+        for protein in list(self.proteins.values()):
             writer.writerow(protein.as_csv())
 
     def save_genes(self):
         writer = UnicodeWriter(open('./database/genes', 'wb'), delimiter=',')
-        for gene in self.genes.values():
+        for gene in list(self.genes.values()):
             writer.writerow(gene.as_csv())
 
     def save_synonyms(self):
         writer = UnicodeWriter(open('./database/synonyms', 'wb'), delimiter=',')
-        for synk, synv in self.synfwd.items():
+        for synk, synv in list(self.synfwd.items()):
             for syn in synv:
                 row = [synk, syn]
                 writer.writerow(row)

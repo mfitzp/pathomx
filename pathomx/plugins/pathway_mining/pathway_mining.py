@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,19 +10,20 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from plugins import AnalysisPlugin
+from pathomx.plugins import AnalysisPlugin
 
 from collections import defaultdict
 
 import os
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import TableView
+import pathomx.ui as ui
+import pathomx.utils as utils
+
+from pathomx.db import Compound, Gene, Protein
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import TableView
 
 import numpy as np
 
-from db import Compound, Gene, Protein
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
@@ -41,7 +42,7 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
         super(PathwayMiningConfigPanel, self).__init__(*args, **kwargs)
 
         self.cb_miningType = QComboBox()
-        self.cb_miningType.addItems(METAPATH_MINING_TYPES.values())
+        self.cb_miningType.addItems(list(METAPATH_MINING_TYPES.values()))
         self.config.add_handler('/Data/MiningType', self.cb_miningType, METAPATH_MINING_TYPES)
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size')
@@ -132,7 +133,7 @@ class PathwayMiningApp(ui.AnalysisApp):
             if dsi == None:
                 continue
 
-            print "Mining using '%s'" % mining_type
+            print("Mining using '%s'" % mining_type)
 
             for n, entity in enumerate(dsi.entities[1]):
                 if entity == None:
@@ -173,14 +174,14 @@ class PathwayMiningApp(ui.AnalysisApp):
 
             # If we're using tendency scaling; abs the scores here
             if mining_type == 't':
-                for p, v  in pathway_scores.items():
+                for p, v  in list(pathway_scores.items()):
                     pathway_scores[p] = abs(v)
 
 
             # If we're pruning, then remove any pathways not in keep_pathways
             if self.config.get('/Data/MiningRelative'):
-                print "Scaling pathway scores to pathway sizes..."
-                for p, v in pathway_scores.items():
+                print("Scaling pathway scores to pathway sizes...")
+                for p, v in list(pathway_scores.items()):
                     pathway_scores[p] = float(v) / len(p.reactions)
 
         
@@ -189,7 +190,7 @@ class PathwayMiningApp(ui.AnalysisApp):
             raise BaseException
 
         # Now take the accumulated scores; and create the output
-        pathway_scorest = pathway_scores.items()  # Switch it to a dict so we can sort
+        pathway_scorest = list(pathway_scores.items())  # Switch it to a dict so we can sort
         pathway_scorest = [(p, v) for p, v in pathway_scorest if v > 0]  # Remove any scores of 0
         pathway_scorest.sort(key=lambda tup: tup[1], reverse=True)  # Sort by scores (either system)
 
@@ -197,10 +198,10 @@ class PathwayMiningApp(ui.AnalysisApp):
         keep_pathways = pathway_scorest[0:mining_depth]
         remaining_pathways = pathway_scorest[mining_depth + 1:mining_depth + 100]
 
-        print "Mining recommended %d out of %d" % (len(keep_pathways), len(pathway_scores))
+        print("Mining recommended %d out of %d" % (len(keep_pathways), len(pathway_scores)))
 
         for n, p in enumerate(keep_pathways):
-            print "- %d. %s [%.2f]" % (n + 1, p[0].name, p[1])
+            print("- %d. %s [%.2f]" % (n + 1, p[0].name, p[1]))
 
         #self.analysis['mining_ranked_remaining_pathways'] = []
 

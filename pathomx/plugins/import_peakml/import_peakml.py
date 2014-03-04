@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -12,7 +11,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
@@ -20,9 +18,13 @@ from collections import defaultdict
 import base64
 
 import numpy as np
-import ui
-import db
-from data import DataSet
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet
+from pathomx.plugins import ImportPlugin
 
 
 class ImportPeakMLApp(ui.ImportDataApp):
@@ -34,7 +36,7 @@ class ImportPeakMLApp(ui.ImportDataApp):
         s = base64.decodestring(s)
         # Each number stored as a 4-chr representation (ascii value, not character)
         l = []
-        for i in xrange(0, len(s), 4):
+        for i in range(0, len(s), 4):
             c = s[i:i + 4]
             val = 0
             for n, v in enumerate(c):
@@ -114,8 +116,8 @@ class ImportPeakMLApp(ui.ImportDataApp):
         dso.entities[1] = [db_hmdbids[hmdbid] if hmdbid in db_hmdbids else None for hmdbid in all_identities]
         dso.scales[1] = [float(masses[i]) for i in all_identities]
 
-        for mid, identities in quantities.items():
-            for identity, intensity in identities.items():
+        for mid, identities in list(quantities.items()):
+            for identity, intensity in list(identities.items()):
                 r = measurements.index(mid)
                 c = all_identities.index(identity)
 

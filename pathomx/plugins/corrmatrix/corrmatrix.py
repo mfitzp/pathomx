@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -15,13 +15,14 @@ import numpy as np
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-from plugins import VisualisationPlugin
-
 import os
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import D3PrerenderedView
+
+import pathomx.ui as ui
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import D3PrerenderedView
+from pathomx.plugins import VisualisationPlugin
 
 
 # Class for data visualisations using GPML formatted pathways
@@ -60,7 +61,7 @@ class CorrMatrixApp(ui.AnalysisApp):
         dso = input
 
         fd = np.mean(dso.data, axis=0)
-        fdm = zip(dso.labels[1], fd)
+        fdm = list(zip(dso.labels[1], fd))
         sms = sorted(fdm, key=lambda x: abs(x[1]), reverse=True)
         metabolites = [m for m, s in sms]
 

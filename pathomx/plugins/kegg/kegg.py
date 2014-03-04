@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,15 +13,15 @@ from PyQt5.QtPrintSupport import *
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-from plugins import VisualisationPlugin
 import os
 import re
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import HTMLView
 
-import urllib2
+import pathomx.ui as ui
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import HTMLView
+from pathomx.plugins import VisualisationPlugin
 
 import numpy as np
 
@@ -32,10 +32,15 @@ except ImportError:
 
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
-import StringIO
-import urllib
-import urllib2
+import io
 
+try:
+    from urllib.request import urlopen, Request
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
+    from urllib2 import Request
 
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
@@ -77,7 +82,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
         opener = register_openers()
         url = 'http://www.kegg.jp/kegg-bin/mcolor_pathway'
 
-        data = StringIO.StringIO()
+        data = io.StringIO()
 
         node_colors = {}
         if dsi:
@@ -105,7 +110,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
         tmp = open(os.path.join(QDir.tempPath(), 'kegg-pathway-data.txt'), 'w')
         tmp.write('#hsa\tData\n')
-        for k, c in node_colors.items():
+        for k, c in list(node_colors.items()):
             tmp.write('%s\t%s\n' % (k, c[0]))
         tmp = open(os.path.join(QDir.tempPath(), 'kegg-pathway-data.txt'), 'r')
 
@@ -121,12 +126,12 @@ class KEGGPathwayApp(ui.AnalysisApp):
         datagen, headers = multipart_encode(values)
         # Create the Request object
         # Actually do the request, and get the response
-        request = urllib2.Request(url, datagen, headers)
+        request = Request(url, datagen, headers)
 
         try:
-            response = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
-            print e
+            response = urlopen(request)
+        except urllib.error.HTTPError as e:
+            print(e)
             return
 
         return {'html': response.read()}

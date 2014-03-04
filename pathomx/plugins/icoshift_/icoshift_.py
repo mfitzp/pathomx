@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,15 +11,17 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from plugins import ProcessingPlugin
 
 import numpy as np
 from icoshift import icoshift
-import ui
-import db
-import utils
-from data import DataSet, DataDefinition
-from views import MplSpectraView, MplDifferenceView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView, MplDifferenceView
 
 
 # Dialog box for Metabohunter search options
@@ -145,7 +147,7 @@ class IcoshiftApp(ui.DataApp):
         # Generate bin values for range start_scale to end_scale
         # Calculate the number of bins at binsize across range
         spectra = dsi.data
-        print spectra
+        print(spectra)
         xCS, ints, ind, target = icoshift.icoshift(self.config.get('target'), spectra, inter=self.config.get('alignment_mode'), n=self.config.get('maximum_shift'))
         dsi.data = xCS
         return dsi

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,16 +13,19 @@ from PyQt5.QtPrintSupport import *
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-from plugins import IdentificationPlugin
 import os
 import sys
 import re
 import math
-import ui
-import utils
-import threads
-from data import DataSet, DataDefinition
-from views import MplSpectraView
+
+
+import pathomx.ui as ui
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.plugins import IdentificationPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView
 
 from collections import OrderedDict
 
@@ -89,7 +92,7 @@ class MetaboHunterConfigPanel(ui.ConfigPanel):
             cl = QLabel(o)
             cb = QComboBox()
 
-            cb.addItems(self.options[o].keys())
+            cb.addItems(list(self.options[o].keys()))
             row.addWidget(cl)
             row.addWidget(cb)
             self.config.add_handler(o, cb, self.options[o])
@@ -209,7 +212,7 @@ class MetaboHunterApp(ui.DataApp):
         try:
             r = requests.post(url, data=values)
         except e:
-            print e
+            print(e)
             return None
 
         html = r.content
@@ -255,7 +258,7 @@ class MetaboHunterApp(ui.DataApp):
         try:
             r = requests.post(url, data=values, files={'foo': 'bar'})
         except e:
-            print e
+            print(e)
             return None
 
         matched_peaks_text = r.content

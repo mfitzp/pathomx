@@ -4,7 +4,7 @@ import sys
 import errno
 import csv
 import codecs
-import cStringIO
+import io
 from collections import defaultdict
 
 import numpy as np
@@ -51,7 +51,7 @@ def calculate_scale(range, output, out=float):
     maxo = max(output)
 
     scale = lambda x: np.clip(out((m * x) - (m * x1) + y1), mino, maxo)
-    print "Scale generator..."
+    print("Scale generator...")
     return scale
 
 
@@ -69,26 +69,26 @@ def read_metabolite_datafile(filename, options):
 # Read in data for the graphing metabolite, with associated value (generate mean)
     reader = csv.reader(open(filename, 'rU'), delimiter=',', dialect='excel')
     # Find matching metabolite column
-    hrow = reader.next()
+    hrow = next(reader)
     try:
         metabolite_column = hrow.index(options.metabolite)
-        print "'%s' found" % (options.metabolite)
+        print("'%s' found" % (options.metabolite))
         metabolites = [options.metabolite]
     except:
         all_metabolites = hrow[2:]
-        metabolites = filter(lambda x: re.match('(.*)' + options.metabolite + '(.*)', x), all_metabolites)
+        metabolites = [x for x in all_metabolites if re.match('(.*)' + options.metabolite + '(.*)', x)]
         if len(metabolites) == 0:
-            print "Metabolite not found, try again. Pick from one of:"
-            print ', '.join(sorted(all_metabolites))
+            print("Metabolite not found, try again. Pick from one of:")
+            print(', '.join(sorted(all_metabolites)))
             exit()
         elif len(metabolites) > 1:
-            print "Searched '%s' and found multiple matches:" % (options.metabolite)
-            print ', '.join(sorted(metabolites))
+            print("Searched '%s' and found multiple matches:" % (options.metabolite))
+            print(', '.join(sorted(metabolites)))
             if not options.batch_mode:
-                print "To process all the above together use batch mode -b"
+                print("To process all the above together use batch mode -b")
                 exit()
         elif len(metabolites) == 1:
-            print "Searched '%s' and found match in '%s'" % (options.metabolite, metabolites[0])
+            print("Searched '%s' and found match in '%s'" % (options.metabolite, metabolites[0]))
 
     # Build quants table for metabolite classes
     allquants = dict()
@@ -141,8 +141,11 @@ class UTF8Recoder:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         return self.reader.next().encode("utf-8")
+
+    def next(self):
+        return self.__next__()
 
 
 class UnicodeReader:
@@ -155,12 +158,15 @@ class UnicodeReader:
         f = UTF8Recoder(f, encoding)
         self.reader = csv.reader(f, dialect=dialect, **kwds)
 
-    def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
+    def __next__(self):
+        row = next(self.reader)
+        return [str(s).encode('utf-8') for s in row]
 
     def __iter__(self):
         return self
+        
+    def next(self):
+        return self.__next__()
 
 
 class UnicodeWriter:
@@ -171,7 +177,7 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
+        self.queue = io.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
@@ -230,4 +236,4 @@ elif pkg == 'py2app':
     #'/Applications/Pathomx.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']
 elif pkg == 'py2exe':
-    scriptdir = os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
+    scriptdir = os.path.dirname(str(sys.executable, sys.getfilesystemencoding()))

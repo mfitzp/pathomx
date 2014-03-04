@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from plugins import ProcessingPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,17 +9,21 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-import threads
-from data import DataSet, DataDefinition
-from views import MplSpectraView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+import pathomx.qt5 as qt5
+
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView
 
 
 class TransformApp(ui.DataApp):

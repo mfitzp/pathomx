@@ -11,14 +11,15 @@ from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
 import os, copy
-
-from utils import UnicodeReader, UnicodeWriter
-from plugins import ProcessingPlugin
-
 import numpy as np
 
-import ui, db, utils
-from data import DataSet, DataDefinition
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.utils import UnicodeReader, UnicodeWriter
+from pathomx.plugins import ProcessingPlugin
 
 
 class MergeApp( ui.DataApp ):
@@ -50,7 +51,7 @@ class MergeApp( ui.DataApp ):
     def generate(self, **kwargs):
         
         dsos = []
-        for n,dsi in kwargs.items():
+        for n,dsi in list(kwargs.items()):
             if dsi:
                 dsos.append(dsi)
 
@@ -66,18 +67,18 @@ class MergeApp( ui.DataApp ):
         for n,dso in enumerate(todo):
             self.progress.emit( float(n)/todo_n )
 
-            print dso.name
+            print(dso.name)
             # Check if we have sample ids; if yes then build index to the working dso
             if dso.labels_n[0] != dso.shape[0]: # Need labels for everything
                 self.setWorkspaceStatus('error')
-                print "Shape/label failure..."
+                print("Shape/label failure...")
                 continue
             
             eos = dso.entities_l[1] # List of entities
             for eo in eos:
-                print eo
+                print(eo)
                 if eo not in dsw.entities[1] and eo != None:
-                    print "..."
+                    print("...")
                     # We found something not in the base dataset; add it
                     # Get mask
                     mask = np.array(dso.entities[1]) == eo
@@ -102,12 +103,12 @@ class MergeApp( ui.DataApp ):
                     idx_bool = np.array([True if l in dsw.labels[0] else False for l in dso.labels[0] ])
                     idx = np.array([dsw.labels[0].index(l) for l in dso.labels[0] if l in dsw.labels[0] ])
                     
-                    print 'idx_bool', idx_bool.shape
-                    print idx_bool
-                    print 'mask', mask.shape
-                    print mask[mask==True]
-                    print 'dsw.data', dsw.data.shape
-                    print 'dso.data', dso.data.shape
+                    print('idx_bool', idx_bool.shape)
+                    print(idx_bool)
+                    print('mask', mask.shape)
+                    print(mask[mask==True])
+                    print('dsw.data', dsw.data.shape)
+                    print('dso.data', dso.data.shape)
                     
                     data = dso.data[ idx_bool, :] # 2 step if mask disagrees
                     data = data[:, mask]
@@ -121,7 +122,7 @@ class MergeApp( ui.DataApp ):
 
                     # Apply the data into this shape (will match) using indexes
                     new_data[idx,:] = data
-                    print new_data
+                    print(new_data)
                     # Append data to the end of the dsw
                     dsw.data = np.concatenate( (dsw.data, new_data), axis=1)
 

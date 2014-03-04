@@ -23,20 +23,27 @@ from wheezy.template.loader import FileLoader
 from distutils.version import StrictVersion
 
 from collections import defaultdict
-import urllib2
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
+
 import re
 import requests
 import hashlib
 import os
 import inspect
 import shutil
-import utils
-import ui
+from . import utils
+from . import ui
 
 from zipfile import ZipFile
 
 # Translation (@default context)
-from translate import tr
+from .translate import tr
 
 
 class pluginListDelegate(QAbstractItemDelegate):
@@ -95,7 +102,7 @@ class dialogPluginManagement(ui.genericDialog):
 
     def get_available_plugins(self):
         # Download the plugin list if not updated <1 day ago
-        f = urllib2.urlopen('http://plugins.pathomx.org/plugins.list')
+        f = urlopen('http://plugins.pathomx.org/plugins.list')
         plugin_list = f.readlines()
         f.close()
 
@@ -104,7 +111,7 @@ class dialogPluginManagement(ui.genericDialog):
         mapping = ['shortname', 'name', 'author', 'version', 'description', 'website', 'update']
         for line in plugin_list:
             data = line.split('\t')
-            available_plugins[data[0]] = dict(zip(mapping, data[0:]))
+            available_plugins[data[0]] = dict(list(zip(mapping, data[0:])))
             available_plugins[data[0]]['_'] = line
         self.available_plugins = available_plugins
 
@@ -116,7 +123,7 @@ class dialogPluginManagement(ui.genericDialog):
 
         plugin_matches = {}
 
-        for k, v in self.available_plugins.items():
+        for k, v in list(self.available_plugins.items()):
             if re.match("(.*)%s(.*)" % s, v['_']):
                 plugin_matches[k] = v
 
@@ -127,7 +134,7 @@ class dialogPluginManagement(ui.genericDialog):
         while listwidget.count() > 0:  # Empty list
             listwidget.takeItem(0)
 
-        for id, plugin in plugins.items():
+        for id, plugin in list(plugins.items()):
             item = QListWidgetItem()
 
             item.plugin_shortname = id

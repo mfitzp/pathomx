@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,28 +13,33 @@ from PyQt5.QtPrintSupport import *
 
 from collections import defaultdict
 import os
-import urllib
-import urllib2
 import copy
 import re
 import json
 import importlib
 import sys
 import numpy as np
-import utils
-import data
-import config
-import threads
-from data import DataSet
+from . import utils
+from . import data
+from . import config
+from . import threads
+from .data import DataSet
 
-from views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
-from editor.editor import WorkspaceEditor
+from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
+from .editor.editor import WorkspaceEditor
 # Translation (@default context)
-from translate import tr
+from .translate import tr
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
 
 from numpy import arange, sin, pi
 from matplotlib.backend_bases import NavigationToolbar2
-from backend_qt5agg import NavigationToolbar2QTAgg
+from .backend_qt5agg import NavigationToolbar2QTAgg
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -184,7 +189,7 @@ class ExportImageDialog(genericDialog):
         w.addWidget(self.height_p, r, 1)
 
         self.print_units = QComboBox()
-        self.print_units.addItems(self.print_u.keys())
+        self.print_units.addItems(list(self.print_u.keys()))
         self.print_units.setCurrentText(self.default_print_units)
 
         w.addWidget(self.print_units, r, 2)
@@ -196,7 +201,7 @@ class ExportImageDialog(genericDialog):
         self.resolution.setDecimals(2)
 
         self.resolution_units = QComboBox()
-        self.resolution_units.addItems(self.resolution_u.keys())
+        self.resolution_units.addItems(list(self.resolution_u.keys()))
         self.resolution_units.setCurrentText(self.default_resolution_units)
 
         w.addWidget(QLabel('Resolution'), r, 0)
@@ -476,7 +481,7 @@ class DialogDataOutput(genericDialog):
         datasets = self.m.datasets  # Get a list of dataset objects to test
         self.datasets = []
 
-        for k, dataset in self.v.data.o.items():
+        for k, dataset in list(self.v.data.o.items()):
 
         #QListWidgetItem(dataset.name, self.lw_sources)
             tw = QTreeWidgetItem()
@@ -662,7 +667,7 @@ class GenericApp(QMainWindow):
     def thread_generate(self):
         # Automatically trigger generator using inputs
         kwargs_dict = {}
-        for i in self.data.i.keys():
+        for i in list(self.data.i.keys()):
             kwargs_dict[i] = self.data.get(i)  # Will be 'None' if not available
 
         self.progress.emit(0.)
@@ -672,12 +677,12 @@ class GenericApp(QMainWindow):
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
         # Automated pass on generated data if matching output port names
-        for o in self.data.o.keys():
+        for o in list(self.data.o.keys()):
             if o in kwargs:
                 self.data.put(o, kwargs[o])
 
     def prerender(self, output=None, **kwargs):
-        return {'View': dict({'dso': output}.items() + kwargs.items())}
+        return {'View': dict(list({'dso': output}.items()) + list(kwargs.items()))}
 
     def _generate_worker_result_callback(self, kwargs_dict):
         self.__latest_generator_result = kwargs_dict
@@ -1105,7 +1110,7 @@ class AnalysisApp(GenericApp):
 
     # Build change table
     def build_change_table_of_classes(self, dso, objs, classes):
-        print dso.shape
+        print(dso.shape)
 
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
@@ -1309,16 +1314,16 @@ class remoteQueryDialog(genericDialog):
     def parse(self, data):
         # Parse incoming data and return a dict mapping the displayed values to the internal value
         l = data.split('\n')
-        return dict(zip(l, l))
+        return dict(list(zip(l, l)))
 
     def do_query(self):
-        f = urllib2.urlopen(self.query_target % urllib.quote(self.textbox.text()))
+        f = urllib.request.urlopen(self.query_target % urllib.parse.quote(self.textbox.text()))
         query_result = f.read()
         f.close()
 
         self.data = self.parse(query_result)
         self.select.clear()
-        self.select.addItems(self.data.keys())
+        self.select.addItems(list(self.data.keys()))
 
     def __init__(self, parent, query_target=None, **kwargs):
         super(remoteQueryDialog, self).__init__(parent, **kwargs)
@@ -1468,7 +1473,7 @@ class CodeEditor(QPlainTextEdit):
                 painter.drawText(0, top, self.lineNumberArea.width(), QApplication.fontMetrics().height(),
                                  Qt.AlignRight, number)
 
-            block = block.next()
+            block = next(block)
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1

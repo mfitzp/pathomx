@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,15 +11,16 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from plugins import ProcessingPlugin
-
 import numpy as np
 import nmrglue as ng
-import ui
-import db
-import utils
-from data import DataSet, DataDefinition
-from views import MplSpectraView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView
 
 
 # Dialog box for Metabohunter search options
@@ -39,7 +40,7 @@ class BaselineCorrectionConfigPanel(ui.ConfigPanel):
 
         vw = QVBoxLayout()
         self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems([k for k, v in self.algorithm.items()])
+        self.algorithm_cb.addItems([k for k, v in list(self.algorithm.items())])
         self.algorithm_cb.currentIndexChanged.connect(self.onSetAlgorithm)
         self.config.add_handler('algorithm', self.algorithm_cb, self.algorithm)
         vw.addWidget(self.algorithm_cb)  # ,0,0,1,2)        
@@ -134,7 +135,7 @@ class BaselineCorrectionConfigPanel(ui.ConfigPanel):
         self.finalise()
 
     def onSetAlgorithm(self):
-        for k, v in self.gbs.items():
+        for k, v in list(self.gbs.items()):
             if self.algorithm_cb.currentText() == k:
                 v.show()
             else:

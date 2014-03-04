@@ -12,15 +12,17 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from utils import UnicodeReader, UnicodeWriter
-from plugins import IdentificationPlugin
-
 import numpy as np
-import ui
-import db
-import utils
-from data import DataSet, DataDefinition, TableInterface
-from views import TableView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition, TableInterface
+from pathomx.views import TableView
+from pathomx.utils import UnicodeReader, UnicodeWriter
+from pathomx.plugins import IdentificationPlugin
+
 
 TYPE_COLORS = {
     'compound': '#e2ebf5',
@@ -51,7 +53,7 @@ class MapEntityConfigPanel(ui.ConfigPanel):
         super(MapEntityConfigPanel, self).__init__(*args, **kwargs)
 
         self.cb_mapping_type = QComboBox()
-        self.cb_mapping_type.addItems(MAP_TYPE_TABLE.keys())
+        self.cb_mapping_type.addItems(list(MAP_TYPE_TABLE.keys()))
         self.config.add_handler('map_object_type', self.cb_mapping_type, MAP_TYPE_TABLE)
 
         self.layout.addWidget(self.cb_mapping_type)
@@ -162,7 +164,7 @@ class MapEntityApp(ui.GenericApp):
 
         t = self.getCreatedToolbar('Entity mapping', 'external-data')
 
-        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Load annotations from file\u2026', self.m)
+        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Load annotations from file\\u2026', self.m)
         import_dataAction.setStatusTip('Load annotations from .csv. file')
         import_dataAction.triggered.connect(self.onImportEntities)
         t.addAction(import_dataAction)

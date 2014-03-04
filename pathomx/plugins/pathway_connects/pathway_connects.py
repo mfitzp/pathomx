@@ -10,11 +10,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from plugins import VisualisationPlugin
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import D3CircosView
+import pathomx.ui as ui
+import pathomx.utils as utils
+
+from pathomx.plugins import VisualisationPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import D3CircosView
 
 
 class PathwayConnectsApp(ui.AnalysisApp):
@@ -40,7 +41,7 @@ class PathwayConnectsApp(ui.AnalysisApp):
     def url_handler(self, url):
 
         #http://@app['id']/app/create
-        print url
+        print(url)
         kind, action = url.split('/')  # FIXME: Can use split here once stop using pathwaynames   
         # Probably want to move to url strings &n= etc. for logicalness
 
@@ -62,17 +63,17 @@ class PathwayConnectsApp(ui.AnalysisApp):
 
     def generate(self, input=None):
 
-        pathways = self.m.db.pathways.keys()
+        pathways = list(self.m.db.pathways.keys())
         pathway_compounds = dict()
 
-        for k, p in self.m.db.pathways.items():
+        for k, p in list(self.m.db.pathways.items()):
             pathway_compounds[p.id] = set([m for m in p.compounds])
 
         data_m, labels_m = self.build_matrix(pathways, pathway_compounds)
 
         pathway_reactions = dict()
 
-        for k, p in self.m.db.pathways.items():
+        for k, p in list(self.m.db.pathways.items()):
             pathway_reactions[p.id] = set([m for m in p.reactions])
 
         data_r, labels_r = self.build_matrix(pathways, pathway_reactions)

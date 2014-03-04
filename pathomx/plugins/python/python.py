@@ -2,7 +2,7 @@
 
 import os
 
-from plugins import ProcessingPlugin
+from pathomx.plugins import ProcessingPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,9 +13,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import ui
+import pathomx.ui as ui
 from keyword import kwlist
-from data import DataSet, DataDefinition
+from pathomx.data import DataSet, DataDefinition
 
 
 class HighlightingRule():

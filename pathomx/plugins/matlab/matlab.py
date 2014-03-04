@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,18 +11,19 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from plugins import ImportPlugin
-from ui import ImportDataApp, ExportDataApp, CodeEditorTool
-
 import numpy as np
 import scipy as sp
 import mlabwrap
-import ui
-import db
-import utils
-import threads
-from data import DataSet, DataDefinition
-from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.plugins import ImportPlugin
+from pathomx.ui import ImportDataApp, ExportDataApp, CodeEditorTool
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
 class MATLABTool(ui.DataApp):

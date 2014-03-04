@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,14 +11,16 @@ from PyQt5.QtPrintSupport import *
 
 import os, copy
 
-from plugins import ProcessingPlugin
-
 import numpy as np
 import nmrglue as ng
 
-import ui, db, utils
-from data import DataSet, DataDefinition
-from views import MplSpectraView
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView
 
 
 # Dialog box for Metabohunter search options
@@ -36,7 +38,7 @@ class PeakAdjConfigPanel(ui.ConfigPanel):
         
         vw = QGridLayout()
         self.peak_target_cb = QComboBox()
-        self.peak_target_cb.addItems( [k for k,v in self.peak_targets.items() ] )
+        self.peak_target_cb.addItems( [k for k,v in list(self.peak_targets.items()) ] )
         self.peak_target_cb.currentIndexChanged.connect(self.onSetPredefinedTarget)
         self.config.add_handler('peak_target', self.peak_target_cb )
         vw.addWidget(self.peak_target_cb,0,0,1,2)        
@@ -168,8 +170,8 @@ class NMRPeakAdjApp( ui.DataApp ):
         start_ppm = target_ppm - tolerance_ppm
         end_ppm = target_ppm + tolerance_ppm
         
-        start = min(range(len(scale)), key=lambda i: abs(scale[i]-start_ppm))        
-        end = min(range(len(scale)), key=lambda i: abs(scale[i]-end_ppm))        
+        start = min(list(range(len(scale))), key=lambda i: abs(scale[i]-start_ppm))        
+        end = min(list(range(len(scale))), key=lambda i: abs(scale[i]-end_ppm))        
         
         self.set_name('%s align @%.2f ±%.2f' % ( self.config.get('peak_target'), target_ppm, tolerance_ppm) )
 
@@ -180,9 +182,9 @@ class NMRPeakAdjApp( ui.DataApp ):
         region_labels = dsi.labels[1][start:end:d]
         region_entities = dsi.entities[1][start:end:d]
         
-        print d, region_scales, region_labels, region_entities
+        print(d, region_scales, region_labels, region_entities)
         
-        pcentre = min(range(len(region_scales)), key=lambda i: abs(region_scales[i]-target_ppm))  # Base centre point to shift all spectra to
+        pcentre = min(list(range(len(region_scales))), key=lambda i: abs(region_scales[i]-target_ppm))  # Base centre point to shift all spectra to
 
         reference_peaks = []
         for sdata in data:
@@ -197,16 +199,16 @@ class NMRPeakAdjApp( ui.DataApp ):
             else:
                 reference_peaks.append(None)
 
-        print reference_peaks
+        print(reference_peaks)
 
         if self.config.get('shifting_enabled'):
-            print 'shifting'
+            print('shifting')
             # Now shift the original spectra to fit
             for n,refp in enumerate(reference_peaks):
                 if refp:
                     # Shift the spectra
                     shift = (pcentre-refp['location']) * d
-                    print shift
+                    print(shift)
                     if shift > 0:
                         dsi.data[n, shift:-1] = dsi.data[n, 0:-(shift+1)]
                     elif shift < 0:
@@ -216,7 +218,7 @@ class NMRPeakAdjApp( ui.DataApp ):
         if self.config.get('scaling_enabled'):
             # Get mean reference peak size
             reference_peak_mean = np.mean( [r['scale'] for r in reference_peaks if r ] )
-            print 'Reference peak mean %s' % reference_peak_mean
+            print('Reference peak mean %s' % reference_peak_mean)
             
             # Now scale; using the same peak regions & information (so we don't have to worry about something
             # being shifted out of the target region in the first step)

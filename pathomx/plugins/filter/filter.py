@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from plugins import ProcessingPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,7 +9,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import os
 import re
@@ -18,9 +16,13 @@ import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-from data import DataSet, DataDefinition
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.plugins import ProcessingPlugin
 
 
 # Source data selection dialog
@@ -43,7 +45,7 @@ class DialogDefineFilter(ui.genericDialog):
         dsi = self.v.data.get('input')
 
         
-        for k, t in self.v.config.get('filters').items():
+        for k, t in list(self.v.config.get('filters').items()):
 
             self.lw_filteri.append(QComboBox())
             cdw = self.lw_filteri[-1]  # Shorthand
@@ -122,12 +124,12 @@ class FilterApp(ui.DataApp):
 
             self.config.set('filters', filters)
             # Annotation name
-            self.set_name(','.join(['%s:%s' % (k, v) for k, v in filters.items()]))
+            self.set_name(','.join(['%s:%s' % (k, v) for k, v in list(filters.items())]))
             self.generate()
 
     def apply_filters(self, dso):
 
-        for target, text in self.config.get('filters').items():
+        for target, text in list(self.config.get('filters').items()):
             axis, field = target.split('/')
             axis = int(axis)  # index to apply
 

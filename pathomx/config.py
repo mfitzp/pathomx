@@ -3,7 +3,7 @@
 # Loads a csv data file and extracts key information into usable structures for analysis
 
 # Import PyQt5 classes
-import qt5
+from . import qt5
 
 import os
 import sys
@@ -34,7 +34,7 @@ def build_dict_mapper(mdict):
         :rtype: 2-tuple of lambdas that perform forward and reverse map
                 
     """
-    rdict = {v: k for k, v in mdict.iteritems()}
+    rdict = {v: k for k, v in mdict.items()}
     return (
         lambda x: mdict[x] if x in mdict else x,
         lambda x: rdict[x] if x in rdict else x,
@@ -353,7 +353,7 @@ class ConfigManager(qt5.QObject):
         :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
         
         """
-        for key, value in keyvalues.items():
+        for key, value in list(keyvalues.items()):
             self.defaults[key] = value
             self.eventhooks[key] = eventhook
 
@@ -393,9 +393,9 @@ class ConfigManager(qt5.QObject):
         :type trigger_update: bool
         """
         has_updated = False
-        for k, v in keyvalues.items():
+        for k, v in list(keyvalues.items()):
             u = self.set(k, v, trigger_update=False)
-            print 'Workflow config; setting %s to %s' % (k, v)
+            print('Workflow config; setting %s to %s' % (k, v))
             has_updated = has_updated or u
 
         if has_updated and trigger_update:
@@ -433,7 +433,7 @@ class ConfigManager(qt5.QObject):
         handler.getter = types.MethodType(globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__)
         handler.updater = types.MethodType(globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__)
 
-        print "Add handler %s for %s" % (handler.__class__.__name__, key)
+        print("Add handler %s for %s" % (handler.__class__.__name__, key))
         handler.updater().connect(lambda x = None: self.set(key, handler.getter()))
 
         # Keep handler and data consistent
@@ -447,7 +447,7 @@ class ConfigManager(qt5.QObject):
                 self.config[key] = handler.getter()
 
     def add_handlers(self, keyhandlers):
-        for key, handler in keyhandlers.items():
+        for key, handler in list(keyhandlers.items()):
             self.add_handler(key, handler)
 
     # JSON

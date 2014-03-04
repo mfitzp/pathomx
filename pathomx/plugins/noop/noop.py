@@ -2,19 +2,9 @@
 
 import os
 
-from plugins import ProcessingPlugin
-
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
-import ui
-from data import DataSet, DataDefinition
+import pathomx.ui as ui
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
 
 
 class NOOPApp(ui.GenericApp):

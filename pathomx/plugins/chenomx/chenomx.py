@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import ImportPlugin
-
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -12,16 +10,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-import threads
-from data import DataSet
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+
+from pathomx.plugins import ImportPlugin
+from pathomx.data import DataSet
 
 
 class ChenomxApp(ui.ImportDataApp):
@@ -32,20 +33,20 @@ class ChenomxApp(ui.ImportDataApp):
     def load_datafile(self, file):
 
         reader = csv.reader(open(file, 'rU'), delimiter='\t', dialect='excel')
-        hrow = reader.next()  # Get top row
+        hrow = next(reader)  # Get top row
 
         slabels = []
         data = []
 
         if hrow[0] == 'Profiled Data Type':  # Is a Chenomx output file; use the other columns to map data scale/etc. once implemented
-            reader.next()  # Skip date row
-            hrow = reader.next()
+            next(reader)  # Skip date row
+            hrow = next(reader)
             labels = hrow[2:]  # We strip off the pH here; might be nice to keep it
             entities = [self.m.db.synrev[l] if l in self.m.db.synrev else None for l in labels]  # Map to entities if they exist
 
-            reader.next()  # Skip compound ID
-            reader.next()  # Skip InChI
-            reader.next()  # Skip SMILES
+            next(reader)  # Skip compound ID
+            next(reader)  # Skip InChI
+            next(reader)  # Skip SMILES
 
             for hrow in reader:  # Now read the data rows
                 slabels.append(hrow[0])
@@ -59,7 +60,7 @@ class ChenomxApp(ui.ImportDataApp):
 
         data = np.array(data)
         dso = DataSet(size=data.shape)
-        print data.shape
+        print(data.shape)
         dso.labels[1] = labels
         dso.entities[1] = entities
         dso.labels[0] = slabels

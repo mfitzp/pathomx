@@ -2,7 +2,6 @@
 
 import os
 
-from plugins import ProcessingPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,15 +12,18 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-from data import DataSet, DataDefinition
+
+import pathomx.utils as utils
+import pathomx.ui as ui
+import pathomx.db as db
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.plugins import ProcessingPlugin
 
 
 # Source data selection dialog
@@ -42,14 +44,14 @@ class DialogAnnotationTargets(ui.genericDialog):
         self.lw_annotatei = list()
         dsi = self.v.data.get('input')
 
-        for k, a in self.v._annotations.items():
+        for k, a in list(self.v._annotations.items()):
 
             self.lw_annotatei.append(QComboBox())
             cdw = self.lw_annotatei[k]  # Shorthand
             cdw.addItem('Ignore')
 
             for n, i in enumerate(dsi.scales):
-                print len(i), len(a)
+                print(len(i), len(a))
                 if len(i) == len(a):
                     for target in ['labels', 'classes', 'scales']:
                         cdw.addItem('%s/%s' % (n, target))
@@ -93,14 +95,14 @@ class AnnotateApp(ui.DataApp):
 
         t = self.getCreatedToolbar('Annotations', 'external-data')
 
-        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Load annotations from file\u2026', self.m)
+        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Load annotations from file\\u2026', self.m)
         import_dataAction.setStatusTip('Load annotations from .csv. file')
         import_dataAction.triggered.connect(self.onLoadAnnotations)
         t.addAction(import_dataAction)
 
         self.addExternalDataToolbar()  # Add standard source data options
 
-        annotations_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'pencil-field.png')), 'Edit annotation settings\u2026', self.m)
+        annotations_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'pencil-field.png')), 'Edit annotation settings\\u2026', self.m)
         annotations_dataAction.setStatusTip('Import additional annotations for a dataset including classes, labels, scales')
         annotations_dataAction.triggered.connect(self.onEditAnnotationsSettings)
         t.addAction(annotations_dataAction)
@@ -149,13 +151,13 @@ class AnnotateApp(ui.DataApp):
 
     def generate(self, input):
         dso = input
-        print 'Applying annotations...'
+        print('Applying annotations...')
 
-        for source, (target, index) in self._annotations_targets.items():
+        for source, (target, index) in list(self._annotations_targets.items()):
             annotation = self._annotations[source]
-            print ':', source, target, index
+            print(':', source, target, index)
             if len(annotation) == len(dso.__dict__[target][index]):
-                print 'Applying annotation %s to %s' % (source, target)
+                print('Applying annotation %s to %s' % (source, target))
                 dso.__dict__[target][index] = [self._field_transforms[target](a) for a in annotation]
 
         return {'output': dso}

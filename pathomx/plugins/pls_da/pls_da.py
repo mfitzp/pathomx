@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from plugins import AnalysisPlugin
+from pathomx.plugins import AnalysisPlugin
 
 from collections import defaultdict
 
@@ -20,9 +20,13 @@ from copy import copy
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 
-import ui, db, utils, threads
-from data import DataSet, DataDefinition
-from views import MplScatterView, MplSpectraView
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplScatterView, MplSpectraView
 
 
          
@@ -119,8 +123,8 @@ class PLSDAApp( ui.AnalysisApp ):
         scored.labels[0] = input.labels[0]
         scored.classes[0] = input.classes[0]
         
-        print plsr.x_scores_.shape
-        print scored.data.shape
+        print(plsr.x_scores_.shape)
+        print(scored.data.shape)
         
         for n,s in enumerate(plsr.x_scores_.T):
             scored.data[:,n] = s
@@ -135,7 +139,7 @@ class PLSDAApp( ui.AnalysisApp ):
         #    cw_x[c].append( x )
         #    cw_y[c].append( y )
             
-        for c in cw_x.keys():
+        for c in list(cw_x.keys()):
             # Calculate mean point
             cx = np.mean( cw_x[c] )
             cy = np.mean( cw_y[c] )
@@ -157,7 +161,7 @@ class PLSDAApp( ui.AnalysisApp ):
             
         # Label up the top 50 (the values are retained; just for clarity)
         wmx = np.amax( np.absolute( plsr.x_weights_), axis=1 )
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = list(zip( dso.scales[1], dso.entities[1], dso.labels[1] ))
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
         dso_z = [x for x, wmx in dso_z ]    
 
@@ -170,14 +174,14 @@ class PLSDAApp( ui.AnalysisApp ):
             lvd.data = plsr.x_weights_[:,n:n+1].T
             dso_lv['lv%s' % (n+1)] = lvd
                     
-        return dict({
+        return dict(list({
             'dso': dso,
             'scores':scored,
             #'figure_data': figure_data,
             #'figure_regions': figure_regions,
             'y_weights': plsr.y_weights_,
             'x_weights': plsr.x_weights_,
-        }.items() + dso_lv.items() )
+        }.items()) + list(dso_lv.items()) )
         
     def prerender(self, scores=None, lv1=None, lv2=None, **kwargs):
         return {
@@ -201,11 +205,11 @@ class PLSDAApp( ui.AnalysisApp ):
         self.render(metadata, template='d3/pca.svg')
 
         if 'NoneType' in dso.scales_t[1]:
-            dso.scales[1] = range(0, len( dso.scales[1] ) )
+            dso.scales[1] = list(range(0, len( dso.scales[1] )))
 
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], x_weights[:,0:1] ),  
+                'data': list(zip( dso.scales[1], x_weights[:,0:1] )),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }
@@ -215,7 +219,7 @@ class PLSDAApp( ui.AnalysisApp ):
 
         metadata = {
             'figure':{
-                'data': zip( dso.scales[1], x_weights[:,1:2] ),  
+                'data': list(zip( dso.scales[1], x_weights[:,1:2] )),  
                 'labels': self.build_markers( dso_z, 2, self._build_label_cmp ), #zip( xarange, xarange, dso.labels[1]), # Looks mental, but were' applying ranges
                 'entities': self.build_markers( dso_z, 1, self._build_entity_cmp ),      
             }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 import os
 import sys
 import re
@@ -15,9 +15,15 @@ UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 reload(sys).setdefaultencoding('utf8')
 
-import qt5
-import urllib2
+from . import qt5
 import textwrap
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
 
 from optparse import Values
 from collections import defaultdict
@@ -38,18 +44,18 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 import matplotlib as mpl
-import db
-import data
-import utils
-import ui
-import threads
-import views
-import custom_exceptions
-import plugins  # plugin helper/manager
-from editor.editor import WorkspaceEditor
+from . import db
+from . import data
+from . import utils
+from . import ui
+from . import threads
+from . import views
+from . import custom_exceptions
+from . import plugins  # plugin helper/manager
+from .editor.editor import WorkspaceEditor
 
 # Translation (@default context)
-from translate import tr
+from .translate import tr
 
 from distutils.version import StrictVersion
 
@@ -782,8 +788,8 @@ class MainWindow(qt5.QMainWindow):
 
             self.application_data_path = os.path.join(user_application_data_paths[1])
 
-        print "Search for plugins..."
-        print ', '.join(self.plugin_places)
+        print("Search for plugins...")
+        print((', '.join(self.plugin_places)))
 
         self.tools = defaultdict(list)
 
@@ -845,7 +851,7 @@ class MainWindow(qt5.QMainWindow):
         self.apps = []
 
         self.threadpool = qt5.QThreadPool()
-        print "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount()
+        print(("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount()))
 
         self.setCentralWidget(self.stack)
         self.stack.setCurrentIndex(0)
@@ -922,9 +928,9 @@ class MainWindow(qt5.QMainWindow):
         self.dbBrowser = self.dbtool.dbBrowser
 
         if self.config.value('/Pathomx/Is_setup', False) != True:
-            print "Setting up initial configuration..."
+            print("Setting up initial configuration...")
             self.onResetConfig()
-            print 'Done'
+            print('Done')
 
         self.setWindowTitle(tr('Pathomx'))
 
@@ -1130,7 +1136,7 @@ class MainWindow(qt5.QMainWindow):
         }
 
         template = self.templateEngine.get_template(template)
-        self.dbBrowser.setHtml(template.render(dict(data.items() + metadata.items())), qt5.QUrl("~"))
+        self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), qt5.QUrl("~"))
 
     def onWorkspaceStackChange(self, item, previous):
         widget = self.workspace_index[item.text(1)]
@@ -1179,7 +1185,7 @@ class MainWindow(qt5.QMainWindow):
             'clear': qt5.QIcon(None)
         }
 
-        if status not in status_icons.keys():
+        if status not in list(status_icons.keys()):
             status = 'clear'
 
         workspace_item.setIcon(3, status_icons[status])
@@ -1214,7 +1220,7 @@ class MainWindow(qt5.QMainWindow):
             self.progressTracker[workspace_item] = progress
 
         m = 100.0 / len(self.progressTracker)
-        pt = sum([n * m for n in self.progressTracker.values()])
+        pt = sum([n * m for n in list(self.progressTracker.values())])
 
         if self.progressBar.value() < pt:  # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
             self.progressBar.setValue(pt)
@@ -1287,7 +1293,7 @@ class MainWindow(qt5.QMainWindow):
             position.set("y", str(v.editorItem.y()))
 
             config = et.SubElement(app, "Config")
-            for ck, cv in v.config.config.items():
+            for ck, cv in list(v.config.config.items()):
                 co = et.SubElement(config, "ConfigSetting")
                 co.set("id", ck)
                 t = type(cv).__name__
@@ -1296,7 +1302,7 @@ class MainWindow(qt5.QMainWindow):
 
             datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
-            for sk, si in v.data.i.items():
+            for sk, si in list(v.data.i.items()):
                 if si:  # Something on this interface
                     cs = et.SubElement(datasources, "Input")
                     cs.set("id", sk)
@@ -1316,7 +1322,7 @@ class MainWindow(qt5.QMainWindow):
 
             
     def openWorkflow(self, fn):
-        print "Loading workflow..."
+        print("Loading workflow...")
         # Wipe existing workspace
         self.clearWorkspace()
         # Load from file
@@ -1324,11 +1330,11 @@ class MainWindow(qt5.QMainWindow):
         workflow = tree.getroot()
 
         appref = {}
-        print "...Loading apps."
+        print("...Loading apps.")
         for xapp in workflow.findall('App'):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
-            print '- %s' % xapp.find('Name').text
+            print(('- %s' % xapp.find('Name').text))
             app = self.app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(qt5.QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
@@ -1345,7 +1351,7 @@ class MainWindow(qt5.QMainWindow):
 
             app.config.set_many(config, trigger_update=False)
 
-        print "...Linking objects."
+        print("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present
         for xapp in workflow.findall('App'):
             app = appref[xapp.get('id')]
@@ -1353,7 +1359,7 @@ class MainWindow(qt5.QMainWindow):
             for idef in xapp.findall('DataInputs/Input'):
                 app.data._consume_action(idef.get('id'), appref[idef.get('manager')].data.o[idef.get('interface')])
 
-        print "Load complete."
+        print("Load complete.")
         # Focus the home tab & refresh the view
         self.workspace_updated.emit()
 
@@ -1365,7 +1371,7 @@ class QApplicationExtend(qt5.QApplication):
             formats = {  # Run specific loading function for different source data types
                     '.mpf': self.openWorkflow,
                 }
-            if fe in formats.keys():
+            if fe in list(formats.keys()):
                 formats[fe](e.file())
 
             return True
@@ -1385,21 +1391,23 @@ def main():
     locale = qt5.QLocale.system().name()
     #locale = 'nl'
 
+    #sys.path.append(utils.scriptdir)
+
     # Load base qt5.QT translations from the normal place (does not include _nl, or _it)
     translator_qt = qt5.QTranslator()
     if translator_qt.load("qt_%s" % locale, qt5.QLibraryInfo.location(qt5.QLibraryInfo.TranslationsPath)):
-        print "Loaded qt5.Qt translations for locale: %s" % locale
+        print(("Loaded qt5.Qt translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # See if we've got a default copy for _nl, _it or others
     elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        print "Loaded qt5.Qt (self) translations for locale: %s" % locale
+        print(("Loaded qt5.Qt (self) translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # Load Pathomx specific translations
     translator_mp = qt5.QTranslator()
     if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        print "Loaded Pathomx translations for locale: %s" % locale
+        print(("Loaded Pathomx translations for locale: %s" % locale))
     app.installTranslator(translator_mp)
 
     # Set Matplotlib defaults for nice looking charts

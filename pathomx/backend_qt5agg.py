@@ -13,11 +13,11 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from backend_qt5 import FigureManagerQT
-from backend_qt5 import FigureCanvasQT
-from backend_qt5 import NavigationToolbar2QT
-from backend_qt5 import show
-from backend_qt5 import draw_if_interactive
+from .backend_qt5 import FigureManagerQT
+from .backend_qt5 import FigureCanvasQT
+from .backend_qt5 import NavigationToolbar2QT
+from .backend_qt5 import show
+from .backend_qt5 import draw_if_interactive
 
 DEBUG = False
 

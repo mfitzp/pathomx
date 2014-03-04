@@ -28,12 +28,12 @@ for row in reader:
     if row[0] == '#XREF':  # Wait til we're past the comments
         active = True
 
-for tid, tax in taxonomy.items():
-    print tid, len(tax)
+for tid, tax in list(taxonomy.items()):
+    print(tid, len(tax))
     with open(tid, 'wb') as csvfile:
         writer = csv.writer(csvfile, dialect='excel')
 
-        for metacycid, mnxid in metacyc.items():
+        for metacycid, mnxid in list(metacyc.items()):
             if mnxid in tax:
                 for id in tax[mnxid]:
                     writer.writerow([metacycid, id])

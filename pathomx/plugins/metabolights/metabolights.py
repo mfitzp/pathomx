@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -13,15 +12,18 @@ from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
 
-import ui, db
-from data import DataSet
+import pathomx.utils as utils
+import pathomx.ui as ui
+import pathomx.db as db
+
+from pathomx.plugins import ImportPlugin
+from pathomx.data import DataSet
 
 class ImportMetabolightsApp( ui.ImportDataApp ):
 
@@ -41,7 +43,7 @@ class ImportMetabolightsApp( ui.ImportDataApp ):
         
         
     def load_metabolights(self, filename, id_col=0, name_col=4, data_col=18): # Load from csv with experiments in COLUMNS, metabolites in ROWS
-        print "Loading Metabolights..."
+        print("Loading Metabolights...")
         
         #sample	1	2	3	4
         #class	ADG10003u_007	ADG10003u_008	ADG10003u_009	ADG10003u_010   ADG19007u_192
@@ -49,11 +51,11 @@ class ImportMetabolightsApp( ui.ImportDataApp ):
         reader = csv.reader( open( filename, 'rU'), delimiter=',', dialect='excel')
     
         # Sample identities from top row ( sample labels )
-        hrow = reader.next()
+        hrow = next(reader)
         sample_ids = hrow[1:]    
 
         # Sample classes from second row; crop off after u_
-        hrow = reader.next()
+        hrow = next(reader)
         classes = hrow[1:]    
         classes = [ c.split('u_')[0] for c in classes]
 

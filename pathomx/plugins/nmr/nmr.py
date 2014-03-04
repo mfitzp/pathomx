@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
-from plugins import ImportPlugin
+
 #import nmrglue as ng
 
 # Import PyQt5 classes
@@ -20,11 +19,14 @@ from collections import defaultdict
 
 import numpy as np
 import scipy as sp
-import ui
-import db
-import utils
-import threads
-from data import DataSet
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.data import DataSet
+from pathomx.plugins import ImportPlugin
 
 import nmrglue as ng
 
@@ -71,7 +73,7 @@ class NMRApp(ui.ImportDataApp):
         for r, d, files in os.walk(folder):
             if 'fid' in files:
                 scan = os.path.basename(r)
-                print 'Read Bruker:', r, scan
+                print('Read Bruker:', r, scan)
                 if scan == '99999' or scan == '9999':  # Dummy Bruker thing
                     continue
                 # The following is a hack; need some interface for choosing between processed/raw data
@@ -129,14 +131,14 @@ class NMRApp(ui.ImportDataApp):
 
     def process_data_to_dso(self, nmr_data, nmr_ppms, sample_labels, experiment_name):
 
-        print "Processing spectra to dso..."
+        print("Processing spectra to dso...")
         sample_n = len(sample_labels)
         ppm_n = len(nmr_ppms)
 
         dso = DataSet(size=(sample_n, ppm_n))
 
         for n, nd in enumerate(nmr_data):
-            print "Spectra %s" % sample_labels[n]
+            print("Spectra %s" % sample_labels[n])
             dso.data[n, :] = nd
             dso.labels[0][n] = sample_labels[n]
 
@@ -149,11 +151,11 @@ class NMRApp(ui.ImportDataApp):
     def load_bruker_fid(self, fn, pc_init=None):
 
         try:
-            print "Reading %s" % fn
+            print("Reading %s" % fn)
             # read in the bruker formatted data
             dic, data = ng.bruker.read(fn)
         except:
-            print "...fail"
+            print("...fail")
             return None, None
         else:
 
@@ -184,7 +186,7 @@ class NMRApp(ui.ImportDataApp):
         }[algorithm]
 
         opt = sp.optimize.fmin(fn, x0=pc_init, args=(nmr_data.reshape(1, -1)[:500], ))
-        print "Phase correction optimised to: %s" % opt
+        print("Phase correction optimised to: %s" % opt)
         return ng.process.proc_base.ps(nmr_data, p0=opt[0], p1=opt[1]), opt
 
     def autophase_ACME(self, x, s):

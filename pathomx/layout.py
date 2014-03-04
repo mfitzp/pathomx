@@ -1,10 +1,10 @@
 import os
 import sys
 import re
-from utils import UnicodeReader, UnicodeWriter
+from .utils import UnicodeReader, UnicodeWriter
 from collections import defaultdict
 
-import utils
+from . import utils
 
 import xml.etree.cElementTree as et
 
@@ -28,8 +28,8 @@ class layoutManager(object):
                 '.gpml': self.load_gpml,
             }
 
-        if fe in formats.keys():
-            print "Loading..."
+        if fe in list(formats.keys()):
+            print("Loading...")
             # Set up defaults
             self.objects = dict()  # Metabolite ids, linking to (x,y) tuple
 
@@ -37,7 +37,7 @@ class layoutManager(object):
             formats[fe](filename)
 
         else:
-            print "Unsupported file format."
+            print("Unsupported file format.")
 
     def load_kgml(self, filename):
 
@@ -80,7 +80,7 @@ class layoutManager(object):
 
     def translate(self, db):
         # Translate loaded map objects to metacyc system
-        for o in self.objects.keys():
+        for o in list(self.objects.keys()):
             if o.lower() in db.synrev:
                 transid = db.synrev[o.lower()].id
                 self.objects[transid] = self.objects.pop(o)

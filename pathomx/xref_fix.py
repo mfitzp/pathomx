@@ -4,14 +4,14 @@
 
 import os
 
-from utils import UnicodeReader, UnicodeWriter
+from .utils import UnicodeReader, UnicodeWriter
 
 identities_files = os.listdir('.')
 if len(identities_files) > 0:
     for filename in identities_files:
         if filename == 'kegg':
             list = []
-            print "- %s" % filename
+            print("- %s" % filename)
             reader = UnicodeReader(open(filename, 'rU'), delimiter=',', dialect='excel')
             for id, db, key in reader:
                 list.append([id, db, key])

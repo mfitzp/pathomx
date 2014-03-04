@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,16 +11,17 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from plugins import ProcessingPlugin
-
 import numpy as np
 import mlabwrap
-import ui
-import db
-import utils
-import threads
-from data import DataSet, DataDefinition
-from views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.plugins import ProcessingPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 
 
 class NMRLabMetabolabTool(ui.DataApp):
@@ -95,7 +96,7 @@ class BaselineConfigPanel(ui.ConfigPanel):
 
         vw = QVBoxLayout()
         self.baseline_alg_cb = QComboBox()
-        self.baseline_alg_cb.addItems(self.baseline_alg.keys())
+        self.baseline_alg_cb.addItems(list(self.baseline_alg.keys()))
         #self.baseline_alg_cb.currentIndexChanged.connect(self.onBaselineMode)
         self.config.add_handler('baseline_alg', self.baseline_alg_cb, self.baseline_alg)
         vw.addWidget(self.baseline_alg_cb)  # ,0,0,1,2)        
@@ -281,7 +282,7 @@ class SpectraAlignConfigPanel(ui.ConfigPanel):
         vw.addWidget(self.shift_max_spin, 1, 1)
 
         self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems(self.algorithm.keys())
+        self.algorithm_cb.addItems(list(self.algorithm.keys()))
         #self.baseline_alg_cb.currentIndexChanged.connect(self.onBaselineMode)
         self.config.add_handler('algorithm', self.algorithm_cb, self.algorithm)
 

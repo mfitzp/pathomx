@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -10,17 +10,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from plugins import AnalysisPlugin
 
 from collections import defaultdict
 
 import os
 from copy import copy
 import numpy as np
-import ui
-import db
-import utils
-from data import DataSet, DataDefinition
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.plugins import AnalysisPlugin
 
 
 class FoldChangeApp(ui.AnalysisApp):
@@ -136,10 +138,10 @@ class FoldChangeApp(ui.AnalysisApp):
             tests = [_experiment_test]
 
         for n, test in enumerate(tests):
-            print dso.classes[0]
+            print(dso.classes[0])
             ti = dso.classes[0].index(test)
 
-            print 'Indices for fold change;', ci, ti
+            print('Indices for fold change;', ci, ti)
             # Fold change is performed to give negative values for reductions
             # May make this optional in future?
             # i.e. t > c  fc =  t/c;   t < c    fc = -c/t

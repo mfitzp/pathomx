@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -17,10 +16,13 @@ from collections import defaultdict
 import numpy as np
 import zipfile
 import tempfile
-import ui
-import db
-import utils
-from data import DataSet
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+
+from pathomx.data import DataSet
+from pathomx.plugins import ImportPlugin
 
 
 class BMLNMRApp(ui.ImportDataApp):
@@ -74,7 +76,7 @@ class BMLNMRApp(ui.ImportDataApp):
             dsos[l] = self.load_bml_datafile(data_path, l, "%s (%s)" % (bml_job, l))
 
         self.set_name(bml_job)
-        print dsos
+        print(dsos)
         return dsos
 
     def load_bml_datafile(self, data_path, target, name):

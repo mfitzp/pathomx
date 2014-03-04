@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtCore import Qt, QObject, QRunnable, pyqtSignal, pyqtSlot

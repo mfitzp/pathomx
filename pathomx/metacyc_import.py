@@ -2,27 +2,27 @@ import os
 import sys
 import re
 import math
-import htmlentitydefs
+import html.entities
 #import csv
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import itertools
 import time
 
 from optparse import OptionParser
 from collections import defaultdict
 
-import HTMLParser
-pars = HTMLParser.HTMLParser()
+import html.parser
+pars = html.parser.HTMLParser()
 
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
-import utils
-from utils import UnicodeReader, UnicodeWriter
-import db
-import utils
+from . import utils
+from .utils import UnicodeReader, UnicodeWriter
+from . import db
+from . import utils
 
 parser = OptionParser()
 
@@ -137,7 +137,7 @@ def strip_html(data):
 
 def get_xml_for_id(id):
     global total_connections
-    f = urllib.urlopen('http://websvc.biocyc.org/getxml?HUMAN:%s' % id)  # &detail=low
+    f = urllib.request.urlopen('http://websvc.biocyc.org/getxml?HUMAN:%s' % id)  # &detail=low
     xml = et.parse(f)
     f.close()
     total_connections += 1
@@ -158,20 +158,20 @@ def download_reaction_data(reactions_get):
     # Accumulate the total un-fulfilled reactions in the set, to merge and see if achieves something useful
     dud_reactions = list()
 
-    print "Getting reaction metadata..."
-    for reaction_id, reaction in reactions_get.items():
+    print("Getting reaction metadata...")
+    for reaction_id, reaction in list(reactions_get.items()):
         if reaction_id in exclusions:  # Can't skip reactions already in the database, as we may need to allocate them to >1 pathway. Improve this once adding is part of the db class
             # print "*** Already excluded, skipping"
             continue
 
-        elif reaction_id in mdb.reactions.keys():  # Already in the database, add additional pathways, then skip
-            print "'%s' already in database, append additional pathway %s" % (reaction_id, reaction['pathways'][0])
+        elif reaction_id in list(mdb.reactions.keys()):  # Already in the database, add additional pathways, then skip
+            print("'%s' already in database, append additional pathway %s" % (reaction_id, reaction['pathways'][0]))
             mdb.reactions[reaction_id].pathways.append(reaction['pathways'][0])
             reactions_added_this_time += 1
             continue
 
         else:
-            print u'Reaction: %s in %s' % (reaction_id, reaction['pathways'][0])
+            print('Reaction: %s in %s' % (reaction_id, reaction['pathways'][0]))
 
             xml = get_xml_for_id(reaction_id)
 
@@ -240,13 +240,13 @@ def download_reaction_data(reactions_get):
 
             # We do this down here, so we can append the full completed reaction construct to the meta-set
             if not mtins or not mtouts:
-                print "Didn't find metabolites for one side of this reaction, excluding and skipping"
+                print("Didn't find metabolites for one side of this reaction, excluding and skipping")
                 exclusions.append(reaction_id)
                 # Build a dud reactions table, for final combination testing
                 dud_reactions.append(reaction)
                 continue
 
-            print "%s (%s) => %s (%s)" % (', '.join(mtins), ', '.join(smtins), ', '.join(mtouts), ', '.join(smtouts))
+            print("%s (%s) => %s (%s)" % (', '.join(mtins), ', '.join(smtins), ', '.join(mtouts), ', '.join(smtouts)))
 
             # CREATE THE OBJECT IN THE DATABASE
             mdb.add_reaction(reaction_id, reaction)
@@ -265,26 +265,26 @@ def download_reaction_data(reactions_get):
             reaction_accum['dir'] = dr['dir']
 
         if reaction_accum['mtins'] and reaction_accum['mtouts']:
-            print "Built reaction from constitent pathway steps, adding;"
+            print("Built reaction from constitent pathway steps, adding;")
 
-            reaction_accum['name'] = u'%s (reaction)' % dud_reactions[0]['pathways'][0].name
+            reaction_accum['name'] = '%s (reaction)' % dud_reactions[0]['pathways'][0].name
             reaction_accum['databases'] = dud_reactions[0]['databases']
             reaction_accum['pathways'] = dud_reactions[0]['pathways']
 
             mdb.add_reaction('%s-RXN' % dud_reactions[0]['pathways'][0].id, reaction_accum)
             reactions_added_this_time += 1
 
-    print "Writing reactions..."
+    print("Writing reactions...")
     mdb.save_reactions()
 
-    print "Getting metabolite metadata..."
+    print("Getting metabolite metadata...")
     for metabolite_id in metabolites:  # +smts
 
-        if metabolite_id in mdb.metabolites.keys():
+        if metabolite_id in list(mdb.metabolites.keys()):
             # print "*** Already in database, skipping"
             continue
 
-        print u'Metabolite: %s' % metabolite_id
+        print('Metabolite: %s' % metabolite_id)
 
         xml = get_xml_for_id(metabolite_id)
 
@@ -307,24 +307,24 @@ def download_reaction_data(reactions_get):
         # Check if has a KEGG identifier, if so get the KEGG figure
         if 'LIGAND-CPD' in metabolite['databases']:
             kegg_id = metabolite['databases']['LIGAND-CPD']
-            urllib.urlretrieve('http://www.kegg.jp/Fig/compound_small/%s.gif' % kegg_id, "./db/figures/originals/%s.gif" % metabolite_id)
+            urllib.request.urlretrieve('http://www.kegg.jp/Fig/compound_small/%s.gif' % kegg_id, "./db/figures/originals/%s.gif" % metabolite_id)
 
         mdb.add_metabolite(metabolite_id, metabolite)
 
-    print "Writing metabolites..."
+    print("Writing metabolites...")
     mdb.save_metabolites()
 
     genes = list()
 
     # Collect genes as we iterate the proteins
-    print "Getting protein metadata..."
+    print("Getting protein metadata...")
     for protein_id in proteins:
 
-        if protein_id in mdb.proteins.keys():
+        if protein_id in list(mdb.proteins.keys()):
             # print "*** Already in database, skipping"
             continue
 
-        print u'Protein: %s' % protein_id
+        print('Protein: %s' % protein_id)
 
         xml = get_xml_for_id(protein_id)
 
@@ -356,17 +356,17 @@ def download_reaction_data(reactions_get):
 
         mdb.add_protein(protein_id, protein)
 
-    print "Writing proteins..."
+    print("Writing proteins...")
     mdb.save_proteins()
 
-    print "Getting gene metadata..."
+    print("Getting gene metadata...")
     for gene_id in genes:
 
-        if gene_id in mdb.genes.keys():
+        if gene_id in list(mdb.genes.keys()):
             # print "*** Already in database, skipping"
             continue
 
-        print u'Gene: %s' % gene_id
+        print('Gene: %s' % gene_id)
 
         xml = get_xml_for_id(gene_id)
 
@@ -383,7 +383,7 @@ def download_reaction_data(reactions_get):
 
         mdb.add_gene(gene_id, gene)
 
-    print "Writing genes..."
+    print("Writing genes...")
     mdb.save_genes()
 
     return reactions_added_this_time
@@ -398,16 +398,16 @@ if options.pathways:
     pathways = defaultdict(dict)
 
     for count, pathway_id in enumerate(pathways_get):
-        if pathway_id in mdb.pathways.keys():
+        if pathway_id in list(mdb.pathways.keys()):
             # print "*** Already in database, skipping"
             continue  # Next
 
-        print "Requesting pathway data for %s..." % pathway_id
-        f = urllib.urlopen('http://biocyc.org/getxml?HUMAN:%s' % pathway_id)
+        print("Requesting pathway data for %s..." % pathway_id)
+        f = urllib.request.urlopen('http://biocyc.org/getxml?HUMAN:%s' % pathway_id)
         xml = et.parse(f)
         f.close()
         total_connections += 1
-        print "Done."
+        print("Done.")
 
         reactions_get = defaultdict(dict)
 
@@ -436,15 +436,15 @@ if options.pathways:
                 tmppathwaylist.append(xpathway.attrib['frameid'])
 
             if len(tmppathwaylist) > 0:
-                print u'%s is a meta-pathway; found %d sub-pathways' % (pathway_id, len(tmppathwaylist))
-                print ','.join(list(set(tmppathwaylist)))
+                print('%s is a meta-pathway; found %d sub-pathways' % (pathway_id, len(tmppathwaylist)))
+                print(','.join(list(set(tmppathwaylist))))
                 pathways_get.extend(list(set(tmppathwaylist)))
         #if options.search:
         #    if search_re.search( pathways[pathway]['name'] ) == None:
         #        print u'[%d/%d] Skipping \'%s\' (%s) because of search criteria' % ( count, len(pathways), pathways[pathway]['name'], pathway )
         #        continue
 
-        print u"[%d/%d] Finding reactions in pathway '%s' (%s)" % (count, len(pathways_get), pathway['name'], pathway_id)
+        print("[%d/%d] Finding reactions in pathway '%s' (%s)" % (count, len(pathways_get), pathway['name'], pathway_id))
         xreactionls = xml.iterfind('Pathway/reaction-list/Reaction')
         reactions_this_pathway = len([x for x in xreactionls])
 
@@ -453,7 +453,7 @@ if options.pathways:
         if reactions_this_pathway == 0:  # Check if we're a 'pathomxway'
             continue
 
-        print "Found %d reactions." % (reactions_this_pathway)
+        print("Found %d reactions." % (reactions_this_pathway))
 
         mdb.add_pathway(pathway_id, pathway)
         for xreaction in xreactionls:
@@ -464,12 +464,12 @@ if options.pathways:
 
         # If nothing added for this pathway, delete it
         if reactions_added_this_time == 0:
-            print "Nothing in pathway %s, deleting." % pathway_id
+            print("Nothing in pathway %s, deleting." % pathway_id)
             continue
 
-        print "---------------------------------------------------"
-        print "Total connections to MetaCyc database so far: %d" % total_connections
-        print "---------------------------------------------------"
+        print("---------------------------------------------------")
+        print("Total connections to MetaCyc database so far: %d" % total_connections)
+        print("---------------------------------------------------")
 
         mdb.save_pathways()
         mdb.save_synonyms()
@@ -489,7 +489,7 @@ if options.reactions:
     mdb.save_pathways()
     mdb.save_synonyms()
 
-print "Done."
+print("Done.")
 
 
 # Python remove duplicates from file

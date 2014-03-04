@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from plugins import ImportPlugin
+from pathomx.plugins import ImportPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -12,17 +12,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-import utils
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
 
 import numpy as np
-import ui
-import db
-import threads
-from data import DataSet
-from custom_exceptions import *
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+
+from pathomx.data import DataSet
+from pathomx.custom_exceptions import *
 
 
 class ImportTextApp(ui.ImportDataApp):
@@ -38,8 +40,8 @@ class ImportTextApp(ui.ImportDataApp):
                 '.csv': self.load_csv,
             }
 
-        if fe in formats.keys():
-            print "Loading... %s" % fe
+        if fe in list(formats.keys()):
+            print("Loading... %s" % fe)
             dso = formats[fe](filename)
             if dso == None:
                 raise PathomxIncorrectFileStructureException("Data not loaded, check file structure.")
@@ -60,8 +62,8 @@ class ImportTextApp(ui.ImportDataApp):
         # Wrapper function to allow loading from alternative format CSV files
         # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
         reader = csv.reader(open(filename, 'rU'), delimiter=',', dialect='excel')
-        hrow = reader.next()  # Get top row
-        print hrow
+        hrow = next(reader)  # Get top row
+        print(hrow)
         if 'sample' in hrow[0].lower():
             if 'class' in hrow[1].lower():
                 return self.load_csv_R(filename)
@@ -77,10 +79,10 @@ class ImportTextApp(ui.ImportDataApp):
         fsize = os.path.getsize(filename)
         reader = csv.reader(f, delimiter=',', dialect='excel')
 
-        hrow = reader.next()  # Discard top row (sample no's)
+        hrow = next(reader)  # Discard top row (sample no's)
         samples = hrow[1:]
 
-        hrow = reader.next()  # Get 2nd row
+        hrow = next(reader)  # Get 2nd row
         classesa = hrow[1:]
         classes = [c for c in classesa if c != '.']
 
@@ -143,8 +145,8 @@ class ImportTextApp(ui.ImportDataApp):
         f = open(filename, 'rU')
         fsize = os.path.getsize(filename)
         reader = csv.reader(f, delimiter=',', dialect='excel')
-        print 'R'
-        hrow = reader.next()  # Get top row
+        print('R')
+        hrow = next(reader)  # Get top row
         metabolites = hrow[2:]
         ydim = 0
         xdim = len(metabolites)

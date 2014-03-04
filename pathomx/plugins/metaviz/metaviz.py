@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from plugins import VisualisationPlugin
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -23,13 +22,15 @@ import numpy as np
 import copy
 
 import operator
-import ui
-import utils
-import db
-import threads
-from data import DataSet, DataDefinition
-from db import ReactionIntermediate
-from views import SVGView
+import pathomx.ui as ui
+import pathomx.utils as utils
+import pathomx.db as db
+import pathomx.threads as threads
+
+from pathomx.plugins import VisualisationPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.db import ReactionIntermediate
+from pathomx.views import SVGView
 
 PRUNE_ALL = lambda a, b, c, d: (a, b, c)
 PRUNE_IDENTICAL = lambda a, b, c, d: (a, b, c, d)
@@ -107,7 +108,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
     # Store data about dummy nodes needing layout (on predefined layouts; where none supplied)
     layoutsrequired = dict()
 
-    print "Building... "
+    print("Building... ")
     # Subgraphs of metabolic pathways
 
     nodes = list()
@@ -238,7 +239,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                 clusternodes = add_clusternodes(clusternodes, 'compartment', compartments, [mtout])
 
     # id,type,names
-    for m in db.compounds.values():
+    for m in list(db.compounds.values()):
 
         # It's in one of our pathways (union)
         if set(m.pathways) & set(pathways):
@@ -261,7 +262,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
 
         pathway_annotate = set()
         pathway_annotate_dupcheck = set()
-        for id, r in db.reactions.items():
+        for id, r in list(db.reactions.items()):
 
         # Check that a reaction for this isn't already on the map
             if r not in visible_reactions:
@@ -271,7 +272,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
 
                     for mt in r.mtins:
                         if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck:  # Compound is already on the graph
-                            print mt
+                            print(mt)
                             mp = db.compounds[mt.id].pathways[0]
                             pathway_annotate.add((p, mp, pathway_node, mt, pathway_node, r.dir))
                             pathway_annotate_dupcheck.add((p, mt))
@@ -294,7 +295,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
             if analysis:  # and options.mining:
                 # Not actually used for color, this is a ranking value (bud-sized on pathway link)
                 p_compound_scores = [analysis[m.id] for m in p.compounds if m.id in analysis]
-                print p_compound_scores
+                print(p_compound_scores)
                 if p_compound_scores:
                     fillcolor = sum(p_compound_scores) / len(p_compound_scores)
                 else:
@@ -306,7 +307,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
             nodes.append([pathway_node, fillcolor, True])
 
     # Generate the analysis graph from datasets
-    graph = pydot.Dot(u'\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgeslast', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc")  # , model='mds') #, overlap='ipsep', mode='ipsep', model='mds')
+    graph = pydot.Dot('\u200C', graph_type='digraph', sep="+15,+10", esep="+5,+5", labelfloat='false', outputMode='edgeslast', fontname='Calibri', splines=options.splines, gcolor='white', pad=0.5, model='mds', overlap="vpsc")  # , model='mds') #, overlap='ipsep', mode='ipsep', model='mds')
     subgraphs = list()
     clusterclu = dict()
 
@@ -319,7 +320,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         clashcheck = []
         shifts = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
         mult = 2
-        for id, xys in layoutsrequired.items():
+        for id, xys in list(layoutsrequired.items()):
             xy = (np.mean([xy[0] for xy in xys]), np.mean([xy[1] for xy in xys]))
             while xy in clashcheck:
                 for s in shifts:
@@ -350,7 +351,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
             bgcolor = 'transparent'
             style = 'solid'
 
-        subgraph = pydot.Cluster(str(sgno), label=u'%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color=bcolor, bgcolor=bgcolor, style=style, fontcolor=bcolor, labeljust='left', pad=0.5, margin=12, labeltooltip=u'%s' % cluster, URL='non')  # PATHWAY_URL % cluster.id )
+        subgraph = pydot.Cluster(str(sgno), label='%s' % cluster, graph_type='digraph', fontname='Calibri', splines=options.splines, color=bcolor, bgcolor=bgcolor, style=style, fontcolor=bcolor, labeljust='left', pad=0.5, margin=12, labeltooltip='%s' % cluster, URL='non')  # PATHWAY_URL % cluster.id )
         # Read node file of compounds to show
         # TODO: Filter this by the option specification
         for n in clusternodes[cluster_key][cluster]:
@@ -430,7 +431,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         else:
             image = False
 
-        if layout and m.id in layout.objects.keys():
+        if layout and m.id in list(layout.objects.keys()):
             pos = '%s,%s!' % layout.objects[m.id]
                 # Fugly duplication, but appears to be no way to set a 'none' position
             graph.add_node(pydot.Node(m.id, width=width, height=height, style=style, shape=shape, color=color, penwidth=border, fontname='Calibri', colorscheme=colorscheme, fontcolor=fontcolor, fillcolor=fillcolor, label=label, labeltooltip=label, URL=url % m.id, pos=pos))  # http://metacyc.org/META/substring-search?object=%s                
@@ -484,7 +485,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         else:
 
             if options.show_enzymes:
-                label.append(u'%s' % r.name)
+                label.append('%s' % r.name)
 
             if options.show_enzymes and hasattr(r, 'proteins') and r.proteins:
                 if analysis:
@@ -495,7 +496,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                         for g in pr.genes:
                             if g.id in analysis:
                                 prgenestr += '<font color="%s">&#x25cf;</font>' % analysis[g.id][0]
-                    label.append(u'%s' % prgenestr)  # pr.genes
+                    label.append('%s' % prgenestr)  # pr.genes
 
             if options.show_secondary and (hasattr(r, 'smtins')):  # If there's an in there's an out
                 if len(r.smtins + r.smtouts) > 0:
@@ -513,7 +514,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                         else:
                             smtouts.append('%s' % sm)
 
-                    label.append(u'%s &rarr; %s' % (', '.join(smtins), ', '.join(smtouts)))
+                    label.append('%s &rarr; %s' % (', '.join(smtins), ', '.join(smtouts)))
 
         #if options.show_network_analysis:
         #    width = min( len( r.pathways ), 5)
@@ -523,7 +524,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         if hasattr(r, 'gibbs'):
             penwidth = abs(r.gibbs['deltaG_w'])
 
-        e = pydot.Edge(origin.id, dest.id, weight=weight, len=length, penwidth=penwidth, dir=dir, label=u'<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
+        e = pydot.Edge(origin.id, dest.id, weight=weight, len=length, penwidth=penwidth, dir=dir, label='<' + '<br />'.join(label) + '>', colorscheme=colorscheme, color=color, fontcolor='#888888', fontsize='10', arrowhead=arrowhead, arrowtail=arrowtail, style=style, fontname='Calibri', URL=url % r.id, labeltooltip=' ')
         graph.add_edge(e)
 
     return graph
@@ -536,7 +537,7 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         super(MetaVizPathwayConfigPanel, self).__init__(*args, **kwargs)
 
         #all_pathways = parent.db.pathways.keys()
-        self.all_pathways = sorted([p.name for p in self.m.db.pathways.values()])
+        self.all_pathways = sorted([p.name for p in list(self.m.db.pathways.values())])
 
         self.label = defaultdict(dict)
         #selected_pathways = str(  ).split(',')
@@ -740,7 +741,7 @@ class MetaVizApp(ui.AnalysisApp):
             if kind == 'pathway' and id in self.m.db.pathways:
                 # Add the pathway and regenerate
                 pathways = self.config.get('/Pathways/Show').split(',')
-                pathways.append(urllib2.unquote(id))
+                pathways.append(urllib.parse.unquote(id))
                 self.config.set('/Pathways/Show', ','.join(pathways))
                 self.generateGraphApp()
 
@@ -751,7 +752,7 @@ class MetaVizApp(ui.AnalysisApp):
             if kind == 'pathway' and id in self.m.db.pathways:
                 # Add the pathway and regenerate
                 pathways = self.config.get('/Pathways/Show').split(',')
-                pathways.remove(urllib2.unquote(id))
+                pathways.remove(urllib.parse.unquote(id))
                 self.config.set('/Pathways/Show', ','.join(pathways))
                 self.generateGraphApp()
 
@@ -820,7 +821,7 @@ class MetaVizApp(ui.AnalysisApp):
         else:
             pathway_ids = []
 
-        print self.config.get('/Pathways/Show')
+        print(self.config.get('/Pathways/Show'))
 
         # Add the manually Shown pathways
         pathway_ids_show = self.config.get('/Pathways/Show')
@@ -831,7 +832,7 @@ class MetaVizApp(ui.AnalysisApp):
         pathway_ids = [p for p in pathway_ids if p not in pathway_ids_hide]
 
         # Convert pathways_ids to pathways
-        pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in self.m.db.pathways.keys()]
+        pathways = [self.m.db.pathways[pid] for pid in pathway_ids if pid in list(self.m.db.pathways.keys())]
 
         
         if pathway_ids == []:
@@ -858,7 +859,7 @@ class MetaVizApp(ui.AnalysisApp):
                 #        graph.write(filename % tp, format=options.output, prog='neato')
                 #    return tps
                 #else:
-                print "Generate map for single control:test..."
+                print("Generate map for single control:test...")
                 # Build analysis lookup dict; we want a single color for each metabolite
                 mini, maxi = min(abs(np.median(dsi.data)), 0), max(abs(np.median(dsi.data)), 0)
                 mini, maxi = -1.0, +1.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)

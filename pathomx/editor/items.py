@@ -1,6 +1,7 @@
 import os
 import copy
-import utils
+from .. import utils
+
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -190,14 +191,14 @@ class ToolItem(BaseItem):
         i.input._links.append(linker)
 
         self._links[datai] = linker
-        print "LINKS", self._links
+        print("LINKS", self._links)
 
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
 
         o = datao[0].v.editorItem
         i = datai[0].v.editorItem
-        print datai, "LINKS", self._links
+        print(datai, "LINKS", self._links)
         if datai in self._links:
 
             linker = self._links[datai]
@@ -340,7 +341,7 @@ class ToolInterface(BaseInteractiveItem):
 
                 source = self._linkInProgress.source.app
                 dest = target.app
-                c = dest.data.consume_any_of(source.data.o.values())
+                c = dest.data.consume_any_of(list(source.data.o.values()))
 
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
@@ -349,7 +350,7 @@ class ToolInterface(BaseInteractiveItem):
         """
         Paint the tool object
         """
-        if self.interface.keys():
+        if list(self.interface.keys()):
 
         # Has entries, so draw *something*
             pen = QPen()

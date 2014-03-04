@@ -1,29 +1,36 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
+
 
 # Import Pyqt5.Qt5 classes
-import qt5
+from . import qt5
 
 from collections import defaultdict
 
-import os, urllib, urllib2, copy, re, json, importlib, sys, traceback
+import os, copy, re, json, importlib, sys, traceback
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
 
 # Pathomx classes
-import utils, threads
+from . import utils, threads
 
 import numpy as np
 
-import data, config
+from . import data, config
 
 
 # Translation (@default context)
-from translate import tr
+from .translate import tr
 
 
 from numpy import arange, sin, pi
-from backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from .backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
@@ -184,7 +191,7 @@ class BaseView():
             
             last_v = v
         
-        print "%s reduced to %s" % ( no, len(accumulator) ) 
+        print("%s reduced to %s" % ( no, len(accumulator) )) 
         return accumulator
         
         
@@ -249,7 +256,7 @@ class WebPageJSLog(qt5.QWebPage):
         super(WebPageJSLog, self).__init__(parent, **kwargs)
 
     def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
-        print "JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg)
+        print("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
 
 class QWebPageExtend(qt5.QWebPage):
     def shouldInterruptJavascript():
@@ -525,10 +532,10 @@ class D3SpectraView(D3View):
             
         # If we have scale data, enable and render the Viewer tab
         #FIXME: Must be along the top axis 
-        print "Scale data up top; make a spectra view"
+        print("Scale data up top; make a spectra view")
         metadata = {'htmlbase': os.path.join( utils.scriptdir,'html')}
     
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = list(zip( dso.scales[1], dso.entities[1], dso.labels[1] ))
 
         # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
         dsot = dso.as_summary(dim=0, match_attribs=['classes'])
@@ -543,7 +550,7 @@ class D3SpectraView(D3View):
         data = data[:,sp]
         
         metadata['figure'] = {
-            'data':zip( scale, data.T ), # (ppm, [data,data,data])
+            'data':list(zip( scale, data.T )), # (ppm, [data,data,data])
             'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
             'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
         }
@@ -567,15 +574,15 @@ class MplSpectraView(MplView):
     def generate(self, dso=None):
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting
-            dso.scales[1] = range( len(dso.scales[1]) )
+            dso.scales[1] = list(range( len(dso.scales[1])))
             
         #FIXME: Should probably be somewhere else. Label up the top 50    
         wmx = np.amax( np.absolute( dso.data), axis=0 )
-        dso_z = zip( dso.scales[1], dso.entities[1], dso.labels[1] )
+        dso_z = list(zip( dso.scales[1], dso.entities[1], dso.labels[1] ))
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-20:] # Top 50
         dso_z = [x for x, wmx in dso_z ]    
 
-        print dso_z
+        print(dso_z)
         
         # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
         dsot = dso.as_summary(dim=0, match_attribs=['classes'])
@@ -631,7 +638,7 @@ class D3DifferenceView(D3View):
             datao = np.interp( dso_a.scales[1], dso_b.scales[1], datao)
 
         metadata['figure'] = {
-            'data':zip( dso_a.scales[1], datai.T, datao.T ), # (ppm, [dataa,datab])
+            'data':list(zip( dso_a.scales[1], datai.T, datao.T )), # (ppm, [dataa,datab])
         }
         
         template = self.m.templateEngine.get_template(self.d3_template)
@@ -708,8 +715,8 @@ class MplScatterView(MplView):
             df = dso.as_filtered(dim=0,classes=[c])
             sp[c] = self.ax.scatter(df.data[:,0], df.data[:,1], c=next(colors) )
 
-        self.ax.legend(sp.values(),
-           sp.keys(),
+        self.ax.legend(list(sp.values()),
+           list(sp.keys()),
            scatterpoints=1,
            loc='upper left', bbox_to_anchor=(1, 1))
            
@@ -780,7 +787,7 @@ class D3CircosView(D3View):
     d3_template = 'd3/circos.svg'
 
     def generate(self, dso=None):
-        print dso
+        print(dso)
 
         self.generate_d3( {
             'figure': {
@@ -797,17 +804,17 @@ class D3CircosView(D3View):
 class AnalysisCircosPathwayView(D3LegacyView):
 
     def generate(self):
-        pathways = self.parent.db.pathways.keys()
+        pathways = list(self.parent.db.pathways.keys())
         pathway_metabolites = dict()
         
-        for k,p in self.parent.db.pathways.items():
+        for k,p in list(self.parent.db.pathways.items()):
             pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
 
         data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
 
         pathway_reactions = dict()
         
-        for k,p in self.parent.db.pathways.items():
+        for k,p in list(self.parent.db.pathways.items()):
             pathway_reactions[p.id] = set( [m for m in p.reactions] )
 
         data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
@@ -843,7 +850,7 @@ class D3BarView(D3View):
     def generate(self, dso): 
         fd = np.mean( dso.data, axis=0 )
 
-        fdm = zip( dso.labels[1], fd )
+        fdm = list(zip( dso.labels[1], fd ))
         sms = sorted(fdm,key=lambda x: abs(x[1]), reverse=True )
         metabolites = [m for m,s in sms]
 
@@ -885,7 +892,7 @@ class MplCategoryBarView(MplView):
 
         # FIXME: Remove this once UI allows selection of data to plot
         fd = np.mean( dso.data, axis=0 )
-        fdm = zip( dso.labels[1], fd )
+        fdm = list(zip( dso.labels[1], fd ))
         sms = sorted(fdm,key=lambda x: abs(x[1]), reverse=True )
         labels = [m for m,s in sms]
         
@@ -926,7 +933,7 @@ class MplCategoryBarView(MplView):
             else:
                 yerr = None
                 
-            print yerr
+            print(yerr)
 
             color = next(colors)
             sp[c] = self.ax.bar(x[:,n], cdata, align='center', color=color, yerr=yerr, ecolor=color )
@@ -935,8 +942,8 @@ class MplCategoryBarView(MplView):
         self.ax.set_xticks( xticks )
         self.ax.set_xticklabels(labels, rotation=45, ha='right', rotation_mode='anchor' )
 
-        self.ax.legend(sp.values(),
-           sp.keys(),
+        self.ax.legend(list(sp.values()),
+           list(sp.keys()),
            scatterpoints=1,
            loc='upper left', bbox_to_anchor=(1, 1))
            
@@ -981,8 +988,8 @@ class MplHeatmapView(MplView):
             
         self.ax.imshow( dso.data, interpolation='none', aspect='auto', vmin=-ylim, vmax=+ylim, cmap=cm.bwr)
 
-        self.ax.set_xticks( range( dso.shape[1] ) )
-        self.ax.set_yticks( range( dso.shape[0] ) )
+        self.ax.set_xticks( list(range( dso.shape[1])) )
+        self.ax.set_yticks( list(range( dso.shape[0])) )
         self.ax.set_yticklabels( dso.labels[0], size=7 )
         self.ax.set_xticklabels( dso.labels[1], rotation=60, rotation_mode='anchor', ha="left", size=7 )
     

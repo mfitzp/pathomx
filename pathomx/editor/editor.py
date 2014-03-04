@@ -1,5 +1,5 @@
 import os
-import utils
+from .. import utils
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
-from items import *
+from .items import *
 
 
 class WorkspaceEditor(QGraphicsView):

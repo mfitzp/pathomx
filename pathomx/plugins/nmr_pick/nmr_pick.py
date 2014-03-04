@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,14 +11,18 @@ from PyQt5.QtPrintSupport import *
 
 import os, copy
 
-from plugins import ProcessingPlugin
 
 import numpy as np
 import nmrglue as ng
 
-import ui, db, utils, threads
-from data import DataSet, DataDefinition
-from views import MplSpectraView
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.utils as utils
+import pathomx.threads as threads
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView
+from pathomx.plugins import ProcessingPlugin
 
 
 
@@ -56,7 +60,7 @@ class PeakPickConfigPanel(ui.ConfigPanel):
         }
 
         self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems( [k for k,v in self.algorithms.items() ] )
+        self.algorithm_cb.addItems( [k for k,v in list(self.algorithms.items()) ] )
         tl = QLabel('Algorithm')
         self.layout.addWidget(tl)
         self.layout.addWidget(self.algorithm_cb)  

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -11,16 +11,19 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-from plugins import ProcessingPlugin
+from pathomx.plugins import ProcessingPlugin
 
 import numpy as np
 import nmrglue as ng
-import ui
-import db
-import utils
-import threads
-from data import DataSet, DataDefinition
-from views import MplSpectraView, MplDifferenceView
+
+import pathomx.ui as ui
+import pathomx.db as db
+import pathomx.threads as threads
+import pathomx.utils as utils
+import pathomx.qt5 as qt5
+
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplSpectraView, MplDifferenceView
 
 
 # Dialog box for Metabohunter search options
@@ -30,7 +33,7 @@ class SpectraNormConfigPanel(ui.ConfigPanel):
         super(SpectraNormConfigPanel, self).__init__(*args, **kwargs)
 
         self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems([k for k, v in self.v.algorithms.items()])
+        self.algorithm_cb.addItems([k for k, v in list(self.v.algorithms.items())])
         self.config.add_handler('algorithm', self.algorithm_cb)
 
         tl = QLabel('Scaling algorithm')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -15,13 +15,14 @@ import numpy as np
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
-from plugins import VisualisationPlugin
-
 import os
-import ui
-import utils
-from data import DataSet, DataDefinition
-from views import MplHeatmapView
+
+import pathomx.ui as ui
+import pathomx.utils as utils
+
+from pathomx.plugins import VisualisationPlugin
+from pathomx.data import DataSet, DataDefinition
+from pathomx.views import MplHeatmapView
 
 
 # Class for data visualisations using GPML formatted pathways
@@ -52,7 +53,7 @@ class HeatmapApp(ui.AnalysisApp):
 
         t = self.addToolBar('Heatmap')
         t.hm_control = QComboBox()
-        t.hm_control.addItems([h for h in self.predefined_heatmaps.keys()])
+        t.hm_control.addItems([h for h in list(self.predefined_heatmaps.keys())])
         self.config.add_handler('predefined_heatmap', t.hm_control)
         t.addWidget(t.hm_control)
 
@@ -62,7 +63,7 @@ class HeatmapApp(ui.AnalysisApp):
 
     def equilibrium_table_builder(self, objs):
         result = []
-        for rk, r in self.m.db.reactions.items():
+        for rk, r in list(self.m.db.reactions.items()):
             inH = sum([objs[m.id] for m in r.smtins if m.id in objs])
             outH = sum([objs[m.id] for m in r.smtouts if m.id in objs])
 
@@ -82,11 +83,11 @@ class HeatmapApp(ui.AnalysisApp):
     def cofactor_table_builder(self, objs):
         result = []
         for p in objs:
-            pin = self.m.db.metabolites[p[0]] if p[0] in self.m.db.metabolites.keys() else False
-            pout = self.m.db.metabolites[p[1]] if p[1] in self.m.db.metabolites.keys() else False
+            pin = self.m.db.metabolites[p[0]] if p[0] in list(self.m.db.metabolites.keys()) else False
+            pout = self.m.db.metabolites[p[1]] if p[1] in list(self.m.db.metabolites.keys()) else False
 
             if pin and pout:
-                for rk, r in self.m.db.reactions.items():
+                for rk, r in list(self.m.db.reactions.items()):
                     add_it = False
                     if pin in r.smtins and pout in r.smtouts:
                         add_it = (r.mtins, r.mtouts)
@@ -104,7 +105,7 @@ class HeatmapApp(ui.AnalysisApp):
     # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)
     def endpoint_table_builder(self):
         endpoints = []
-        for k, m in self.m.db.compounds.items():
+        for k, m in list(self.m.db.compounds.items()):
             if m.type == 'compound':
                 for r in m.reactions:
                     if m in r.mtins or r.dir == 'both':
@@ -241,7 +242,7 @@ class HeatmapApp(ui.AnalysisApp):
     def _top_metabolites(self, dso=None, fn=abs):
         # Flatten data input (0 dim) to get average 'score' for each metabolite; then take top 30
         fd = np.mean(dso.data, axis=0)
-        fdm = zip(dso.labels[1], fd)
+        fdm = list(zip(dso.labels[1], fd))
         sms = sorted(fdm, key=lambda x: fn(x[1]), reverse=True)
         metabolites = [m for m, s in sms]
 
