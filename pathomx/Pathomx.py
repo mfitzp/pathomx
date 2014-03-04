@@ -828,8 +828,6 @@ class MainWindow(qt5.QMainWindow):
 
                 print( plugin.name )
                 print( dir(plugin) ) 
-                print( plugin.path )
-                plugin_path = plugin.path #plugin.details.get('Core', 'Module')
 
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__,  # __module__,
@@ -838,12 +836,12 @@ class MainWindow(qt5.QMainWindow):
                     'name': plugin.name,
                     'version': plugin.version,
                     'description': plugin.description,
-                    'author': plugin.details.get('Documentation', 'author'),
+                    'author': plugin.author,
                     'info': plugin,
-                    'path': os.path.dirname(plugin_path),
-                    'module': os.path.basename(plugin_path),
-                    'shortname': os.path.basename(plugin_path),
-                    'is_core_plugin': plugin_path.startswith(self.core_plugin_path)
+                    'path': os.path.dirname(plugin.path),
+                    'module': os.path.basename(plugin.path),
+                    'shortname': os.path.basename(plugin.path),
+                    'is_core_plugin': plugin.path.startswith(self.core_plugin_path)
                 }
 
                 self.plugins[metadata['shortname']] = metadata
