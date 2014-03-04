@@ -130,24 +130,39 @@ def nonull(stream):
         yield line.replace('\x00', '')
 
 
-class UTF8Recoder:
-    """
-    Iterator that reads an encoded stream and reencodes the input to UTF-8
-    """
 
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
-    def __iter__(self):
-        return self
 
-    def __next__(self):
-        return self.reader.__next__().encode("utf-8")
 
-    def next(self):
-        return self.reader.next().encode("utf-8")
+
 
 if sys.version_info < (3, 0): # Python 2 only
+
+    class UTF8Recoder:
+        """
+        Iterator that reads an encoded stream and reencodes the input to UTF-8
+        """
+
+        def __init__(self, f, encoding):
+            self.reader = codecs.getreader(encoding)(f)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            return self.reader.__next__().encode("utf-8")
+
+        def next(self):
+            return self.reader.next().encode("utf-8")
+
 
     class UnicodeReader:
         """
@@ -209,14 +224,7 @@ else:
 
 
 
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
+
 
 
 def find_packager():
