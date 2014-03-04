@@ -234,9 +234,9 @@ class databaseManager():
         if len(identities_files) > 0:
             print("Loading additional synonyms:")
             for filename in identities_files:
-                print "."
+                print(".")
                 print("- %s" % filename)
-                print "."
+                print(".")
                 reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'synonyms', filename), 'rU'), delimiter=',', dialect='excel')
                 for id, identity in reader:
                     self.add_identity(id, identity)
