@@ -13,7 +13,12 @@ import functools
 
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
-reload(sys).setdefaultencoding('utf8')
+try:
+    # Python 2 only
+    reload(sys).setdefaultencoding('utf8')
+except:
+    pass
+    
 
 from . import qt5
 import textwrap
