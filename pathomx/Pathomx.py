@@ -241,7 +241,7 @@ class DialogRegister(qt5.QDialog):
             ('LY', 'Libya'),
             ('LI', 'Liechtenstein'),
             ('LT', 'Lithuania'),
-            ('LU', 'Luxembourg'),
+            ('LU', 'Luxembour 'PluginInfo' object has no attribute '_PluginInfo__details'g'),
             ('MO', 'Macau'),
             ('MK', 'Macedonia'),
             ('MG', 'Madagascar'),
@@ -400,7 +400,7 @@ class dialogDefineExperiment(ui.genericDialog):
         self.cb_test.clear()
         self.cb_test.addItems(filtered_classes)
         # Ensure something remains selected
-        self.cb_control.setCurrentIndex(0)
+        self.cb_control.setC 'PluginInfo' object has no attribute '_PluginInfo__details'urrentIndex(0)
         self.cb_test.setCurrentIndex(0)
 
     def __init__(self, parent=None, **kwargs):
@@ -828,10 +828,8 @@ class MainWindow(qt5.QMainWindow):
 
                 print( plugin.name )
                 print( dir(plugin) ) 
-
-
                 print( plugin.path )
-                plugin_path = plugin.details.get('Core', 'Module')
+                plugin_path = plugin.path #plugin.details.get('Core', 'Module')
 
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__,  # __module__,
