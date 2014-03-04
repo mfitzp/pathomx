@@ -12,10 +12,10 @@ import json
 import importlib
 import functools
 
-UTF8Writer = codecs.getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
 
 if sys.version_info < (3, 0): # Python 2 only
+    UTF8Writer = codecs.getwriter('utf8')
+    sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
 
 from . import qt5
