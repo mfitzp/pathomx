@@ -216,6 +216,8 @@ class ExportImageDialog(genericDialog):
             w.addWidget(self.scaling, r, 1)
             r += 1
             w.addItem(QSpacerItem(1, 20), r, 0)
+        else:
+            self.scaling = False
 
         # Set values
         self.width.setValue(self._w)
@@ -351,7 +353,10 @@ class ExportImageDialog(genericDialog):
             return self.get_converted_measurement(self.resolution.value(), self.convert_res_to_unit[self.resolution_units.currentText()], 'in')
 
     def get_resample(self):
-        return self.scaling.currentText() == 'Resample'
+        if self.scaling:
+            return self.scaling.currentText() == 'Resample'
+        else:
+            return False
 
 
 class QWebPageExtend(QWebPage):
@@ -975,6 +980,9 @@ class DataApp(GenericApp):
         self.table = TableView()
         self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True)
 
+
+
+
 # Import Data viewer
 
 class ImportDataApp(DataApp):
@@ -1464,3 +1472,24 @@ class CodeEditor(QPlainTextEdit):
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
+            
+            
+class DbApp(QMainWindow):
+    def __init__(self, parent, **kwargs):
+        super(DbApp, self).__init__(parent)
+
+        self.id = str(id(self))
+
+        self._previous_size = None
+        self.m = parent
+        self.views = ViewManager(self)
+
+        self.setDockOptions(QMainWindow.ForceTabbedDocks)
+        self.toolbars = {}
+        #self.register_url_handler(self.default_url_handler)
+
+        self.setCentralWidget(self.views)
+
+        self.dbBrowser = HTMLView(self)
+        self.views.addView(self.dbBrowser, tr('Database'), unfocus_on_refresh=False)
+            

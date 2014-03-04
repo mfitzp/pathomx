@@ -43,6 +43,7 @@ import data
 import utils
 import ui
 import threads
+import views
 import custom_exceptions
 import plugins  # plugin helper/manager
 from editor.editor import WorkspaceEditor
@@ -539,6 +540,7 @@ class ToolPanel(qt5.QListWidget):
         dropAction = drag.exec_(qt5.Qt.MoveAction)
 
 
+
 def _convert_list_type_from_XML(vs):
     '''
     Lists are a complex type with possibility for mixed sub-types. Therefore each
@@ -696,6 +698,11 @@ class MainWindow(qt5.QMainWindow):
         self.menuBars['file'].addSeparator()
 
         # DATABASE MENU
+        explore_dbAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'database-explore.png')), tr('&Explore database…'), self)
+        explore_dbAction.setStatusTip('Explore database')
+        explore_dbAction.triggered.connect(self.onDBExplore)
+        self.menuBars['database'].addAction(explore_dbAction)
+
         load_identitiesAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
         load_identitiesAction.setStatusTip('Load additional unification mappings into database')
         load_identitiesAction.triggered.connect(self.onLoadIdentities)
@@ -911,6 +918,8 @@ class MainWindow(qt5.QMainWindow):
         self.tabifyDockWidget(self.workspaceDock, self.dataDock)
         self.toolDock.raise_()
 
+        self.dbtool = ui.DbApp(self)
+        self.dbBrowser = self.dbtool.dbBrowser
 
         if self.config.value('/Pathomx/Is_setup', False) != True:
             print "Setting up initial configuration..."
@@ -945,6 +954,9 @@ class MainWindow(qt5.QMainWindow):
 
     def onCheckPluginUpdates(self):
         pass
+        
+    def onDBExplore(self):
+        self.dbtool.show()
 
     # Init application configuration
     def onResetConfig(self):
@@ -1055,8 +1067,8 @@ class MainWindow(qt5.QMainWindow):
                             'object': gene,
                             })
 
-                    # Focus the database dock
-                    self.dataDock.raise_()
+                    # Focus the database window
+                    self.dbtool.raise_()
 
             #metaviz/compound/%s/view
             elif app in self.url_handlers:
@@ -1069,12 +1081,6 @@ class MainWindow(qt5.QMainWindow):
         else:
             # It's an URL open in default browser
             qt5.QDesktopServices.openUrl(url)
-
-    def onBrowserLoadDone(self, ok):
-        # Reload the sidebar on main window refresh: this is only bound to the main window so no need to check for action
-        pass
-        #if isinstance(self.dbBrowser_CurrentURL, qt5.QUrl): # We've got an url, reload
-        #    self.onBrowserNav(self.dbBrowser_CurrentURL)
 
     def onLoadIdentities(self):
         """ Open a data file"""

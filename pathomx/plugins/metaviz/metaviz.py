@@ -703,7 +703,6 @@ class MetaVizApp(ui.AnalysisApp):
             DataDefinition('protein_data', {
             'entities_t': (None, ['Protein']),
             }, 'Relative protein concentration data'),
-
         ])
 
         # Define default settings for pathway rendering

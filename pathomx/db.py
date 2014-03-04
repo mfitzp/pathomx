@@ -17,7 +17,7 @@ from translate import tr
 
 # Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
-    'UCSC', 'ENSEMBL', 'HMDB', 'CAS',
+    'UCSC', 'ENSEMBL', 'HMDB', 'CAS', 'KEGG'
 ]
 
 # Internal URLS
@@ -173,6 +173,7 @@ class databaseManager():
     # Initialise variables
         self.synfwd = defaultdict(set)  # ID -> Synonyms
         self.synrev = dict()  # Synonym -> ID
+        self.synrev_by_type = defaultdict(dict)  # Synonym -> ID
 
         # A namespace index
         self.index = dict()
@@ -471,6 +472,12 @@ class databaseManager():
             self.synrev[synonym] = self.index[id]  # Synonym -> Object
             self.synrev[synonym.lower()] = self.index[id]  # lc Synonym -> Object
             self.synrev[id] = self.index[id]  # id -> Object
+            
+            # BY type
+            self.synrev_by_type[ self.index[id].type ][synonym] = self.index[id]  # Synonym -> Object
+            self.synrev_by_type[ self.index[id].type ][synonym.lower()] = self.index[id]  # lc Synonym -> Object
+            self.synrev_by_type[ self.index[id].type ][id] = self.index[id]  # id -> Object
+            
 
     def add_synonyms(self, id, synonyms):
         for syn in synonyms:

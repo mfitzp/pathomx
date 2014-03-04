@@ -18,6 +18,7 @@ import os
 import ui
 import utils
 from data import DataSet, DataDefinition
+from views import TableView
 
 import numpy as np
 
@@ -87,10 +88,11 @@ class PathwayMiningApp(ui.AnalysisApp):
         self.data.add_input('input_3')  # Add input slot
         self.data.add_input('input_4')  # Add input slot
         self.data.add_output('output')
-        self.table = QTableView()
-        self.table.setModel(self.data.o['output'].as_table)
 
-        self.views.addTab(self.table, 'Table')
+        self.table = TableView()
+        self.table.setModel(self.data.o['output'].as_table)
+        self.views.addView(self.table, 'Table', unfocus_on_refresh=True)
+
         # Setup data consumer options
         self.data.consumer_defs.extend([
             DataDefinition('input_1', {

@@ -303,6 +303,15 @@ class WebView(qt5.QWebView, BaseView):
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
         self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
         self.page().currentFrame().evaluateJavaScript( "_pathomx_render_trigger();" )
+
+ 
+    def saveAsImage(self,settings): # Size, dots per metre (for print), resample (redraw) image
+        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+                                                                                     Portable Network Graphics (*.png)")
+        if filename:
+            r = RenderPageToFile(self, filename, settings ) 
+            while r.finished != True:
+                qt5.QCoreApplication.processEvents()
     
     def getSize(self):
         if self.w.size() == qt5.QSize(100,30):
@@ -335,14 +344,7 @@ class D3View(WebView):
 
     def setSVG(self, svg):
         super(D3View, self).setHtml(svg, qt5.QUrl('file:///') )             
- 
-    def saveAsImage(self,settings): # Size, dots per metre (for print), resample (redraw) image
-        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
-                                                                                     Portable Network Graphics (*.png)")
-        if filename:
-            r = RenderPageToFile(self, filename, settings ) 
-            while r.finished != True:
-                qt5.QCoreApplication.processEvents()
+
 
     def generate_d3(self, metadata):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')

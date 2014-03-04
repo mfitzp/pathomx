@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
+import qt5
+
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
@@ -61,13 +63,21 @@ class GPMLPathwayApp(ui.AnalysisApp):
         #self.browser = ui.QWebViewExtend(self)
         self.views.addView(GPMLView(self), 'View')
 
-        self.data.add_input('input')  # Add input slot
+        self.data.add_input('compound_data')  # Add input slot
+        self.data.add_input('gene_data')  # Add input slot
+        self.data.add_input('protein_data')  # Add input slot
         # Setup data consumer options
-        self.data.consumer_defs.append(
-            DataDefinition('input', {
-            'entities_t': (None, ['Compound', 'Gene']),
-            }, 'Relative concentration data'),
-        )
+        self.data.consumer_defs.extend([
+            DataDefinition('compound_data', {
+            'entities_t': (None, ['Compound',])
+            }, 'Relative compound (metabolite) concentration data'),
+            DataDefinition('gene_data', {
+            'entities_t': (None, ['Gene', 'Protein'])
+            }, 'Relative gene expression data'),
+            DataDefinition('protein_data', {
+            'entities_t': (None, ['Protein']),
+            }, 'Relative protein concentration data'),            
+        ])
 
         load_gpmlAction = QAction(QIcon(os.path.join(self.plugin.path, 'document-open-gpml.png')), 'Load a GPML pathway file\u2026', self.m)
         load_gpmlAction.setShortcut('Ctrl+Q')
@@ -148,7 +158,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
         if obj is not None:
             return ('MetaCyc %s' % obj.type, obj.id)
 
-    def generate(self, input=None):
+    def generate(self, compound_data=None, gene_data=None, protein_data=None):
 
         if self.gpml == None:
             # No pathway loaded; check config for stored source to use
@@ -158,15 +168,18 @@ class GPMLPathwayApp(ui.AnalysisApp):
             elif self.config.get('gpml_wikipathways_id'):
                 self.load_gpml_wikipathways(self.config.get('gpml_wikipathways_id'))
 
-        return {'dso': input, 'gpml': self.gpml}
+        return {'compound_data': compound_data, 'gene_data': gene_data, 'protein_data': protein_data, 'gpml': self.gpml}
 
-    def prerender(self, dso=None, gpml=None):
+    def prerender(self, compound_data=None, gene_data=None, protein_data=None, gpml=None):
 
         node_colors = {}
 
-        if dso:
+        for dso in compound_data, gene_data, protein_data:
+            if dso == None:
+                continue
+                
             mini, maxi = min(abs(np.median(dso.data)), 0), max(abs(np.median(dso.data)), 0)
-            mini, maxi = -2.0, +2.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
+            mini, maxi = -1.0, +1.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
             scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
 
             for n, m in enumerate(dso.entities[1]):
@@ -175,6 +188,8 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
+                    
+        print node_colors
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)

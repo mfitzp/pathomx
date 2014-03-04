@@ -1,6 +1,6 @@
 
-Welcome to Pathomx's documentation!
-====================================
+Welcome to Pathomx's documentation
+==================================
 
 Pathomx is a workflow-based tool for the analysis of metabolic pathways and visualisation
 of associated experimental data. 

@@ -31,6 +31,34 @@ TYPE_COLORS = {
 
 #    729fcf, 8ae234, fce94f
 
+MAP_ENTITY_ALL = 0
+MAP_ENTITY_GENE = 1
+MAP_ENTITY_PROTEIN = 2
+MAP_ENTITY_COMPOUND = 3
+
+MAP_TYPE_TABLE = {
+    'Any entity': MAP_ENTITY_ALL, 
+    'Gene': MAP_ENTITY_GENE,
+    'Protein': MAP_ENTITY_PROTEIN,
+    'Compound (metabolite)': MAP_ENTITY_COMPOUND,
+}
+
+
+# Dialog box for Metabohunter search options
+class MapEntityConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, *args, **kwargs):
+        super(MapEntityConfigPanel, self).__init__(*args, **kwargs)
+
+        self.cb_mapping_type = QComboBox()
+        self.cb_mapping_type.addItems(MAP_TYPE_TABLE.keys())
+        self.config.add_handler('map_object_type', self.cb_mapping_type, MAP_TYPE_TABLE)
+
+        self.layout.addWidget(self.cb_mapping_type)
+
+        self.finalise()
+
+
 class EntityItemDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
@@ -141,6 +169,10 @@ class MapEntityApp(ui.GenericApp):
 
         self.addExternalDataToolbar()  # Add standard source data options
 
+        self.config.set_defaults({
+            'map_object_type': MAP_ENTITY_ALL,
+        })
+
         self._entity_mapping_table = {}
 
         # Setup data consumer options
@@ -150,6 +182,8 @@ class MapEntityApp(ui.GenericApp):
             'entities_t': (None, None),
             })
         )
+
+        self.addConfigPanel(MapEntityConfigPanel, 'Mapping')
 
         self.finalise()
 
@@ -184,19 +218,27 @@ class MapEntityApp(ui.GenericApp):
     def generate(self, input=None):
         dso = self.translate(input, self.m.db)
         return {'output': dso}
-###### TRANSLATION to METACYC IDENTIFIERS
+        
+    ###### TRANSLATION to METACYC IDENTIFIERS
 
     def translate(self, data, db):
+        lku = {
+            MAP_ENTITY_ALL: db.synrev,
+            MAP_ENTITY_GENE: db.synrev_by_type['gene'],
+            MAP_ENTITY_PROTEIN: db.synrev_by_type['protein'],
+            MAP_ENTITY_COMPOUND: db.synrev_by_type['compound'],
+                }[self.config.get('map_object_type')]
+            
         # Translate loaded data names to metabolite IDs using provided database for lookup
         for n, m in enumerate(data.labels[1]):
-
+            
         # Match first using entity mapping table if set (allows override of defaults)
             if m in self._entity_mapping_table:
                 data.entities[1][n] = self._entity_mapping_table[m]
 
             # Use the internal database identities
-            elif m and m.lower() in db.synrev:
-                data.entities[1][n] = db.synrev[m.lower()]
+            elif m and m.lower() in lku:
+                data.entities[1][n] = lku[m.lower()]
 
                 #self.quantities[ transid ] = self.quantities.pop( m )
         #print self.metabolites
