@@ -241,7 +241,7 @@ class DialogRegister(qt5.QDialog):
             ('LY', 'Libya'),
             ('LI', 'Liechtenstein'),
             ('LT', 'Lithuania'),
-            ('LU', 'Luxembour 'PluginInfo' object has no attribute '_PluginInfo__details'g'),
+            ('LU', 'Luxembourg'),
             ('MO', 'Macau'),
             ('MK', 'Macedonia'),
             ('MG', 'Madagascar'),
