@@ -187,9 +187,8 @@ if sys.version_info < (3, 0): # Python 2 only
                 self.writerow(row)
     
 else:
-    
-    import csv.reader as UnicodeReader
-    import csv.writer as UnicodeWriter
+    from csv import reader as UnicodeReader
+    from csv import writer as UnicodeWriter
     
 
 
