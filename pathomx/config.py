@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Experimental data manager
 # Loads a csv data file and extracts key information into usable structures for analysis
+from __future__ import unicode_literals
 
 # Import PyQt5 classes
 from . import qt5

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 # Import PyQt5 classes accessible in elsewhere through
 # import qt5

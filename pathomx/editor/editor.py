@@ -68,7 +68,10 @@ class WorkspaceEditor(QGraphicsView):
 
         if e.mimeData().hasFormat('application/x-pathomx-app'):
 
-            app_id = str(e.mimeData().data('application/x-pathomx-app'))
+            try:
+                app_id = str(e.mimeData().data('application/x-pathomx-app'),'utf-8') # Python 3 
+            except:
+                app_id = str(e.mimeData().data('application/x-pathomx-app')) # Python 2
 
             a = self.m.app_launchers[app_id](position=scenePos, auto_focus=False)
             self.centerOn(a.editorItem)
