@@ -62,7 +62,7 @@ class ImportTextApp(ui.ImportDataApp):
 
         # Wrapper function to allow loading from alternative format CSV files
         # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
-        reader = csv.reader(open(filename, 'rU'), delimiter=',', dialect='excel')
+        reader = csv.reader(open(filename, 'rU'), delimiter=str(','), dialect='excel')
         hrow = next(reader)  # Get top row
         print(hrow)
         if 'sample' in hrow[0].lower():
@@ -78,7 +78,7 @@ class ImportTextApp(ui.ImportDataApp):
         # Read in data for the graphing metabolite, with associated value (generate mean)
         f = open(filename, 'rU')
         fsize = os.path.getsize(filename)
-        reader = csv.reader(f, delimiter=',', dialect='excel')
+        reader = csv.reader(f, delimiter=str(','), dialect='excel')
 
         hrow = next(reader)  # Discard top row (sample no's)
         samples = hrow[1:]
@@ -145,7 +145,7 @@ class ImportTextApp(ui.ImportDataApp):
         # Read in data for the graphing metabolite, with associated value (generate mean)
         f = open(filename, 'rU')
         fsize = os.path.getsize(filename)
-        reader = csv.reader(f, delimiter=',', dialect='excel')
+        reader = csv.reader(f, delimiter=str(','), dialect='excel')
         print('R')
         hrow = next(reader)  # Get top row
         metabolites = hrow[2:]
