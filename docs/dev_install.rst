@@ -10,7 +10,8 @@ Getting Started
 
 The development code is hosted on `Github`_. To contribute to development you should first
 create an account on Github (if you don't have one already), then fork the pathomx/pathomx
-repo so you have a personal copy of the code.
+repo so you have a personal copy of the code. If you're not familiar with Github, there is a 
+`useful guide`_ available here.
 
 On your version of the repo (should be <username>/pathomx) you will see an url to clone
 the repo to your desktop. Take this and then from the command line (in a folder where 
@@ -90,6 +91,7 @@ python -m pathomx.Pathomx
 
 
 .. _Github: http://github.com/pathomx/pathomx
+.. _useful guide: https://help.github.com/articles/set-up-git
 
 .. _Qt5: https://qt-project.org/downloads
 
