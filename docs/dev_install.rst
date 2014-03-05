@@ -17,7 +17,8 @@ On your version of the repo (should be <username>/pathomx) you will see an url t
 the repo to your desktop. Take this and then from the command line (in a folder where 
 you want the code to live) enter:
 
-git clone <repository-url>
+.. code:: bash
+    git clone <repository-url>
 
 After a while you will get a folder named pathomx containing the code.
 
@@ -25,7 +26,8 @@ The following sections list platform-specific setup instructions required to mak
 run. Follow the instructions from the section and then you should be ready to run from the
 command line using:
 
-python -m pathomx.Pathomx
+.. code:: bash
+    python -m pathomx.Pathomx
 
 
 Windows
@@ -45,7 +47,9 @@ For NMR data processing, you will need to install NMRGlue_ binaries.
 For the dynamic pathway drawing plugin MetaViz you will also need to install Graphviz_.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter:
-python -m pathomx.Pathomx
+
+.. code:: bash
+    python -m pathomx.Pathomx
 
 
 MacOS X
@@ -57,21 +61,25 @@ source, but I'd strongly suggest you save yourself the bother.
 
 Install Homebrew as follows:
 
-ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+.. code:: bash
+    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
 Once that is in place use brew install to install python, PyQt5 (which will 
 automatically install Qt5) and graphviz. Install pip for Python and add the packages 
 numpy, scipy, pydot, nmrglue, gpml2svg, poster, wheezy, sklearn, icoshift, matplotlib. 
 This can be done in a one liner with pip:
 
-pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
+.. code:: bash
+    pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
 
 That should be enough to get Pathomx up and running from the command line. For development a
 useful tool to install is `Total Terminal`_, which gets you access to the command line
 via a hotkey.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter:
-python -m pathomx.Pathomx
+
+.. code:: bash
+    python -m pathomx.Pathomx
 
 
 Linux
@@ -80,14 +88,17 @@ Linux
 The development version (available via git) supports Python 3 and so can now be run on Linux (tested on Ubuntu).
 There are a number of packages that need to be installed first:
 
-sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
+.. code:: bash
+    sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
 
-pip3 install scikit-learn
+    pip3 install scikit-learn
 
 Once installation of the above has completed you're ready to go.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter:
-python -m pathomx.Pathomx
+
+.. code:: bash
+    python -m pathomx.Pathomx
 
 
 .. _Github: http://github.com/pathomx/pathomx
