@@ -86,6 +86,7 @@ To install on earlier releases of Ubuntu you will need to install from source.
 There are a number of packages that need to be installed first:
 
 .. code-block:: bash
+
     sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
 
     pip3 install scikit-learn
