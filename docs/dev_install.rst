@@ -83,14 +83,15 @@ The development version (available via git) supports Python 3 and so can now be 
 Linux (tested on Ubuntu Saucy Salamander). Note: Python 3 PyQt5 is only available from 13.10.
 To install on earlier releases of Ubuntu you will need to install from source.
 
-There are a number of packages that need to be installed first::
+There are a number of packages that need to be installed first:
 
 .. code-block:: bash
     sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
 
     pip3 install scikit-learn
 
-Once installation of the above has completed you're ready to go.
+Note that aside from python3-pyqt5 you can also install the other packages using pip3 (the names on PyPi are
+the same as for the packages minus the python3- prefix). Once installation of the above has completed you're ready to go.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
