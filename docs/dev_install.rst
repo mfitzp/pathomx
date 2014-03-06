@@ -61,8 +61,8 @@ source, but I'd strongly suggest you save yourself the bother.
 
 Install Homebrew as follows:
 
-.. code:: bash
-    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+.. code::
+ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
 Once that is in place use brew install to install python, PyQt5 (which will 
 automatically install Qt5) and graphviz. Install pip for Python and add the packages 
@@ -70,7 +70,7 @@ numpy, scipy, pydot, nmrglue, gpml2svg, poster, wheezy, sklearn, icoshift, matpl
 This can be done in a one liner with pip:
 
 .. code:: bash
-    pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
+ pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
 
 That should be enough to get Pathomx up and running from the command line. For development a
 useful tool to install is `Total Terminal`_, which gets you access to the command line
@@ -79,7 +79,7 @@ via a hotkey.
 To run Pathomx from the command line, change to the cloned git folder and then enter:
 
 .. code:: bash
-    python -m pathomx.Pathomx
+ python -m pathomx.Pathomx
 
 
 Linux
@@ -92,16 +92,16 @@ To install on earlier releases of Ubuntu you will need to install from source.
 There are a number of packages that need to be installed first:
 
 .. code:: bash
-    sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
+ sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
 
-    pip3 install scikit-learn
+ pip3 install scikit-learn
 
 Once installation of the above has completed you're ready to go.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter:
 
 .. code:: bash
-    python -m pathomx.Pathomx
+ python -m pathomx.Pathomx
 
 
 .. _Github: http://github.com/pathomx/pathomx
