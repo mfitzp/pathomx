@@ -1,6 +1,6 @@
 Threads
 *************
 
-.. automodule:: threads
+.. automodule:: pathomx.threads
    :members:
    :undoc-members:

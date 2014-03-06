@@ -1,6 +1,6 @@
 Plugins
 *************
 
-.. automodule:: plugins
+.. automodule:: pathomx.plugins
    :members:
    :undoc-members:

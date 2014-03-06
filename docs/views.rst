@@ -1,6 +1,6 @@
 Views
 *************
 
-.. automodule:: views
+.. automodule:: pathomx.views
    :members:
    :undoc-members:
