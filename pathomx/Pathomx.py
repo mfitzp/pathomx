@@ -63,9 +63,57 @@ from .translate import tr
 from distutils.version import StrictVersion
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 VERSION_STRING = '2.2.0'
+
+class Logger(logging.Handler):
+    def __init__(self, widget, out=None, color=None):
+        super(Logger, self).__init__()
+        
+        """(edit, out=None, color=None) -> can write stdout, stderr to a
+        QTextEdit.
+        edit = QTextEdit
+        out = alternate stream ( can be the original sys.stdout )
+        color = alternate color (i.e. color stderr a different color)
+        """
+        self.widget = widget
+        self.out = None
+        self.color = color
+        
+    def emit(self, record):
+        msg = self.format(record) 
+        item = qt5.QListWidgetItem( msg )
+        bg = {
+            logging.CRITICAL:   qt5.QColor(164,27,27),
+            logging.ERROR:      qt5.QColor(239,122,122),
+            logging.WARNING:    qt5.QColor(252,238,126),
+            logging.INFO:       None,
+            logging.DEBUG:      qt5.QColor(186,196,207),
+            logging.NOTSET:     None,
+        }[record.levelno]
+        if bg:
+            item.setBackground( bg )
+            
+        self.widget.addItem( item )
+
+    def write(self, m):
+        pass
+
+        #if self.color:
+        #    tc = self.edit.textColor()
+        #    self.edit.setTextColor(self.color)
+
+        #self.edit.moveCursor(qt5.QTextCursor.End)
+        #self.edit.insertPlainText( m )
+
+        #if self.color:
+        #    self.edit.setTextColor(tc)
+        #
+
+        #if self.out:
+        #    self.out.write(m)
+            
 
 
 class DialogAbout(qt5.QDialog):
@@ -449,6 +497,7 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
     def __init__(self, parent=None, **kwargs):
         super(toolBoxItemDelegate, self).__init__(parent, **kwargs)
         self._elidedwrappedtitle = {}  # Cache
+        self._font = None
 
     def paint(self, painter, option, index):
         # GET TITLE, DESCRIPTION AND ICON
@@ -466,9 +515,13 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
         icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), qt5.Qt.AlignVCenter | qt5.Qt.AlignLeft)
 
         text_rect = option.rect.adjusted(0, 64, 0, 0)
-        font = qt5.QFont()
-        font.setPointSize(11)
-        painter.setFont(font)
+        
+        # Hacky adjustment of font, how to get the default font for this widget and shrink it?
+        # avoids setting manually, so hopefully will look better on Windows/Linux
+        if self._font == None:
+            self._font = painter.font()
+            self._font.setPointSize( self._font.pointSize()-2 )
+        painter.setFont(self._font)
 
         if title not in self._elidedwrappedtitle:
             self._elidedwrappedtitle[title] = self.elideWrapText(painter, title, text_rect)
@@ -614,8 +667,29 @@ class MainWindow(qt5.QMainWindow):
         super(MainWindow, self).__init__()
 
         self.app = app
+        
+        # Initiate logging
+        self.logView = qt5.QListWidget()
+
+        logHandler = Logger(self.logView)
+        logging.getLogger().addHandler(logHandler)        
+        #sys.stdout = Logger( self.logView, sys.__stdout__)
+        #sys.stderr = Logger( self.logView, sys.__stderr__, qt5.QColor(255,0,0) )
+        logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
+
         # Central variable for storing application configuration (load/save from file?
         self.config = qt5.QSettings()
+        if self.config.value('/Pathomx/Is_setup', False) != True:
+            logging.info("Setting up initial configuration...")
+            self.onResetConfig()
+            logging.info('Done')
+
+        # Do version upgrade availability check
+        # FIXME: Do check here; if not done > 2 weeks
+        if StrictVersion(self.config.value('/Pathomx/Latest_version','0.0.0')) > StrictVersion(VERSION_STRING):
+            # We've got an upgrade
+            logging.warning('A new version (v%s) is available' % self.config.value('/Pathomx/Update/Latest_version','0.0.0'))
+
 
         # Create database accessor
         self.db = db.databaseManager()
@@ -791,8 +865,9 @@ class MainWindow(qt5.QMainWindow):
 
             self.application_data_path = os.path.join(user_application_data_paths[1])
 
-        print("Search for plugins...")
-        print((', '.join(self.plugin_places)))
+        logging.info("Searching for plugins...")
+        for place in self.plugin_places:
+            logging.info(place)
 
         self.tools = defaultdict(list)
 
@@ -852,8 +927,8 @@ class MainWindow(qt5.QMainWindow):
         self.apps = []
 
         self.threadpool = qt5.QThreadPool()
-        print(("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount()))
-
+        logging.info( "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount() )
+    
         self.setCentralWidget(self.stack)
         self.stack.setCurrentIndex(0)
 
@@ -917,21 +992,21 @@ class MainWindow(qt5.QMainWindow):
         self.dataDock.setMinimumWidth(300)
         self.dataDock.setMaximumWidth(300)
 
+        self.logDock = qt5.QDockWidget(tr('Log'))
+        self.logDock.setWidget(self.logView)
+
+        self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.logDock)
         self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.dataDock)
         self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.workspaceDock)
         self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.toolDock)
 
         self.tabifyDockWidget(self.toolDock, self.workspaceDock)
         self.tabifyDockWidget(self.workspaceDock, self.dataDock)
+        self.tabifyDockWidget(self.dataDock, self.logDock)
         self.toolDock.raise_()
 
         self.dbtool = ui.DbApp(self)
         self.dbBrowser = self.dbtool.dbBrowser
-
-        if self.config.value('/Pathomx/Is_setup', False) != True:
-            print("Setting up initial configuration...")
-            self.onResetConfig()
-            print('Done')
 
         self.setWindowTitle(tr('Pathomx'))
 
@@ -941,14 +1016,15 @@ class MainWindow(qt5.QMainWindow):
         self.statusBar().addPermanentWidget(self.progressBar)
         self.progressTracker = {}  # Dict storing values for each view/object
 
+        logging.info('Ready.')
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(self.config.value('/Pathomx/Latest_version')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(self.config.value('/Pathomx/Current_version','0.0.0')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             self.onAbout()
-            self.config.setValue('/Pathomx/Latest_version', VERSION_STRING)
+            self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
 
         if self.config.value('/Pathomx/Offered_registration', False) != True:
             self.onDoRegister()
@@ -969,7 +1045,9 @@ class MainWindow(qt5.QMainWindow):
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
         self.config.setValue('Pathomx/Is_setup', True)
-        self.config.setValue('Pathomx/Latest_version', '0.0.0')
+        self.config.setValue('Pathomx/Current_version', '0.0.0')
+        self.config.setValue('Pathomx/Update/Latest_version', '0.0.0')
+        self.config.setValue('Pathomx/Update/Last_checked', None)
         self.config.setValue('Pathomx/Offered_registration', False)
 
         self.config.setValue('Plugins/Active', [])
@@ -1323,7 +1401,7 @@ class MainWindow(qt5.QMainWindow):
 
             
     def openWorkflow(self, fn):
-        print("Loading workflow...")
+        logging.info("Loading workflow... %s" % fn)
         # Wipe existing workspace
         self.clearWorkspace()
         # Load from file
@@ -1331,11 +1409,11 @@ class MainWindow(qt5.QMainWindow):
         workflow = tree.getroot()
 
         appref = {}
-        print("...Loading apps.")
+        logging.info("...Loading apps.")
         for xapp in workflow.findall('App'):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
-            print(('- %s' % xapp.find('Name').text))
+            logging.info(('- %s' % xapp.find('Name').text))
             app = self.app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(qt5.QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
@@ -1352,7 +1430,7 @@ class MainWindow(qt5.QMainWindow):
 
             app.config.set_many(config, trigger_update=False)
 
-        print("...Linking objects.")
+        logging.info("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present
         for xapp in workflow.findall('App'):
             app = appref[xapp.get('id')]
@@ -1360,7 +1438,7 @@ class MainWindow(qt5.QMainWindow):
             for idef in xapp.findall('DataInputs/Input'):
                 app.data._consume_action(idef.get('id'), appref[idef.get('manager')].data.o[idef.get('interface')])
 
-        print("Load complete.")
+        logging.info("Load complete.")
         # Focus the home tab & refresh the view
         self.workspace_updated.emit()
 
@@ -1397,18 +1475,18 @@ def main():
     # Load base qt5.QT translations from the normal place (does not include _nl, or _it)
     translator_qt = qt5.QTranslator()
     if translator_qt.load("qt_%s" % locale, qt5.QLibraryInfo.location(qt5.QLibraryInfo.TranslationsPath)):
-        print(("Loaded qt5.Qt translations for locale: %s" % locale))
+        logging.debug(("Loaded qt5.Qt translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # See if we've got a default copy for _nl, _it or others
     elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        print(("Loaded qt5.Qt (self) translations for locale: %s" % locale))
+        logging.debug(("Loaded qt5.Qt (self) translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # Load Pathomx specific translations
     translator_mp = qt5.QTranslator()
     if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        print(("Loaded Pathomx translations for locale: %s" % locale))
+        logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
     app.installTranslator(translator_mp)
 
     # Set Matplotlib defaults for nice looking charts

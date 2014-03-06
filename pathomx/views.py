@@ -256,7 +256,7 @@ class WebPageJSLog(qt5.QWebPage):
         super(WebPageJSLog, self).__init__(parent, **kwargs)
 
     def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
-        print("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
+        sys.stderr.write("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
 
 class QWebPageExtend(qt5.QWebPage):
     def shouldInterruptJavascript():

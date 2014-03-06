@@ -23,6 +23,7 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
 
+import logging
 
 # Databases that have sufficiently unique IDs that do not require additional namespacing
 database_link_synonyms = [
@@ -233,25 +234,25 @@ class databaseManager():
     def load_identities(self):
         identities_files = os.listdir(os.path.join(utils.scriptdir, 'identities', 'synonyms'))
         if len(identities_files) > 0:
-            print("Loading additional synonyms:")
+            logging.info("Loading additional synonyms:")
             for filename in identities_files:
-                print("- %s" % filename)
+                logging.info("- %s" % filename)
                 reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'synonyms', filename), 'rU'), delimiter=str(','), dialect='excel')
                 for id, identity in reader:
                     self.add_identity(id, identity)
-            print("Done.")
+            logging.info("Done.")
 
     def load_xrefs(self):
         identities_files = os.listdir(os.path.join(utils.scriptdir, 'identities', 'xrefs'))
         if len(identities_files) > 0:
-            print("Loading additional xrefs:")
+            logging.info("Loading additional xrefs:")
             for filename in identities_files:
-                print("- %s" % filename)
+                logging.info("- %s" % filename)
                 reader = UnicodeReader(open(os.path.join(utils.scriptdir, 'identities', 'xrefs', filename), 'rU'), delimiter=str(','), dialect='excel')
                 for id, db, key in reader:
                     #self.add_xref(id, db, key)
                     self.add_db_synonyms(id, {db: key})  # Hack, fix this up
-            print("Done.")
+            logging.info("Done.")
 
     # Synonym interface for compounds, reactions and pathways (shared namespace)
     # Can call with filename to load a specific synonym file, e.g. containing peak ids

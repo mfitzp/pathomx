@@ -85,7 +85,10 @@ To run Pathomx from the command line, change to the cloned git folder and then e
 Linux
 =====
 
-The development version (available via git) supports Python 3 and so can now be run on Linux (tested on Ubuntu).
+The development version (available via git) supports Python 3 and so can now be run on
+Linux (tested on Ubuntu Saucy Salamander). Note: Python 3 PyQt5 is only available from 13.10.
+To install on earlier releases of Ubuntu you will need to install from source.
+
 There are a number of packages that need to be installed first:
 
 .. code:: bash

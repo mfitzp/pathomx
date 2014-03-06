@@ -41,6 +41,8 @@ from numpy import arange, sin, pi
 from matplotlib.backend_bases import NavigationToolbar2
 from .backend_qt5agg import NavigationToolbar2QTAgg
 
+import logging
+
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
 <html>
@@ -708,6 +710,7 @@ class GenericApp(QMainWindow):
         self._latest_exception = error[1]
         self.progress.emit(1.)
         self.status.emit('error')
+        logging.error(error[1])
 
     def _worker_status_callback(self, s):
         self.setWorkspaceStatus(s)

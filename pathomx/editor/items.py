@@ -127,10 +127,9 @@ class ToolItem(BaseItem):
         opt = QTextOption(Qt.AlignHCenter)
         opt.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.label.document().setDefaultTextOption(opt)
+
         self.getName()
-
         self.label.document().contentsChanged.connect(self.setName)
-
         self.app.nameChanged.connect(self.getName)
 
         transform = QTransform()
@@ -167,6 +166,7 @@ class ToolItem(BaseItem):
             self.setToolTip('')
 
     def getName(self):
+        # FIXME: This feels a bit hacky
         if self.label.toPlainText() != self.name:  # Prevent infinite loop get/set
             self.label.setPlainText(self.name)
 
