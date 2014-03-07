@@ -198,7 +198,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
 
-        logging.debug("Calculated node colors: %s" % ','.join(node_colors) )
+        logging.debug("Calculated node colors: %s" % (','.join(node_colors)) )
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)
