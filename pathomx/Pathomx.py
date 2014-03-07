@@ -101,7 +101,8 @@ class Logger(logging.Handler):
         
         if record.name in self.m.apps_dict:
             # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
-            item.setIcon(1, self.m.apps_dict[record.name].plugin.workspace_icon )
+            item.tool = self.m.apps_dict[record.name]
+            item.setIcon(1, item.tool.plugin.workspace_icon )
         else:
             i = qt5.QPixmap(16,16)
             i.fill(qt5.Qt.transparent) 
@@ -686,6 +687,8 @@ class MainWindow(qt5.QMainWindow):
         self.logView = qt5.QTreeWidget()
         self.logView.setColumnCount(2)
         self.logView.expandAll()
+        self.logView.itemClicked.connect( self.onLogItemClicked )
+        self.logView.itemDoubleClicked.connect( self.onLogItemDoubleClicked )
     
         self.logView.setHeaderLabels(['ID', 'Message'])
         self.logView.setUniformRowHeights(True)
@@ -1048,6 +1051,22 @@ class MainWindow(qt5.QMainWindow):
         if self.config.value('/Pathomx/Offered_registration', False) != True:
             self.onDoRegister()
             self.config.setValue('/Pathomx/Offered_registration', True)
+
+    def onLogItemClicked(self, item):
+        # When an item in the log viewer is clicked, center on the associated Tool
+        # this will fail if there is none (i.e. non-tool log item) so wrapped in an try, except.
+        try:
+            item.tool.editorItem.centerSelf()
+        except:
+            pass
+
+    def onLogItemDoubleClicked(self, item):
+        # When an item in the log viewer is clicked, center on the associated Tool
+        # this will fail if there is none (i.e. non-tool log item) so wrapped in an try, except.
+        try:
+            item.tool.show()
+        except:
+            pass
 
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)

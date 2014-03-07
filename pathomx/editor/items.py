@@ -158,6 +158,11 @@ class ToolItem(BaseItem):
             return self.app.name
         else:
             return "Untitled"
+            
+
+    def centerSelf(self):
+        for v in self.scene.views():
+            v.centerOn( self )            
 
     def updateTip(self, status):
         if status == 'error':
