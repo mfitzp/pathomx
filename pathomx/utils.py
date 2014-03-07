@@ -66,54 +66,6 @@ def calculate_rdbu9_color(scale, value):
     return (rdbu9[rdbu9col], rdbu9c[rdbu9col], rdbu9col)
 
 
-def read_metabolite_datafile(filename, options):
-
-# Read in data for the graphing metabolite, with associated value (generate mean)
-    reader = csv.reader(open(filename, 'rU'), delimiter=',', dialect='excel')
-    # Find matching metabolite column
-    hrow = next(reader)
-    try:
-        metabolite_column = hrow.index(options.metabolite)
-        print("'%s' found" % (options.metabolite))
-        metabolites = [options.metabolite]
-    except:
-        all_metabolites = hrow[2:]
-        metabolites = [x for x in all_metabolites if re.match('(.*)' + options.metabolite + '(.*)', x)]
-        if len(metabolites) == 0:
-            print("Metabolite not found, try again. Pick from one of:")
-            print(', '.join(sorted(all_metabolites)))
-            exit()
-        elif len(metabolites) > 1:
-            print("Searched '%s' and found multiple matches:" % (options.metabolite))
-            print(', '.join(sorted(metabolites)))
-            if not options.batch_mode:
-                print("To process all the above together use batch mode -b")
-                exit()
-        elif len(metabolites) == 1:
-            print("Searched '%s' and found match in '%s'" % (options.metabolite, metabolites[0]))
-
-    # Build quants table for metabolite classes
-    allquants = dict()
-    for metabolite in metabolites:
-        allquants[metabolite] = defaultdict(list)
-
-    ymin = 0
-    ymax = 0
-
-    for row in reader:
-        if row[1] != '.':  # Skip excluded classes # row[1] = Class
-            for metabolite in metabolites:
-                metabolite_column = hrow.index(metabolite)
-                if row[metabolite_column]:
-                    allquants[metabolite][row[1]].append(float(row[metabolite_column]))
-                    ymin = min(ymin, float(row[metabolite_column]))
-                    ymax = max(ymax, float(row[metabolite_column]))
-                else:
-                    allquants[metabolite][row[1]].append(0)
-
-    return (metabolites, allquants, (ymin, ymax))
-
-
 def invert_direction(direction):
     if direction == 'forward':
         return 'back'

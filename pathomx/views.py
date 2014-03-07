@@ -572,6 +572,7 @@ class MplSpectraView(MplView):
         
 
     def generate(self, dso=None):
+    
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting
             dso.scales[1] = list(range( len(dso.scales[1])))
@@ -582,8 +583,6 @@ class MplSpectraView(MplView):
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-20:] # Top 50
         dso_z = [x for x, wmx in dso_z ]    
 
-        print(dso_z)
-        
         # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
         dsot = dso.as_summary(dim=0, match_attribs=['classes'])
 
@@ -663,8 +662,8 @@ class MplDifferenceView(MplSpectraView):
 
         self.ax.cla()
         self.ax.plot(x, y2, color='black', linewidth=0.25)
-        self.ax.fill_between(x, y1, y2, where=y2>=y1, facecolor=utils.category10[0], interpolate=True)
-        self.ax.fill_between(x, y1, y2, where=y2<=y1, facecolor=utils.category10[1], interpolate=True)
+        self.ax.fill_between(x, y1, y2, where=y2>=y1, facecolor=utils.category10[0], interpolate=False)
+        self.ax.fill_between(x, y1, y2, where=y2<=y1, facecolor=utils.category10[1], interpolate=False)
         
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')

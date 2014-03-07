@@ -17,7 +17,7 @@ import os
 import sys
 import re
 import math
-
+import logging
 
 import pathomx.ui as ui
 import pathomx.utils as utils
@@ -185,7 +185,7 @@ class MetaboHunterApp(ui.DataApp):
         remote_data = dict()  # Container for references to metabolite data on remote server
 
         # Web service peak-list assignment (metabohunter)
-        print("Sending peaklist to MetaboHunter...")
+        logging.info("Sending peaklist to MetaboHunter...")
 
         peaks_list = '\n'.join([' '.join([str(a), str(b)]) for a, b in zip(dso.scales[1], dso.data[0, :])])
 
@@ -224,7 +224,7 @@ class MetaboHunterApp(ui.DataApp):
         m = re.search('name="sample_file" value="(.*?)"', html, re.MULTILINE | re.DOTALL)
         remote_data['sample_file'] = m.group(1)
 
-        print("Received analysis from MetaboHunter, interpreting...")
+        logging.info("Received analysis from MetaboHunter, interpreting...")
 
         # Regexp out the matched peaks table from the hidden form field in response (easiest to parse)
         metabolites = OrderedDict()
@@ -243,7 +243,7 @@ class MetaboHunterApp(ui.DataApp):
                 'rank': fields[0],
                 }
 
-        print("Retrieving matched peaks to metabolite relationships...")
+        logging.info("Retrieving matched peaks to metabolite relationships...")
 
         values = {'sample_file': remote_data['sample_file'],
                   'matched_peaks_file': remote_data['sample_file'] + "_matched_spectra.txt",
@@ -258,12 +258,12 @@ class MetaboHunterApp(ui.DataApp):
         try:
             r = requests.post(url, data=values, files={'foo': 'bar'})
         except e:
-            print(e)
+            logging.error(e)
             return None
 
         matched_peaks_text = r.content
         self.status.emit('active')
-        print("Extracting data...")
+        logging.info("Extracting data...")
 
         # Need to do this in two steps, so they are in the correct order for output
         metabolite_peaks = dict()

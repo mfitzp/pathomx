@@ -62,7 +62,7 @@ from .translate import tr
 from distutils.version import StrictVersion
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 VERSION_STRING = '2.2.0'
 

@@ -16,6 +16,7 @@ import types
 from collections import defaultdict
 import operator
 import json
+import logging
 
 from copy import copy, deepcopy
 
@@ -396,7 +397,7 @@ class ConfigManager(qt5.QObject):
         has_updated = False
         for k, v in list(keyvalues.items()):
             u = self.set(k, v, trigger_update=False)
-            print('Workflow config; setting %s to %s' % (k, v))
+            logging.debug('Workflow config; setting %s to %s' % (k, v))
             has_updated = has_updated or u
 
         if has_updated and trigger_update:

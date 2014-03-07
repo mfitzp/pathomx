@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -9,7 +8,6 @@ from PyQt5.QtNetwork import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
-
 
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
@@ -40,6 +38,8 @@ try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
+
+import logging
 
 
 class GPMLView(HTMLView):
@@ -197,8 +197,8 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
-                    
-        print(node_colors)
+
+        logging.debug("Calculated node colors: %s" % ','.join(node_colors) )
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)

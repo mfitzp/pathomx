@@ -21,6 +21,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
+import logging
 
 
 
@@ -252,7 +253,7 @@ class DataManager( QObject ):
         return False
     
     def unput(self, interface):
-        print('UNPUTTING')
+        logging.debug('Unputting data on interface %s' % interface)
         # Trigger _unconsume on all watchers
         for w in list( self.watchers[interface] ):
             for i,d in list(w.i.items()):
@@ -492,20 +493,21 @@ class DataDefinition( QObject ):
         # if we fail at any point return False
         # self.interface holds the interface for this 
         # Test each option; if we get to the bottom we're alright!
-        print("CONSUME? [%s]" % data.name)
-        print(self.definition)
+        logging.debug("CONSUME? [%s]" % data.name)
+        logging.debug(self.definition)
+        
         for k,v in list(self.definition.items()):
             t = getattr( data, k )
-            print(" COMPARE: %s %s %s" % (k,v,t))
+            logging.debug(" COMPARE: %s %s %s" % (k,v,t))
             # t = (1d,2d,3d)
             # Dimensionality check
             if len(v) != len(t):
-                print("  dimensionality failure %s %s" %( len(v), len(t) ))
+                logging.debug("  dimensionality failure %s %s" %( len(v), len(t) ))
                 return False
                 
             for n, cr in enumerate(v):
                 if cr == None: # No restriction on this definition
-                    print('  pass')
+                    logging.debug('  pass')
                     continue 
 
                 cmp_fn, crr = self.get_cmp_fn( cr )
@@ -513,15 +515,15 @@ class DataDefinition( QObject ):
                     crr = type(t[n])(crr) 
                 except:
                     # If we can't match equivalent types; it's nonsense so fail
-                    print("  type failure %s %s" %( type(t[n]), type(crr) ))
+                    logging.debug("  type failure %s %s" %( type(t[n]), type(crr) ))
                     return False
 
                 "  comparison %s %s %s = %s" %( t[n], cmp_fn, crr, cmp_fn( t[n], crr))
                 if not cmp_fn( t[n], crr):
-                    print("  comparison failure %s %s %s" %( t[n], cmp_fn, crr ))
+                    logging.debug("  comparison failure %s %s %s" %( t[n], cmp_fn, crr ))
                     return False                                
             
-        print(" successful")
+        logging.debug(" successful")
         return True
 
 
