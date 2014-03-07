@@ -24,7 +24,6 @@ import pathomx.utils as utils
 from pathomx.data import DataSet, DataDefinition
 from pathomx.plugins import AnalysisPlugin
 
-
 class FoldChangeApp(ui.AnalysisApp):
 
     def __init__(self, **kwargs):
@@ -138,10 +137,10 @@ class FoldChangeApp(ui.AnalysisApp):
             tests = [_experiment_test]
 
         for n, test in enumerate(tests):
-            print(dso.classes[0])
+            self.logger.debug(dso.classes[0])
             ti = dso.classes[0].index(test)
 
-            print('Indices for fold change;', ci, ti)
+            self.logger.info('Indices for fold change: %s,%s' % ( ci, ti) )
             # Fold change is performed to give negative values for reductions
             # May make this optional in future?
             # i.e. t > c  fc =  t/c;   t < c    fc = -c/t

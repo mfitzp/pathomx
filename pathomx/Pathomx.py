@@ -67,9 +67,9 @@ logging.basicConfig(level=logging.DEBUG)
 VERSION_STRING = '2.2.0'
 
 class Logger(logging.Handler):
-    def __init__(self, widget, out=None, color=None):
+    def __init__(self, parent, widget, out=None, color=None):
         super(Logger, self).__init__()
-        
+        self.m = parent
         """(edit, out=None, color=None) -> can write stdout, stderr to a
         QTextEdit.
         edit = QTextEdit
@@ -82,19 +82,32 @@ class Logger(logging.Handler):
         
     def emit(self, record):
         msg = self.format(record) 
-        item = qt5.QListWidgetItem( msg )
+        
+        item = qt5.QTreeWidgetItem()
+        item.setText(0, record.name )
+        item.setText(1, msg)
+        
         bg = {
-            logging.CRITICAL:   qt5.QColor(164,27,27),
-            logging.ERROR:      qt5.QColor(239,122,122),
-            logging.WARNING:    qt5.QColor(252,238,126),
+            logging.CRITICAL:   qt5.QColor(164,0,0,50),
+            logging.ERROR:      qt5.QColor(239,41,41,50),
+            logging.WARNING:    qt5.QColor(252,233,79,50),
             logging.INFO:       None,
-            logging.DEBUG:      qt5.QColor(186,196,207),
+            logging.DEBUG:      qt5.QColor(114,159,207,50),
             logging.NOTSET:     None,
         }[record.levelno]
         if bg:
-            item.setBackground( bg )
-            
-        self.widget.addItem( item )
+            for c in range(3):
+                item.setBackground( c, qt5.QBrush( bg ) )
+        
+        if record.name in self.m.apps_dict:
+            # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
+            item.setIcon(1, self.m.apps_dict[record.name].plugin.workspace_icon )
+        else:
+            i = qt5.QPixmap(16,16)
+            i.fill(qt5.Qt.transparent) 
+            item.setIcon(1, qt5.QIcon( i ) )         
+
+        self.widget.addTopLevelItem( item )
 
     def write(self, m):
         pass
@@ -666,11 +679,19 @@ class MainWindow(qt5.QMainWindow):
         super(MainWindow, self).__init__()
 
         self.app = app
+        self.apps = []
+        self.apps_dict = {}
         
         # Initiate logging
-        self.logView = qt5.QListWidget()
+        self.logView = qt5.QTreeWidget()
+        self.logView.setColumnCount(2)
+        self.logView.expandAll()
+    
+        self.logView.setHeaderLabels(['ID', 'Message'])
+        self.logView.setUniformRowHeights(True)
+        self.logView.hideColumn(0)
 
-        logHandler = Logger(self.logView)
+        logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)        
         #sys.stdout = Logger( self.logView, sys.__stdout__)
         #sys.stderr = Logger( self.logView, sys.__stderr__, qt5.QColor(255,0,0) )
@@ -923,7 +944,6 @@ class MainWindow(qt5.QMainWindow):
                 apps[category].append(metadata)
 
         self.stack = qt5.QStackedWidget()
-        self.apps = []
 
         self.threadpool = qt5.QThreadPool()
         logging.info( "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount() )

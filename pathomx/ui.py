@@ -581,11 +581,14 @@ class GenericApp(QMainWindow):
 
         self.m = self.plugin.m
         self.m.apps.append(self)
+        self.m.apps_dict[self.id] = self
 
         self._pause_analysis_flag = False
         self._latest_dock_widget = None
         self._latest_generator_result = None
         self._auto_consume_data = auto_consume_data
+
+        self.logger = logging.getLogger( self.id )
 
         self.data = data.DataManager(self.m, self)
         self.views = ViewManager(self)
@@ -710,7 +713,7 @@ class GenericApp(QMainWindow):
         self._latest_exception = error[1]
         self.progress.emit(1.)
         self.status.emit('error')
-        logging.error(error[1])
+        self.logger.error(error[1])
 
     def _worker_status_callback(self, s):
         self.setWorkspaceStatus(s)
