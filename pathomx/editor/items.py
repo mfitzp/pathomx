@@ -189,7 +189,6 @@ class ToolItem(BaseItem):
         o = datao[0].v.editorItem.output.interface_items[ datao[1] ]
         i = datai[0].v.editorItem.input.interface_items[ datai[1] ]
 
-        print o, i
         # (data.manager, data.manager_interface), (self, interface)
         
         linker = LinkItem(o, i) #, o.output.settings[1], i.input.settings[1])
