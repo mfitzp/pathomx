@@ -82,13 +82,16 @@ class SpectraTool(ui.DataApp):
             DataDefinition('input', {
             'labels_n': ('>1', None),
             'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            #'scales_t': (None, ['float']),
             })
         )
 
         self.finalise()
 
     def generate(self, input=None):
+        print input.scales
+        print input.data
+        print input.classes
         return {'input': input}
 
     def prerender(self, input=None):

@@ -248,7 +248,6 @@ class ToolPanel(qt5.QListWidget):
         #self.vlayout.addItem( qt5.QSpacerItem(10, 10, qt5.QSizePolicy.Maximum) )
 
     def addTools(self):
-
         
         for n, tool in enumerate(self.tools):
             #col = n % self._columns
@@ -263,6 +262,8 @@ class ToolPanel(qt5.QListWidget):
             self.addItem(t)
             #t = ToolItem(qt5.QIcon( tool['icon']), tool['name'], data=tool)
             #self.grid.addWidget( t, row, col )
+            
+        self.sortItems()
 
     def colX(self, col):
         return col * self._tool_width

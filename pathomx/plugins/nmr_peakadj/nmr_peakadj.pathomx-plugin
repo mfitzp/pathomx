@@ -1,5 +1,5 @@
 [Core]
-Name = Peak Adjust
+Name = Peak Align & Scale
 Module = nmr_peakadj
 
 [Documentation]

@@ -1,5 +1,6 @@
 import os
 import copy
+import math
 from .. import utils
 
 # Import PyQt5 classes
@@ -21,6 +22,11 @@ INTERFACE_COLOR_OUTPUT = "yellow"
 INTERFACE_COLOR_VIEW = "blue"
 
 CONNECTOR_COLOR = "#aaaaaa"
+
+INTERFACE_ACTIVE_COLOR = {
+    True: 'blue', # Light Tango green
+    False: '#aaaaaa',
+}
 
 STATUS_COLORS = {
     'active': 'green',
@@ -136,17 +142,14 @@ class ToolItem(BaseItem):
         transform.translate(32 - self.label.boundingRect().width() / 2, 64)
         self.label.setTransform(transform)
 
-        self.input = ToolInterface(app, 'input', parent=self)
-        self.output = ToolInterface(app, 'output', parent=self)
+        self.input = ToolInterfaceHandler(app, interface_type='input', parent=self)
+        self.output = ToolInterfaceHandler(app, interface_type='output', parent=self)
         self.icon = ToolIcon(parent=self)
 
         self.progressBar = ToolProgressItem(parent=self)
-        #transform = QTransform()
-        #transform.translate(0,59)
-        #self.progressBar.setTransform(transform)
+
         self.app.progress.connect(self.progressBar.updateProgress)
         self.app.status.connect(self.progressBar.updateStatus)
-
         self.app.status.connect(self.updateTip)
 
         if position:
@@ -183,17 +186,20 @@ class ToolItem(BaseItem):
 
     def addDataLink(self, datao, datai):
 
-        o = datao[0].v.editorItem
-        i = datai[0].v.editorItem
+        o = datao[0].v.editorItem.output.interface_items[ datao[1] ]
+        i = datai[0].v.editorItem.input.interface_items[ datai[1] ]
 
-        linker = LinkItem(o.output, i.input, o.output.settings[1], i.input.settings[1])
+        print o, i
+        # (data.manager, data.manager_interface), (self, interface)
+        
+        linker = LinkItem(o, i) #, o.output.settings[1], i.input.settings[1])
         linker.dso = datao[0].o[datao[1]]  # Get the dso from the interface
         linker.updateLine()
 
         self.scene.addItem(linker)
 
-        o.output._links.append(linker)
-        i.input._links.append(linker)
+        o._links.append(linker)
+        i._links.append(linker)
 
         self._links[datai] = linker
         print("LINKS", self._links)
@@ -201,8 +207,9 @@ class ToolItem(BaseItem):
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
 
-        o = datao[0].v.editorItem
-        i = datai[0].v.editorItem
+        o = datao[0].v.editorItem.output.interface_items[ datao[1] ]
+        i = datai[0].v.editorItem.input.interface_items[ datai[1] ]
+        
         print(datai, "LINKS", self._links)
         if datai in self._links:
 
@@ -286,15 +293,86 @@ class ToolIcon(BaseInteractiveItem):
         #painter.drawRoundedRect( QRect(0,0,self.size.width(), self.size.height()), 5.0, 5.0 )
 
 
-class ToolInterface(BaseInteractiveItem):
 
-    def __init__(self, app=None, interface='input', parent=None):
-        super(ToolInterface, self).__init__(parent=parent)
+
+
+class ToolInterfaceHandler(BaseItem):
+
+    def __init__(self, app=None, interface_type='input', parent=None):
+        super(ToolInterfaceHandler, self).__init__(parent=parent)
 
         self.app = app
 
         self.parent = parent
-        self.size = QSize(88, 88)
+        self.size = QSize(50, 100)
+
+        self._links = []
+
+        #self.setFlag(QGraphicsItem.ItemIsMovable)
+        #self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemStacksBehindParent)
+
+        self.setAcceptDrops(True)
+
+        self.defaults = {
+            'input': (180, QPointF(0, 44), (-18, -12), 50),
+            'output': (0, QPointF(44, 44), (+32, -12), 0),
+        }
+
+        self.settings = self.defaults[interface_type]
+        self.interface_type = interface_type
+
+        self.interfaces = {'input': app.data.i, 'output': app.data.o, 'views': app.views}[interface_type]
+        self.interface_items = dict()
+
+        app.data.interfaces_changed.connect( self.update_interfaces )
+    
+        transform = QTransform()
+        transform.translate( *self.settings[2] )
+        self.setTransform(transform)
+
+        self._linkInProgress = None
+        
+    def update_interfaces(self):
+
+        x0, y0 = self.settings[3], 44
+        r = 44
+            
+        items = len( self.interfaces.keys() )
+
+        angle_increment = 15.
+        angle_start = self.settings[0] - (items-1) * (angle_increment/2)
+        
+        for n, interface in enumerate( self.interfaces.keys() ):
+            angle = angle_start + (n * angle_increment)
+            x = x0 + r * math.cos(2 * math.pi * (angle/360.) ) - 4
+            y = y0 + r * math.sin(2 * math.pi * (angle/360.) )
+            if interface not in self.interface_items:
+                # Creating
+                self.interface_items[interface] = ToolInterface(self.app, self.interfaces[interface], interface, self.interface_type, self)
+                self.interface_items[interface].setPos(x,y)
+            else:
+                # Updating
+                self.interface_items[interface].interface = self.interfaces[interface]
+                self.interface_items[interface].setPos(x,y)
+    
+
+
+class ToolInterface(BaseInteractiveItem):
+
+    def __init__(self, app=None, interface=None, interface_name='', interface_type='input', parent=None):
+        super(ToolInterface, self).__init__(parent=parent)
+
+        self.app = app
+
+        self.interface = interface
+
+        self.parent = parent
+        self.size = QSize(8, 8)
+
+        self.interface_type = interface_type
+
+        self.setToolTip(interface_name)
 
         self._links = []
 
@@ -303,21 +381,8 @@ class ToolInterface(BaseInteractiveItem):
         self.setFlag(QGraphicsItem.ItemStacksBehindParent)
 
         self.setAcceptDrops(True)
-
-        self.defaults = {
-            'input': (150, QPointF(0, 44), QRegion(0, 0, 32, 88)),
-            'output': (-30, QPointF(88, 44), QRegion(56, 0, 32, 88)),
-        }
-
-        self.settings = self.defaults[interface]
-        self.interface_type = interface
-        self.interface = {'input': app.data.i, 'output': app.data.o, 'views': app.views}[interface]
-
-        transform = QTransform()
-        transform.translate(-12, -12)
-        self.setTransform(transform)
-
         self._linkInProgress = None
+        self._offset = QPointF(4,4)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
@@ -329,7 +394,7 @@ class ToolInterface(BaseInteractiveItem):
     def mouseMoveEvent(self, event):
 
         if self._linkInProgress == None:
-            self._linkInProgress = LinkItem(self, event, source_offset=self.settings[1])
+            self._linkInProgress = LinkItem(self, event) # source_offset=self.scenePos())
             self.scene().addItem(self._linkInProgress)
 
             self.grabMouse()
@@ -355,27 +420,18 @@ class ToolInterface(BaseInteractiveItem):
         """
         Paint the tool object
         """
-        if list(self.interface.keys()):
+        self.color = INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+        brush = QBrush(QColor(self.color) )
+        #pen.setWidth(4)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
+         
+        painter.drawEllipse( QRect(0, 0, 8, 8) )
 
-        # Has entries, so draw *something*
-            pen = QPen()
-            pen.setColor(QColor(CONNECTOR_COLOR))
-            pen.setCapStyle(Qt.RoundCap)
-            pen.setWidth(4)
-
-            if not any(self.interface.values()):
-                pen.setStyle(Qt.DotLine)
-
-            painter.setPen(pen)
-            painter.setBrush(QBrush(Qt.NoBrush))
-            painter.drawArc(QRect(0, 0, 88, 88), self.settings[0] * 16, 60 * 16)
-#        painter.drawPath(path)
-
-        #painter.drawEllipse(0,0,*self.size)
 
 
 class LinkItem(QGraphicsPathItem):
-    def __init__(self, source=None, sink=None, source_offset=QPointF(0, 0), sink_offset=QPointF(0, 0)):
+    def __init__(self, source=None, sink=None):
         super(LinkItem, self).__init__()
 
         # DataSet carried by this link (if any)
@@ -384,8 +440,9 @@ class LinkItem(QGraphicsPathItem):
         pen = QPen()
         pen.setColor(QColor(CONNECTOR_COLOR))
         pen.setCapStyle(Qt.RoundCap)
-        pen.setWidth(3)
-        self.setPen(pen)
+        pen.setWidth(4)
+        self.pen = pen
+        self.setPen(self.pen)
         self._LINE_PEN = pen
         self._TEXT_PEN = QPen(QColor(TEXT_COLOR))
 
@@ -399,17 +456,14 @@ class LinkItem(QGraphicsPathItem):
         self.bezierPath = None
 
         self.source = source
-        self._source_offset = source_offset
-
         self.sink = sink
-        self._sink_offset = sink_offset
 
         if source and sink:
             self.updateLine()
 
     def updateLine(self):
-        sourcePoint = self.source.scenePos() + self._source_offset
-        sinkPoint = self.sink.scenePos() + self._sink_offset
+        sourcePoint = self.source.scenePos() + self.source._offset
+        sinkPoint = self.sink.scenePos() + self.sink._offset if hasattr(self.sink,'_offset') else self.sink.scenePos()
         bezierPath = QPainterPath()
         bezierPath.moveTo(sourcePoint)
 

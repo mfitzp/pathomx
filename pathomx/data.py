@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import *
 import os, sys, re, base64
 import numpy as np
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import operator
 
 from copy import copy, deepcopy
@@ -195,6 +195,8 @@ class DataManager( QObject ):
     consumed = pyqtSignal( tuple, tuple )
     unconsumed = pyqtSignal( tuple, tuple )
 
+    interfaces_changed = pyqtSignal()
+
     def __init__(self, parent, view, *args, **kwargs):
         super(DataManager, self).__init__( *args, **kwargs)
 
@@ -245,10 +247,8 @@ class DataManager( QObject ):
             self.o[interface].previously_managed_by.append(self)
             self.notify_watchers(interface)
 
-
             self.m.dataModel.refresh()
             return True
-            
             
         return False
     
@@ -287,6 +287,8 @@ class DataManager( QObject ):
                 self.m.datasets.append( dso )
             except:
                 pass
+                
+        self.interfaces_changed.emit()
         
     def remove_output(self, interface):
         if interface in self.o:
@@ -294,6 +296,7 @@ class DataManager( QObject ):
             del self.o[ interface ]
             self.notify_watchers( interface )
             del self.watchers[ interface ]            
+            self.interfaces_changed.emit()
             return True
         return False
         
@@ -301,6 +304,7 @@ class DataManager( QObject ):
     def add_input(self, interface):
         if interface not in self.i:
             self.i[interface] = None
+            self.interfaces_changed.emit()
             return True
         else:
             return False
@@ -309,6 +313,7 @@ class DataManager( QObject ):
         if interface in self.i:
             self._unconsume( self.i[interface] )
             del self.i[interface]
+            self.interfaces_changed.emit()        
             return True
         return False        
         
@@ -663,6 +668,26 @@ class DataSet( QObject ):
         self.data = np.zeros( size ) #np.array([]) # Data container  
         
         self.metadata = {}
+        
+    # DESTRUCTIVE resizing of the current dso
+    # All entries are simply clipped to size
+    def crop(self,shape):
+
+        final_shape = list( self.data.shape )
+        for d, s in enumerate( shape ):
+            if s<self.data.shape[d]: # Only allow crop
+                self.labels[d] = self.labels[d][:s]
+                self.entities[d] = self.entities[d][:s]
+                self.scales[d] = self.scales[d][:s]
+                self.classes[d] = self.classes[d][:s]
+                final_shape[d] = shape[d]
+                
+        self.data.resize( final_shape )
+        
+    
+    @property 
+    def is_empty(self):
+        return self.shape == (0,)
               
     
     def import_data(self, dso):
@@ -820,7 +845,8 @@ class DataSet( QObject ):
         identities = [ tuple(o) for o in zip( *[ dso.__dict__[ma][dim] for ma in match_attribs ] )  ]#dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
         identities_na = np.array( identities )
         
-        unique = tuple( set( identities ) )
+        # Unique values, without affecting order
+        unique = list(OrderedDict.fromkeys( identities )) #tuple( set( identities ) )
         
         old_shape, new_shape = dso.data.shape, list( dso.data.shape )
         new_shape[ dim ] = len( unique )
@@ -905,21 +931,6 @@ class DataSet( QObject ):
     
     def as_copy(self):
         return deepcopy(self)
-        
-    # DESTRUCTIVE resizing of the current dso
-    # All entries are simply clipped to size
-    def crop(self,shape):
-
-        final_shape = list( self.data.shape )
-        for d, s in enumerate( shape ):
-            if s<self.data.shape[d]: # Only allow crop
-                self.labels[d] = self.labels[d][:s]
-                self.classes[d] = self.classes[d][:s]
-                self.entities[d] = self.entities[d][:s]
-                self.scales[d] = self.scales[d][:s]
-                final_shape[d] = shape[d]
-                
-        self.data.resize( final_shape )
 
 
     # DESTRUCTIVE remove invalid data from this dataset object

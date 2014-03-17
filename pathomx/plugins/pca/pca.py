@@ -111,6 +111,11 @@ class PCAApp( ui.AnalysisApp ):
         for n,s in enumerate(pca.components_):
             scored.data[:,n] = s
             scored.labels[1][n] = 'Principal Component %d (%0.2f%%)' % (n+1, pca.explained_variance_ratio_[0] * 100.)
+
+        weightsd = DataSet(size=weights.T.shape)
+        weightsd.data = weights.T
+        
+        weightsd.scales[1] = input.scales[1]
         
         dso_pc = {}
         for n in range(0, weights.shape[1] ):
@@ -120,12 +125,14 @@ class PCAApp( ui.AnalysisApp ):
             pcd.scales[1] = input.scales[1]
             pcd.data = weights[:,n:n+1].T
             dso_pc['pc%s' % (n+1)] = pcd
+            weightsd.labels[0][n] = "PC %s" % (n+1)
+            weightsd.classes[0][n] = "PC %s" % (n+1)            
         
         return dict( list({
             'dso': input,
             'pca': pca,
             'scores': scored,
-            #'weights': weights,
+            'weights': weightsd,
             'wmx': wmx,
             'dso_z': dso_z,        
         }.items()) + list(dso_pc.items()) )

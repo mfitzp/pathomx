@@ -110,7 +110,7 @@ class DialogAbout(qt5.QDialog):
 
         self.setWindowTitle('About Pathomx')
 
-        self.help = ui.QWebViewExtend(self, parent.onBrowserNav)
+        self.help = QWebViewExtend(self, parent.onBrowserNav)
         template = parent.templateEngine.get_template('about.html')
         self.help.setHtml(template.render({
                     'htmlbase': os.path.join(utils.scriptdir, 'html'),

@@ -165,6 +165,10 @@ class PLSDAApp( ui.AnalysisApp ):
         dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
         dso_z = [x for x, wmx in dso_z ]    
 
+        weightsd = DataSet(size=plsr.x_weights_.T.shape)
+        weightsd.data = plsr.x_weights_.T
+        weightsd.scales[1] = input.scales[1]
+
         dso_lv = {}
         for n in range(0, plsr.x_weights_.shape[1] ):
             lvd =  DataSet( size=(1, input.shape[1] ) )
@@ -173,15 +177,19 @@ class PLSDAApp( ui.AnalysisApp ):
             lvd.scales[1] = input.scales[1]
             lvd.data = plsr.x_weights_[:,n:n+1].T
             dso_lv['lv%s' % (n+1)] = lvd
+            weightsd.labels[0][n] = "Weights on LV %s" % (n+1)
+            weightsd.classes[0][n] = "LV %s" % (n+1)
                     
         return dict(list({
             'dso': dso,
             'scores':scored,
+            'weights':weightsd,
             #'figure_data': figure_data,
             #'figure_regions': figure_regions,
             'y_weights': plsr.y_weights_,
             'x_weights': plsr.x_weights_,
         }.items()) + list(dso_lv.items()) )
+        
         
     def prerender(self, scores=None, lv1=None, lv2=None, **kwargs):
         return {

@@ -17,12 +17,14 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
 
+from collections import OrderedDict
+
 # Pathomx classes
 from . import utils, threads
 
 import numpy as np
 
-from . import data, config
+from . import data, config, utils
 
 
 # Translation (@default context)
@@ -589,28 +591,47 @@ class MplSpectraView(MplView):
         # Copy to sort without affecting original
         scale = np.array(dso.scales[1])
         data = np.array(dsot.data)
-        
+
         # Sort along x axis
         sp = np.argsort( scale )
         scale = scale[sp]
         data = data[:,sp]
 
-
         self.ax.cla()
 
-        self.ax.plot(scale, data.T, linewidth=0.75)
+        if dsot.shape[0] > 1: 
+            # More than one data row (class) so plot each class
+            
+            plots = OrderedDict()
+            for n,row in enumerate(data):
+                plots[ dsot.classes[0][n] ], = self.ax.plot(scale, row, linewidth=0.75)
+        
+            legend = self.ax.legend(list(plots.values()),
+               list(plots.keys()),
+               loc='best') #, bbox_to_anchor=(1, 1))
+            legend.get_frame().set_facecolor('k')                      
+            legend.get_frame().set_alpha(0.05)        
+        
+        else:
+            # Only one data row (class) so plot individual data; with a mean line
+            data_mean = data
+            data_individual = dso.data[:,sp]            
+            
+            for n,row in enumerate(data_individual):
+                self.ax.plot(scale, row, linewidth=0.75, alpha=0.25, color=utils.category10[0])
+            
+            print data_mean.shape
+            self.ax.plot(scale, data_mean.T, linewidth=0.75, color=utils.category10[0])
+
 
         for c in self.build_markers( dso_z, 1, self._build_entity_cmp ):
             self.ax.axvspan( c[0], c[1], facecolor='#dddddd', edgecolor='#dddddd', linewidth=0.5)
             self.ax.text( (c[0]+c[1])/2, self.ax.get_ylim()[1], c[2], rotation='60', rotation_mode='anchor', color='#dddddd', size=6.5)
 
-        #for c in self.build_markers( dso_z, 2, self._build_label_cmp ):
-        #    self.ax.axvspan( c[0], c[1], facecolor='#eeeeee', edgecolor='#eeeeee', linewidth=0.5)
-        #    self.ax.text( (c[0]+c[1])/2, self.ax.get_ylim()[1], c[2], rotation='60', rotation_mode='anchor', color='#eeeeee', size=6.5)
-
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')
-                
+
+
         self.draw()
                 
         
@@ -703,7 +724,7 @@ class MplScatterView(MplView):
         :type dso: DataSet object
         """
         self.ax.cla()
-        sp = {}
+        plots = {}
         colors = self.ax._get_lines.color_cycle
 
         # Scores dso is no_of_samples x no_of_series (axes) ; only plot first two
@@ -712,12 +733,14 @@ class MplScatterView(MplView):
         classes = dso.classes_l[0]
         for c in classes:
             df = dso.as_filtered(dim=0,classes=[c])
-            sp[c] = self.ax.scatter(df.data[:,0], df.data[:,1], c=next(colors) )
+            plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], c=next(colors) )
 
-        self.ax.legend(list(sp.values()),
-           list(sp.keys()),
+        legend = self.ax.legend(list(plots.values()),
+           list(plots.keys()),
            scatterpoints=1,
            loc='upper left', bbox_to_anchor=(1, 1))
+        legend.get_frame().set_facecolor('k')                      
+        legend.get_frame().set_alpha(0.05)        
            
         self.ax.set_xlabel(dso.labels[1][0])
         self.ax.set_ylabel(dso.labels[1][1])
@@ -931,8 +954,6 @@ class MplCategoryBarView(MplView):
                 yerr = (ynerr, yperr)
             else:
                 yerr = None
-                
-            print(yerr)
 
             color = next(colors)
             sp[c] = self.ax.bar(x[:,n], cdata, align='center', color=color, yerr=yerr, ecolor=color )
