@@ -620,7 +620,6 @@ class MplSpectraView(MplView):
             for n,row in enumerate(data_individual):
                 self.ax.plot(scale, row, linewidth=0.75, alpha=0.25, color=utils.category10[0])
             
-            print data_mean.shape
             self.ax.plot(scale, data_mean.T, linewidth=0.75, color=utils.category10[0])
 
 
