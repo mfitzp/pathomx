@@ -355,7 +355,8 @@ class ToolInterfaceHandler(BaseItem):
                 self.interface_items[interface].interface = self.interfaces[interface]
                 self.interface_items[interface].setPos(x,y)
     
-
+    def paint(self, painter, option, widget):
+        pass
 
 class ToolInterface(BaseInteractiveItem):
 
