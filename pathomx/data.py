@@ -361,7 +361,7 @@ class DataManager( QObject ):
     def _unconsume(self, data):
         if data and self in data.manager.watchers[ data.manager_interface ]:
             data.manager.watchers[ data.manager_interface ].remove( self )
-            for interface,d in list(self.i.items()):
+            for interface, d in list(self.i.items()):
                 if d == data:
                     self.unconsumed.emit( (data.manager, data.manager_interface), (self, interface) )
 

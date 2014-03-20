@@ -126,7 +126,7 @@ class BinningApp(ui.DataApp):
             dso.data[n, :] = binned_data[0] / binned_num[0]  # Mean
 
         dso.scales[1] = [float(x) for x in binned_data[1][:-1]]
-        dso.labels[1] = [str(x) for x in binned_data[1][:-1]]
+        #dso.labels[1] = [str(x) for x in binned_data[1][:-1]]
 
         # Remove any NaNs that have crept in (due to the histogram)
         dso.remove_invalid_data()

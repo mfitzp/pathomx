@@ -37,11 +37,13 @@ class WorkspaceEditor(QGraphicsView):
                 self.mapToScene(QPoint(0, 0)),
                 self.mapToScene(QPoint(self.width(), self.height()))
                 ))
-        #self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
-        #self.image.fill(Qt.transparent)
-        #painter = QPainter(self.image)
-        #self.scene.render(painter)
-        #self.image.save('/Users/mxf793/Desktop/workspace-view.png')
+                
+    def saveAsImage(self, f):
+        self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
+        self.image.fill(Qt.transparent)
+        painter = QPainter(self.image)
+        self.scene.render(painter)
+        self.image.save(f)
 
     def addApp(self, app, position=None):
         i = ToolItem(self.scene, app, position=position)

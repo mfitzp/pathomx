@@ -477,7 +477,29 @@ class MplView(FigureCanvas, BaseView):
         
     def resizeEvent(self,e):
         FigureCanvas.resizeEvent(self,e)
-            
+        
+
+    def get_text_bbox_screen_coords(self, t):
+        bbox = t.get_window_extent(self.get_renderer())        
+        return bbox.get_points()
+
+    def get_text_bbox_data_coords(self, t):
+        bbox = t.get_window_extent(self.get_renderer())        
+        axbox = bbox.transformed(self.ax.transData.inverted())
+        return axbox.get_points()
+        
+    def extend_limits(self, a, b):
+        # Extend a to meet b where applicable
+        ax, ay = list(a[0]), list(a[1])
+        bx, by = b[:,0], b[:,1]
+   
+        ax[0] = bx[0] if bx[0] < ax[0] else ax[0]
+        ax[1] = bx[1] if bx[1] > ax[1] else ax[1]
+
+        ay[0] = by[0] if by[0] < ay[0] else ay[0]
+        ay[1] = by[1] if by[1] > ay[1] else ay[1]
+                
+        return [ax,ay]
     
 class D3PrerenderedView(D3View):
     
@@ -687,6 +709,8 @@ class MplSpectraView(MplView):
             
 
         ylims = np.max(data, axis=0)
+        
+        axlimits= ( self.ax.get_xlim(), self.ax.get_ylim() )
 
         for c in self.build_markers( dso_z, 1, self._build_entity_cmp ):
             x = (dso.scales[1][ c[0] ] + dso.scales[1][ c[1] ]) / 2.0
@@ -695,8 +719,10 @@ class MplSpectraView(MplView):
                 r = '60'
             else:
                 r = '-60'
+                
             
-            self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6, bbox=dict(boxstyle="entity-tip,pad=0.2", alpha=0.05) )
+            t = self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="entity-tip,pad=0.2", alpha=0.1) )
+            axlimits = self.extend_limits( axlimits, self.get_text_bbox_data_coords(t) )
 
         for c in self.build_markers( dso_z, 2, self._build_label_cmp ):
             x = (dso.scales[1][ c[0] ] + dso.scales[1][ c[1] ]) / 2.0
@@ -705,8 +731,12 @@ class MplSpectraView(MplView):
                 r = '60'
             else:
                 r = '-60'
-            
-            self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6, bbox=dict(boxstyle="entity-tip,pad=0.2", fc="#eeeeee", ec="#dddddd", alpha=0.05) )
+
+            t = self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="entity-tip,pad=0.2", fc="#eeeeee", ec="#dddddd", alpha=0.1) ) 
+            axlimits = self.extend_limits( axlimits, self.get_text_bbox_data_coords(t) )
+
+        #self.ax.set_xlim(axlimits[0].reverse())
+        self.ax.set_ylim(axlimits[1])
 
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')

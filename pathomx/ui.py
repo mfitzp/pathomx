@@ -961,12 +961,12 @@ class GenericApp(QMainWindow):
         return
 
     def delete(self):
-        self.m.removeWorkspaceItem(self)
-        self.m.editor.removeApp(self)
         # Tear down the config and data objects
         self.data.reset()
         self.config.reset()
         # Close the window obj
+        self.m.removeWorkspaceItem(self)
+        self.m.editor.removeApp(self)
         self.m.apps.remove(self)
         # Trigger notification for state change
         self.m.workspace_updated.emit()
@@ -1009,7 +1009,6 @@ class GenericApp(QMainWindow):
 
     def _generate_worker_result_callback(self, kwargs_dict):
         self.__latest_generator_result = kwargs_dict
-
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
         self.autoprerender(kwargs_dict)
