@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import division
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *

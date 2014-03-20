@@ -43,8 +43,11 @@ class _PathomxObject(object):
     def __unicode__(self):
         return self.name
 
+    def _str__(self):
+        return self.name
+
     def __repr__(self):
-        return self.__unicode__
+        return self.__unicode__()
 
     def __init__(self, **entries):
         object.__init__(self)

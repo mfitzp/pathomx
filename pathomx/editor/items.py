@@ -420,7 +420,7 @@ class ToolInterface(BaseInteractiveItem):
         """
         Paint the tool object
         """
-        self.color = INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+        self.color = CONNECTOR_COLOR #INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
         brush = QBrush(QColor(self.color) )
         #pen.setWidth(4)
         painter.setBrush(brush)

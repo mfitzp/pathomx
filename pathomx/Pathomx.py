@@ -347,10 +347,10 @@ class MainWindow(qt5.QMainWindow):
 
     workspace_updated = qt5.pyqtSignal()
 
-    def __init__(self, app):
+    def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.app = app
+        #self.app = app
         self.apps = []
         self.apps_dict = {}
         
@@ -1210,7 +1210,7 @@ def main():
     mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
     mpl.rcParams['patch.linewidth'] = 0
 
-    MainWindow(app)
+    MainWindow()
     app.exec_()
     # Enter qt5.Qt application main loop
     sys.exit()

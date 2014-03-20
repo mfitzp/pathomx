@@ -83,7 +83,7 @@ class SpectraNormApp(ui.DataApp):
         self.finalise()
 
     def generate(self, input=None):
-        return {'output': self.normalise(dsi=input),
+        return {'output': self.normalise(input),
                 'input': input}
 
     def prerender(self, input=None, output=None):
@@ -111,19 +111,16 @@ class SpectraNormApp(ui.DataApp):
         # For each variable of each spectrum, calculate ratio between median spectrum variable and that of the considered spectrum
         spectra_r = median_s / np.abs(data)
         # Take the median of these scaling factors and apply to the entire considered spectrum
-        return data * spectra_r
+        return data * np.median( spectra_r, axis=1).reshape(-1, 1)
 
     # Normalise using scaling method
-    def normalise(self, dsi):
+    def normalise(self, dso):
         # Generate bin values for range start_scale to end_scale
         # Calculate the number of bins at binsize across range
-        dso = DataSet(size=dsi.shape)
-        dso.import_data(dsi)
-
         dso.data = self.algorithms[self.config.get('algorithm')](dso.data)
         # -- optionally use the line widths and take max within each of these for each spectra (peak shiftiness)
         # Filter the original data with those locations and output\
-
+        print dso.data
         return dso
 
  

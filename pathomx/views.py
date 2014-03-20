@@ -36,6 +36,9 @@ from .backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
+from matplotlib.path import Path
+from matplotlib.patches import BoxStyle
+
 import matplotlib.cm as cm
 
 #import seaborn
@@ -560,6 +563,65 @@ class D3SpectraView(D3View):
         template = self.m.templateEngine.get_template(self.d3_template)
         self.setSVG(template.render( metadata ))
         
+        
+class EntityBoxStyle(BoxStyle._Base):
+    """
+    A simple box.
+    """
+
+    def __init__(self, pad=0.1):
+        """
+        The arguments need to be floating numbers and need to have
+        default values.
+
+         *pad*
+            amount of padding
+        """
+
+        self.pad = pad
+        super(EntityBoxStyle, self).__init__()
+
+    def transmute(self, x0, y0, width, height, mutation_size):
+        """
+        Given the location and size of the box, return the path of
+        the box around it.
+
+         - *x0*, *y0*, *width*, *height* : location and size of the box
+         - *mutation_size* : a reference scale for the mutation.
+
+        Often, the *mutation_size* is the font size of the text.
+        You don't need to worry about the rotation as it is
+        automatically taken care of.
+        """
+
+        # padding
+        pad = mutation_size * self.pad
+
+        # width and height with padding added.
+        width, height = width + 2.*pad, \
+                        height + 2.*pad,
+
+        # boundary of the padded box
+        x0, y0 = x0-pad, y0-pad,
+        x1, y1 = x0+width, y0 + height
+
+        cp = [(x0, y0),
+              (x1, y0), (x1, y1), (x0, y1),
+              (x0-pad, (y0+y1)/2.), (x0, y0),
+              (x0, y0)]
+
+        com = [Path.MOVETO,
+               Path.LINETO, Path.LINETO, Path.LINETO,
+               Path.LINETO, Path.LINETO,
+               Path.CLOSEPOLY]
+
+        path = Path(cp, com)
+
+        return path
+
+
+# register the custom style
+BoxStyle._style_list["entity-tip"] = EntityBoxStyle
 
 class MplSpectraView(MplView):
     """
@@ -579,11 +641,12 @@ class MplSpectraView(MplView):
             # Add fake axis scale for plotting
             dso.scales[1] = list(range( len(dso.scales[1])))
             
-        #FIXME: Should probably be somewhere else. Label up the top 50    
+        #FIXME: Should probably be somewhere else. Label up the top N
         wmx = np.amax( np.absolute( dso.data), axis=0 )
-        dso_z = list(zip( dso.scales[1], dso.entities[1], dso.labels[1] ))
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-20:] # Top 50
-        dso_z = [x for x, wmx in dso_z ]    
+        dummy_scale = list(range(0,len(dso.scales[1]) ) )
+        dso_z = list(zip( dummy_scale, dso.entities[1], dso.labels[1] ))
+        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-10:] # Top N
+        dso_z = [x for x, wmx in dso_z ]  
 
         # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
         dsot = dso.as_summary(dim=0, match_attribs=['classes'])
@@ -610,8 +673,8 @@ class MplSpectraView(MplView):
                list(plots.keys()),
                loc='best') #, bbox_to_anchor=(1, 1))
             legend.get_frame().set_facecolor('k')                      
-            legend.get_frame().set_alpha(0.05)        
-        
+            legend.get_frame().set_alpha(0.05)     
+
         else:
             # Only one data row (class) so plot individual data; with a mean line
             data_mean = data
@@ -621,11 +684,29 @@ class MplSpectraView(MplView):
                 self.ax.plot(scale, row, linewidth=0.75, alpha=0.25, color=utils.category10[0])
             
             self.ax.plot(scale, data_mean.T, linewidth=0.75, color=utils.category10[0])
+            
 
+        ylims = np.max(data, axis=0)
 
         for c in self.build_markers( dso_z, 1, self._build_entity_cmp ):
-            self.ax.axvspan( c[0], c[1], facecolor='#dddddd', edgecolor='#dddddd', linewidth=0.5)
-            self.ax.text( (c[0]+c[1])/2, self.ax.get_ylim()[1], c[2], rotation='60', rotation_mode='anchor', color='#dddddd', size=6.5)
+            x = (dso.scales[1][ c[0] ] + dso.scales[1][ c[1] ]) / 2.0
+            y = max( ylims[ c[0] ], ylims[ c[1] ] )
+            if y>=0:
+                r = '60'
+            else:
+                r = '-60'
+            
+            self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6, bbox=dict(boxstyle="entity-tip,pad=0.2", alpha=0.05) )
+
+        for c in self.build_markers( dso_z, 2, self._build_label_cmp ):
+            x = (dso.scales[1][ c[0] ] + dso.scales[1][ c[1] ]) / 2.0
+            y = max( ylims[ c[0] ], ylims[ c[1] ] )
+            if y>=0:
+                r = '60'
+            else:
+                r = '-60'
+            
+            self.ax.text(x, y, c[2], rotation=r, rotation_mode='anchor', size=6, bbox=dict(boxstyle="entity-tip,pad=0.2", fc="#eeeeee", ec="#dddddd", alpha=0.05) )
 
         self.ax.set_xlabel('ppm')
         self.ax.set_ylabel('Rel')

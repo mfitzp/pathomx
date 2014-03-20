@@ -114,7 +114,7 @@ class PathwayMiningApp(ui.AnalysisApp):
 
         self.finalise()
 
-    def generate(self, input_1=None, input_2=None, input_3=None, input_4=None):
+    def generate(self, input_1=None, input_2=None, input_3=None, input_4=None, **kwargs):
         #dsi = input
         # Iterate all the compounds in the current analysis
         # Assign score to each of the compound's pathways

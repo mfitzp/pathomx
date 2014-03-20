@@ -77,7 +77,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
         self.finalise()
 
-    def generate(self, input=None):
+    def generate(self, input=None, **kwargs):
         dsi = input
         opener = register_openers()
         url = 'http://www.kegg.jp/kegg-bin/mcolor_pathway'

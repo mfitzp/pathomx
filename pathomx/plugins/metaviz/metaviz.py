@@ -756,7 +756,7 @@ class MetaVizApp(ui.AnalysisApp):
                 self.config.set('/Pathways/Show', ','.join(pathways))
                 self.generateGraphApp()
 
-    def generate(self, suggested_pathways=None, compound_data=None, gene_data=None, protein_data=None):
+    def generate(self, suggested_pathways=None, compound_data=None, gene_data=None, protein_data=None, **kwargs):
         # By default use the generated pathomx file to view
         filename = os.path.join(QDir.tempPath(), 'pathomx-generated-pathway.svg')
 

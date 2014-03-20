@@ -87,7 +87,7 @@ class BinningApp(ui.DataApp):
 
         self.finalise()
 
-    def generate(self, input=None):
+    def generate(self, input=None, **kwargs):
         return {'output': self.binning(dsi=input), 'input': input}
 
     def prerender(self, output=None, input=None):

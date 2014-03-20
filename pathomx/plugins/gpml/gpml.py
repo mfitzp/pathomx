@@ -167,7 +167,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
         if obj is not None:
             return ('MetaCyc %s' % obj.type, obj.id)
 
-    def generate(self, compound_data=None, gene_data=None, protein_data=None):
+    def generate(self, compound_data=None, gene_data=None, protein_data=None, **kwargs):
 
         if self.gpml == None:
             # No pathway loaded; check config for stored source to use
@@ -198,7 +198,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
 
-        logging.debug("Calculated node colors: %s" % (','.join(node_colors)) )
+        #logging.debug("Calculated node colors: %s" % (','.join(node_colors)) )
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}
     # Events (Actions, triggers)
