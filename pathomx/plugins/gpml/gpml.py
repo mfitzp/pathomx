@@ -1,14 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
@@ -18,11 +9,11 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.threads as threads
 import pathomx.utils as utils
-import pathomx.qt5 as qt5
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import HTMLView
+from pathomx.qt import *
 
 try:
     from urllib.request import urlopen
@@ -30,7 +21,7 @@ try:
 except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
-    
+
 import numpy as np
 
 try:

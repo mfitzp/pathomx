@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
 import os
 import csv
 import xml.etree.cElementTree as et
@@ -23,6 +15,7 @@ import pathomx.utils as utils
 
 from pathomx.data import DataSet
 from pathomx.plugins import ImportPlugin
+from pathomx.qt import *
 
 
 class BMLNMRApp(ui.ImportDataApp):

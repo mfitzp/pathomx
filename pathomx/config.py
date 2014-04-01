@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from . import qt5
+from .qt import *
 
 import os
 import sys
@@ -243,7 +243,7 @@ def _set_QListWidget(self, v):
     """
     if v:
         for s in v:
-            self.findItems(self._set_map(s), qt5.Qt.MatchExactly)[0].setSelected(True)
+            self.findItems(self._set_map(s), Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
@@ -255,10 +255,10 @@ def _event_QListWidget(self):
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file (for workspace saving)
-class ConfigManager(qt5.QObject):
+class ConfigManager(QObject):
 
     # Signals
-    updated = qt5.pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
+    updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
 
     def __init__(self, defaults={}, *args, **kwargs):
         super(ConfigManager, self).__init__(*args, **kwargs)

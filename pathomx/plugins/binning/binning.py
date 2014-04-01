@@ -1,18 +1,10 @@
 # -*- coding: utf-8 -*-
-
-
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtPrintSupport import *
 import os
 import copy
 
 import numpy as np
 
+import pathomx.qt as qt
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
@@ -21,6 +13,7 @@ import pathomx.threads as threads
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
+from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options

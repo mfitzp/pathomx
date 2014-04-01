@@ -17,7 +17,11 @@ if sys.version_info < (3, 0):  # Python 2 only
     sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
 
-from . import qt5
+from pathomx.qt import *
+# pyqtSignal, Qt, QTreeWidgetItem, QIcon, QColor, QBrush, QObject, \
+# QPixmap, QComboBox, QLineEdit, QLabel, QAbstractItemDelegate, QStyle, \
+# QPalette, QListView, QDrag, QMimeData, QSettings, QSize,
+
 import textwrap
 
 try:
@@ -84,30 +88,30 @@ class Logger(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
 
-        item = qt5.QTreeWidgetItem()
+        item = QTreeWidgetItem()
         item.setText(0, record.name)
         item.setText(1, msg)
 
         bg = {
-            logging.CRITICAL: qt5.QColor(164, 0, 0, 50),
-            logging.ERROR: qt5.QColor(239, 41, 41, 50),
-            logging.WARNING: qt5.QColor(252, 233, 79, 50),
+            logging.CRITICAL: QColor(164, 0, 0, 50),
+            logging.ERROR: QColor(239, 41, 41, 50),
+            logging.WARNING: QColor(252, 233, 79, 50),
             logging.INFO: None,
-            logging.DEBUG: qt5.QColor(114, 159, 207, 50),
+            logging.DEBUG: QColor(114, 159, 207, 50),
             logging.NOTSET: None,
         }[record.levelno]
         if bg:
             for c in range(3):
-                item.setBackground(c, qt5.QBrush(bg))
+                item.setBackground(c, QBrush(bg))
 
         if record.name in self.m.apps_dict:
             # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
             item.tool = self.m.apps_dict[record.name]
             item.setIcon(1, item.tool.plugin.workspace_icon)
         else:
-            i = qt5.QPixmap(16, 16)
-            i.fill(qt5.Qt.transparent)
-            item.setIcon(1, qt5.QIcon(i))
+            i = QPixmap(16, 16)
+            i.fill(Qt.transparent)
+            item.setIcon(1, QIcon(i))
 
         self.widget.addTopLevelItem(item)
         self.widget.scrollToBottom()
@@ -139,17 +143,17 @@ class dialogDefineExperiment(ui.genericDialog):
         self.classes = sorted(parent.data.classes)
         self.setWindowTitle("Define Experiment")
 
-        self.cb_control = qt5.QComboBox()
+        self.cb_control = QComboBox()
         self.cb_control.addItems(self.classes)
 
-        self.cb_test = qt5.QComboBox()
+        self.cb_test = QComboBox()
         self.cb_test.addItems(self.classes)
 
-        classes = qt5.QGridLayout()
-        classes.addWidget(qt5.QLabel('Control:'), 1, 1)
+        classes = QGridLayout()
+        classes.addWidget(QLabel('Control:'), 1, 1)
         classes.addWidget(self.cb_control, 1, 2)
 
-        classes.addWidget(qt5.QLabel('Test:'), 2, 1)
+        classes.addWidget(QLabel('Test:'), 2, 1)
         classes.addWidget(self.cb_test, 2, 2)
 
         if 'control' in parent.experiment and 'test' in parent.experiment:
@@ -159,12 +163,12 @@ class dialogDefineExperiment(ui.genericDialog):
             self.cb_control.setCurrentIndex(0)
             self.cb_test.setCurrentIndex(0)
 
-        self.le_timecourseRegExp = qt5.QLineEdit()
+        self.le_timecourseRegExp = QLineEdit()
         self.le_timecourseRegExp.setText(parent.experiment['timecourse'] if 'timecourse' in parent.experiment else '')
         self.le_timecourseRegExp.textChanged.connect(self.filter_classes_by_timecourse_regexp)
 
         self.layout.addLayout(classes)
-        self.layout.addWidget(qt5.QLabel('Timecourse filter (regexp:'))
+        self.layout.addWidget(QLabel('Timecourse filter (regexp:'))
         self.layout.addWidget(self.le_timecourseRegExp)
 
         if 'timecourse' in parent.experiment:
@@ -174,7 +178,7 @@ class dialogDefineExperiment(ui.genericDialog):
         self.dialogFinalise()
 
 
-class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
+class toolBoxItemDelegate(QAbstractItemDelegate):
 
     def __init__(self, parent=None, **kwargs):
         super(toolBoxItemDelegate, self).__init__(parent, **kwargs)
@@ -183,18 +187,18 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
 
     def paint(self, painter, option, index):
         # GET TITLE, DESCRIPTION AND ICON
-        icon = index.data(qt5.Qt.DecorationRole)
-        title = index.data(qt5.Qt.DisplayRole)  # .toString()
-        #description = index.data(qt5.Qt.UserRole) #.toString()
-        #notice = index.data(qt5.Qt.UserRole+1) #.toString()
+        icon = index.data(Qt.DecorationRole)
+        title = index.data(Qt.DisplayRole)  # .toString()
+        #description = index.data(Qt.UserRole) #.toString()
+        #notice = index.data(Qt.UserRole+1) #.toString()
 
-        if option.state & qt5.QStyle.State_Selected:
-            painter.setPen(qt5.QPalette().highlightedText().color())
-            painter.fillRect(option.rect, qt5.QBrush(qt5.QPalette().highlight().color()))
+        if option.state & QStyle.State_Selected:
+            painter.setPen(QPalette().highlightedText().color())
+            painter.fillRect(option.rect, QBrush(QPalette().highlight().color()))
         else:
-            painter.setPen(qt5.QPalette().text().color())
+            painter.setPen(QPalette().text().color())
 
-        icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), qt5.Qt.AlignVCenter | qt5.Qt.AlignLeft)
+        icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), Qt.AlignVCenter | Qt.AlignLeft)
 
         text_rect = option.rect.adjusted(0, 64, 0, 0)
 
@@ -208,35 +212,35 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
         if title not in self._elidedwrappedtitle:
             self._elidedwrappedtitle[title] = self.elideWrapText(painter, title, text_rect)
 
-        painter.drawText(text_rect, qt5.Qt.AlignTop | qt5.Qt.AlignHCenter | qt5.Qt.TextWordWrap, self._elidedwrappedtitle[title])
+        painter.drawText(text_rect, Qt.AlignTop | Qt.AlignHCenter | Qt.TextWordWrap, self._elidedwrappedtitle[title])
         #painter.drawText(text_rect.x(), text_rect.y(), text_rect.width(), text_rect.height(),, 'Hello this is a long title', boundingRect=text_rect)
 
     def elideWrapText(self, painter, text, text_rect):
         text = textwrap.wrap(text, 10, break_long_words=False)
         wrapped_text = []
         for l in text[:2]:  # Max 2 lines
-            l = painter.fontMetrics().elidedText(l, qt5.Qt.ElideRight, text_rect.width())
+            l = painter.fontMetrics().elidedText(l, Qt.ElideRight, text_rect.width())
             wrapped_text.append(l)
         wrapped_text = '\n'.join(wrapped_text)
         return wrapped_text
 
     def sizeHint(self, option, index):
-        return qt5.QSize(64, 96)
+        return QSize(64, 96)
 
 
-class ToolBoxItem(qt5.QListWidgetItem):
+class ToolBoxItem(QListWidgetItem):
     def __init__(self, data=None, parent=None, **kwargs):
         super(ToolBoxItem, self).__init__(parent, **kwargs)
         self.data = data
 
 
-class ToolPanel(qt5.QListWidget):
+class ToolPanel(QListWidget):
 
     def __init__(self, parent, tools=[], **kwargs):
         super(ToolPanel, self).__init__(parent, **kwargs)
 
-        self.setViewMode(qt5.QListView.IconMode)
-        self.setGridSize(qt5.QSize(64, 96))
+        self.setViewMode(QListView.IconMode)
+        self.setGridSize(QSize(64, 96))
         #self._columns = 4
         self.setItemDelegate(toolBoxItemDelegate())
 
@@ -244,7 +248,7 @@ class ToolPanel(qt5.QListWidget):
         self.addTools()
         #self.setLayout(self.vlayout)
         #self.vlayout.addLayout( self.grid )
-        #self.vlayout.addItem( qt5.QSpacerItem(10, 10, qt5.QSizePolicy.Maximum) )
+        #self.vlayout.addItem( QSpacerItem(10, 10, QSizePolicy.Maximum) )
 
     def addTools(self):
 
@@ -254,12 +258,12 @@ class ToolPanel(qt5.QListWidget):
 
             #print tool
             t = ToolBoxItem(data=tool)
-            #t.setToolButtonStyle(qt5.Qt.ToolButtonTextUnderIcon)
+            #t.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             t.setIcon(tool['plugin'].icon)
-            #t.setIconSize( qt5.QSize(32, 32) )
+            #t.setIconSize( QSize(32, 32) )
             t.setText(getattr(tool['app'], 'name', tool['plugin'].name))
             self.addItem(t)
-            #t = ToolItem(qt5.QIcon( tool['icon']), tool['name'], data=tool)
+            #t = ToolItem(QIcon( tool['icon']), tool['name'], data=tool)
             #self.grid.addWidget( t, row, col )
 
         self.sortItems()
@@ -274,15 +278,15 @@ class ToolPanel(qt5.QListWidget):
 
         item = self.currentItem()
 
-        mimeData = qt5.QMimeData()
+        mimeData = QMimeData()
         mimeData.setData('application/x-pathomx-app', item.data['id'])
 
-        drag = qt5.QDrag(self)
+        drag = QDrag(self)
         drag.setMimeData(mimeData)
-        drag.setPixmap(item.data['plugin'].pixmap.scaled(qt5.QSize(64, 64), transformMode=qt5.Qt.SmoothTransformation))
+        drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
         drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
 
-        dropAction = drag.exec_(qt5.Qt.MoveAction)
+        dropAction = drag.exec_(Qt.MoveAction)
 
 
 def _convert_list_type_from_XML(vs):
@@ -337,9 +341,9 @@ CONVERT_TYPE_FROM_XML = {
 }
 
 
-class MainWindow(qt5.QMainWindow):
+class MainWindow(QMainWindow):
 
-    workspace_updated = qt5.pyqtSignal()
+    workspace_updated = pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -349,7 +353,7 @@ class MainWindow(qt5.QMainWindow):
         self.apps_dict = {}
 
         # Initiate logging
-        self.logView = qt5.QTreeWidget()
+        self.logView = QTreeWidget()
         self.logView.setColumnCount(2)
         self.logView.expandAll()
         self.logView.itemClicked.connect(self.onLogItemClicked)
@@ -362,11 +366,11 @@ class MainWindow(qt5.QMainWindow):
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
         #sys.stdout = Logger( self.logView, sys.__stdout__)
-        #sys.stderr = Logger( self.logView, sys.__stderr__, qt5.QColor(255,0,0) )
+        #sys.stderr = Logger( self.logView, sys.__stderr__, QColor(255,0,0) )
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.config = qt5.QSettings()
+        self.config = QSettings()
         if self.config.value('/Pathomx/Is_setup', False) != True:
             logging.info("Setting up initial configuration...")
             self.onResetConfig()
@@ -403,9 +407,9 @@ class MainWindow(qt5.QMainWindow):
 
         self.update_view_callback_enabled = True
 
-        self.printer = qt5.QPrinter()
+        self.printer = QPrinter()
 
-        qt5.QNetworkProxyFactory.setUseSystemConfiguration(True)
+        QNetworkProxyFactory.setUseSystemConfiguration(True)
 
         #  UI setup etc
         self.menuBars = {
@@ -416,50 +420,50 @@ class MainWindow(qt5.QMainWindow):
         }
 
         # FILE MENU
-        aboutAction = qt5.QAction(qt5.QIcon.fromTheme("help-about"), 'About', self)
+        aboutAction = QAction(QIcon.fromTheme("help-about"), 'About', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
         aboutAction.triggered.connect(self.onAbout)
         self.menuBars['file'].addAction(aboutAction)
 
-        newAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'document.png')), tr('&New Blank Workspace'), self)
+        newAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'document.png')), tr('&New Blank Workspace'), self)
         newAction.setShortcut('Ctrl+N')
         newAction.setStatusTip(tr('Create new blank workspace'))
         newAction.triggered.connect(self.onClearWorkspace)
         self.menuBars['file'].addAction(newAction)
 
-        openAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), tr('&Open…'), self)
+        openAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), tr('&Open…'), self)
         openAction.setShortcut('Ctrl+O')
         openAction.setStatusTip(tr('Open previous analysis workspace'))
         openAction.triggered.connect(self.onOpenWorkspace)
         #self.menuBars['file'].addAction(openAction)
 
-        openAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), tr('&Open Workflow…'), self)
+        openAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), tr('&Open Workflow…'), self)
         openAction.setStatusTip(tr('Open an analysis workflow'))
         openAction.triggered.connect(self.onOpenWorkflow)
         self.menuBars['file'].addAction(openAction)
 
         self.menuBars['file'].addSeparator()
 
-        saveAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'disk.png')), tr('&Save'), self)
+        saveAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk.png')), tr('&Save'), self)
         saveAction.setShortcut('Ctrl+S')
         saveAction.setStatusTip(tr('Save current workspace for future use'))
         saveAction.triggered.connect(self.onSaveWorkspace)
         #self.menuBars['file'].addAction(saveAction)
 
-        saveAsAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save &As…'), self)
+        saveAsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
         saveAsAction.setStatusTip(tr('Save current workspace for future use'))
         saveAsAction.triggered.connect(self.onSaveWorkspaceAs)
         #self.menuBars['file'].addAction(saveAsAction)
 
-        saveAsAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save Workflow As…'), self)
+        saveAsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save Workflow As…'), self)
         saveAsAction.setStatusTip(tr('Save current workflow for future use'))
         saveAsAction.triggered.connect(self.onSaveWorkflowAs)
         self.menuBars['file'].addAction(saveAsAction)
 
         self.menuBars['file'].addSeparator()
 
-        printAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
+        printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
         printAction.setShortcut('Ctrl+P')
         printAction.setStatusTip(tr('Print current figure'))
         printAction.triggered.connect(self.onPrint)
@@ -468,69 +472,69 @@ class MainWindow(qt5.QMainWindow):
         self.menuBars['file'].addSeparator()
 
         # DATABASE MENU
-        explore_dbAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'database-explore.png')), tr('&Explore database…'), self)
+        explore_dbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-explore.png')), tr('&Explore database…'), self)
         explore_dbAction.setStatusTip('Explore database')
         explore_dbAction.triggered.connect(self.onDBExplore)
         self.menuBars['database'].addAction(explore_dbAction)
 
-        load_identitiesAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
+        load_identitiesAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
         load_identitiesAction.setStatusTip('Load additional unification mappings into database')
         load_identitiesAction.triggered.connect(self.onLoadIdentities)
         self.menuBars['database'].addAction(load_identitiesAction)
 
         self.menuBars['database'].addSeparator()
 
-        reload_databaseAction = qt5.QAction(qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'exclamation-red.png')), tr('&Reload database'), self)
+        reload_databaseAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'exclamation-red.png')), tr('&Reload database'), self)
         reload_databaseAction.setStatusTip('Reload pathway & metabolite database')
         reload_databaseAction.triggered.connect(self.onReloadDB)
         self.menuBars['database'].addAction(reload_databaseAction)
         # PLUGINS MENU
 
-        change_pluginsAction = qt5.QAction(tr('&Manage plugins…'), self)
+        change_pluginsAction = QAction(tr('&Manage plugins…'), self)
         change_pluginsAction.setStatusTip('Find, activate, deactivate and remove plugins')
         change_pluginsAction.triggered.connect(self.onChangePlugins)
         self.menuBars['plugins'].addAction(change_pluginsAction)
 
-        check_pluginupdatesAction = qt5.QAction(tr('&Check for updated plugins'), self)
+        check_pluginupdatesAction = QAction(tr('&Check for updated plugins'), self)
         check_pluginupdatesAction.setStatusTip('Check for updates to installed plugins')
         check_pluginupdatesAction.triggered.connect(self.onCheckPluginUpdates)
         #self.menuBars['plugins'].addAction(check_pluginupdatesAction)  FIXME: Add a plugin-update check
 
-        aboutAction = qt5.QAction(qt5.QIcon.fromTheme("help-about"), 'Introduction', self)
+        aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
         aboutAction.triggered.connect(self.onAbout)
         self.menuBars['help'].addAction(aboutAction)
 
         self.menuBars['help'].addSeparator()
 
-        goto_pathomx_websiteAction = qt5.QAction(tr('&Pathomx homepage'), self)
+        goto_pathomx_websiteAction = QAction(tr('&Pathomx homepage'), self)
         goto_pathomx_websiteAction.setStatusTip('Go to the Pathomx website')
         goto_pathomx_websiteAction.triggered.connect(self.onGoToPathomxWeb)
         self.menuBars['help'].addAction(goto_pathomx_websiteAction)
 
-        goto_pathomx_docsAction = qt5.QAction(tr('&Pathomx documentation'), self)
+        goto_pathomx_docsAction = QAction(tr('&Pathomx documentation'), self)
         goto_pathomx_docsAction.setStatusTip('Read latest Pathomx documentation')
         goto_pathomx_docsAction.triggered.connect(self.onGoToPathomxDocs)
         self.menuBars['help'].addAction(goto_pathomx_docsAction)
 
-        goto_pathomx_demosAction = qt5.QAction(tr('&Pathomx demos'), self)
+        goto_pathomx_demosAction = QAction(tr('&Pathomx demos'), self)
         goto_pathomx_demosAction.setStatusTip('Watch Pathomx demo videos')
         goto_pathomx_demosAction.triggered.connect(self.onGoToPathomxDemos)
         self.menuBars['help'].addAction(goto_pathomx_demosAction)
 
         self.menuBars['help'].addSeparator()
 
-        do_registerAction = qt5.QAction(tr('&Register Pathomx'), self)
+        do_registerAction = QAction(tr('&Register Pathomx'), self)
         do_registerAction.setStatusTip('Register Pathomx for release updates')
         do_registerAction.triggered.connect(self.onDoRegister)
         self.menuBars['help'].addAction(do_registerAction)
 
         # GLOBAL WEB SETTINGS
-        qt5.QNetworkProxyFactory.setUseSystemConfiguration(True)
+        QNetworkProxyFactory.setUseSystemConfiguration(True)
 
-        qt5.QWebSettings.setMaximumPagesInCache(0)
-        qt5.QWebSettings.setObjectCacheCapacities(0, 0, 0)
-        qt5.QWebSettings.clearMemoryCaches()
+        QWebSettings.setMaximumPagesInCache(0)
+        QWebSettings.setObjectCacheCapacities(0, 0, 0)
+        QWebSettings.clearMemoryCaches()
 
         # Display a introductory helpfile
         self.mainBrowser = ui.QWebViewExtend(None, onNavEvent=self.onBrowserNav)
@@ -544,7 +548,7 @@ class MainWindow(qt5.QMainWindow):
         self.core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
         self.plugin_places.append(self.core_plugin_path)
 
-        user_application_data_paths = qt5.QStandardPaths.standardLocations(qt5.QStandardPaths.DataLocation)
+        user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
         if user_application_data_paths:
             self.user_plugin_path = os.path.join(user_application_data_paths[0], 'plugins')
             utils.mkdir_p(self.user_plugin_path)
@@ -610,9 +614,9 @@ class MainWindow(qt5.QMainWindow):
 
                 apps[category].append(metadata)
 
-        self.stack = qt5.QStackedWidget()
+        self.stack = QStackedWidget()
 
-        self.threadpool = qt5.QThreadPool()
+        self.threadpool = QThreadPool()
         logging.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         self.setCentralWidget(self.stack)
@@ -622,7 +626,7 @@ class MainWindow(qt5.QMainWindow):
         self.workspace_parents = {}
         self.workspace_index = {}  # id -> obj
 
-        self.workspace = qt5.QTreeWidget()
+        self.workspace = QTreeWidget()
         self.workspace.setColumnCount(4)
         self.workspace.expandAll()
 
@@ -634,57 +638,57 @@ class MainWindow(qt5.QMainWindow):
         self.setCentralWidget(self.editor)
 
         app_category_icons = {
-               "Import": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
-               "Processing": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
-               "Identification": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
-               "Analysis": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
-               "Visualisation": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
-               "Export": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
-               "Scripting": qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')),
+               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
+               "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
+               "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
+               "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
+               "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
+               "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
+               "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')),
                }
 
         template = self.templateEngine.get_template('apps.html')
         for category in plugin_categories:
             self.addWorkspaceItem(None, None, category, app_category_icons[category])
 
-        self.workspace.setSelectionMode(qt5.QAbstractItemView.SingleSelection)
+        self.workspace.setSelectionMode(QAbstractItemView.SingleSelection)
         self.workspace.currentItemChanged.connect(self.onWorkspaceStackChange)
 
-        self.toolbox = qt5.QToolBox(self)
+        self.toolbox = QToolBox(self)
         for category in plugin_categories:
             panel = ToolPanel(self, tools=self.tools[category])
             self.toolbox.addItem(panel, app_category_icons[category], category)
 
-        self.toolDock = qt5.QDockWidget(tr('Toolkit'))
+        self.toolDock = QDockWidget(tr('Toolkit'))
         self.toolDock.setWidget(self.toolbox)
 
-        self.workspaceDock = qt5.QDockWidget(tr('Workspace'))
+        self.workspaceDock = QDockWidget(tr('Workspace'))
         self.workspaceDock.setWidget(self.workspace)
-        self.workspace.setHorizontalScrollBarPolicy(qt5.Qt.ScrollBarAlwaysOff)
+        self.workspace.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.workspace.setColumnWidth(0, 298 - 25 * 2)
         self.workspace.setColumnWidth(2, 24)
         self.workspace.setColumnWidth(3, 24)
         self.workspaceDock.setMinimumWidth(300)
         self.workspaceDock.setMaximumWidth(300)
 
-        self.dataView = qt5.QTreeView(self)
+        self.dataView = QTreeView(self)
         self.dataModel = data.DataTreeModel(self.datasets)
         self.dataView.setModel(self.dataModel)
 
         self.dataView.hideColumn(0)
 
-        self.dataDock = qt5.QDockWidget(tr('Data'))
+        self.dataDock = QDockWidget(tr('Data'))
         self.dataDock.setWidget(self.dataView)
         self.dataDock.setMinimumWidth(300)
         self.dataDock.setMaximumWidth(300)
 
-        self.logDock = qt5.QDockWidget(tr('Log'))
+        self.logDock = QDockWidget(tr('Log'))
         self.logDock.setWidget(self.logView)
 
-        self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.logDock)
-        self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.dataDock)
-        self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.workspaceDock)
-        self.addDockWidget(qt5.Qt.LeftDockWidgetArea, self.toolDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.logDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dataDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.tabifyDockWidget(self.toolDock, self.workspaceDock)
         self.tabifyDockWidget(self.workspaceDock, self.dataDock)
@@ -696,8 +700,8 @@ class MainWindow(qt5.QMainWindow):
 
         self.setWindowTitle(tr('Pathomx'))
 
-        self.progressBar = qt5.QProgressBar(self.statusBar())
-        self.progressBar.setMaximumSize(qt5.QSize(170, 19))
+        self.progressBar = QProgressBar(self.statusBar())
+        self.progressBar.setMaximumSize(QSize(170, 19))
         self.progressBar.setRange(0, 100)
         self.statusBar().addPermanentWidget(self.progressBar)
         self.progressTracker = {}  # Dict storing values for each view/object
@@ -759,13 +763,13 @@ class MainWindow(qt5.QMainWindow):
     # UI Events
 
     def onGoToPathomxWeb(self):
-        qt5.QDesktopServices.openUrl(qt5.QUrl('http://pathomx.org'))
+        QDesktopServices.openUrl(QUrl('http://pathomx.org'))
 
     def onGoToPathomxDemos(self):
-        qt5.QDesktopServices.openUrl(qt5.QUrl('http://pathomx.org/demos'))
+        QDesktopServices.openUrl(QUrl('http://pathomx.org/demos'))
 
     def onGoToPathomxDocs(self):
-        qt5.QDesktopServices.openUrl(qt5.QUrl('http://docs.pathomx.org/'))
+        QDesktopServices.openUrl(QUrl('http://docs.pathomx.org/'))
 
     def onDoRegister(self):
         # Pop-up a registration window; take an email address and submit to
@@ -786,7 +790,7 @@ class MainWindow(qt5.QMainWindow):
             # http://register.pathomx.org POST
 
     def onPrint(self):
-        dialog = qt5.QPrintDialog(self.printer, self)
+        dialog = QPrintDialog(self.printer, self)
         if dialog.exec_():
             self.mainBrowser.print_(self.printer)
 
@@ -867,11 +871,11 @@ class MainWindow(qt5.QMainWindow):
 
         else:
             # It's an URL open in default browser
-            qt5.QDesktopServices.openUrl(url)
+            QDesktopServices.openUrl(url)
 
     def onLoadIdentities(self):
         """ Open a data file"""
-        filename, _ = qt5.QFileDialog.getOpenFileName(self, 'Load compound identities file', '')
+        filename, _ = QFileDialog.getOpenFileName(self, 'Load compound identities file', '')
         if filename:
             self.db.load_synonyms(filename)
             # Re-translate the datafile if there is one and refresh
@@ -882,7 +886,7 @@ class MainWindow(qt5.QMainWindow):
     def onSaveAs(self):
         """ Save a copy of the graph as one of the supported formats"""
         # Note this will regenerate the graph with the current settings, with output type specified appropriately
-        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current metabolic pathway map', '')
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current metabolic pathway map', '')
         if filename:
             fn, ext = os.path.splitext(filename)
             format = ext.replace('.', '')
@@ -917,7 +921,7 @@ class MainWindow(qt5.QMainWindow):
         }
 
         template = self.templateEngine.get_template(template)
-        self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), qt5.QUrl("~"))
+        self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), QUrl("~"))
 
     def onWorkspaceStackChange(self, item, previous):
         widget = self.workspace_index[item.text(1)]
@@ -927,7 +931,7 @@ class MainWindow(qt5.QMainWindow):
 
     def addWorkspaceItem(self, widget, section, title, icon=None):
 
-        tw = qt5.QTreeWidgetItem()
+        tw = QTreeWidgetItem()
         wid = str(id(tw))
         tw.setText(0, tr(title))
         tw.setText(1, wid)
@@ -957,13 +961,13 @@ class MainWindow(qt5.QMainWindow):
 
     def setWorkspaceStatus(self, workspace_item, status):
         status_icons = {
-            'active': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-green.png')),
-            'render': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-purple.png')),
-            'waiting': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-yellow.png')),
-            'error': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-red.png')),
-            'paused': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-white.png')),
-            'done': qt5.QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-checker.png')),
-            'clear': qt5.QIcon(None)
+            'active': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-green.png')),
+            'render': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-purple.png')),
+            'waiting': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-yellow.png')),
+            'error': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-red.png')),
+            'paused': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-white.png')),
+            'done': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-checker.png')),
+            'clear': QIcon(None)
         }
 
         if status not in list(status_icons.keys()):
@@ -973,7 +977,7 @@ class MainWindow(qt5.QMainWindow):
         self.workspace.update(self.workspace.indexFromItem(workspace_item))
 
         # Keep things ticking
-        qt5.QCoreApplication.processEvents()
+        QCoreApplication.processEvents()
 
         if status == 'active':  # Starting
             self.updateProgress(workspace_item, 0)
@@ -984,7 +988,7 @@ class MainWindow(qt5.QMainWindow):
         elif status == 'done':  # Flash done then clear in a bit
             self.updateProgress(workspace_item, 1)
             statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')
-            workspace_item.status_timeout = qt5.QTimer.singleShot(1000, statusclearCallback)
+            workspace_item.status_timeout = QTimer.singleShot(1000, statusclearCallback)
 
     def clearWorkspaceStatus(self, workspace_item):
         self.setWorkspaceStatus(workspace_item, 'clear')
@@ -1006,7 +1010,7 @@ class MainWindow(qt5.QMainWindow):
         if self.progressBar.value() < pt:  # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
             self.progressBar.setValue(pt)
         # Keep things ticking
-        #qt5.QCoreApplication.processEvents()
+        #QCoreApplication.processEvents()
 
     def register_url_handler(self, identifier, url_handler):
         self.url_handlers[identifier].append(url_handler)
@@ -1029,9 +1033,9 @@ class MainWindow(qt5.QMainWindow):
     ### RESET WORKSPACE
 
     def onClearWorkspace(self):
-        reply = qt5.QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
-                            qt5.QMessageBox.Yes | qt5.QMessageBox.No)
-        if reply == qt5.QMessageBox.Yes:
+        reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
+                            QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
             self.clearWorkspace()
 
     def clearWorkspace(self):
@@ -1045,7 +1049,7 @@ class MainWindow(qt5.QMainWindow):
     ### OPEN/SAVE WORKFLOWS
 
     def onSaveWorkflowAs(self):
-        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current workflow', '', "Pathomx Workflow Format (*.mpf)")
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current workflow', '', "Pathomx Workflow Format (*.mpf)")
         if filename:
             self.saveWorkflow(filename)
 
@@ -1095,10 +1099,10 @@ class MainWindow(qt5.QMainWindow):
 
     def onOpenWorkflow(self):
         """ Open a data file"""
-        filename, _ = qt5.QFileDialog.getOpenFileName(self, 'Open new workflow', '', "Pathomx Workflow Format (*.mpf)")
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open new workflow', '', "Pathomx Workflow Format (*.mpf)")
         if filename:
             self.openWorkflow(filename)
-    
+
     def openWorkflow(self, fn):
         logging.info("Loading workflow... %s" % fn)
         # Wipe existing workspace
@@ -1115,7 +1119,7 @@ class MainWindow(qt5.QMainWindow):
             logging.info(('- %s' % xapp.find('Name').text))
             app = self.app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
-            app.editorItem.setPos(qt5.QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
+            app.editorItem.setPos(QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
             #app = self.app_launchers[ item.find("launcher").text ]()
             #app.set_name(  )
             appref[xapp.get('id')] = app
@@ -1142,9 +1146,9 @@ class MainWindow(qt5.QMainWindow):
         self.workspace_updated.emit()
 
 
-class QApplicationExtend(qt5.QApplication):
+class QApplicationExtend(QApplication):
     def event(self, e):
-        if e.type() == qt5.QEvent.FileOpen:
+        if e.type() == QEvent.FileOpen:
             fn, fe = os.path.splitext(e.file())
             formats = {  # Run specific loading function for different source data types
                     '.mpf': self.openWorkflow,
@@ -1159,31 +1163,31 @@ class QApplicationExtend(qt5.QApplication):
 
 
 def main():
-    # Create a qt5.Qt application
+    # Create a Qt application
     app = QApplicationExtend(sys.argv)
     app.setStyle('fusion')
     app.setOrganizationName("Pathomx")
     app.setOrganizationDomain("pathomx.org")
     app.setApplicationName("Pathomx")
 
-    locale = qt5.QLocale.system().name()
+    locale = QLocale.system().name()
     #locale = 'nl'
 
     #sys.path.append(utils.scriptdir)
 
-    # Load base qt5.QT translations from the normal place (does not include _nl, or _it)
-    translator_qt = qt5.QTranslator()
-    if translator_qt.load("qt_%s" % locale, qt5.QLibraryInfo.location(qt5.QLibraryInfo.TranslationsPath)):
-        logging.debug(("Loaded qt5.Qt translations for locale: %s" % locale))
+    # Load base QT translations from the normal place (does not include _nl, or _it)
+    translator_qt = QTranslator()
+    if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
+        logging.debug(("Loaded Qt translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # See if we've got a default copy for _nl, _it or others
     elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        logging.debug(("Loaded qt5.Qt (self) translations for locale: %s" % locale))
+        logging.debug(("Loaded Qt (self) translations for locale: %s" % locale))
         app.installTranslator(translator_qt)
 
     # Load Pathomx specific translations
-    translator_mp = qt5.QTranslator()
+    translator_mp = QTranslator()
     if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
         logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
     app.installTranslator(translator_mp)
@@ -1202,7 +1206,7 @@ def main():
 
     MainWindow()
     app.exec_()
-    # Enter qt5.Qt application main loop
+    # Enter Qt application main loop
     sys.exit()
 
 if __name__ == "__main__":

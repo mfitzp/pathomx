@@ -1,14 +1,6 @@
 # -*- coding: utf-8 -*-
 #from __future__ import unicode_literals
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
 import os
 import copy
 
@@ -22,6 +14,7 @@ from pathomx.data import DataSet, DataDefinition, TableInterface
 from pathomx.views import TableView
 from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import IdentificationPlugin
+from pathomx.qt import *
 
 TYPE_COLORS = {
     'compound': '#e2ebf5',

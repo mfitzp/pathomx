@@ -4,18 +4,9 @@ import os
 
 from pathomx.plugins import ProcessingPlugin
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 import pathomx.ui as ui
-import pathomx.qt5 as qt5
 from pathomx.data import DataSet, DataDefinition
+from pathomx.qt import *
 
 from keyword import kwlist
 import numpy as np

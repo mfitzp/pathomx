@@ -1,14 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 import csv
 import xml.etree.cElementTree as et
 from collections import defaultdict
@@ -19,7 +10,6 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.threads as threads
 import pathomx.utils as utils
-import pathomx.qt5 as qt5
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition

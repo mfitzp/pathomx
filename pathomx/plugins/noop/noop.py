@@ -5,6 +5,7 @@ import os
 import pathomx.ui as ui
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
+from pathomx.qt import *
 
 
 class NOOPApp(ui.GenericApp):

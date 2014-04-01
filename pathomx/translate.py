@@ -3,8 +3,7 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from .qt import QCoreApplication
 
 
 def tr(s, *args, **kwargs):

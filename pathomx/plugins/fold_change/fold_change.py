@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 from collections import defaultdict
 
 import os
@@ -22,6 +13,7 @@ import pathomx.utils as utils
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.plugins import AnalysisPlugin
+from pathomx.qt import *
 
 
 class FoldChangeApp(ui.AnalysisApp):

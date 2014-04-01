@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 # Renderer for GPML as SVG
 from gpml2svg import gpml2svg
 
@@ -26,6 +17,7 @@ import pathomx.threads as threads
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import MplSpectraView
+from pathomx.qt import *
 
 from collections import OrderedDict
 

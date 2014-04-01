@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from PyQt5.QtCore import Qt, QObject, QRunnable, pyqtSignal, pyqtSlot
+from .qt import *
 import sys
 import traceback
 

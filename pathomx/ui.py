@@ -3,15 +3,7 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
-from . import qt5
+from .qt import *
 
 from collections import defaultdict
 import os
@@ -104,7 +96,7 @@ class genericDialog(QDialog):
             pass
 
 
-class DialogAbout(qt5.QDialog):
+class DialogAbout(QDialog):
     def __init__(self, parent, **kwargs):
         super(DialogAbout, self).__init__(parent, **kwargs)
 
@@ -114,46 +106,46 @@ class DialogAbout(qt5.QDialog):
         template = parent.templateEngine.get_template('about.html')
         self.help.setHtml(template.render({
                     'htmlbase': os.path.join(utils.scriptdir, 'html'),
-                    }), qt5.QUrl("~")
+                    }), QUrl("~")
                     )
 
-        self.layout = qt5.QVBoxLayout()
+        self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
 
         # Setup default button configurations etc.
-        self.buttonBox = qt5.QDialogButtonBox(qt5.QDialogButtonBox.Close)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
         self.buttonBox.rejected.connect(self.close)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
 
     def sizeHint(self):
-        return qt5.QSize(600, 600)
+        return QSize(600, 600)
 
 
-class DialogRegister(qt5.QDialog):
+class DialogRegister(QDialog):
     def __init__(self, parent, **kwargs):
         super(DialogRegister, self).__init__(parent, **kwargs)
 
         self.setWindowTitle('Register Pathomx')
 
-        self.layout = qt5.QVBoxLayout()
-        self.layout.addWidget(qt5.QLabel('Please register Pathomx by entering your details below.\n\nThis is completely optional but helps it helps us find out\nhow Pathomx is being used.'))
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(QLabel('Please register Pathomx by entering your details below.\n\nThis is completely optional but helps it helps us find out\nhow Pathomx is being used.'))
 
-        self.layout.addSpacerItem(qt5.QSpacerItem(0, 20))
+        self.layout.addSpacerItem(QSpacerItem(0, 20))
 
-        bx = qt5.QGridLayout()
+        bx = QGridLayout()
 
-        self.name = qt5.QLineEdit()
-        bx.addWidget(qt5.QLabel('Name'), 0, 0)
+        self.name = QLineEdit()
+        bx.addWidget(QLabel('Name'), 0, 0)
         bx.addWidget(self.name, 0, 1)
 
-        self.institution = qt5.QLineEdit()
-        bx.addWidget(qt5.QLabel('Institution/Organisation'), 1, 0)
+        self.institution = QLineEdit()
+        bx.addWidget(QLabel('Institution/Organisation'), 1, 0)
         bx.addWidget(self.institution, 1, 1)
 
-        self.type = qt5.QComboBox()
+        self.type = QComboBox()
         self.type.addItems(['Academic', 'Governmental', 'Commercial', 'Non-profit', 'Personal', 'Other'])
-        bx.addWidget(qt5.QLabel('Type of organisation'), 2, 0)
+        bx.addWidget(QLabel('Type of organisation'), 2, 0)
         bx.addWidget(self.type, 2, 1)
 
         countries = [
@@ -326,7 +318,7 @@ class DialogRegister(qt5.QDialog):
             ('PL', 'Poland'),
             ('PT', 'Portugal'),
             ('PR', 'Puerto Rico'),
-            ('qt5.QA', 'qt5.Qatar'),
+            ('QA', 'Qatar'),
             ('RE', 'Reunion'),
             ('RO', 'Romania'),
             ('RU', 'Russian Federation'),
@@ -390,30 +382,30 @@ class DialogRegister(qt5.QDialog):
             ('ZW', 'Zimbabwe')
         ]
 
-        self.country = qt5.QComboBox()
+        self.country = QComboBox()
         self.country.addItems([v for k, v in countries])
-        bx.addWidget(qt5.QLabel('Country'), 3, 0)
+        bx.addWidget(QLabel('Country'), 3, 0)
         bx.addWidget(self.country, 3, 1)
 
-        self.research = qt5.QLineEdit()
-        bx.addWidget(qt5.QLabel('Research interest'), 4, 0)
+        self.research = QLineEdit()
+        bx.addWidget(QLabel('Research interest'), 4, 0)
         bx.addWidget(self.research, 4, 1)
 
-        self.email = qt5.QLineEdit()
-        bx.addWidget(qt5.QLabel('Email address'), 5, 0)
+        self.email = QLineEdit()
+        bx.addWidget(QLabel('Email address'), 5, 0)
         bx.addWidget(self.email, 5, 1)
 
-        bx.addItem(qt5.QSpacerItem(0, 20), 6, 0)
+        bx.addItem(QSpacerItem(0, 20), 6, 0)
 
-        self.releases = qt5.QComboBox()
+        self.releases = QComboBox()
         self.releases.addItems(['Check automatically (weekly)', 'Subscribe to mailing list', 'Don\'t check'])
-        bx.addWidget(qt5.QLabel('Software updates'), 7, 0)
+        bx.addWidget(QLabel('Software updates'), 7, 0)
         bx.addWidget(self.releases, 7, 1)
 
         self.layout.addLayout(bx)
 
         # Setup default button configurations etc.
-        self.buttonBox = qt5.QDialogButtonBox(qt5.QDialogButtonBox.Cancel | qt5.QDialogButtonBox.Ok)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.buttonBox.rejected.connect(self.close)
         self.buttonBox.accepted.connect(self.accept)
         self.layout.addWidget(self.buttonBox)

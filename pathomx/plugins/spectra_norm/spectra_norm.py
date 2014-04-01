@@ -20,10 +20,10 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.threads as threads
 import pathomx.utils as utils
-import pathomx.qt5 as qt5
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import MplSpectraView, MplDifferenceView
+from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options

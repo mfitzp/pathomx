@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-
 from pathomx.plugins import AnalysisPlugin
 
 from collections import defaultdict
@@ -21,6 +11,7 @@ import pathomx.utils as utils
 from pathomx.db import Compound, Gene, Protein
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import TableView
+from pathomx.qt import *
 
 import numpy as np
 

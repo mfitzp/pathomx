@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
-
 import os
-
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
 
 import csv
 import xml.etree.cElementTree as et
@@ -23,6 +13,7 @@ import pathomx.db as db
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.plugins import ProcessingPlugin
+from pathomx.qt import *
 
 
 # Source data selection dialog

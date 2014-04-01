@@ -4,9 +4,8 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from pathomx.qt import pyqtSignal, Qt, QAbstractItemModel, QVariant, QModelIndex, QObject, \
+                       QAbstractTableModel 
 
 import os, sys, re, base64
 import numpy as np

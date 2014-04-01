@@ -3,8 +3,8 @@
 from __future__ import unicode_literals
 
 
-# Import Pyqt5.Qt5 classes
-from . import qt5
+# Import PyQt5 classes
+from .qt import *
 
 from collections import defaultdict
 
@@ -65,29 +65,29 @@ BLANK_DEFAULT_HTML = '''
 
 
 
-# Handler for the views available for each app. Extended implementation of the qt5.QTabWidget
+# Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
-class ViewManager( qt5.QTabWidget ):
+class ViewManager( QTabWidget ):
     """ 
     Manager class for the tool views.
     
-    Inherits from qt5.QTabWidget to focusing tabs on add and unfocus-on-refresh. The qt5.QTabWidget method
-    is overridden to wrap addView. All other qt5.QTabWidget methods and attributes are available.
+    Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
+    is overridden to wrap addView. All other QTabWidget methods and attributes are available.
     """
     auto_unfocus_tabs = ['?']
     # Signals
-    source_data_updated = qt5.pyqtSignal()
-    updated = qt5.pyqtSignal()
+    source_data_updated = pyqtSignal()
+    updated = pyqtSignal()
 
     def __init__(self, parent, **kwargs):
         super(ViewManager, self).__init__()
         self.w = parent
         self.m = parent.m
-        self.setSizePolicy( qt5.QSizePolicy.Expanding, qt5.QSizePolicy.Expanding )
+        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
             
         self.setDocumentMode(True)
         self.setTabsClosable(False)
-        self.setTabPosition( qt5.QTabWidget.South )
+        self.setTabPosition( QTabWidget.South )
         self.setMovable(True)
             
         self._unfocus_tabs_enabled = True
@@ -104,12 +104,12 @@ class ViewManager( qt5.QTabWidget ):
         Adds the specified widget to the ViewManager under a named tab.
 
         :param widget: The widget to add as a view.
-        :type widget: object inherited from qt5.QWidget or views.BaseView
+        :type widget: object inherited from QWidget or views.BaseView
         :param name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
         :type name: str
         :rtype: int tab/view index     
         '''
-        widget.setSizePolicy( qt5.QSizePolicy.Expanding, qt5.QSizePolicy.Expanding )
+        widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
@@ -202,14 +202,14 @@ class BaseView():
         
 
 # Views for Svg/HTML based views (inc d3)
-class RenderPageToFile(qt5.QWebPage): 
+class RenderPageToFile(QWebPage): 
     def __init__(self, wv, fn, settings): # 11811 == 300dpi
         super(RenderPageToFile, self).__init__()
 
-        self.mainFrame().setScrollBarPolicy(qt5.Qt.Vertical, qt5.Qt.ScrollBarAlwaysOff)
-        self.mainFrame().setScrollBarPolicy(qt5.Qt.Horizontal, qt5.Qt.ScrollBarAlwaysOff)
+        self.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
+        self.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
 
-        #self.settings().setAttribute( qt5.QWebSettings.JavascriptEnabled,False)
+        #self.settings().setAttribute( QWebSettings.JavascriptEnabled,False)
 
         self.finished = False
             
@@ -241,10 +241,10 @@ class RenderPageToFile(qt5.QWebPage):
             frame.evaluateJavaScript( "_pathomx_render_trigger();" )
 
         #self.size = frame.contentsSize()#        self.setViewportSize(self.size)
-        image = qt5.QImage(self.size, qt5.QImage.Format_ARGB32)
+        image = QImage(self.size, QImage.Format_ARGB32)
         image.setDotsPerMeterX(self.dpm)
         image.setDotsPerMeterY(self.dpm)
-        painter = qt5.QPainter(image)
+        painter = QPainter(image)
         frame.render(painter)
         painter.end()
 
@@ -252,7 +252,7 @@ class RenderPageToFile(qt5.QWebPage):
         self.finished = True
 
 
-class WebPageJSLog(qt5.QWebPage):
+class WebPageJSLog(QWebPage):
     """
     Redirects Javascript errors to the console (STDOUT) for debugging.
     """
@@ -263,22 +263,22 @@ class WebPageJSLog(qt5.QWebPage):
     def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
         sys.stderr.write("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
 
-class QWebPageExtend(qt5.QWebPage):
+class QWebPageExtend(QWebPage):
     def shouldInterruptJavascript():
         return False
 
 
         
-class TableView(qt5.QTableView):
+class TableView(QTableView):
     """
-    Modified qt5.QTableView with additional metadata for internal use.
+    Modified QTableView with additional metadata for internal use.
     """
     is_floatable_view = False
     is_mpl_toolbar_enabled = False
 
-class WebView(qt5.QWebView, BaseView):
+class WebView(QWebView, BaseView):
     """
-    Modified qt5.QWebView with internal navigation handling, loadfinished-resize triggers
+    Modified QWebView with internal navigation handling, loadfinished-resize triggers
     for SVG, HTML, etc.
     """
 
@@ -288,11 +288,11 @@ class WebView(qt5.QWebView, BaseView):
         self.w = parent
         self.m = parent.m
         self.setPage( WebPageJSLog(self.w) )
-        self.setHtml(BLANK_DEFAULT_HTML,qt5.QUrl("~"))
+        self.setHtml(BLANK_DEFAULT_HTML,QUrl("~"))
 
         self.page().setContentEditable(False)
-        self.page().setLinkDelegationPolicy( qt5.QWebPage.DelegateExternalLinks )
-        self.setSizePolicy( qt5.QSizePolicy.Expanding, qt5.QSizePolicy.Expanding )
+        self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         self.loadFinished.connect(self._loadFinished)
         
         # Override links for internal link cleverness
@@ -300,11 +300,11 @@ class WebView(qt5.QWebView, BaseView):
             self.onNavEvent = self.w.onBrowserNav
             self.linkClicked.connect( self.delegateUrlWrapper )
 
-        self.setContextMenuPolicy(qt5.Qt.CustomContextMenu) # Disable right-click
+        self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
 
     
     def delegateUrlWrapper(self, url):
-        if url.isRelative() and url.hasFragment(): # Fugly; use Jqt5.Query to scroll to anchors (qt5.Qt is broken if using setHtml)
+        if url.isRelative() and url.hasFragment(): # Fugly; use JQuery to scroll to anchors (Qt is broken if using setHtml)
             self.page().currentFrame().evaluateJavaScript("$('html,body').scrollTop( $(\"a[name='%s']\").offset().top );" % url.fragment()) 
         else:
             self.onNavEvent(url)
@@ -318,25 +318,25 @@ class WebView(qt5.QWebView, BaseView):
 
  
     def saveAsImage(self,settings): # Size, dots per metre (for print), resample (redraw) image
-        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
         if filename:
             r = RenderPageToFile(self, filename, settings ) 
             while r.finished != True:
-                qt5.QCoreApplication.processEvents()
+                QCoreApplication.processEvents()
     
     def getSize(self):
-        if self.w.size() == qt5.QSize(100,30):
+        if self.w.size() == QSize(100,30):
             return self.w.sizeHint()
         else:
             return self.w.size()
                 
     def sizeHint(self):
-        return qt5.QSize(600,400)
+        return QSize(600,400)
             
-    @qt5.pyqtSlot(str)
+    @pyqtSlot(str)
     def delegateLink(self, url):
-        self.onNavEvent( qt5.QUrl(url) )
+        self.onNavEvent( QUrl(url) )
         return True
         
     def generate(self):
@@ -346,7 +346,7 @@ class WebView(qt5.QWebView, BaseView):
 class D3View(WebView):
 
     """
-    Modified qt5.QWebView (via WebView) with d3 generated SVG image saving handler.
+    Modified QWebView (via WebView) with d3 generated SVG image saving handler.
     
     Use this as a basis for any custom d3-based rendering views.
     """
@@ -355,7 +355,7 @@ class D3View(WebView):
     _offers_rerender_on_save = True
 
     def setSVG(self, svg):
-        super(D3View, self).setHtml(svg, qt5.QUrl('file:///') )             
+        super(D3View, self).setHtml(svg, QUrl('file:///') )             
 
 
     def generate_d3(self, metadata):
@@ -374,7 +374,7 @@ class HTMLView(WebView):
             self.generate(html)
     
     def generate(self, html):
-        self.setHtml(html, qt5.QUrl('file:///')) 
+        self.setHtml(html, QUrl('file:///')) 
         
 class StaticHTMLView(HTMLView):
     """
@@ -394,7 +394,7 @@ class WheezyView(WebView):
     
     def generate(self, template, metadata={}):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-        self.setHtml(template.render( metadata ),qt5.QUrl("~")) 
+        self.setHtml(template.render( metadata ),QUrl("~")) 
 
 
 class MplNavigationHandler(NavigationToolbar2):
@@ -423,7 +423,7 @@ class MplView(FigureCanvas, BaseView):
     is_floatable_view = True
     is_mpl_toolbar_enabled = True
 
-    """Ultimately, this is a qt5.QWidget (as well as a FigureCanvasAgg, etc.)."""
+    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent, width=5, height=4, dpi=100, **kwargs):
 
         self.v = parent
@@ -441,11 +441,11 @@ class MplView(FigureCanvas, BaseView):
         self.setParent(parent.views)
 
         FigureCanvas.setSizePolicy(self,
-                                   qt5.QSizePolicy.Expanding,
-                                   qt5.QSizePolicy.Expanding)
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         
-        # Install navigation handler; we need to provide a qt5.Qt interface that can handle multiple 
+        # Install navigation handler; we need to provide a Qt interface that can handle multiple 
         # plots in a window under separate tabs
         self.navigation = MplNavigationHandler( self )
         
@@ -454,7 +454,7 @@ class MplView(FigureCanvas, BaseView):
         pass
 
     def saveAsImage(self, settings): # Size, dots per metre (for print), resample (redraw) image
-        filename, _ = qt5.QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Document File (*.pdf);;\
                                                                                      Encapsulated Postscript File (*.eps);;\
                                                                                      Scalable Vector Graphics (*.svg);;\
@@ -472,8 +472,8 @@ class MplView(FigureCanvas, BaseView):
             
     def redraw(self):
         #FIXME: Ugly hack to refresh the canvas
-        self.resize( self.size() - qt5.QSize(1,1) )
-        self.resize( self.size() + qt5.QSize(1,1) )
+        self.resize( self.size() - QSize(1,1) )
+        self.resize( self.size() + QSize(1,1) )
         
     def resizeEvent(self,e):
         FigureCanvas.resizeEvent(self,e)

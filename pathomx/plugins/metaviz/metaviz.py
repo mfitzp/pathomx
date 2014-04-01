@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
-from PyQt5.QtSvg import *
-
 from optparse import Values, OptionParser
 from collections import defaultdict
 import os
@@ -31,6 +21,7 @@ from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.db import ReactionIntermediate
 from pathomx.views import SVGView
+from pathomx.qt import *
 
 PRUNE_ALL = lambda a, b, c, d: (a, b, c)
 PRUNE_IDENTICAL = lambda a, b, c, d: (a, b, c, d)

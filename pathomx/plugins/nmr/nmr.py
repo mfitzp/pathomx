@@ -3,14 +3,6 @@
 
 #import nmrglue as ng
 
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
 import csv
 import os
 import pprint
@@ -27,6 +19,7 @@ import pathomx.threads as threads
 
 from pathomx.data import DataSet
 from pathomx.plugins import ImportPlugin
+from pathomx.qt import *
 
 import nmrglue as ng
 
