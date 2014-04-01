@@ -298,7 +298,7 @@ class ConfigManager(qt5.QObject):
             :param value: The value to set the configuration key to
             :type value: Any supported (str, int, bool, list-of-supported-types)
             :rtype: bool (success)              
-        """    
+        """
         if key in self.config and self.config[key] == value:
             return False  # Not updating
 
@@ -336,7 +336,7 @@ class ConfigManager(qt5.QObject):
         :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
         
         """
-        
+
         self.defaults[key] = value
         self.eventhooks[key] = eventhook
         self.updated.emit(eventhook)
@@ -377,7 +377,7 @@ class ConfigManager(qt5.QObject):
         :param trigger_update: Flag whether to trigger a config update (+recalculation) after all values are set. 
         :type trigger_update: bool
         
-        """    
+        """
         self.config = []
         self.set_many(keyvalues)
 
@@ -402,7 +402,6 @@ class ConfigManager(qt5.QObject):
 
         if has_updated and trigger_update:
             self.updated.emit(RECALCULATE_ALL)
-            
     # HANDLERS
 
     # Handlers are UI elements (combo, select, checkboxes) that automatically update
@@ -464,7 +463,7 @@ class ConfigManager(qt5.QObject):
             Reset the config manager to it's initialised state.
             
             This clears all values, unsets all defaults and removes all handlers, maps, and hooks.
-        """    
+        """
         self.config = {}
         self.handlers = {}
         self.defaults = {}

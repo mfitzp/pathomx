@@ -42,6 +42,7 @@ except ImportError:
     from urllib import urlopen
     from urllib2 import Request
 
+
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
 class KEGGPathwayApp(ui.AnalysisApp):

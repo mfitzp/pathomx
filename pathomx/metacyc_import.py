@@ -5,8 +5,6 @@ import sys
 import re
 import math
 import html.entities
-#import csv
-import urllib.request, urllib.parse, urllib.error
 import itertools
 import time
 

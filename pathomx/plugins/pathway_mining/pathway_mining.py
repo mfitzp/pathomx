@@ -24,7 +24,6 @@ from pathomx.views import TableView
 
 import numpy as np
 
-
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
     'c': 'Compound change scores for pathway',

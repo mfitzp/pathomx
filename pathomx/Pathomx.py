@@ -12,7 +12,7 @@ import importlib
 import functools
 
 
-if sys.version_info < (3, 0): # Python 2 only
+if sys.version_info < (3, 0):  # Python 2 only
     UTF8Writer = codecs.getwriter('utf8')
     sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
@@ -66,6 +66,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 VERSION_STRING = '2.2.0'
 
+
 class Logger(logging.Handler):
     def __init__(self, parent, widget, out=None, color=None):
         super(Logger, self).__init__()
@@ -79,42 +80,40 @@ class Logger(logging.Handler):
         self.widget = widget
         self.out = None
         self.color = color
-        
+
     def emit(self, record):
-        msg = self.format(record) 
-        
+        msg = self.format(record)
+
         item = qt5.QTreeWidgetItem()
-        item.setText(0, record.name )
+        item.setText(0, record.name)
         item.setText(1, msg)
-        
+
         bg = {
-            logging.CRITICAL:   qt5.QColor(164,0,0,50),
-            logging.ERROR:      qt5.QColor(239,41,41,50),
-            logging.WARNING:    qt5.QColor(252,233,79,50),
-            logging.INFO:       None,
-            logging.DEBUG:      qt5.QColor(114,159,207,50),
-            logging.NOTSET:     None,
+            logging.CRITICAL: qt5.QColor(164, 0, 0, 50),
+            logging.ERROR: qt5.QColor(239, 41, 41, 50),
+            logging.WARNING: qt5.QColor(252, 233, 79, 50),
+            logging.INFO: None,
+            logging.DEBUG: qt5.QColor(114, 159, 207, 50),
+            logging.NOTSET: None,
         }[record.levelno]
         if bg:
             for c in range(3):
-                item.setBackground( c, qt5.QBrush( bg ) )
-        
+                item.setBackground(c, qt5.QBrush(bg))
+
         if record.name in self.m.apps_dict:
             # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
             item.tool = self.m.apps_dict[record.name]
-            item.setIcon(1, item.tool.plugin.workspace_icon )
+            item.setIcon(1, item.tool.plugin.workspace_icon)
         else:
-            i = qt5.QPixmap(16,16)
-            i.fill(qt5.Qt.transparent) 
-            item.setIcon(1, qt5.QIcon( i ) )         
+            i = qt5.QPixmap(16, 16)
+            i.fill(qt5.Qt.transparent)
+            item.setIcon(1, qt5.QIcon(i))
 
-        self.widget.addTopLevelItem( item )
+        self.widget.addTopLevelItem(item)
         self.widget.scrollToBottom()
 
     def write(self, m):
         pass
-
-
 
 
 class dialogDefineExperiment(ui.genericDialog):
@@ -198,12 +197,12 @@ class toolBoxItemDelegate(qt5.QAbstractItemDelegate):
         icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), qt5.Qt.AlignVCenter | qt5.Qt.AlignLeft)
 
         text_rect = option.rect.adjusted(0, 64, 0, 0)
-        
+
         # Hacky adjustment of font, how to get the default font for this widget and shrink it?
         # avoids setting manually, so hopefully will look better on Windows/Linux
         if self._font == None:
             self._font = painter.font()
-            self._font.setPointSize( self._font.pointSize()-2 )
+            self._font.setPointSize(self._font.pointSize() - 2)
         painter.setFont(self._font)
 
         if title not in self._elidedwrappedtitle:
@@ -248,7 +247,7 @@ class ToolPanel(qt5.QListWidget):
         #self.vlayout.addItem( qt5.QSpacerItem(10, 10, qt5.QSizePolicy.Maximum) )
 
     def addTools(self):
-        
+
         for n, tool in enumerate(self.tools):
             #col = n % self._columns
             #row = n // self._columns
@@ -262,7 +261,7 @@ class ToolPanel(qt5.QListWidget):
             self.addItem(t)
             #t = ToolItem(qt5.QIcon( tool['icon']), tool['name'], data=tool)
             #self.grid.addWidget( t, row, col )
-            
+
         self.sortItems()
 
     def colX(self, col):
@@ -286,7 +285,6 @@ class ToolPanel(qt5.QListWidget):
         dropAction = drag.exec_(qt5.Qt.MoveAction)
 
 
-
 def _convert_list_type_from_XML(vs):
     '''
     Lists are a complex type with possibility for mixed sub-types. Therefore each
@@ -299,10 +297,11 @@ def _convert_list_type_from_XML(vs):
         if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
             # Recursive; woo!
             v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
-        l.append( v )
+        l.append(v)
     return l
 
-def _convert_list_type_to_XML(co,vs):
+
+def _convert_list_type_to_XML(co, vs):
     '''
     Lists are a complex type with possibility for mixed sub-types. Therefore each
     sub-entity must be wrapped with a type specifier.
@@ -311,9 +310,9 @@ def _convert_list_type_to_XML(co,vs):
         c = et.SubElement(co, "ConfigListItem")
         t = type(cv).__name__
         c.set("type", t)
-        c = CONVERT_TYPE_TO_XML[t](c, cv)    
+        c = CONVERT_TYPE_TO_XML[t](c, cv)
     return co
-    
+
 
 def _apply_text_str(co, s):
     co.text = str(s)
@@ -328,7 +327,6 @@ CONVERT_TYPE_TO_XML = {
     'list': _convert_list_type_to_XML
 }
 
-
 CONVERT_TYPE_FROM_XML = {
     'str': lambda x: str(x.text),
     'unicode': lambda x: str(x.text),
@@ -339,10 +337,6 @@ CONVERT_TYPE_FROM_XML = {
 }
 
 
-
-
-
-     
 class MainWindow(qt5.QMainWindow):
 
     workspace_updated = qt5.pyqtSignal()
@@ -353,20 +347,20 @@ class MainWindow(qt5.QMainWindow):
         #self.app = app
         self.apps = []
         self.apps_dict = {}
-        
+
         # Initiate logging
         self.logView = qt5.QTreeWidget()
         self.logView.setColumnCount(2)
         self.logView.expandAll()
-        self.logView.itemClicked.connect( self.onLogItemClicked )
-        self.logView.itemDoubleClicked.connect( self.onLogItemDoubleClicked )
-    
+        self.logView.itemClicked.connect(self.onLogItemClicked)
+        self.logView.itemDoubleClicked.connect(self.onLogItemDoubleClicked)
+
         self.logView.setHeaderLabels(['ID', 'Message'])
         self.logView.setUniformRowHeights(True)
         self.logView.hideColumn(0)
 
         logHandler = Logger(self, self.logView)
-        logging.getLogger().addHandler(logHandler)        
+        logging.getLogger().addHandler(logHandler)
         #sys.stdout = Logger( self.logView, sys.__stdout__)
         #sys.stderr = Logger( self.logView, sys.__stderr__, qt5.QColor(255,0,0) )
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
@@ -380,10 +374,9 @@ class MainWindow(qt5.QMainWindow):
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(self.config.value('/Pathomx/Latest_version','0.0.0')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(self.config.value('/Pathomx/Latest_version', '0.0.0')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
-            logging.warning('A new version (v%s) is available' % self.config.value('/Pathomx/Update/Latest_version','0.0.0'))
-
+            logging.warning('A new version (v%s) is available' % self.config.value('/Pathomx/Update/Latest_version', '0.0.0'))
 
         # Create database accessor
         self.db = db.databaseManager()
@@ -620,8 +613,8 @@ class MainWindow(qt5.QMainWindow):
         self.stack = qt5.QStackedWidget()
 
         self.threadpool = qt5.QThreadPool()
-        logging.info( "Multithreading with maximum %d threads" % self.threadpool.maxThreadCount() )
-    
+        logging.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+
         self.setCentralWidget(self.stack)
         self.stack.setCurrentIndex(0)
 
@@ -714,7 +707,7 @@ class MainWindow(qt5.QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(self.config.value('/Pathomx/Current_version','0.0.0')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             self.onAbout()
             self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
@@ -746,7 +739,7 @@ class MainWindow(qt5.QMainWindow):
 
     def onCheckPluginUpdates(self):
         pass
-        
+
     def onDBExplore(self):
         self.dbtool.show()
 
@@ -1106,9 +1099,6 @@ class MainWindow(qt5.QMainWindow):
         if filename:
             self.openWorkflow(filename)
     
-    
-
-            
     def openWorkflow(self, fn):
         logging.info("Loading workflow... %s" % fn)
         # Wipe existing workspace

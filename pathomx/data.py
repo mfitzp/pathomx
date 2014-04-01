@@ -960,39 +960,7 @@ class DataSet( QObject ):
             if d == 1:
                 self.data = self.data[ :,mask ]            
 
-        print(self.labels)
                     
-    # JSON
-    
-    #def json_dumps(self):
-    #    # Build JSONable structure for output
-    #    return json.dumps( self.config ) 
-    
-    #def json_loads(self, json):
-    #    # Reonstruct the object from the json input
-    #    self.config = json.loads( json )
-
-    #o = DataSet( size=self.shape )
-    #o.manager = None # Maintain the manager link
-    #o.manager_interface = None # Interface the manager is advertising this on
-
-    #o.name = deepcopy(self.name, memo)
-    #o.description = deepcopy(self.description, memo)
-    #o.type = deepcopy(self.type, memo)
-
-    #o.labels = deepcopy(self.labels, memo)
-    #o.entities = [copy(x) for x in self.entities] # deepcopy(self.entities, memo) ; this is full of pointers to database objects
-    #o.scales = deepcopy(self.scales, memo)
-    #o.classes = deepcopy(self.classes, memo)
-
-    #o.data = deepcopy(self.data)
-
-    #o.log = deepcopy(self.log)
-
-    #o.previously_managed_by = [n for n in self.previously_managed_by]
-
-    #return o   
-    
     def annotations_to_XML(self, et, obj, anno):
         # Labels (all axes)
         objset = et.SubElement(root, anno[0])

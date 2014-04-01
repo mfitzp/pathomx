@@ -226,7 +226,7 @@ class TMSPAlignConfigPanel(ui.ConfigPanel):
  
 class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
     name = "Align NMR spectra (TMSP)"
-    # function [mat_out,shift] = spcalign_tmsp(mat_in, refspc, maxshift, ref, SILENT) 
+    # function [mat_out,shift] = spcalign_tmsp(mat_in, refspc, maxshift, ref, SILENT)
     # spcalign_tmsp - Align spectra using TMSP signal, data must be in columns of mat_in
     #            refspc:   no of reference spectrum in matrix
     #            maxshift: the largest possible shift in either direction
@@ -244,11 +244,11 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
 
     def generate(self, input):
         self.status.emit('waiting')
-        
+
         mat_out, shift = self.matlab.spcalign_tmsp(input.data.T,
                         self.config.get('reference_spectra_n'),
                         self.config.get('maximum_shift'),
-                        input.data[self.config.get('reference_spectra_n'),:],
+                        input.data[self.config.get('reference_spectra_n'), :],
                         True,
                         nout=2)
 
@@ -283,7 +283,6 @@ class SpectraAlignConfigPanel(ui.ConfigPanel):
 
         vw.addWidget(tl, 1, 0)
         vw.addWidget(self.shift_max_spin, 1, 1)
-
         #FIXME: Bug in algorithm correlation shifting hangs system
         #self.algorithm_cb = QComboBox()
         #self.algorithm_cb.addItems(list(self.algorithm.keys()))
@@ -342,7 +341,7 @@ class VarianceStabilisationConfigPanel(ui.ConfigPanel):
     algorithm = {
         'Auto scaling': 'autoscale',
         'Pareto': 'pareto',
-        'Generalised log transform':'glog',
+        'Generalised log transform': 'glog',
     }
 
     def __init__(self, *args, **kwargs):
@@ -380,23 +379,22 @@ class VarianceStabilisationConfigPanel(ui.ConfigPanel):
         self.spgb = QGroupBox('Generalised log transform')
         self.spgb.setLayout(vw)
 
-
         self.layout.addWidget(self.spgb)
-        
+
         self.finalise()
 
  
 class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
     name = "Variance stabilisation"
-    # function mat_out = glogtrans(mat_in,lambda,y0) 
-    # glogtrans - Modified log-transform with lambda scaling for high values 
-    #             and a y0 shift to reduce scaling in the noise region of signals. 
+    # function mat_out = glogtrans(mat_in,lambda,y0)
+    # glogtrans - Modified log-transform with lambda scaling for high values
+    #             and a y0 shift to reduce scaling in the noise region of signals.
 
     def __init__(self, **kwargs):
         super(VarianceStabilisationMetabolabTool, self).__init__(**kwargs)
 
         self.config.set_defaults({
-            'algorithm':'glog',
+            'algorithm': 'glog',
             'lambda': -8,
             'y0': 0,
         })
@@ -408,28 +406,26 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
         self.status.emit('waiting')
 
         if self.config.get('algorithm') == 'glog':
-        
+
             mat_out = self.matlab.glogtrans(input.data,
-                            10**self.config.get('lambda'),
+                            10 ** self.config.get('lambda'),
                             self.config.get('y0'),
                             nout=1)
             input.data = mat_out.reshape(input.shape)
-            
+
         elif self.config.get('algorithm') == 'pareto':
-        
+
             mat_out = self.matlab.paretoscale2d(input.data,
                             nout=1)
             input.data = mat_out.reshape(input.shape)
-        
+
         elif self.config.get('algorithm') == 'auto':
-        
+
             mat_out = self.matlab.autoscale2d(input.data,
                             nout=1)
             input.data = mat_out.reshape(input.shape)
-        
+
         return {'output': input}
-
-
 
 
 # NMRLab BINNING
@@ -438,12 +434,11 @@ class BinningConfigPanel(ui.ConfigPanel):
     algorithm = {
         'Auto scaling': 'autoscale',
         'Pareto': 'pareto',
-        'Generalised log transform':'glog',
+        'Generalised log transform': 'glog',
     }
 
     def __init__(self, *args, **kwargs):
         super(BinningConfigPanel, self).__init__(*args, **kwargs)
-
 
         self.binsize_spin = QDoubleSpinBox()
         self.binsize_spin.setDecimals(3)
@@ -454,14 +449,14 @@ class BinningConfigPanel(ui.ConfigPanel):
         self.layout.addWidget(tl)
         self.layout.addWidget(self.binsize_spin)
         self.config.add_handler('bin_size', self.binsize_spin)
-        
+
         self.finalise()
 
  
 class BinningMetabolabTool(NMRLabMetabolabTool):
     name = "Bucket spectra"
-    # function mat_out=spcbucket(mat_in,bucketsize) 
-    # spcbucket - spectra binning for NMRLab 
+    # function mat_out=spcbucket(mat_in,bucketsize)
+    # spcbucket - spectra binning for NMRLab
 
     def __init__(self, **kwargs):
         super(BinningMetabolabTool, self).__init__(**kwargs)
@@ -475,16 +470,15 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
 
     def generate(self, input):
         self.status.emit('waiting')
-
         # Convert ppm size into number of points
         # Get start-end range, divide by number of elements = ppm step size
         # Divide ppm bin value by step size = number of steps (round to nearest)
-        
-        step_size = ( max(input.scales[1]) - min(input.scales[1]) ) / len(input.scales[1])
+
+        step_size = (max(input.scales[1]) - min(input.scales[1])) / len(input.scales[1])
         points = self.config.get('bin_size') / step_size
-        points = int( round( points / 2 ) )
-        logging.debug("step_size %s, ppm %s = points %s" % (step_size, self.config.get('bin_size'), points) )
-    
+        points = int(round(points / 2))
+        logging.debug("step_size %s, ppm %s = points %s" % (step_size, self.config.get('bin_size'), points))
+
         mat_out = self.matlab.spcbucket(input.data.T,
                         points,
                         nout=1)
@@ -492,19 +486,12 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
         return {'output': input}
 
 
-
-
-
-
-
-
 class NMRLab(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(NMRLab, self).__init__(**kwargs)
         self.register_app_launcher(BaselineMetabolabTool)
-        self.register_app_launcher( TMSPAlignMetabolabTool )
-        self.register_app_launcher( SpectraAlignMetabolabTool )
-        self.register_app_launcher( VarianceStabilisationMetabolabTool )
-        self.register_app_launcher( BinningMetabolabTool )
-
+        self.register_app_launcher(TMSPAlignMetabolabTool)
+        self.register_app_launcher(SpectraAlignMetabolabTool)
+        self.register_app_launcher(VarianceStabilisationMetabolabTool)
+        self.register_app_launcher(BinningMetabolabTool)

@@ -31,7 +31,6 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
     
-    
 import numpy as np
 
 try:
@@ -78,14 +77,14 @@ class GPMLPathwayApp(ui.AnalysisApp):
         # Setup data consumer options
         self.data.consumer_defs.extend([
             DataDefinition('compound_data', {
-            'entities_t': (None, ['Compound',])
+            'entities_t': (None, ['Compound', ])
             }, 'Relative compound (metabolite) concentration data'),
             DataDefinition('gene_data', {
             'entities_t': (None, ['Gene', 'Protein'])
             }, 'Relative gene expression data'),
             DataDefinition('protein_data', {
             'entities_t': (None, ['Protein']),
-            }, 'Relative protein concentration data'),            
+            }, 'Relative protein concentration data'),
         ])
 
         load_gpmlAction = QAction(QIcon(os.path.join(self.plugin.path, 'document-open-gpml.png')), 'Load a GPML pathway file\u2026', self.m)
@@ -186,7 +185,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
         for dso in compound_data, gene_data, protein_data:
             if dso == None:
                 continue
-                
+
             mini, maxi = min(abs(np.median(dso.data)), 0), max(abs(np.median(dso.data)), 0)
             mini, maxi = -1.0, +1.0  # Fudge; need an intelligent way to determine (2*median? 2*mean?)
             scale = utils.calculate_scale([mini, 0, maxi], [9, 1], out=np.around)  # rdbu9 scale
@@ -197,7 +196,6 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 #print xref, ecol
                 if xref is not None and ecol is not None:
                     node_colors[xref] = ecol
-
         #logging.debug("Calculated node colors: %s" % (','.join(node_colors)) )
 
         return {'View': {'gpml': gpml, 'node_colors': node_colors}}

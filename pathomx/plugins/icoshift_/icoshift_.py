@@ -11,7 +11,6 @@ from PyQt5.QtPrintSupport import *
 import os
 import copy
 
-
 import numpy as np
 from icoshift import icoshift
 

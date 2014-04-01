@@ -23,14 +23,12 @@ from pathomx.views import TableView
 from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import IdentificationPlugin
 
-
 TYPE_COLORS = {
     'compound': '#e2ebf5',
     'secondary': '#e2ebf5',
     'gene': '#e7f9d5',
     'protein': '#fefadb',
     }
-
 #    729fcf, 8ae234, fce94f
 
 MAP_ENTITY_ALL = 0
@@ -39,7 +37,7 @@ MAP_ENTITY_PROTEIN = 2
 MAP_ENTITY_COMPOUND = 3
 
 MAP_TYPE_TABLE = {
-    'Any entity': MAP_ENTITY_ALL, 
+    'Any entity': MAP_ENTITY_ALL,
     'Gene': MAP_ENTITY_GENE,
     'Protein': MAP_ENTITY_PROTEIN,
     'Compound (metabolite)': MAP_ENTITY_COMPOUND,
@@ -220,7 +218,6 @@ class MapEntityApp(ui.GenericApp):
     def generate(self, input=None):
         dso = self.translate(input, self.m.db)
         return {'output': dso}
-        
     ###### TRANSLATION to METACYC IDENTIFIERS
 
     def translate(self, data, db):
@@ -230,10 +227,10 @@ class MapEntityApp(ui.GenericApp):
             MAP_ENTITY_PROTEIN: db.synrev_by_type['protein'],
             MAP_ENTITY_COMPOUND: db.synrev_by_type['compound'],
                 }[self.config.get('map_object_type')]
-            
+
         # Translate loaded data names to metabolite IDs using provided database for lookup
         for n, m in enumerate(data.labels[1]):
-            
+
         # Match first using entity mapping table if set (allows override of defaults)
             if m in self._entity_mapping_table:
                 data.entities[1][n] = self._entity_mapping_table[m]

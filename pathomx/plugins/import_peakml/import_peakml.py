@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-
 # Import PyQt5 classes
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *

@@ -37,7 +37,7 @@ class WorkspaceEditor(QGraphicsView):
                 self.mapToScene(QPoint(0, 0)),
                 self.mapToScene(QPoint(self.width(), self.height()))
                 ))
-                
+
     def saveAsImage(self, f):
         self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
         self.image.fill(Qt.transparent)
@@ -71,9 +71,9 @@ class WorkspaceEditor(QGraphicsView):
         if e.mimeData().hasFormat('application/x-pathomx-app'):
 
             try:
-                app_id = str(e.mimeData().data('application/x-pathomx-app'),'utf-8') # Python 3 
+                app_id = str(e.mimeData().data('application/x-pathomx-app'), 'utf-8')  # Python 3 
             except:
-                app_id = str(e.mimeData().data('application/x-pathomx-app')) # Python 2
+                app_id = str(e.mimeData().data('application/x-pathomx-app'))  # Python 2
 
             a = self.m.app_launchers[app_id](position=scenePos, auto_focus=False)
             self.centerOn(a.editorItem)

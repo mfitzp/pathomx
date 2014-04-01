@@ -111,7 +111,7 @@ class SpectraNormApp(ui.DataApp):
         # For each variable of each spectrum, calculate ratio between median spectrum variable and that of the considered spectrum
         spectra_r = median_s / np.abs(data)
         # Take the median of these scaling factors and apply to the entire considered spectrum
-        return data * np.median( spectra_r, axis=1).reshape(-1, 1)
+        return data * np.median(spectra_r, axis=1).reshape(-1, 1)
 
     # Normalise using scaling method
     def normalise(self, dso):

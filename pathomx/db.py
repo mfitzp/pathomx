@@ -484,12 +484,11 @@ class databaseManager():
             self.synrev[synonym] = self.index[id]  # Synonym -> Object
             self.synrev[synonym.lower()] = self.index[id]  # lc Synonym -> Object
             self.synrev[id] = self.index[id]  # id -> Object
-            
+
             # BY type
-            self.synrev_by_type[ self.index[id].type ][synonym] = self.index[id]  # Synonym -> Object
-            self.synrev_by_type[ self.index[id].type ][synonym.lower()] = self.index[id]  # lc Synonym -> Object
-            self.synrev_by_type[ self.index[id].type ][id] = self.index[id]  # id -> Object
-            
+            self.synrev_by_type[self.index[id].type][synonym] = self.index[id]  # Synonym -> Object
+            self.synrev_by_type[self.index[id].type][synonym.lower()] = self.index[id]  # lc Synonym -> Object
+            self.synrev_by_type[self.index[id].type][id] = self.index[id]  # id -> Object
 
     def add_synonyms(self, id, synonyms):
         for syn in synonyms:

@@ -85,7 +85,8 @@ def nonull(stream):
 
 
 
-if sys.version_info < (3, 0): # Python 2 only
+if sys.version_info < (3, 0):  # Python 2 only
+
 
     class UnicodeReader:
         """
@@ -100,14 +101,14 @@ if sys.version_info < (3, 0): # Python 2 only
             #self.reader = csv.reader(f, dialect=dialect, **kwds)
 
         def __next__(self):
-            row = self.reader.__next__() 
+            row = self.reader.__next__()
             return [str(c, self.encoding) for c in row]
 
         def __iter__(self):
             return self
-        
+
         def next(self):
-            row = self.reader.next() 
+            row = self.reader.next()
             return [unicode(c, self.encoding) for c in row]
 
 
@@ -139,11 +140,10 @@ if sys.version_info < (3, 0): # Python 2 only
         def writerows(self, rows):
             for row in rows:
                 self.writerow(row)
-    
+
 else:
     from csv import reader as UnicodeReader
     from csv import writer as UnicodeWriter
-    
 
 
 def mkdir_p(path):

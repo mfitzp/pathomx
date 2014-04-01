@@ -696,7 +696,7 @@ class MetaVizApp(ui.AnalysisApp):
             'entities_t': (None, ['Pathway']),
             }, 'Show pathways'),
             DataDefinition('compound_data', {
-            'entities_t': (None, ['Compound',])
+            'entities_t': (None, ['Compound', ])
             }, 'Relative compound (metabolite) concentration data'),
             DataDefinition('gene_data', {
             'entities_t': (None, ['Gene', 'Protein'])
@@ -840,13 +840,13 @@ class MetaVizApp(ui.AnalysisApp):
 
         
         if compound_data or gene_data or protein_data:
-        
-            # Generate independent scales
+
+        # Generate independent scales
             node_colors = {}
-    
-            for dsi in compound_data, gene_data, protein_data: 
+
+            for dsi in compound_data, gene_data, protein_data:
                 if dsi == None:
-                    continue           
+                    continue
                 #if self.m.data.analysis_timecourse:
                 #    # Generate the multiple views
                 #    tps = sorted( self.m.data.analysis_timecourse.keys(), key=int )

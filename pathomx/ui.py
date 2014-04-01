@@ -102,7 +102,7 @@ class genericDialog(QDialog):
                     control.Deselect(idx)
         except:
             pass
-            
+
 
 class DialogAbout(qt5.QDialog):
     def __init__(self, parent, **kwargs):
@@ -418,7 +418,7 @@ class DialogRegister(qt5.QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
-            
+
    
 class ExportImageDialog(genericDialog):
     """
@@ -906,7 +906,7 @@ class GenericApp(QMainWindow):
         self._latest_generator_result = None
         self._auto_consume_data = auto_consume_data
 
-        self.logger = logging.getLogger( self.id )
+        self.logger = logging.getLogger(self.id)
 
         self.data = data.DataManager(self.m, self)
         self.views = ViewManager(self)
@@ -1307,9 +1307,6 @@ class DataApp(GenericApp):
 
         self.table = TableView()
         self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True)
-
-
-
 
 # Import Data viewer
 
@@ -1800,7 +1797,7 @@ class CodeEditor(QPlainTextEdit):
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
-            
+
             
 class DbApp(QMainWindow):
     def __init__(self, parent, **kwargs):
@@ -1820,4 +1817,3 @@ class DbApp(QMainWindow):
 
         self.dbBrowser = HTMLView(self)
         self.views.addView(self.dbBrowser, tr('Database'), unfocus_on_refresh=False)
-            
