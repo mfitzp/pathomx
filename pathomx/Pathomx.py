@@ -996,13 +996,13 @@ class MainWindow(QMainWindow):
     def updateProgress(self, workspace_item, progress):
 
         if progress == None:
-            if workspace_item in self.progressTracker:
-                del(self.progressTracker[workspace_item])
+            if id(workspace_item) in self.progressTracker:
+                del(self.progressTracker[ id(workspace_item) ])
             if len(self.progressTracker) == 0:
                 self.progressBar.reset()
                 return
         else:
-            self.progressTracker[workspace_item] = progress
+            self.progressTracker[ id(workspace_item) ] = progress
 
         m = 100.0 / len(self.progressTracker)
         pt = sum([n * m for n in list(self.progressTracker.values())])
