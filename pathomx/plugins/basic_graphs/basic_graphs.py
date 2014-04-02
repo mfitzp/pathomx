@@ -91,9 +91,9 @@ class SpectraTool(ui.DataApp):
             }
 
     
-class Spectra(VisualisationPlugin):
+class BasicGraph(VisualisationPlugin):
 
     def __init__(self, **kwargs):
-        super(Spectra, self).__init__(**kwargs)
+        super(BasicGraph, self).__init__(**kwargs)
         self.register_app_launcher(BarTool)
         self.register_app_launcher(SpectraTool)
