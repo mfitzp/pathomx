@@ -36,8 +36,7 @@ class BarTool(ui.AnalysisApp):
             })
         )
 
-        t = self.addToolBar('Bar')
-        self.toolbars['bar'] = t
+        self.toolbars['bar'] = self.addToolBar('Bar')
 
         self.finalise()
 
@@ -80,9 +79,6 @@ class SpectraTool(ui.DataApp):
         self.finalise()
 
     def generate(self, input=None):
-        print input.scales
-        print input.data
-        print input.classes
         return {'input': input}
 
     def prerender(self, input=None):
