@@ -12,8 +12,17 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
+   colors
    config
+   custom_exceptions
+   data
+   db
+   Pathomx
    plugins
+   qt
    threads
+   translate
+   ui
    views
-
+   
+   
