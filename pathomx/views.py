@@ -661,10 +661,6 @@ class MplSpectraView(MplView):
 
     def generate(self, dso=None):
     
-        for c in dso.classes[0]:
-            ls_def = linestyles.get_linestyle_for_class( c )
-            print(c, ls_def)
-    
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting
             dso.scales[1] = list(range( len(dso.scales[1])))
@@ -695,7 +691,9 @@ class MplSpectraView(MplView):
             
             plots = OrderedDict()
             for n,row in enumerate(data):
-                plots[ dsot.classes[0][n] ], = self.ax.plot(scale, row, linewidth=0.75)
+                c = dsot.classes[0][n]
+                ls = linestyles.get_linestyle_for_class( c )
+                plots[ c ], = self.ax.plot(scale, row, linewidth=0.75, **ls.line_kwargs)
         
             legend = self.ax.legend(list(plots.values()),
                list(plots.keys()),
@@ -849,7 +847,8 @@ class MplScatterView(MplView):
         classes = dso.classes_l[0]
         for c in classes:
             df = dso.as_filtered(dim=0,classes=[c])
-            plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], c=next(colors) )
+            ls = linestyles.get_linestyle_for_class( c )
+            plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker)
 
         legend = self.ax.legend(list(plots.values()),
            list(plots.keys()),
@@ -1034,7 +1033,7 @@ class MplCategoryBarView(MplView):
         sms = sorted(fdm,key=lambda x: abs(x[1]), reverse=True )
         labels = [m for m,s in sms]
         
-        sp = {}
+        plots = OrderedDict()
         classes = dso.classes[0]
         #labels = [e if e != None else dso.labels[1][n] for n,e in enumerate(dso.entities[1][0:limit_to]) ]
         #data = dso.data[:,0:limit_to]
@@ -1072,16 +1071,19 @@ class MplCategoryBarView(MplView):
                 yerr = None
 
             color = next(colors)
-            sp[c] = self.ax.bar(x[:,n], cdata, align='center', color=color, yerr=yerr, ecolor=color )
+            ls = linestyles.get_linestyle_for_class( c )
+            plots[c] = self.ax.bar(x[:,n], cdata, align='center', color=ls.color, yerr=yerr, ecolor=ls.color )
 
         xticks = np.mean(x,axis=1)
         self.ax.set_xticks( xticks )
         self.ax.set_xticklabels(labels, rotation=45, ha='right', rotation_mode='anchor' )
 
-        self.ax.legend(list(sp.values()),
-           list(sp.keys()),
-           scatterpoints=1,
-           loc='upper left', bbox_to_anchor=(1, 1))
+
+        legend = self.ax.legend(list(plots.values()),
+           list(plots.keys()),
+           loc='best') #, bbox_to_anchor=(1, 1))
+        legend.get_frame().set_facecolor('k')                      
+        legend.get_frame().set_alpha(0.05)     
            
         #if options.title:
         #    self.ax.title(options.title)
