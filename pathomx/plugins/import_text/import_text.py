@@ -95,7 +95,12 @@ class ImportTextApp(ui.ImportDataApp):
                         data.append(0)
 
             if n % 100 == 0:
-                self.progress.emit(float(f.tell()) / fsize)
+                try:
+                    # This fails in Python 3 with 
+                    # 'telling position disabled by next() call'
+                    self.progress.emit(float(f.tell()) / fsize)
+                except:
+                    pass
 
         data = np.asarray(data)
         data = np.reshape(data, (n + 1, len(classes))).T
