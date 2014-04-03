@@ -23,6 +23,15 @@ from copy import copy, deepcopy
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
+def types_MethodType(fn, handler, handler_class):
+    try:
+        return types.MethodType(fn, handler, handler_class)
+    except TypeError:
+        return types.MethodType(fn, handler)
+    
+    
+        
+
 
 def build_dict_mapper(mdict):
     '''
@@ -430,9 +439,9 @@ class ConfigManager(QObject):
 
         self.handlers[key] = handler
 
-        handler.setter = types.MethodType(globals().get('_set_%s' % handler.__class__.__name__), handler, handler.__class__)
-        handler.getter = types.MethodType(globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__)
-        handler.updater = types.MethodType(globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__)
+        handler.setter = types_MethodType(globals().get('_set_%s' % handler.__class__.__name__), handler, handler.__class__)
+        handler.getter = types_MethodType(globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__)
+        handler.updater = types_MethodType(globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__)
 
         print("Add handler %s for %s" % (handler.__class__.__name__, key))
         handler.updater().connect(lambda x = None: self.set(key, handler.getter()))
