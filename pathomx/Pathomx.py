@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 import os
 import sys
 import re
@@ -64,9 +67,6 @@ from .editor.editor import WorkspaceEditor
 from .translate import tr
 
 from distutils.version import StrictVersion
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
 VERSION_STRING = '2.2.0'
 

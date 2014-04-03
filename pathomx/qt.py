@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import sys
+import logging
 
 USE_PYQT = None
 
@@ -19,6 +20,7 @@ else:
             USE_PYQT = None
         
 if USE_PYQT == 5:
+    logging.debug('PyQt5')
 
     # Import PyQt5 classes accessible in elsewhere through
     # from qt import *
@@ -31,6 +33,7 @@ if USE_PYQT == 5:
     from PyQt5.QtPrintSupport import *
 
 elif USE_PYQT == 4:
+    logging.debug('PyQt4')
 
     # Import PyQt4 classes accessible in elsewhere through
     # from qt import *
