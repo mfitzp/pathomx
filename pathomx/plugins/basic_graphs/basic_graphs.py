@@ -11,7 +11,7 @@ import pathomx.threads as threads
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
-from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
+from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplCategoryBarView, MplDifferenceView
 
 
 # Graph data as a bar chart
