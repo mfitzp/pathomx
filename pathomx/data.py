@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 # Import PyQt5 classes
-from pathomx.qt import *
+from .qt import *
 
 import os, sys, re, base64
 import numpy as np
