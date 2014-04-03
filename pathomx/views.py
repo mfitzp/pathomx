@@ -26,6 +26,8 @@ import numpy as np
 
 from . import data, config, utils
 
+from .styles import linestyles
+
 
 # Translation (@default context)
 from .translate import tr
@@ -658,6 +660,10 @@ class MplSpectraView(MplView):
         
 
     def generate(self, dso=None):
+    
+        for c in dso.classes[0]:
+            ls_def = linestyles.get_linestyle_for_class( c )
+            print(c, ls_def)
     
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting

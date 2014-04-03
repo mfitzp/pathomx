@@ -61,6 +61,7 @@ from . import threads
 from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
+from . import styles
 from .editor.editor import WorkspaceEditor
 
 # Translation (@default context)
@@ -389,6 +390,8 @@ class MainWindow(QMainWindow):
 
         self.experiment = dict()
         self.layout = None  # No map by default
+        
+        self.linestyles = styles.LineStyleHandler()
 
         # The following holds tabs & pathway objects for gpml imported pathways
         self.gpmlpathways = []
