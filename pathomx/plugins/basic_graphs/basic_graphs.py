@@ -32,7 +32,7 @@ class BarTool(ui.AnalysisApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             DataDefinition('input', {
-            'entities_t': (None, ['Compound']),
+            'entities_t': (None, None),
             })
         )
 
