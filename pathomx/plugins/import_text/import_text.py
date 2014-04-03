@@ -183,8 +183,14 @@ class ImportTextApp(ui.ImportDataApp):
                 pass
 
             if n % 100 == 0:
-                self.progress.emit(float(f.tell()) / fsize)
-
+                try:
+                    # FIXME: There should be a way around this
+                    # This fails in Python 3 with 
+                    # 'telling position disabled by next() call'
+                    self.progress.emit(float(f.tell()) / fsize)
+                except:
+                    pass
+                    
                 #self.statistics['excluded'] += 1
 
         # Build dataset object
