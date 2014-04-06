@@ -79,6 +79,7 @@ class ViewManager( QTabWidget ):
     auto_unfocus_tabs = ['?']
     # Signals
     source_data_updated = pyqtSignal()
+    style_updated = pyqtSignal()
     updated = pyqtSignal()
 
     def __init__(self, parent, **kwargs):
@@ -97,6 +98,7 @@ class ViewManager( QTabWidget ):
         self.data = dict() # Stores data from which figures are rendered
     
         self.source_data_updated.connect(self.onRefreshAll)
+        self.style_updated.connect(self.onRefreshAll)
     
     # A few wrappers to 
     def addView(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
@@ -693,7 +695,7 @@ class MplSpectraView(MplView):
             for n,row in enumerate(data):
                 c = dsot.classes[0][n]
                 ls = linestyles.get_linestyle_for_class( c )
-                plots[ c ], = self.ax.plot(scale, row, linewidth=0.75, **ls.line_kwargs)
+                plots[ c ], = self.ax.plot(scale, row, **ls.line_kwargs)
         
             legend = self.ax.legend(list(plots.values()),
                list(plots.keys()),
@@ -1072,7 +1074,8 @@ class MplCategoryBarView(MplView):
 
             color = next(colors)
             ls = linestyles.get_linestyle_for_class( c )
-            plots[c] = self.ax.bar(x[:,n], cdata, align='center', color=ls.color, yerr=yerr, ecolor=ls.color )
+            print ls.bar_kwargs
+            plots[c] = self.ax.bar(x[:,n], cdata, align='center', yerr=yerr, **ls.bar_kwargs)
 
         xticks = np.mean(x,axis=1)
         self.ax.set_xticks( xticks )

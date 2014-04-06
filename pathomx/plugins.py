@@ -95,7 +95,7 @@ class pluginListDelegate(QAbstractItemDelegate):
         return QSize(200, 60)
 
             
-class dialogPluginManagement(ui.genericDialog):
+class dialogPluginManagement(ui.GenericDialog):
     # Store a local copy of plugins.list in case not available at time of requesting
     # On startup perform an async request to get weekly update of available plugins
     # Start plugin management trigger a request if no plugins.list file available locally

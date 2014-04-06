@@ -20,7 +20,7 @@ from pathomx.qt import *
 # Present a list of widgets (drop-downs) for each of the interfaces available on this plugin
 # in each list show the data sources that can potentially file that slot.
 # Select the currently used
-class DialogAnnotationTargets(ui.genericDialog):
+class DialogAnnotationTargets(ui.GenericDialog):
     def __init__(self, parent=None, view=None, auto_consume_data=True, **kwargs):
         super(DialogAnnotationTargets, self).__init__(parent, **kwargs)
 

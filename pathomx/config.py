@@ -13,7 +13,7 @@ import base64
 import numpy as np
 import types
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import operator
 import json
 import logging
@@ -23,16 +23,14 @@ from copy import copy, deepcopy
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
+
 def types_MethodType(fn, handler, handler_class):
     try:
         return types.MethodType(fn, handler, handler_class)
     except TypeError:
         return types.MethodType(fn, handler)
-    
-    
-        
 
-
+    
 def build_dict_mapper(mdict):
     '''
     Build a map function pair for forward and reverse mapping from a specified dict
@@ -46,6 +44,22 @@ def build_dict_mapper(mdict):
                 
     '''
     rdict = {v: k for k, v in mdict.items()}
+    return (
+        lambda x: mdict[x] if x in mdict else x,
+        lambda x: rdict[x] if x in rdict else x,
+        )
+
+
+def build_tuple_mapper(mlist):
+    '''
+    Build a map function pair for forward and reverse mapping from a specified list of tuples
+    
+    :param mlist: A list of tuples of display values (keys) and stored values (values)
+    :type mlist: list-of-tuples
+    :rtype: 2-tuple of lambdas that perform forward and reverse map
+                
+    '''
+    rdict = {v: k for k, v in mlist}
     return (
         lambda x: mdict[x] if x in mdict else x,
         lambda x: rdict[x] if x in rdict else x,
@@ -212,6 +226,28 @@ def _event_QPlainTextEdit(self):
     return self.sourceChangesApplied
 
 
+# QLineEdit
+def _get_QLineEdit(self):
+    """
+        Get current text for QLineEdit
+    """
+    return self.text()
+
+
+def _set_QLineEdit(self, v):
+    """
+        Set current text for QLineEdit
+    """
+    self.setText(v)
+
+
+def _event_QLineEdit(self):
+    """
+        Return current value changed signal for QLineEdit box.
+    """
+    return self.textChanged
+
+
 # CodeEditor
 def _get_CodeEditor(self):
     """
@@ -260,6 +296,50 @@ def _event_QListWidget(self):
         Return current selection changed signal for QListWidget.
     """
     return self.itemSelectionChanged
+
+
+# QColorButton
+def _get_QColorButton(self):
+    """
+        Get current value for QColorButton
+    """
+    return self.color()
+
+
+def _set_QColorButton(self, v):
+    """
+        Set current value for QColorButton
+    """
+    self.setColor(v)
+
+
+def _event_QColorButton(self):
+    """
+        Return value change signal for QColorButton
+    """
+    return self.colorChanged
+
+
+# QNoneDoubleSpinBox
+def _get_QNoneDoubleSpinBox(self):
+    """
+        Get current value for QDoubleSpinBox
+    """
+    return self.value()
+
+
+def _set_QNoneDoubleSpinBox(self, v):
+    """
+        Set current value for QDoubleSpinBox
+    """
+    self.setValue(v)
+
+
+def _event_QNoneDoubleSpinBox(self):
+    """
+        Return value change signal for QDoubleSpinBox
+    """
+    return self.valueChanged
 
 
 # ConfigManager handles configuration for a given appview
@@ -432,8 +512,11 @@ class ConfigManager(QObject):
         """
 
     # Add map handler for converting displayed values to internal config data
-        if type(mapper) == dict:  # By default allow dict types to be used
+        if type(mapper) == dict or type(mapper) == OrderedDict:  # By default allow dict types to be used
             mapper = build_dict_mapper(mapper)
+
+        elif type(mapper) == list and type(mapper[0]) == tuple:
+            mapper = build_tuple_mapper(mapper)
 
         handler._get_map, handler._set_map = mapper
 
@@ -447,14 +530,16 @@ class ConfigManager(QObject):
         handler.updater().connect(lambda x = None: self.set(key, handler.getter()))
 
         # Keep handler and data consistent
-        if key not in self.config:
-            # If the key is in defaults; set the handler to the default state (but don't add to config)
-            if key in self.defaults:
-                handler.setter(self.defaults[key])
+        if key in self.config:
+            handler.setter(self.config[key])
 
-            # If the key is not in defaults, set the config to match the handler
-            else:
-                self.config[key] = handler.getter()
+        # If the key is in defaults; set the handler to the default state (but don't add to config)
+        elif key in self.defaults:
+            handler.setter(self.defaults[key])
+
+        # If the key is not in defaults, set the config to match the handler
+        else:
+            self.config[key] = handler.getter()
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):

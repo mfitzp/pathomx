@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 # Import PyQt5 classes
 from .qt import *
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import os
 import copy
 import re
@@ -17,7 +17,11 @@ from . import utils
 from . import data
 from . import config
 from . import threads
+from . import config
 from .data import DataSet
+from .styles import linestyles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
+                    MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
+                    LineStyleDefinition, ClassMatchDefinition
 
 from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
 from .editor.editor import WorkspaceEditor
@@ -52,12 +56,88 @@ BLANK_DEFAULT_HTML = '''
 '''
 
 
+class QColorButton(QPushButton):
+
+    colorChanged = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super(QColorButton, self).__init__(*args, **kwargs)
+
+        self._color = None
+        self.setMaximumWidth(32)
+        self.pressed.connect(self.onColorPicker)
+
+    def setColor(self, color):
+        if color != self._color:
+            self._color = color
+            self.colorChanged.emit()
+
+        if self._color:
+            self.setStyleSheet("background-color: %s;" % self._color)
+        else:
+            self.setStyleSheet("")
+
+    def color(self):
+        return self._color
+
+    def onColorPicker(self):
+        dlg = QColorDialog(self)
+        if self._color:
+            dlg.setCurrentColor(QColor(self._color))
+
+        dlg.setOption(QColorDialog.DontUseNativeDialog)
+        # FIXME: Add colors from current default set to the custom color table
+        # dlg.setCustomColor(0, QColor('red') )
+        if dlg.exec_():
+            self.setColor(dlg.currentColor().name())
+
+    def mousePressEvent(self, e):
+        if e.button() == Qt.RightButton:
+            self.setColor(None)
+
+        return super(QColorButton, self).mousePressEvent(e)
+
+
+class QNoneDoubleSpinBox(QDoubleSpinBox):
+
+    def __init__(self, *args, **kwargs):
+        super(QNoneDoubleSpinBox, self).__init__(*args, **kwargs)
+        self.is_None = False
+
+    def value(self):
+        if self.is_None:
+            return None
+        else:
+            return super(QNoneDoubleSpinBox, self).value()
+
+    def setValue(self, v):
+        if v == None:
+            self.is_None = True
+            self.setEnabled(False)
+            self.valueChanged.emit(-65535)  # Dummy value
+        else:
+            self.is_None = False
+            self.setEnabled(True)
+            super(QNoneDoubleSpinBox, self).setValue(v)
+
+    def event(self, e):
+        if type(e) == QContextMenuEvent:  # int and event.button() == QtCore.Qt.RightButton:
+            e.accept()
+            if self.is_None:
+                self.setValue(super(QNoneDoubleSpinBox, self).value())
+            else:
+                self.setValue(None)
+            return True
+        else:
+            return super(QNoneDoubleSpinBox, self).event(e)
+
+
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
 # Generic configuration dialog handling class
-class genericDialog(QDialog):
+class GenericDialog(QDialog):
     def __init__(self, parent, buttons=['ok', 'cancel'], **kwargs):
-        super(genericDialog, self).__init__(parent, **kwargs)
+        super(GenericDialog, self).__init__(parent, **kwargs)
 
         self.sizer = QVBoxLayout()
         self.layout = QVBoxLayout()
@@ -412,7 +492,7 @@ class DialogRegister(QDialog):
         self.setLayout(self.layout)
 
    
-class ExportImageDialog(genericDialog):
+class ExportImageDialog(GenericDialog):
     """
     Standard dialog to handle image export fromm any view.
     
@@ -676,6 +756,404 @@ class ExportImageDialog(genericDialog):
             return False
 
 
+class LineStyleListDelegate(QAbstractItemDelegate):
+
+    def paint(self, painter, option, index):
+        # GET TITLE, DESCRIPTION AND ICON
+        #ic = QIcon(index.data(Qt.DecorationRole))
+
+        match_str = index.data(Qt.DisplayRole)
+        match_type = index.data(Qt.UserRole)
+        marker = index.data(Qt.UserRole + 1)
+        markeredgecolor = index.data(Qt.UserRole + 2)
+        markerfacecolor = index.data(Qt.UserRole + 3)
+        fillstyle = index.data(Qt.UserRole + 4)
+        linestyle = index.data(Qt.UserRole + 5)
+        color = index.data(Qt.UserRole + 6)
+        hatch = index.data(Qt.UserRole + 7)
+
+        if option.state & QStyle.State_Selected:
+            painter.setPen(QPalette().highlightedText().color())
+            painter.fillRect(option.rect, QBrush(QPalette().highlight().color()))
+        else:
+            painter.setPen(QPalette().text().color())
+
+        imageSpace = 10
+        if not ic.isNull():
+            # ICON
+            r = option.rect.adjusted(5, 10, -10, -10)
+            ic.paint(painter, r, Qt.AlignVCenter | Qt.AlignLeft)
+            imageSpace = 55
+
+        # TITLE
+        r = option.rect.adjusted(imageSpace, 5, 0, 0)
+        pen = QPen()
+        pen.setColor(QColor('black'))
+        painter.setPen(pen)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, title)
+
+        # DESCRIPTION
+        r = option.rect.adjusted(imageSpace, 22, 0, 0)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, description)
+
+        # AUTHORS
+        r = option.rect.adjusted(imageSpace, 39, 0, 0)
+        pen = QPen()
+        pen.setColor(QColor('#888888'))
+        painter.setPen(pen)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, author)
+
+        r = option.rect.adjusted(imageSpace, 0, -10, -30)
+        painter.setPen(QPalette().mid().color())
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignBottom | Qt.AlignRight, notice)
+
+    def sizeHint(self, option, index):
+        return QSize(600, 100)
+
+
+class MatchLineStyleDialog(GenericDialog):
+    '''
+    Edit individual match rules and linestyles
+    '''
+
+    match_types = {
+        'Exact': MATCH_EXACT,
+        'Contains': MATCH_CONTAINS,
+        'Starts with': MATCH_START,
+        'Ends with': MATCH_END,
+        'Regular expression': MATCH_REGEXP,
+    }
+
+    LINESTYLES_dict = OrderedDict([('None', None)] + zip(LINESTYLES, LINESTYLES))
+    MARKERS_dict = OrderedDict([('None', None)] + zip(MARKERS, MARKERS))
+    FILLSTYLES_dict = OrderedDict([('None', None)] + zip(FILLSTYLES, FILLSTYLES))
+    HATCHSTYLES_dict = OrderedDict([('None', None)] + zip(HATCHSTYLES, HATCHSTYLES))
+
+    def __init__(self, parent, mdls=None, **kwargs):
+        super(MatchLineStyleDialog, self).__init__(parent, **kwargs)
+
+        self.setWindowTitle("Define class match and line-marker style")
+        # '', 'RE', 'Marker', 'Fill', 'Line', 'Hatch', 'Color', 'Face', 'Edge'
+
+        self.config = config.ConfigManager()
+        self.config.set_defaults({
+            'match_str': '',
+            'match_type': MATCH_EXACT,
+            'linestyle': '-',
+            'linewidth': 0.75,
+            'color': '#000000',
+            'marker': 's',
+            'markerfacecolor': '#000000',
+            'markeredgecolor': None,
+            'fillstyle': None,
+            'hatch': None,
+        })
+
+        if mdls:
+            md, ls = mdls
+            self.config.set_many({
+                'match_str': md.match_str,
+                'match_type': md.match_type,
+                'linestyle': ls.linestyle,
+                'linewidth': ls.linewidth,
+                'color': ls.color,
+                'marker': ls.marker,
+                'markerfacecolor': ls.markerfacecolor,
+                'markeredgecolor': ls.markeredgecolor,
+                'fillstyle': ls.fillstyle,
+                'hatch': ls.hatch,
+            })
+
+        # Match definition
+        vw = QGridLayout()
+        self.match_str_le = QLineEdit()
+        self.config.add_handler('match_str', self.match_str_le)
+        vw.addWidget(self.match_str_le, 0, 0)
+
+        self.match_type_cb = QComboBox()
+        self.match_type_cb.addItems(self.match_types.keys())
+        self.config.add_handler('match_type', self.match_type_cb, self.match_types)
+        vw.addWidget(self.match_type_cb, 0, 1)
+
+        gb = QGroupBox('Rule matching')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)
+        # Style definition
+        # '', '?', 'Line', 'Color', 'Marker',  'Face', 'Edge', 'Fill', 'Hatch' ]
+
+        vw = QGridLayout()
+        vw.addWidget(QLabel('Line'), 0, 0)
+
+        self.line_cb = QComboBox()
+        self.line_cb.addItems(self.LINESTYLES_dict.keys())
+        self.config.add_handler('linestyle', self.line_cb, self.LINESTYLES_dict)
+        vw.addWidget(self.line_cb, 0, 1)
+
+        self.color_btn = QColorButton()
+        self.config.add_handler('color', self.color_btn)
+        vw.addWidget(self.color_btn, 0, 2)
+
+        self.linewidth_sb = QNoneDoubleSpinBox()
+        self.linewidth_sb.setRange(0, 10)
+        self.linewidth_sb.setDecimals(2)
+        self.config.add_handler('linewidth', self.linewidth_sb)
+        vw.addWidget(self.linewidth_sb, 0, 3)
+
+        vw.addWidget(QLabel('Marker'), 1, 0)
+
+        self.marker_cb = QComboBox()
+        self.marker_cb.addItems(self.MARKERS_dict.keys())
+        self.config.add_handler('marker', self.marker_cb, self.MARKERS_dict)
+        vw.addWidget(self.marker_cb, 1, 1)
+
+        self.face_btn = QColorButton()
+        #self.face_btn.setColor( ls.markerfacecolor )
+        self.config.add_handler('markerfacecolor', self.face_btn)
+        vw.addWidget(self.face_btn, 1, 2)
+
+        self.edge_btn = QColorButton()
+        #self.edge_btn.setColor( ls.markeredgecolor )
+        self.config.add_handler('markeredgecolor', self.edge_btn)
+        vw.addWidget(self.edge_btn, 1, 3)
+
+        vw.addWidget(QLabel('Fill type'), 2, 0)
+
+        self.fill_fb = QComboBox()
+        self.fill_fb.addItems(self.FILLSTYLES_dict.keys())
+        self.config.add_handler('fillstyle', self.fill_fb, self.FILLSTYLES_dict)
+        vw.addWidget(self.fill_fb, 2, 1)
+
+        self.hatch_cb = QComboBox()
+        self.hatch_cb.addItems(self.HATCHSTYLES_dict.keys())
+        self.config.add_handler('hatch', self.hatch_cb, self.HATCHSTYLES_dict)
+        vw.addWidget(QLabel('Hatching'), 3, 0)
+        vw.addWidget(self.hatch_cb, 3, 1)
+
+        gb = QGroupBox('Line and Marker Style')
+        gb.setLayout(vw)
+        self.layout.addWidget(gb)
+
+        # Build dialog layout
+        self.dialogFinalise()
+
+    def onColorPicker(self):
+        dlg = QColorDialog(self)
+        dlg.setOption(QColorDialog.DontUseNativeDialog)
+        # FIXME: Add colors from current default set to the custom color table
+        # dlg.setCustomColor(0, QColor('red') )
+        if dlg.exec_():
+            pass
+
+    def sizeHint(self):
+        return QSize(600, 300)
+
+
+class MatchLineStyleManagerDialog(GenericDialog):
+    '''
+    An editor for the line style configuration
+    Present two tabs one for custom, one for auto
+    
+    On the custom tab allow addition/editing/removal of linestyle definitions
+        - and editing of the custom match options (string, type, etc.)
+        
+    On the auto tab allow editing/removal of the existing linestyle definitions only
+    
+    Save and apply back to the main manager.
+    '''
+
+    match_styles_abbrev = {
+        MATCH_EXACT: '=',
+        MATCH_CONTAINS: 'I',
+        MATCH_START: 'S',
+        MATCH_END: 'E',
+        MATCH_REGEXP: 'R',
+    }
+
+    def __init__(self, parent=None, **kwargs):
+        super(MatchLineStyleManagerDialog, self).__init__(parent, **kwargs)
+
+        self.m = parent
+
+        self.setWindowTitle("Line styles and markers")
+
+        self.styles_tw = QTreeWidget()
+        self.styles_tw.setColumnCount(10)
+        self.styles_tw.setColumnWidth(0, 200)
+
+        headerItem = QTreeWidgetItem()
+        headers = ['', '?', 'Line', 'Color', ' W ', 'Marker', 'Face', 'Edge', 'Fill', 'Hatch']
+
+        for n, str in enumerate(headers):
+            headerItem.setText(n, str)
+            if n > 0:
+                headerItem.setTextAlignment(n, Qt.AlignHCenter)
+                self.styles_tw.setColumnWidth(n, 16 + len(headers[n]) * 6)
+
+        self.styles_tw.setHeaderItem(headerItem)
+
+        vw = QGridLayout()
+        self.styles_tw.setMinimumSize(self.sizeHint())
+        vw.addWidget(self.styles_tw, 0, 0, 6, 1)
+        self.populate_linestyle_list()
+
+        self.new_btn = QPushButton('New')
+        self.new_btn.clicked.connect(self.onNew)
+        vw.addWidget(self.new_btn, 0, 1)
+
+        self.edit_btn = QPushButton('Edit')
+        self.edit_btn.clicked.connect(self.onEdit)
+        vw.addWidget(self.edit_btn, 1, 1)
+
+        self.delete_btn = QPushButton('Delete')
+        self.delete_btn.clicked.connect(self.onDelete)
+        vw.addWidget(self.delete_btn, 2, 1)
+
+        self.up_btn = QPushButton('↑')
+        self.up_btn.clicked.connect(self.onMoveUp)
+        vw.addWidget(self.up_btn, 3, 1)
+
+        self.down_btn = QPushButton('↓')
+        self.down_btn.clicked.connect(self.onMoveDown)
+        vw.addWidget(self.down_btn, 4, 1)
+
+        self.layout.addLayout(vw)
+
+        # Build dialog layout
+        self.dialogFinalise()
+
+    def onNew(self):
+        item = QTreeWidgetItem()
+        dlg = MatchLineStyleDialog(self)
+        if dlg.exec_():
+            md = ClassMatchDefinition()
+            ls = LineStyleDefinition()
+            for k in ['match_str', 'match_type']:
+                md.__dict__[k] = dlg.config.get(k)
+
+            for k in ['linestyle', 'color', 'marker', 'markerfacecolor', 'markeredgecolor', 'fillstyle', 'hatch', 'linewidth']:
+                ls.__dict__[k] = dlg.config.get(k)
+
+            linestyles.matchdefs.append((md, ls))
+            self.styles_tw.clear()
+            self.populate_linestyle_list()
+
+    def onEdit(self, checked=None):
+        items = self.styles_tw.selectedItems()
+        if items:
+            item = items[0]  # Only one
+            dlg = MatchLineStyleDialog(self, (item.md, item.ls))
+            if dlg.exec_():
+                # Get data from from the dialog and update the md,ls to match
+                md, ls = item.md, item.ls
+
+                if md.is_auto:
+                    # Shift auto items to non-auto
+                    linestyles.automatchdefs.remove((md, ls))
+                    linestyles.matchdefs.append((md, ls))
+
+                for k in ['match_str', 'match_type']:
+                    md.__dict__[k] = dlg.config.get(k)
+
+                for k in ['linestyle', 'color', 'marker', 'markerfacecolor', 'markeredgecolor', 'fillstyle', 'hatch', 'linewidth']:
+                    ls.__dict__[k] = dlg.config.get(k)
+
+                if md.is_auto:
+                    md.is_auto = False  # No longer auto, has been edited
+                    self.refresh()
+                else:
+                    self.update_item(item, md, ls)
+
+                #self.m.onRefreshAllViews()
+    def onMoveUp(self):
+        item = self.styles_tw.currentItem()
+        try:
+            idx = linestyles.matchdefs.index((item.md, item.ls))
+        except ValueError:
+            return
+        else:
+            if idx > 0:
+                t = linestyles.matchdefs[idx - 1]
+                linestyles.matchdefs[idx - 1] = linestyles.matchdefs[idx]
+                linestyles.matchdefs[idx] = t
+                self.refresh()
+                self.styles_tw.setCurrentItem(self.styles_tw.topLevelItem(idx - 1))
+
+    def onMoveDown(self):
+        item = self.styles_tw.currentItem()
+        try:
+            idx = linestyles.matchdefs.index((item.md, item.ls))
+        except ValueError:
+            return
+        else:
+            if idx < len(linestyles.matchdefs):
+                t = linestyles.matchdefs[idx + 1]
+                linestyles.matchdefs[idx + 1] = linestyles.matchdefs[idx]
+                linestyles.matchdefs[idx] = t
+                self.refresh()
+                self.styles_tw.setCurrentItem(self.styles_tw.topLevelItem(idx + 1))
+
+    def onDelete(self):
+        item = self.styles_tw.currentItem()
+        self.styles_tw.takeTopLevelItem(self.styles_tw.indexOfTopLevelItem(item))
+        if item.md.is_auto:
+            linestyles.automatchdefs.remove((item.md, item.ls))
+        else:
+            linestyles.matchdefs.remove((item.md, item.ls))
+
+    def sizeHint(self):
+        return QSize(600, 300)
+
+    def refresh(self):
+        self.styles_tw.clear()
+        self.populate_linestyle_list()
+
+    def update_item(self, item, md, ls):
+        item.md = md
+        item.ls = ls
+
+        if md.is_auto:
+            item.setIcon(0, QIcon(os.path.join(utils.scriptdir, 'icons', 'lightning.png')))
+        else:
+            item.setIcon(0, QIcon(None))
+
+        item.setText(0, md.match_str)
+        item.setText(1, self.match_styles_abbrev[md.match_type])
+
+        item.setText(2, ls.linestyle)
+
+        item.setText(4, str(ls.linewidth))
+
+        item.setText(5, ls.marker)
+
+        item.setText(8, ls.fillstyle)
+        item.setText(9, ls.hatch)
+
+        #item.setSizeHint(0, QSize(50,30) )
+
+        for c, s, v in [(3, '▬', ls.color), (6, '▩', ls.markerfacecolor), (7, '▩', ls.markeredgecolor)]:
+            if v != None:
+                item.setText(c, s)
+                item.setForeground(c, QColor(v))
+
+        return item
+
+    def populate_linestyle_list(self):
+
+        for n, (md, ls) in enumerate(linestyles.matchdefs + linestyles.automatchdefs):
+            item = QTreeWidgetItem()
+
+            if not md.is_auto:
+                item.order = n
+            else:
+                item.order = 65536
+
+            for c in range(1, 9):
+                item.setTextAlignment(c, Qt.AlignHCenter | Qt.AlignVCenter)
+
+            self.update_item(item, md, ls)
+            self.styles_tw.addTopLevelItem(item)
+
+
 class QWebPageExtend(QWebPage):
     def shouldInterruptJavascript():
         return False
@@ -725,7 +1203,7 @@ class QWebViewExtend(QWebView):
 # Present a list of widgets (drop-downs) for each of the interfaces available on this plugin
 # in each list show the data sources that can potentially file that slot.
 # Select the currently used
-class DialogDataSource(genericDialog):
+class DialogDataSource(GenericDialog):
     def __init__(self, parent=None, view=None, **kwargs):
         super(DialogDataSource, self).__init__(parent, **kwargs)
 
@@ -774,7 +1252,7 @@ class DialogDataSource(genericDialog):
         self.dialogFinalise()
 
         
-class DialogDataOutput(genericDialog):
+class DialogDataOutput(GenericDialog):
     def __init__(self, parent=None, view=None, **kwargs):
         super(DialogDataOutput, self).__init__(parent, buttons=['ok'], **kwargs)
 
@@ -1621,7 +2099,7 @@ class AnalysisApp(GenericApp):
         self.generate()
 
 
-class remoteQueryDialog(genericDialog):
+class remoteQueryDialog(GenericDialog):
 
     def parse(self, data):
         # Parse incoming data and return a dict mapping the displayed values to the internal value

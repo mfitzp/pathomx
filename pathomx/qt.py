@@ -18,7 +18,7 @@ else:
             USE_PYQT = 4
         except ImportError:
             USE_PYQT = None
-        
+
 if USE_PYQT == 5:
     logging.debug('PyQt5')
 
@@ -41,10 +41,3 @@ elif USE_PYQT == 4:
     from PyQt4.QtCore import *
     from PyQt4.QtWebKit import *
     from PyQt4.QtNetwork import *
-
-    
-    
-
-
-
-    

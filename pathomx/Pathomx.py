@@ -121,68 +121,10 @@ class Logger(logging.Handler):
         pass
 
 
-class dialogDefineExperiment(ui.genericDialog):
-
-    def filter_classes_by_timecourse_regexp(self, text):
-        try:
-            rx = re.compile('(?P<timecourse>%s)' % text)
-        except:
-            return
-
-        filtered_classes = list(set([rx.sub('', c) for c in self.classes]))
-        self.cb_control.clear()
-        self.cb_control.addItems(filtered_classes)
-        self.cb_test.clear()
-        self.cb_test.addItems(filtered_classes)
-        # Ensure something remains selected
-        self.cb_control.setCurrentIndex(0)
-        self.cb_test.setCurrentIndex(0)
+class ToolBoxItemDelegate(QAbstractItemDelegate):
 
     def __init__(self, parent=None, **kwargs):
-        super(dialogDefineExperiment, self).__init__(parent, **kwargs)
-
-        self.classes = sorted(parent.data.classes)
-        self.setWindowTitle("Define Experiment")
-
-        self.cb_control = QComboBox()
-        self.cb_control.addItems(self.classes)
-
-        self.cb_test = QComboBox()
-        self.cb_test.addItems(self.classes)
-
-        classes = QGridLayout()
-        classes.addWidget(QLabel('Control:'), 1, 1)
-        classes.addWidget(self.cb_control, 1, 2)
-
-        classes.addWidget(QLabel('Test:'), 2, 1)
-        classes.addWidget(self.cb_test, 2, 2)
-
-        if 'control' in parent.experiment and 'test' in parent.experiment:
-            self.cb_control.setCurrentIndex(self.cb_control.findText(parent.experiment['control']))
-            self.cb_test.setCurrentIndex(self.cb_test.findText(parent.experiment['test']))
-        else:
-            self.cb_control.setCurrentIndex(0)
-            self.cb_test.setCurrentIndex(0)
-
-        self.le_timecourseRegExp = QLineEdit()
-        self.le_timecourseRegExp.setText(parent.experiment['timecourse'] if 'timecourse' in parent.experiment else '')
-        self.le_timecourseRegExp.textChanged.connect(self.filter_classes_by_timecourse_regexp)
-
-        self.layout.addLayout(classes)
-        self.layout.addWidget(QLabel('Timecourse filter (regexp:'))
-        self.layout.addWidget(self.le_timecourseRegExp)
-
-        if 'timecourse' in parent.experiment:
-            self.filter_classes_by_timecourse_regexp(parent.experiment['timecourse'])
-
-        # Build dialog layout
-        self.dialogFinalise()
-
-
-class toolBoxItemDelegate(QAbstractItemDelegate):
-
-    def __init__(self, parent=None, **kwargs):
-        super(toolBoxItemDelegate, self).__init__(parent, **kwargs)
+        super(ToolBoxItemDelegate, self).__init__(parent, **kwargs)
         self._elidedwrappedtitle = {}  # Cache
         self._font = None
 
@@ -243,7 +185,7 @@ class ToolPanel(QListWidget):
         self.setViewMode(QListView.IconMode)
         self.setGridSize(QSize(64, 96))
         #self._columns = 4
-        self.setItemDelegate(toolBoxItemDelegate())
+        self.setItemDelegate(ToolBoxItemDelegate())
 
         self.tools = tools
         self.addTools()
@@ -390,7 +332,7 @@ class MainWindow(QMainWindow):
 
         self.experiment = dict()
         self.layout = None  # No map by default
-        
+
         self.linestyles = styles.LineStyleHandler()
 
         # The following holds tabs & pathway objects for gpml imported pathways
@@ -418,6 +360,7 @@ class MainWindow(QMainWindow):
         self.menuBars = {
             'file': self.menuBar().addMenu(tr('&File')),
             'plugins': self.menuBar().addMenu(tr('&Plugins')),
+            'appearance': self.menuBar().addMenu(tr('&Appearance')),
             'database': self.menuBar().addMenu(tr('&Database')),
             'help': self.menuBar().addMenu(tr('&Help')),
         }
@@ -502,6 +445,13 @@ class MainWindow(QMainWindow):
         check_pluginupdatesAction.setStatusTip('Check for updates to installed plugins')
         check_pluginupdatesAction.triggered.connect(self.onCheckPluginUpdates)
         #self.menuBars['plugins'].addAction(check_pluginupdatesAction)  FIXME: Add a plugin-update check
+
+        linemarkerstyleAction = QAction('Line and marker styles…', self)
+        linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
+        linemarkerstyleAction.triggered.connect(self.onLineMarkerStyles)
+        self.menuBars['appearance'].addAction(linemarkerstyleAction)
+
+        self.menuBars['appearance'].addSeparator()
 
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
@@ -792,6 +742,15 @@ class MainWindow(QMainWindow):
             # Send data to server;
             # http://register.pathomx.org POST
 
+    def onLineMarkerStyles(self):
+        dlg = ui.MatchLineStyleManagerDialog(self)
+        if dlg.exec_():
+            self.onRefreshAllViews()
+
+    def onRefreshAllViews(self):
+        for t in self.apps:
+            t.views.style_updated.emit()
+
     def onPrint(self):
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_():
@@ -1000,12 +959,12 @@ class MainWindow(QMainWindow):
 
         if progress == None:
             if id(workspace_item) in self.progressTracker:
-                del(self.progressTracker[ id(workspace_item) ])
+                del(self.progressTracker[id(workspace_item)])
             if len(self.progressTracker) == 0:
                 self.progressBar.reset()
                 return
         else:
-            self.progressTracker[ id(workspace_item) ] = progress
+            self.progressTracker[id(workspace_item)] = progress
 
         m = 100.0 / len(self.progressTracker)
         pt = sum([n * m for n in list(self.progressTracker.values())])
