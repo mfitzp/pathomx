@@ -232,58 +232,6 @@ class ToolPanel(QListWidget):
         dropAction = drag.exec_(Qt.MoveAction)
 
 
-def _convert_list_type_from_XML(vs):
-    '''
-    Lists are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
-    '''
-    vlist = vs.findall('ConfigListItem')
-    l = []
-    for xconfig in vlist:
-        v = xconfig.text
-        if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
-            # Recursive; woo!
-            v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
-        l.append(v)
-    return l
-
-
-def _convert_list_type_to_XML(co, vs):
-    '''
-    Lists are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
-    '''
-    for cv in vs:
-        c = et.SubElement(co, "ConfigListItem")
-        t = type(cv).__name__
-        c.set("type", t)
-        c = CONVERT_TYPE_TO_XML[t](c, cv)
-    return co
-
-
-def _apply_text_str(co, s):
-    co.text = str(s)
-    return co
-
-CONVERT_TYPE_TO_XML = {
-    'str': _apply_text_str,
-    'unicode': _apply_text_str,
-    'int': _apply_text_str,
-    'float': _apply_text_str,
-    'bool': _apply_text_str,
-    'list': _convert_list_type_to_XML
-}
-
-CONVERT_TYPE_FROM_XML = {
-    'str': lambda x: str(x.text),
-    'unicode': lambda x: str(x.text),
-    'int': lambda x: int(x.text),
-    'float': lambda x: float(x.text),
-    'bool': lambda x: bool(x.text),
-    'list': _convert_list_type_from_XML
-}
-
-
 class MainWindow(QMainWindow):
 
     workspace_updated = pyqtSignal()
@@ -333,7 +281,7 @@ class MainWindow(QMainWindow):
         self.experiment = dict()
         self.layout = None  # No map by default
 
-        self.linestyles = styles.LineStyleHandler()
+        #self.linestyles = styles.LineStyleHandler()
 
         # The following holds tabs & pathway objects for gpml imported pathways
         self.gpmlpathways = []
@@ -1019,6 +967,9 @@ class MainWindow(QMainWindow):
 
         root = et.Element("Workflow")
         root.set('xmlns:mpwfml', "http://pathomx.org/schema/Workflow/2013a")
+        
+        s = et.SubElement(root, "Styles")
+        s = styles.linestyles.getXMLMatchDefinitionsLineStyles(s)
 
         # Build a JSONable object representing the entire current workspace and write it to file
         for v in self.apps:
@@ -1045,7 +996,7 @@ class MainWindow(QMainWindow):
                 co.set("id", ck)
                 t = type(cv).__name__
                 co.set("type", type(cv).__name__)
-                co = CONVERT_TYPE_TO_XML[t](co, cv)
+                co = utils.CONVERT_TYPE_TO_XML[t](co, cv)
 
             datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
@@ -1073,6 +1024,9 @@ class MainWindow(QMainWindow):
         tree = et.parse(fn)
         workflow = tree.getroot()
 
+        s = workflow.find('Styles')
+        styles.linestyles.setXMLMatchDefinitionsLineStyles(s)
+
         appref = {}
         logging.info("...Loading apps.")
         for xapp in workflow.findall('App'):
@@ -1089,8 +1043,8 @@ class MainWindow(QMainWindow):
             config = {}
             for xconfig in xapp.findall('Config/ConfigSetting'):
                 #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
-                if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
-                    v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
+                if xconfig.get('type') in utils.CONVERT_TYPE_FROM_XML:
+                    v = utils.CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
                 config[xconfig.get('id')] = v
 
             app.config.set_many(config, trigger_update=False)

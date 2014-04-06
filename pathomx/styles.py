@@ -6,6 +6,11 @@ import re
 from matplotlib import markers
 from matplotlib.markers import TICKLEFT, TICKRIGHT, TICKUP, TICKDOWN, CARETLEFT, CARETRIGHT, CARETUP, CARETDOWN
 
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
+
 MARKERS = ['o', 's', '^', 'v', '<', '>', '.', '1', '2', '3', '4', '8',
             'p', '*', 'h', 'H', '+', 'x', 'D', 'd', '|', '_', ]
             #TICKLEFT, TICKRIGHT, TICKUP, TICKDOWN, CARETLEFT, CARETRIGHT,
@@ -28,6 +33,7 @@ MATCH_START = 3
 MATCH_END = 4
 MATCH_REGEXP = 5
 
+from . import utils
 
 class LineStyleHandler(object):
     '''
@@ -105,6 +111,54 @@ class LineStyleHandler(object):
                         return ls_def
 
         return None
+        
+    def getXMLMatchDefinitionsLineStyles(self, root):
+    
+        # Iterate over the entire set (in order) creating a XML representation of the MatchDef and LineStyle
+        for cm, ls in self.matchdefs + self.automatchdefs:
+            
+            cmls = et.SubElement(root, "ClassMatchLineStyle")
+            if cm.is_auto:
+                cmls.set('is_auto', 'true')
+            
+            cme = et.SubElement(cmls, "ClassMatch")
+            cme.set("match_str", cm.match_str)
+            cme.set("match_type", str(cm.match_type) )
+
+            lse = et.SubElement(cmls, "LineStyle")
+            
+            for attr in ls.attr:
+                value = ls.__dict__[attr]
+                if value != None: # We can skip None values (default anyway)
+                    lse.set(attr, str(value))
+
+        return root
+        
+    def setXMLMatchDefinitionsLineStyles(self, root):
+
+        self.automatchdefs = []
+        self.matchdefs = []
+
+        for cmls in root.findall('ClassMatchLineStyle'):
+            
+            cm = ClassMatchDefinition()
+            ls = LineStyleDefinition()
+            
+            cme = cmls.find('ClassMatch')
+            cm.match_str = cme.get('match_str')
+            cm.match_type = int( cme.get('match_type') )
+
+            lse = cmls.find('LineStyle')
+            for attr in ls.attr:
+                ls.__dict__[attr] = lse.get(attr, None)
+                
+            # Fix types
+            ls.linewidth = float( ls.linewidth )
+            if cmls.get('is_auto', False):
+                cm.is_auto = True
+                self.automatchdefs.append( ( cm, ls ) )
+            else:
+                self.matchdefs.append( ( cm, ls ) )
 
 
 class LineStyleDefinition(object):
@@ -187,7 +241,6 @@ class ClassMatchDefinition(object):
         self.match_str = match_str
         self.match_type = match_type
         self.is_auto = is_auto
-        pass
 
     def is_match_for_class(self, class_str):
         if self.match_type == MATCH_EXACT:

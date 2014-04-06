@@ -16,6 +16,59 @@ rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
 
+
+def _convert_list_type_from_XML(vs):
+    '''
+    Lists are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    vlist = vs.findall('ListItem') + vs.findall('ConfigListItem') # ConfigListItem is legacy
+    l = []
+    for xconfig in vlist:
+        v = xconfig.text
+        if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
+            # Recursive; woo!
+            v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
+        l.append(v)
+    return l
+
+
+def _convert_list_type_to_XML(co, vs):
+    '''
+    Lists are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    for cv in vs:
+        c = et.SubElement(co, "ListItem")
+        t = type(cv).__name__
+        c.set("type", t)
+        c = CONVERT_TYPE_TO_XML[t](c, cv)
+    return co
+
+
+def _apply_text_str(co, s):
+    co.text = str(s)
+    return co
+
+CONVERT_TYPE_TO_XML = {
+    'str': _apply_text_str,
+    'unicode': _apply_text_str,
+    'int': _apply_text_str,
+    'float': _apply_text_str,
+    'bool': _apply_text_str,
+    'list': _convert_list_type_to_XML
+}
+
+CONVERT_TYPE_FROM_XML = {
+    'str': lambda x: str(x.text),
+    'unicode': lambda x: str(x.text),
+    'int': lambda x: int(x.text),
+    'float': lambda x: float(x.text),
+    'bool': lambda x: bool(x.text),
+    'list': _convert_list_type_from_XML
+}
+
+
 def sigstars(p):
     # Return appropriate number of stars or ns for significance
 
