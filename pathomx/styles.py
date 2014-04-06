@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sys
+import re
 
 from matplotlib import markers
 from matplotlib.markers import TICKLEFT, TICKRIGHT, TICKUP, TICKDOWN, CARETLEFT, CARETRIGHT, CARETUP, CARETDOWN
@@ -201,8 +202,11 @@ class ClassMatchDefinition(object):
         elif self.match_type == MATCH_END:
             return class_str.endswith(self.match_str)
 
-        elif self.match_type == MATCH_END:
-            # Implement regexp matching (cached regexp)
-            return False
+        elif self.match_type == MATCH_REGEXP:
+            m = re.search(self.match_str, class_str) 
+            if m:
+                return True
+            else:
+                return False
 
 linestyles = LineStyleHandler()
