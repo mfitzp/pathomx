@@ -62,6 +62,7 @@ from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
 from . import styles
+from . import resources
 from .editor.editor import WorkspaceEditor
 
 # Translation (@default context)

@@ -26,7 +26,6 @@ default_build_options=dict(
         'matplotlib',
         'dateutil',
         'mlabwrap',
-        'rpy2',
         ],
     includes=[
         'sip',
@@ -40,6 +39,8 @@ default_build_options=dict(
         'wx',
         'mpl-data',
         'Tkinter',
+        # FIXME: Segmentation faults in rpy2 packaged on cx_Freeze
+        'rpy2',
         ],
     )
 

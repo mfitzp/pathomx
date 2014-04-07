@@ -12,12 +12,12 @@ allocation and locking.
 try:
     import mlabwrap
 except:
-    mlabwrap == False
+    mlabwrap = False
     
 try:
     import rpy2
 except:
-    rpy2 == False
+    rpy2 = False
 
 from custom_exceptions import PathomxExternalResourceUnavailableException, PathomxExternalResourceTimeoutException
 
