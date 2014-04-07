@@ -1,3 +1,3 @@
-import pathomx.Pathomx as p
-p.main()
+from pathomx import Pathomx
+Pathomx.main()
 

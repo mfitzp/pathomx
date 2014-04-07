@@ -5,7 +5,7 @@ from copy import copy
 
 from setuptools import setup, find_packages
 
-version_string = '2.2.0'
+from pathomx.Pathomx import VERSION_STRING
 
 sys.path.insert(0,'pathomx')
 
@@ -25,6 +25,8 @@ default_build_options=dict(
         'nmrglue.fileio.fileiobase',
         'matplotlib',
         'dateutil',
+        'mlabwrap',
+        'rpy2',
         ],
     includes=[
         'sip',
@@ -137,7 +139,7 @@ else:
     # console application).
     executables=[
         Executable(
-            "pathomx/Pathomx.py",
+            "Pathomx.py",
             base=base,
             copyDependentFiles=True,
             replacePaths=True,
@@ -153,7 +155,7 @@ else:
 setup(
 
     name='Pathomx',
-    version=version_string,
+    version=VERSION_STRING,
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/pathomx/pathomx',
@@ -176,7 +178,7 @@ setup(
 
     entry_points = {
         'gui_scripts': [
-            'Pathomx = pathomx.Pathomx:main',
+            'Pathomx = Pathomx',
         ]
     },
 
@@ -206,7 +208,7 @@ setup(
         "bdist_msi": bdist_msi,
         #"py2app": build_py2app
     },
-    app=[ 'pathomx/Pathomx.py' ],
+    app=[ 'Pathomx.py' ],
     #setup_requires=["py2app"],
 
     )
