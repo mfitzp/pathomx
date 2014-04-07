@@ -218,19 +218,22 @@ class ToolPanel(QListWidget):
         return row * self._tool_width
 
     def mouseMoveEvent(self, e):
+        logging.debug('Starting drag-drop of workspace item.')
+        if e.buttons() == Qt.LeftButton: # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
+            item = self.currentItem()
 
-        item = self.currentItem()
+            mimeData = QMimeData()
+            mimeData.setData('application/x-pathomx-app', item.data['id'])
 
-        mimeData = QMimeData()
-        mimeData.setData('application/x-pathomx-app', item.data['id'])
+            e.accept()
 
-        drag = QDrag(self)
-        drag.setMimeData(mimeData)
-        drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
-        drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
+            drag = QDrag(self)
+            drag.setMimeData(mimeData)
+            drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
+            drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
 
-        dropAction = drag.exec_(Qt.MoveAction)
-
+            dropAction = drag.exec_(Qt.MoveAction)
+            logging.debug('Drag-drop complete.')
 
 class MainWindow(QMainWindow):
 
