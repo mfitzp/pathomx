@@ -17,9 +17,10 @@ from pathomx.ui import ImportDataApp, ExportDataApp, CodeEditorTool
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
+from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
+from pathomx.resources import MATLABLock
 
-
-class MATLABTool(ui.DataApp):
+class MATLABTool(MATLABLock, ui.DataApp):
     def __init__(self, **kwargs):
         super(MATLABTool, self).__init__(**kwargs)
 
@@ -32,7 +33,6 @@ class MATLABTool(ui.DataApp):
 
         self.views.addTab(MplSpectraView(self), 'View')
 
-        # Start matlab interface
         self.matlab = mlabwrap.init()
 
         # Setup data consumer options
@@ -197,7 +197,7 @@ class MATLABHighlighter(QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
 
-class MATLABScriptTool(CodeEditorTool):
+class MATLABScriptTool(MATLABLock, CodeEditorTool):
 
     def __init__(self, **kwargs):
         super(MATLABScriptTool, self).__init__(**kwargs)
@@ -237,7 +237,7 @@ class MATLABScriptTool(CodeEditorTool):
         self.finalise()
 
     def generate(self, input):
-        # Horribly insecure
+        self.status.emit('active')
         self.matlab._set("input_data", input.data)
         #self.matlab._set("pmx_classes", input.classes)
         #self.matlab._set("pmx_scales", input.scales)

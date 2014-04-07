@@ -8,7 +8,7 @@ from .qt import *
 
 from collections import defaultdict
 
-import os, copy, re, json, importlib, sys, traceback
+import os, copy, re, json, importlib, sys, traceback, logging
 
 try:
     from urllib.request import urlopen
@@ -265,7 +265,7 @@ class WebPageJSLog(QWebPage):
         super(WebPageJSLog, self).__init__(parent, **kwargs)
 
     def javaScriptConsoleMessage(self, msg, lineNumber, sourceID):
-        sys.stderr.write("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
+        logging.debug("JsConsole(%s:%d): %s" % (sourceID, lineNumber, msg))
 
 class QWebPageExtend(QWebPage):
     def shouldInterruptJavascript():

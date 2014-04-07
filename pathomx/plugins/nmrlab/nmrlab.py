@@ -16,9 +16,10 @@ from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
+from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
+from pathomx.resources import MATLABLock
 
-
-class NMRLabMetabolabTool(ui.DataApp):
+class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
     def __init__(self, **kwargs):
         super(NMRLabMetabolabTool, self).__init__(**kwargs)
 
@@ -170,7 +171,8 @@ class BaselineMetabolabTool(NMRLabMetabolabTool):
         self.finalise()
 
     def generate(self, input):
-        self.status.emit('waiting')
+        self.status.emit('active')
+        
         bc_mat, baseline, is_baseline = self.matlab.baselinenl(input.data.T,
                         self.config.get('baseline_n'),
                         self.config.get('baseline_tau'),
@@ -181,7 +183,7 @@ class BaselineMetabolabTool(NMRLabMetabolabTool):
                         nout=3)
 
         input.data = bc_mat.reshape(input.shape)
-
+        
         return {'output': input}
 
 
@@ -233,7 +235,8 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
         self.finalise()
 
     def generate(self, input):
-        self.status.emit('waiting')
+        
+        self.status.emit('active')
 
         mat_out, shift = self.matlab.spcalign_tmsp(input.data.T,
                         self.config.get('reference_spectra_n'),
@@ -243,7 +246,7 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
                         nout=2)
 
         input.data = mat_out.reshape(input.shape)
-
+        
         return {'output': input}
 
 
@@ -312,7 +315,9 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
         self.finalise()
 
     def generate(self, input):
-        self.status.emit('waiting')
+        
+        self.status.emit('active')
+
         mat_out, shift = self.matlab.spcalign(input.data.T,
                         self.config.get('reference_spectra_n'),
                         self.config.get('maximum_shift'),
@@ -322,6 +327,7 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
 
         input.data = mat_out.T.reshape(input.shape)
 
+        
         return {'output': input}
 
 
@@ -393,7 +399,8 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
         self.finalise()
 
     def generate(self, input):
-        self.status.emit('waiting')
+        
+        self.status.emit('active')
 
         if self.config.get('algorithm') == 'glog':
 
@@ -415,6 +422,7 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
                             nout=1)
             input.data = mat_out.reshape(input.shape)
 
+        
         return {'output': input}
 
 
@@ -459,7 +467,8 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
         self.finalise()
 
     def generate(self, input):
-        self.status.emit('waiting')
+        self.status.emit('active')
+
         # Convert ppm size into number of points
         # Get start-end range, divide by number of elements = ppm step size
         # Divide ppm bin value by step size = number of steps (round to nearest)

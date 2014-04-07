@@ -1121,7 +1121,7 @@ class MatchLineStyleManagerDialog(GenericDialog):
 
         item.setText(2, ls.linestyle)
 
-        item.setText(4, str(ls.linewidth))
+        item.setText(4, str(ls.linewidth) if ls.linewidth is not None else '')
 
         item.setText(5, ls.marker)
 
@@ -1465,6 +1465,7 @@ class GenericApp(QMainWindow):
 
         self.progress.emit(0.)
         self.worker = threads.Worker(self.generate, **kwargs_dict)
+        self.wait_for_lock()
         self.start_worker_thread(self.worker, callback=self._generate_worker_result_callback)
 
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
@@ -1478,6 +1479,7 @@ class GenericApp(QMainWindow):
         return {'View': dict(list({'dso': output}.items()) + list(kwargs.items()))}
 
     def _generate_worker_result_callback(self, kwargs_dict):
+        self.release_lock()
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
@@ -1497,6 +1499,7 @@ class GenericApp(QMainWindow):
         self.views.updated.emit()
 
     def _worker_error_callback(self, error=None):
+        self.release_lock()
         self._latest_exception = error[1]
         self.progress.emit(1.)
         self.status.emit('error')
@@ -1768,6 +1771,14 @@ class GenericApp(QMainWindow):
         if self._previous_size:
             return self._previous_size
         return QSize(600 + 300, 400 + 100)
+        
+    def wait_for_lock(self):
+        print "Dummy lock"
+        return True
+        
+    def release_lock(self):
+        return True
+    
 
 # Data view prototypes
 
@@ -2263,7 +2274,7 @@ class CodeEditor(QPlainTextEdit):
                 painter.drawText(0, top, self.lineNumberArea.width(), QApplication.fontMetrics().height(),
                                  Qt.AlignRight, number)
 
-            block = next(block)
+            block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1

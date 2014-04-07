@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys
 import logging
 
+
 USE_PYQT = None
 
 if 'PyQt5' in sys.modules:

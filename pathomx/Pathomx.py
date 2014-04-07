@@ -1085,6 +1085,7 @@ def main():
     # Create a Qt application
     app = QApplicationExtend(sys.argv)
     app.setStyle('fusion')
+
     app.setOrganizationName("Pathomx")
     app.setOrganizationDomain("pathomx.org")
     app.setApplicationName("Pathomx")

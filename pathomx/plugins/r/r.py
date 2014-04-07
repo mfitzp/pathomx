@@ -7,10 +7,12 @@ from pathomx.plugins import ProcessingPlugin
 import pathomx.ui as ui
 from pathomx.data import DataSet, DataDefinition
 from pathomx.qt import *
+from pathomx.resources import RLock
 
 from keyword import kwlist
 import numpy as np
 import rpy2.robjects as robjects
+
 
 
 class HighlightingRule():
@@ -190,7 +192,7 @@ class RHighlighter(QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
 
-class RScriptTool(ui.CodeEditorTool):
+class RScriptTool(RLock, ui.CodeEditorTool):
 
     def __init__(self, **kwargs):
         super(RScriptTool, self).__init__(**kwargs)
@@ -205,6 +207,9 @@ class RScriptTool(ui.CodeEditorTool):
             DataDefinition('input', {
             })
         )
+
+        if not hasattr('robjects', 'is_running'):
+            robjects.is_running = False
 
         self.config.set_defaults({
             'source': '''
@@ -228,7 +233,10 @@ class RScriptTool(ui.CodeEditorTool):
 
         self.finalise()
 
+
     def generate(self, input):
+        self.status.emit('active')
+
         # We have to mangle the input data a bit to get it into a useable format in R
         v = robjects.FloatVector(input.data.T.flatten().tolist())
         m = robjects.r['matrix'](v, nrow=input.data.shape[0])
