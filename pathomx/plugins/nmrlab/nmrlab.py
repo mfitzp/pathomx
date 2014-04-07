@@ -17,7 +17,7 @@ from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
-from pathomx.resources import MATLABLock
+from pathomx.resources import matlab, MATLABLock
 
 class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
     def __init__(self, **kwargs):
@@ -33,7 +33,7 @@ class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
         self.views.addTab(MplSpectraView(self), 'View')
 
         # Start matlab interface
-        self.matlab = mlabwrap.init()
+        self.matlab = matlab.init()
 
         # Setup data consumer options
         self.data.consumer_defs.append(

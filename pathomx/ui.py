@@ -176,6 +176,19 @@ class GenericDialog(QDialog):
             pass
 
 
+class MATLABPathDialog(GenericDialog):
+    def __init__(self, parent, path='matlab', **kwargs):
+        super(MATLABPathDialog, self).__init__(parent, **kwargs)
+        self.setWindowTitle('Set MATLAB Path')
+
+        self.path = QLineEdit()
+        self.path.setText( path )
+        self.layout.addWidget( self.path )
+        self.dialogFinalise()
+
+    def sizeHint(self):
+        return QSize(600, 100)
+
 class DialogAbout(QDialog):
     def __init__(self, parent, **kwargs):
         super(DialogAbout, self).__init__(parent, **kwargs)
@@ -754,62 +767,6 @@ class ExportImageDialog(GenericDialog):
             return self.scaling.currentText() == 'Resample'
         else:
             return False
-
-
-class LineStyleListDelegate(QAbstractItemDelegate):
-
-    def paint(self, painter, option, index):
-        # GET TITLE, DESCRIPTION AND ICON
-        #ic = QIcon(index.data(Qt.DecorationRole))
-
-        match_str = index.data(Qt.DisplayRole)
-        match_type = index.data(Qt.UserRole)
-        marker = index.data(Qt.UserRole + 1)
-        markeredgecolor = index.data(Qt.UserRole + 2)
-        markerfacecolor = index.data(Qt.UserRole + 3)
-        fillstyle = index.data(Qt.UserRole + 4)
-        linestyle = index.data(Qt.UserRole + 5)
-        color = index.data(Qt.UserRole + 6)
-        hatch = index.data(Qt.UserRole + 7)
-
-        if option.state & QStyle.State_Selected:
-            painter.setPen(QPalette().highlightedText().color())
-            painter.fillRect(option.rect, QBrush(QPalette().highlight().color()))
-        else:
-            painter.setPen(QPalette().text().color())
-
-        imageSpace = 10
-        if not ic.isNull():
-            # ICON
-            r = option.rect.adjusted(5, 10, -10, -10)
-            ic.paint(painter, r, Qt.AlignVCenter | Qt.AlignLeft)
-            imageSpace = 55
-
-        # TITLE
-        r = option.rect.adjusted(imageSpace, 5, 0, 0)
-        pen = QPen()
-        pen.setColor(QColor('black'))
-        painter.setPen(pen)
-        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, title)
-
-        # DESCRIPTION
-        r = option.rect.adjusted(imageSpace, 22, 0, 0)
-        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, description)
-
-        # AUTHORS
-        r = option.rect.adjusted(imageSpace, 39, 0, 0)
-        pen = QPen()
-        pen.setColor(QColor('#888888'))
-        painter.setPen(pen)
-        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, author)
-
-        r = option.rect.adjusted(imageSpace, 0, -10, -30)
-        painter.setPen(QPalette().mid().color())
-        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignBottom | Qt.AlignRight, notice)
-
-    def sizeHint(self, option, index):
-        return QSize(600, 100)
-
 
 class MatchLineStyleDialog(GenericDialog):
     '''

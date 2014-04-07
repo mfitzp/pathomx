@@ -7,3 +7,4 @@ Author = U. Gunther, C. Ludwig, Martin Fitzpatrick
 Version = 1.0
 Website = http://beregond.bham.ac.uk/nmrlab/
 Description = NMR spectra processing using the NMRLab/Metabolab MATLAB package
+Resources = MATLAB

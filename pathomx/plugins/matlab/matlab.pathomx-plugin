@@ -7,3 +7,4 @@ Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name
 Description = Run MATLAB scripts and Import/Export data between Pathomx and MATLAB using Numpy MATLAB support
+Resources = MATLAB

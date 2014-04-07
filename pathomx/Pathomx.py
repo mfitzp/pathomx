@@ -130,6 +130,11 @@ class ToolBoxItemDelegate(QAbstractItemDelegate):
         self._font = None
 
     def paint(self, painter, option, index):
+        if not index.data(Qt.UserRole)['plugin'].has_resources:
+            painter.setOpacity(0.25)
+        else:
+            painter.setOpacity(1)
+        
         # GET TITLE, DESCRIPTION AND ICON
         icon = index.data(Qt.DecorationRole)
         title = index.data(Qt.DisplayRole)  # .toString()
@@ -185,30 +190,21 @@ class ToolPanel(QListWidget):
 
         self.setViewMode(QListView.IconMode)
         self.setGridSize(QSize(64, 96))
-        #self._columns = 4
         self.setItemDelegate(ToolBoxItemDelegate())
 
         self.tools = tools
         self.addTools()
-        #self.setLayout(self.vlayout)
-        #self.vlayout.addLayout( self.grid )
-        #self.vlayout.addItem( QSpacerItem(10, 10, QSizePolicy.Maximum) )
 
     def addTools(self):
 
         for n, tool in enumerate(self.tools):
-            #col = n % self._columns
-            #row = n // self._columns
-
-            #print tool
             t = ToolBoxItem(data=tool)
-            #t.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+            
             t.setIcon(tool['plugin'].icon)
-            #t.setIconSize( QSize(32, 32) )
             t.setText(getattr(tool['app'], 'name', tool['plugin'].name))
+            t.setData(Qt.UserRole, tool)
+            
             self.addItem(t)
-            #t = ToolItem(QIcon( tool['icon']), tool['name'], data=tool)
-            #self.grid.addWidget( t, row, col )
 
         self.sortItems()
 
@@ -222,7 +218,11 @@ class ToolPanel(QListWidget):
         logging.debug('Starting drag-drop of workspace item.')
         if e.buttons() == Qt.LeftButton: # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
             item = self.currentItem()
-
+            if not item.data['plugin'].has_resources:
+                logging.debug('Cancelled drag drop; plugin is missing neccessary resources.')
+                e.ignore()
+                return
+                
             mimeData = QMimeData()
             mimeData.setData('application/x-pathomx-app', item.data['id'])
 
@@ -313,6 +313,7 @@ class MainWindow(QMainWindow):
             'file': self.menuBar().addMenu(tr('&File')),
             'plugins': self.menuBar().addMenu(tr('&Plugins')),
             'appearance': self.menuBar().addMenu(tr('&Appearance')),
+            'resources': self.menuBar().addMenu(tr('&Resources')),
             'database': self.menuBar().addMenu(tr('&Database')),
             'help': self.menuBar().addMenu(tr('&Help')),
         }
@@ -361,11 +362,11 @@ class MainWindow(QMainWindow):
 
         self.menuBars['file'].addSeparator()
 
-        printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
-        printAction.setShortcut('Ctrl+P')
-        printAction.setStatusTip(tr('Print current figure'))
-        printAction.triggered.connect(self.onPrint)
-        self.menuBars['file'].addAction(printAction)
+        #printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
+        #printAction.setShortcut('Ctrl+P')
+        #printAction.setStatusTip(tr('Print current figure'))
+        #printAction.triggered.connect(self.onPrint)
+        #self.menuBars['file'].addAction(printAction)
 
         self.menuBars['file'].addSeparator()
 
@@ -402,8 +403,14 @@ class MainWindow(QMainWindow):
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
         linemarkerstyleAction.triggered.connect(self.onLineMarkerStyles)
         self.menuBars['appearance'].addAction(linemarkerstyleAction)
+        
 
-        self.menuBars['appearance'].addSeparator()
+        matlabpathAction = QAction('Edit MATLAB path…', self)
+        matlabpathAction.setStatusTip(tr('Set MATLAB path'))
+        matlabpathAction.triggered.connect(self.onMATLABPathEdit)
+        self.menuBars['resources'].addAction(matlabpathAction)
+
+        
 
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
@@ -441,8 +448,12 @@ class MainWindow(QMainWindow):
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
 
-        # Display a introductory helpfile
-        self.mainBrowser = ui.QWebViewExtend(None, onNavEvent=self.onBrowserNav)
+        resources.matlab.set_exec_path( self.config.value('/Resources/MATLAB_path', 'matlab') )
+
+        self.resources = {
+            'MATLAB': resources.matlab,
+            'R': resources.r,
+        }
 
         self.plugins = {}  # Dict of plugin shortnames to data
         self.plugins_obj = {}  # Dict of plugin name references to objs (for load/save)
@@ -466,7 +477,7 @@ class MainWindow(QMainWindow):
             logging.info(place)
 
         self.tools = defaultdict(list)
-
+        
         self.pluginManager.setPluginPlaces(self.plugin_places)
         self.pluginManager.setPluginInfoExtension('pathomx-plugin')
         categories_filter = {
@@ -496,7 +507,12 @@ class MainWindow(QMainWindow):
 
                 if not os.path.isfile(plugin_image):
                     plugin_image = None
-
+                
+                try:
+                    resource_list = plugin.details.get('Documentation','Resources').split(',')
+                except:
+                    resource_list = []
+                
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__,  # __module__,
                     'image': plugin_image,
@@ -505,6 +521,7 @@ class MainWindow(QMainWindow):
                     'version': plugin.version,
                     'description': plugin.description,
                     'author': plugin.author,
+                    'resources': resource_list,
                     'info': plugin,
                     'path': os.path.dirname(plugin.path),
                     'module': os.path.basename(plugin.path),
@@ -515,7 +532,7 @@ class MainWindow(QMainWindow):
                 self.plugins[metadata['shortname']] = metadata
                 self.plugin_names[id(plugin.plugin_object)] = plugin.name
 
-                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name)
+                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
 
                 apps[category].append(metadata)
 
@@ -641,6 +658,15 @@ class MainWindow(QMainWindow):
         except:
             pass
 
+    def onMATLABPathEdit(self):
+    
+        dialog = ui.MATLABPathDialog(self, path=self.config.value('/Resources/MATLAB_path', 'matlab'))
+        if dialog.exec_():
+            path = dialog.path.text()
+            resources.matlab.set_exec_path( path )
+            self.config.setValue('/Resources/MATLAB_path', path)
+
+
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
         if dialog.exec_():
@@ -665,6 +691,9 @@ class MainWindow(QMainWindow):
         self.config.setValue('Plugins/Disabled', [])
         self.config.setValue('Plugins/Available', [])
         self.config.setValue('Plugins/Paths', [])
+        
+        self.config.setValue('/Resources/MATLAB_path', 'matlab')
+        
     # UI Events
 
     def onGoToPathomxWeb(self):
@@ -703,20 +732,6 @@ class MainWindow(QMainWindow):
         for t in self.apps:
             t.views.style_updated.emit()
 
-    def onPrint(self):
-        dialog = QPrintDialog(self.printer, self)
-        if dialog.exec_():
-            self.mainBrowser.print_(self.printer)
-
-    def onZoomOut(self):
-        zf = self.mainBrowser.zoomFactor()
-        zf = max(0.5, zf - 0.1)
-        self.mainBrowser.setZoomFactor(zf)
-
-    def onZoomIn(self):
-        zf = self.mainBrowser.zoomFactor()
-        zf = min(1.5, zf + 0.1)
-        self.mainBrowser.setZoomFactor(zf)
 
     def onBrowserNav(self, url):
         # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface

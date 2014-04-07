@@ -333,6 +333,7 @@ class BasePlugin(IPlugin):
     '''
 
     default_workspace_category = None
+    is_active = True
 
     def __init__(self, **kwargs):
         super(BasePlugin, self).__init__()
@@ -346,7 +347,7 @@ class BasePlugin(IPlugin):
         self.m.plugins_obj[self.id] = self
         #self.name = "%s %s " % (self.default_workspace_category, "Plugin")
 
-    def post_setup(self, path=None, name=None):  # Post setup hook
+    def post_setup(self, path=None, name=None, metadata={}):  # Post setup hook
 
         if path:
             self.path = path
@@ -371,6 +372,12 @@ class BasePlugin(IPlugin):
             self.help_tab_html_filename = 'readme.html'
         else:
             self.help_tab_html_filename = None
+        
+        self.metadata = metadata
+
+    @property
+    def has_resources(self):
+        return set( [k for k, v in self.m.resources.items() if v.is_available] ).issuperset( set(self.metadata['resources']) ) 
 
     @property
     def icon(self):

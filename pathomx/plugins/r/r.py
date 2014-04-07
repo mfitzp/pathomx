@@ -14,7 +14,6 @@ import numpy as np
 import rpy2.robjects as robjects
 
 
-
 class HighlightingRule():
     def __init__(self, pattern, format):
         self.pattern = pattern
@@ -207,9 +206,6 @@ class RScriptTool(RLock, ui.CodeEditorTool):
             DataDefinition('input', {
             })
         )
-
-        if not hasattr('robjects', 'is_running'):
-            robjects.is_running = False
 
         self.config.set_defaults({
             'source': '''
