@@ -1,4 +1,4 @@
-Config
+Translate
 *************
 
 .. automodule:: pathomx.translate

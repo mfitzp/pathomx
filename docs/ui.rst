@@ -1,4 +1,4 @@
-Config
+UI
 *************
 
 .. automodule:: pathomx.ui

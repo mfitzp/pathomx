@@ -1,4 +1,4 @@
-Config
+Pathomx
 *************
 
 .. automodule:: pathomx.Pathomx

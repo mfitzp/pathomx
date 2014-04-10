@@ -1,4 +1,4 @@
-Config
+Qt
 *************
 
 .. automodule:: pathomx.qt

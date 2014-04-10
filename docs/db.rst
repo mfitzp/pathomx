@@ -1,4 +1,4 @@
-Config
+DB
 *************
 
 .. automodule:: pathomx.db

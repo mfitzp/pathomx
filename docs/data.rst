@@ -1,4 +1,4 @@
-Config
+Data
 *************
 
 .. automodule:: pathomx.data

@@ -1,6 +1,6 @@
 Config
 *************
 
-.. automodule:: pathomx.colors
+.. automodule:: pathomx.config
    :members:
    :undoc-members:
