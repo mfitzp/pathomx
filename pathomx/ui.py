@@ -57,6 +57,12 @@ BLANK_DEFAULT_HTML = '''
 
 
 class QColorButton(QPushButton):
+    '''
+    Custom Qt Widget to show a chosen color.
+    
+    Left-clicking the button shows the color-chooser, while
+    right-clicking resets the color to None (no-color).    
+    '''
 
     colorChanged = pyqtSignal()
 
@@ -81,6 +87,13 @@ class QColorButton(QPushButton):
         return self._color
 
     def onColorPicker(self):
+        '''
+        Show color-picker dialog to select color.
+        
+        This should use the Qt-defined non-native dialog so custom colours
+        can be auto-defined from the currently set palette - but it doesn't work due
+        to a known bug - should auto-fix on Qt 5.2.2.
+        '''
         dlg = QColorDialog(self)
         if self._color:
             dlg.setCurrentColor(QColor(self._color))
@@ -99,7 +112,12 @@ class QColorButton(QPushButton):
 
 
 class QNoneDoubleSpinBox(QDoubleSpinBox):
-
+    '''
+    Custom Qt widget to offer a DoubleSpinBox that can hold null values.
+    
+    The value can be set to null with right-click. When set to null the widget
+    appears faded.
+    '''
     def __init__(self, *args, **kwargs):
         super(QNoneDoubleSpinBox, self).__init__(*args, **kwargs)
         self.is_None = False
@@ -136,6 +154,11 @@ class QNoneDoubleSpinBox(QDoubleSpinBox):
 
 # Generic configuration dialog handling class
 class GenericDialog(QDialog):
+    '''
+    A generic dialog wrapper that handles most common dialog setup/shutdown functions.
+    
+    Support for config, etc. to be added for auto-handling widgets and config load/save. 
+    '''
     def __init__(self, parent, buttons=['ok', 'cancel'], **kwargs):
         super(GenericDialog, self).__init__(parent, **kwargs)
 
@@ -177,6 +200,9 @@ class GenericDialog(QDialog):
 
 
 class MATLABPathDialog(GenericDialog):
+    '''
+    Dialog for MATLAB exectuable path setting.
+    '''
     def __init__(self, parent, path='matlab', **kwargs):
         super(MATLABPathDialog, self).__init__(parent, **kwargs)
         self.setWindowTitle('Set MATLAB Path')
