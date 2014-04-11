@@ -536,13 +536,8 @@ class MainWindow(QMainWindow):
 
                 apps[category].append(metadata)
 
-        self.stack = QStackedWidget()
-
         self.threadpool = QThreadPool()
         logging.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-
-        self.setCentralWidget(self.stack)
-        self.stack.setCurrentIndex(0)
 
         self.workspace_count = 0  # Auto-increment
         self.workspace_parents = {}
@@ -574,7 +569,7 @@ class MainWindow(QMainWindow):
             self.addWorkspaceItem(None, None, category, app_category_icons[category])
 
         self.workspace.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.workspace.currentItemChanged.connect(self.onWorkspaceStackChange)
+        self.workspace.currentItemChanged.connect(self.onWorkspaceItemChange)
 
         self.toolbox = QToolBox(self)
         for category in plugin_categories:
@@ -852,7 +847,7 @@ class MainWindow(QMainWindow):
         template = self.templateEngine.get_template(template)
         self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), QUrl("~"))
 
-    def onWorkspaceStackChange(self, item, previous):
+    def onWorkspaceItemChange(self, item, previous):
         widget = self.workspace_index[item.text(1)]
         if widget:
             widget.show()

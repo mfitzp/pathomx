@@ -15,6 +15,7 @@ import pathomx.utils as utils
 from pathomx.data import DataSet
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
+from pathomx.utils import UnicodeReader
 
 
 class GEOApp(ui.ImportDataApp):
@@ -108,12 +109,12 @@ class GEOApp(ui.ImportDataApp):
         return data
 
     def load_soft_dataset(self, filename):  # Load from soft data file for genes
-        # SOFT files are a /sort of/ basterdized csv with data in tab-separated columns
+        # SOFT files are a /sort of/ bastardized csv with data in tab-separated columns
         # So, we use the csv reader to get that, accounting for most stuff being single field with
         # slightly strange identifiers
-        f = open(filename, 'rU')
+        f = open(filename, 'rb')
         fsize = os.path.getsize(filename)
-        reader = csv.reader(f, delimiter='\t', dialect='excel')
+        reader = UnicodeReader(f, delimiter='\t', dialect='excel')
 
         soft_data = self.preprocess_soft(reader, f=f, fsize=fsize)
         # soft_data now contains lists of sections with ^ markers
