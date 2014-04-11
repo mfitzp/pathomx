@@ -552,7 +552,11 @@ class MainWindow(QMainWindow):
         self.workspace.hideColumn(1)
 
         self.editor = WorkspaceEditor(self)
-        self.setCentralWidget(self.editor)
+        
+        self.central = QTabbedWidget()
+        
+        self.central.addTab( self.editor, 'Editor')
+        self.setCentralWidget(self.central)
 
         app_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
