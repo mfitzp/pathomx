@@ -1074,7 +1074,6 @@ class MplCategoryBarView(MplView):
 
             color = next(colors)
             ls = linestyles.get_linestyle_for_class( c )
-            print ls.bar_kwargs
             plots[c] = self.ax.bar(x[:,n], cdata, align='center', yerr=yerr, **ls.bar_kwargs)
 
         xticks = np.mean(x,axis=1)

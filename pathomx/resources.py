@@ -19,7 +19,7 @@ try:
 except:
     robjects = False
 
-from custom_exceptions import PathomxExternalResourceUnavailableException, PathomxExternalResourceTimeoutException
+from .custom_exceptions import PathomxExternalResourceUnavailableException, PathomxExternalResourceTimeoutException
 from .utils import which
 
 class AbstractResource(object):
@@ -102,7 +102,7 @@ class AbstractLock(object):
                 self.lock = lock_id
                 break
             time.sleep(1)
-        print self.lock    
+
         if self.lock != lock_id:                    
             logging.debug('Lock failed on %s' % self.__class__)
             raise PathomxExternalResourceTimeoutException

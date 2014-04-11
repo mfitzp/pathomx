@@ -807,10 +807,10 @@ class MatchLineStyleDialog(GenericDialog):
         'Regular expression': MATCH_REGEXP,
     }
 
-    LINESTYLES_dict = OrderedDict([('None', None)] + zip(LINESTYLES, LINESTYLES))
-    MARKERS_dict = OrderedDict([('None', None)] + zip(MARKERS, MARKERS))
-    FILLSTYLES_dict = OrderedDict([('None', None)] + zip(FILLSTYLES, FILLSTYLES))
-    HATCHSTYLES_dict = OrderedDict([('None', None)] + zip(HATCHSTYLES, HATCHSTYLES))
+    LINESTYLES_dict = OrderedDict([('None', None)] + list( zip(LINESTYLES, LINESTYLES) ) )
+    MARKERS_dict = OrderedDict([('None', None)] + list( zip(MARKERS, MARKERS) ) )
+    FILLSTYLES_dict = OrderedDict([('None', None)] + list( zip(FILLSTYLES, FILLSTYLES) ) ) 
+    HATCHSTYLES_dict = OrderedDict([('None', None)] + list( zip(HATCHSTYLES, HATCHSTYLES) ) )
 
     def __init__(self, parent, mdls=None, **kwargs):
         super(MatchLineStyleDialog, self).__init__(parent, **kwargs)
@@ -1756,7 +1756,6 @@ class GenericApp(QMainWindow):
         return QSize(600 + 300, 400 + 100)
         
     def wait_for_lock(self):
-        print "Dummy lock"
         return True
         
     def release_lock(self):
