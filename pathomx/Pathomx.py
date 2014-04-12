@@ -14,6 +14,7 @@ import json
 import importlib
 import functools
 
+sys.setcheckinterval(1000)
 
 if sys.version_info < (3, 0):  # Python 2 only
     UTF8Writer = codecs.getwriter('utf8')
@@ -628,19 +629,18 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.progressBar)
         self.progressTracker = {}  # Dict storing values for each view/object
 
-        logging.info('Ready.')
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
-            # We've got an upgrade
-            self.onAbout()
-            self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
+        #if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
+        #    # We've got an upgrade
+        #    self.onAbout()
+        #    self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
 
-        if self.config.value('/Pathomx/Offered_registration', False) != True:
-            self.onDoRegister()
-            self.config.setValue('/Pathomx/Offered_registration', True)
+        #if self.config.value('/Pathomx/Offered_registration', False) != True:
+        #    self.onDoRegister()
+        #    self.config.setValue('/Pathomx/Offered_registration', True)
 
     def onLogItemClicked(self, item):
         # When an item in the log viewer is clicked, center on the associated Tool
@@ -1081,25 +1081,25 @@ class MainWindow(QMainWindow):
         self.workspace_updated.emit()
 
 
-class QApplicationExtend(QApplication):
-    def event(self, e):
-        if e.type() == QEvent.FileOpen:
-            fn, fe = os.path.splitext(e.file())
-            formats = {  # Run specific loading function for different source data types
-                    '.mpf': self.openWorkflow,
-                }
-            if fe in list(formats.keys()):
-                formats[fe](e.file())
-
-            return True
-
-        else:
-            return super(QApplicationExtend, self).event(e)
+#class QApplicationExtend(QApplication):
+    #def event(self, e):
+    #    if e.type() == QEvent.FileOpen:
+    #        fn, fe = os.path.splitext(e.file())
+    #        formats = {  # Run specific loading function for different source data types
+    #                '.mpf': self.openWorkflow,
+    #            }
+    #        if fe in list(formats.keys()):
+    #            formats[fe](e.file())
+    #
+    #        return True
+    #
+    #    else:
+    #        return super(QApplicationExtend, self).event(e)
 
 
 def main():
     # Create a Qt application
-    app = QApplicationExtend(sys.argv)
+    app = QApplication(sys.argv)
     app.setStyle('fusion')
 
     app.setOrganizationName("Pathomx")
@@ -1141,8 +1141,9 @@ def main():
     mpl.rcParams['patch.linewidth'] = 0
 
     MainWindow()
-    app.exec_()
-    # Enter Qt application main loop
+    logging.info('Ready.')        	
+    app.exec_() # Enter Qt application main loop
+    logging.info('Exiting.')        	
     sys.exit()
 
 if __name__ == "__main__":

@@ -1347,7 +1347,6 @@ class GenericApp(QMainWindow):
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
-
         self.id = str(id(self))
 
         self._previous_size = None
