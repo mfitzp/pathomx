@@ -38,7 +38,7 @@ MATCH_REGEXP = 5
 
 from . import utils
 
-class LineStyleHandler(object):
+class StyleHandler(object):
     '''
     Interface to return a marker and colour combination for a given classifier
     
@@ -56,9 +56,9 @@ class LineStyleHandler(object):
         cm_def = ClassMatchDefinition()
         # Get unique marker definition (algo)
         # def = self.get_unique_marker_definition()
-        ls_def = LineStyleDefinition()
+        ls_def = StyleDefinition()
 
-    def get_linestyle_for_class(self, classname):
+    def get_style_for_class(self, classname):
         '''
         Run through each match and definition in turn, applying any non-None value to 
         a cumulative marker definition. Return the result for use to assign a color.
@@ -68,7 +68,7 @@ class LineStyleHandler(object):
         (as an auto-assignment) to ensure the same class still receives the same label in future. 
         '''
         is_matched = False
-        ls_def = LineStyleDefinition()
+        ls_def = StyleDefinition()
 
         for cm_def, ls_definition in self.matchdefs:
             if cm_def.is_match_for_class(classname):
@@ -91,12 +91,12 @@ class LineStyleHandler(object):
             # We need to generate a unique marker and provide a default marker def (unique match)
             # to ensure class receives the same marker in future
             cm_def = ClassMatchDefinition(classname, MATCH_EXACT, is_auto=True)
-            ls_def = self.get_unique_linestyle_definition()
+            ls_def = self.get_unique_style_definition()
             self.automatchdefs.append((cm_def, ls_def))
 
             return ls_def
 
-    def get_unique_linestyle_definition(self):
+    def get_unique_style_definition(self):
         '''
         Assign a unique marker definition using standard progression set
         Note: this is only guaranteed to be unique at the point of assignment,
@@ -104,23 +104,23 @@ class LineStyleHandler(object):
         FIXME: Watch for clashes and fix, then refresh
         '''
 
-        # Get a list of all LineStyleDefinitions currently in use
+        # Get a list of all StyleDefinitions currently in use
         currently_in_use = [ls_def for cm_def, ls_def in self.matchdefs + self.automatchdefs]
         for m in MARKERS:
             for l in LINESTYLES:
                 for c in COLORS_CATEGORY10:
-                    ls_def = LineStyleDefinition(marker=m, linestyle=l, linewidth=1, color=c, markerfacecolor=c, fillstyle='full')
+                    ls_def = StyleDefinition(marker=m, linestyle=l, linewidth=1, color=c, markerfacecolor=c, markersize=4.5, fillstyle='full')
                     if ls_def not in currently_in_use:
                         return ls_def
 
         return None
         
-    def getXMLMatchDefinitionsLineStyles(self, root):
+    def getXMLMatchDefinitionsStyles(self, root):
     
-        # Iterate over the entire set (in order) creating a XML representation of the MatchDef and LineStyle
+        # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
         for cm, ls in self.matchdefs + self.automatchdefs:
             
-            cmls = et.SubElement(root, "ClassMatchLineStyle")
+            cmls = et.SubElement(root, "ClassMatchStyle")
             if cm.is_auto:
                 cmls.set('is_auto', 'true')
             
@@ -128,7 +128,7 @@ class LineStyleHandler(object):
             cme.set("match_str", cm.match_str)
             cme.set("match_type", str(cm.match_type) )
 
-            lse = et.SubElement(cmls, "LineStyle")
+            lse = et.SubElement(cmls, "Style")
             
             for attr in ls.attr:
                 value = ls.__dict__[attr]
@@ -137,21 +137,21 @@ class LineStyleHandler(object):
 
         return root
         
-    def setXMLMatchDefinitionsLineStyles(self, root):
+    def setXMLMatchDefinitionsStyles(self, root):
 
         self.automatchdefs = []
         self.matchdefs = []
 
-        for cmls in root.findall('ClassMatchLineStyle'):
+        for cmls in root.findall('ClassMatchStyle'):
             
             cm = ClassMatchDefinition()
-            ls = LineStyleDefinition()
+            ls = StyleDefinition()
             
             cme = cmls.find('ClassMatch')
             cm.match_str = cme.get('match_str')
             cm.match_type = int( cme.get('match_type') )
 
-            lse = cmls.find('LineStyle')
+            lse = cmls.find('Style')
             for attr in ls.attr:
                 ls.__dict__[attr] = lse.get(attr, None)
                 
@@ -164,12 +164,12 @@ class LineStyleHandler(object):
                 self.matchdefs.append( ( cm, ls ) )
 
 
-class LineStyleDefinition(object):
+class StyleDefinition(object):
     '''
     
     '''
     line_attr = ['linestyle', 'color', 'linewidth']
-    marker_attr = ['marker', 'markeredgecolor', 'markerfacecolor', 'fillstyle']
+    marker_attr = ['marker', 'markersize', 'markeredgecolor', 'markerfacecolor', 'fillstyle']
     hatch_attr = ['hatch']
     attr = line_attr + marker_attr + hatch_attr
 
@@ -180,14 +180,15 @@ class LineStyleDefinition(object):
         return True
 
     def __repr__(self):
-        return "LineStyleDefinition(%s)" % self.__unicode__()
+        return "StyleDefinition(%s)" % self.__unicode__()
 
     def __unicode__(self):
         return ', '.join(['%s=%s' % (attr, self.__dict__[attr]) for attr in self.attr])
 
-    def __init__(self, marker=None, markeredgecolor=None, markerfacecolor=None, fillstyle=None, linewidth=None, linestyle=None, color=None, hatch=None):
+    def __init__(self, marker=None, markersize=None, markeredgecolor=None, markerfacecolor=None, fillstyle=None, linewidth=None, linestyle=None, color=None, hatch=None):
 
         self.marker = marker
+        self.markersize = markersize
         self.markeredgecolor = markeredgecolor
         self.markerfacecolor = markerfacecolor
         self.fillstyle = fillstyle
@@ -264,4 +265,4 @@ class ClassMatchDefinition(object):
             else:
                 return False
 
-linestyles = LineStyleHandler()
+styles = StyleHandler()

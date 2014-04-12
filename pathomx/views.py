@@ -28,7 +28,7 @@ import numpy as np
 
 from . import data, config, utils
 
-from .styles import linestyles
+from .styles import styles
 
 
 # Translation (@default context)
@@ -696,7 +696,7 @@ class MplSpectraView(MplView):
             plots = OrderedDict()
             for n,row in enumerate(data):
                 c = dsot.classes[0][n]
-                ls = linestyles.get_linestyle_for_class( c )
+                ls = styles.get_style_for_class( c )
                 plots[ c ], = self.ax.plot(scale, row, **ls.line_kwargs)
         
             legend = self.ax.legend(list(plots.values()),
@@ -851,8 +851,9 @@ class MplScatterView(MplView):
         classes = dso.classes_l[0]
         for c in classes:
             df = dso.as_filtered(dim=0,classes=[c])
-            ls = linestyles.get_linestyle_for_class( c )
-            plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker)
+            ls = styles.get_style_for_class( c )
+            s = ls.markersize**2 if ls.markersize != None else 20 #default
+            plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker, s=s)
 
         legend = self.ax.legend(list(plots.values()),
            list(plots.keys()),
@@ -1075,7 +1076,7 @@ class MplCategoryBarView(MplView):
                 yerr = None
 
             color = next(colors)
-            ls = linestyles.get_linestyle_for_class( c )
+            ls = styles.get_style_for_class( c )
             plots[c] = self.ax.bar(x[:,n], cdata, align='center', yerr=yerr, **ls.bar_kwargs)
 
         xticks = np.mean(x,axis=1)

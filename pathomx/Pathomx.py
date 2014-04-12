@@ -403,7 +403,7 @@ class MainWindow(QMainWindow):
 
         linemarkerstyleAction = QAction('Line and marker styles…', self)
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
-        linemarkerstyleAction.triggered.connect(self.onLineMarkerStyles)
+        linemarkerstyleAction.triggered.connect(self.onDefineClassStyles)
         self.menuBars['appearance'].addAction(linemarkerstyleAction)
         
 
@@ -715,8 +715,8 @@ class MainWindow(QMainWindow):
             # Send data to server;
             # http://register.pathomx.org POST
 
-    def onLineMarkerStyles(self):
-        dlg = ui.MatchLineStyleManagerDialog(self)
+    def onDefineClassStyles(self):
+        dlg = ui.MatchStyleManagerDialog(self)
         if dlg.exec_():
             self.onRefreshAllViews()
 
@@ -980,7 +980,7 @@ class MainWindow(QMainWindow):
         root.set('xmlns:mpwfml', "http://pathomx.org/schema/Workflow/2013a")
         
         s = et.SubElement(root, "Styles")
-        s = styles.linestyles.getXMLMatchDefinitionsLineStyles(s)
+        s = styles.styles.getXMLMatchDefinitionsStyles(s)
 
         # Build a JSONable object representing the entire current workspace and write it to file
         for v in self.apps:
@@ -1036,7 +1036,7 @@ class MainWindow(QMainWindow):
         workflow = tree.getroot()
 
         s = workflow.find('Styles')
-        styles.linestyles.setXMLMatchDefinitionsLineStyles(s)
+        styles.styles.setXMLMatchDefinitionsStyles(s)
 
         appref = {}
         logging.info("...Loading apps.")
