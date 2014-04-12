@@ -220,7 +220,7 @@ class ToolPanel(QListWidget):
         if e.buttons() == Qt.LeftButton: # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
             item = self.currentItem()
             if not item.data['plugin'].has_resources:
-                logging.debug('Cancelled drag drop; plugin is missing neccessary resources.')
+                logging.debug('Cancelled drag drop: neccessary resources for plugin are missing.')
                 e.ignore()
                 return
                 
@@ -236,6 +236,7 @@ class ToolPanel(QListWidget):
 
             dropAction = drag.exec_(Qt.MoveAction)
             logging.debug('Drag-drop complete.')
+        e.ignore()
 
 class MainWindow(QMainWindow):
 
