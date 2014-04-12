@@ -625,10 +625,10 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        #if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
-        #    # We've got an upgrade
-        #    self.onAbout()
-        #    self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
+        if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
+            # We've got an upgrade
+            self.onAbout()
+            self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
 
         #if self.config.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
