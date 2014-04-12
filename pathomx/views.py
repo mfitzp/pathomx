@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading views.py')
 
 
 # Import PyQt5 classes
@@ -157,7 +159,7 @@ class ViewManager( QTabWidget ):
                         self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
                         break
          
-class BaseView():
+class BaseView(object):
     """
     Base View prototype with stubs and data-handling functions that are generically useful.
     Sub-class from this if you want to create a new type of view, e.g. supporting an alternative
@@ -1074,7 +1076,6 @@ class MplCategoryBarView(MplView):
 
             color = next(colors)
             ls = linestyles.get_linestyle_for_class( c )
-            print ls.bar_kwargs
             plots[c] = self.ax.bar(x[:,n], cdata, align='center', yerr=yerr, **ls.bar_kwargs)
 
         xticks = np.mean(x,axis=1)

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading styles.py')
+
 import sys
 import re
 
@@ -228,7 +231,6 @@ class LineStyleDefinition(object):
 
     @property
     def bar_kwargs(self):
-        print self
         kw_attr = {'fc': 'markerfacecolor', 'ec': 'markeredgecolor', 'lw': 'linewidth', 'ecolor': 'markeredgecolor', 'hatch': 'hatch'}
         return {kw: self.__dict__[attr] for kw, attr in kw_attr.items() if self.__dict__[attr] != None}
 

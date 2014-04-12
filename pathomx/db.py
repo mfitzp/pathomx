@@ -4,6 +4,8 @@
 # filter sets, list etc.
 # Database is a key-based store of each dataset
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading db.py')
 
 import os
 import sys

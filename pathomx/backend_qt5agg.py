@@ -3,6 +3,8 @@ Render to qt from agg
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import logging
+logging.debug('Loading backend_qt5agg.py')
 
 import sys
 import ctypes
@@ -11,8 +13,7 @@ import matplotlib
 from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from .qt import *
 from .backend_qt5 import FigureManagerQT
 from .backend_qt5 import FigureCanvasQT
 from .backend_qt5 import NavigationToolbar2QT
@@ -169,3 +170,4 @@ class FigureCanvasQTAgg(FigureCanvasQT, FigureCanvasAgg):
     def print_figure(self, *args, **kwargs):
         FigureCanvasAgg.print_figure(self, *args, **kwargs)
         self.draw()
+

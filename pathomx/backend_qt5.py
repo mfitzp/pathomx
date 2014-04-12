@@ -1,5 +1,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import logging
+logging.debug('Loading backend_qt5.py')
 
 import os
 import signal
@@ -17,6 +19,7 @@ from matplotlib.backend_bases import cursors
 from matplotlib.backend_bases import TimerBase
 from matplotlib.backend_bases import ShowBase
 
+
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.figure import Figure
 
@@ -26,11 +29,7 @@ try:
 except ImportError:
     figureoptions = None
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-from PyQt5 import QtWidgets
+from .qt import *
 
 _getSaveFileName = QFileDialog.getSaveFileName
 

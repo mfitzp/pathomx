@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading translate.py')
 
 # Import PyQt5 classes
 from .qt import QCoreApplication
