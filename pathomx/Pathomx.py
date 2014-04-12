@@ -236,7 +236,9 @@ class ToolPanel(QListWidget):
 
             dropAction = drag.exec_(Qt.MoveAction)
             logging.debug('Drag-drop complete.')
-        e.ignore()
+            
+        else:
+            e.ignore()
 
 class MainWindow(QMainWindow):
 
