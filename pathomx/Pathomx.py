@@ -260,8 +260,6 @@ class MainWindow(QMainWindow):
 
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
-        #sys.stdout = Logger( self.logView, sys.__stdout__)
-        #sys.stderr = Logger( self.logView, sys.__stderr__, QColor(255,0,0) )
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
@@ -551,12 +549,6 @@ class MainWindow(QMainWindow):
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
 
-        self.editor = WorkspaceEditor(self)
-        
-        self.central = QTabbedWidget()
-        
-        self.central.addTab( self.editor, 'Editor')
-        self.setCentralWidget(self.central)
 
         app_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
@@ -595,25 +587,12 @@ class MainWindow(QMainWindow):
         self.dataView = QTreeView(self)
         self.dataModel = data.DataTreeModel(self.datasets)
         self.dataView.setModel(self.dataModel)
-
         self.dataView.hideColumn(0)
 
-        self.dataDock = QDockWidget(tr('Data'))
-        self.dataDock.setWidget(self.dataView)
-        self.dataDock.setMinimumWidth(300)
-        self.dataDock.setMaximumWidth(300)
-
-        self.logDock = QDockWidget(tr('Log'))
-        self.logDock.setWidget(self.logView)
-
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.logDock)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dataDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.tabifyDockWidget(self.toolDock, self.workspaceDock)
-        self.tabifyDockWidget(self.workspaceDock, self.dataDock)
-        self.tabifyDockWidget(self.dataDock, self.logDock)
         self.toolDock.raise_()
 
         self.dbtool = ui.DbApp(self)
@@ -626,6 +605,18 @@ class MainWindow(QMainWindow):
         self.progressBar.setRange(0, 100)
         self.statusBar().addPermanentWidget(self.progressBar)
         self.progressTracker = {}  # Dict storing values for each view/object
+
+        self.editor = WorkspaceEditor(self)
+        
+        self.central = QTabWidget()
+        self.central.setTabPosition( QTabWidget.South )
+        
+        self.central.addTab( self.editor, 'Editor')
+        self.central.addTab( self.logView, 'Log')
+        self.central.addTab( self.dataView, 'Data')
+
+        self.setCentralWidget(self.central)
+
 
         logging.info('Ready.')
         self.statusBar().showMessage(tr('Ready'))
