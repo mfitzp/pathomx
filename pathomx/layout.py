@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading layout.py')
 
 import os
 import sys

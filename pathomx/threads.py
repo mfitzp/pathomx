@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading threads.py')
 
 # Import PyQt5 classes
 from .qt import *

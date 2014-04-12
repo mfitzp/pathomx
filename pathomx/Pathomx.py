@@ -20,7 +20,7 @@ if sys.version_info < (3, 0):  # Python 2 only
     sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
 
-from pathomx.qt import *
+from .qt import *
 # pyqtSignal, Qt, QTreeWidgetItem, QIcon, QColor, QBrush, QObject, \
 # QPixmap, QComboBox, QLineEdit, QLabel, QAbstractItemDelegate, QStyle, \
 # QPalette, QListView, QDrag, QMimeData, QSettings, QSize,

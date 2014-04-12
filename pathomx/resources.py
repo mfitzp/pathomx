@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import time
 import logging
+logging.debug('Loading resources.py')
+
+import time
+
 '''
 Interfaces to MATLAB, R and any other resources that are single-threaded and require
 queuing before running. If defined interfaces are added as dependencies of jobs

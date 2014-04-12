@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading utils.py')
 
 import re
 import os

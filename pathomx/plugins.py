@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import logging
+logging.debug('Loading plugins.py')
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
