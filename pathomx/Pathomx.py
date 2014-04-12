@@ -192,7 +192,7 @@ class ToolPanel(QListWidget):
         self.setViewMode(QListView.IconMode)
         self.setGridSize(QSize(64, 96))
         self.setItemDelegate(ToolBoxItemDelegate())
-
+                
         self.tools = tools
         self.addTools()
 
@@ -216,8 +216,8 @@ class ToolPanel(QListWidget):
         return row * self._tool_width
 
     def mouseMoveEvent(self, e):
-        logging.debug('Starting drag-drop of workspace item.')
         if e.buttons() == Qt.LeftButton: # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
+            logging.debug('Starting drag-drop of workspace item.')
             item = self.currentItem()
             if not item.data['plugin'].has_resources:
                 logging.debug('Cancelled drag drop: neccessary resources for plugin are missing.')
@@ -234,7 +234,7 @@ class ToolPanel(QListWidget):
             drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
             drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
 
-            dropAction = drag.exec_(Qt.MoveAction)
+            dropAction = drag.exec_(Qt.CopyAction)
             logging.debug('Drag-drop complete.')
             
         else:

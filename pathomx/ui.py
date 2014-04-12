@@ -222,14 +222,12 @@ class DialogAbout(QDialog):
         super(DialogAbout, self).__init__(parent, **kwargs)
 
         self.setWindowTitle('About Pathomx')
-
-        self.help = QWebViewExtend(self, parent.onBrowserNav)
+        self.help = QWebView(self)#, parent.onBrowserNav)
         template = parent.templateEngine.get_template('about.html')
         self.help.setHtml(template.render({
                     'htmlbase': os.path.join(utils.scriptdir, 'html'),
                     }), QUrl("~")
                     )
-
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
 
@@ -1362,20 +1360,26 @@ class GenericApp(QMainWindow):
 
         self.logger = logging.getLogger(self.id)
 
-        self.data = data.DataManager(self.m, self)
-        self.views = ViewManager(self)
-        self.complete.connect(self.views.onRefreshAll)
-
         self.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         if name == None:
             name = getattr(self, 'name', self.m.plugin_names[id(self.plugin)])
         self.set_name(name)
 
+        logging.debug('Creating tool: %s' % name)
+
+        logging.debug('Setting up data manager...')
+        self.data = data.DataManager(self.m, self)
+
+        logging.debug('Setting up view manager...')
+        self.views = ViewManager(self)
+
+        logging.debug('Setting up file watcher manager...')
         self.file_watcher = QFileSystemWatcher()
         self.file_watcher.fileChanged.connect(self.onFileChanged)
 
         if self.plugin.help_tab_html_filename:
+            logging.debug('Loading help...')
             template = self.plugin.templateEngine.get_template(self.plugin.help_tab_html_filename)
             html = template.render({
                         'htmlbase': os.path.join(utils.scriptdir, 'html'),
@@ -1387,19 +1391,28 @@ class GenericApp(QMainWindow):
 
         self.toolbars = {}
 
+        logging.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
 
         self.setCentralWidget(self.views)
 
+        logging.debug('Connect event handlers...')
         self.status.connect(self.setWorkspaceStatus)
         self.progress.connect(self.updateProgress)
+        self.complete.connect(self.views.onRefreshAll)
 
+        logging.debug('Setup config manager...')
         self.config = config.ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
 
+        logging.debug('Create editor icon...')
         self.editorItem = self.m.editor.addApp(self, position=position)
+        logging.debug('Create workspace list entry...')
         self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, icon=self.plugin.workspace_icon)  # , icon = None)
 
+        logging.debug('Add default toolbar...')
         self.addSelfToolBar()  # Everything has one
+
+        logging.debug('Completed default tool (%s) setup.' % name)
 
     def finalise(self):
 
