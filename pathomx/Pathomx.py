@@ -1036,7 +1036,8 @@ class MainWindow(QMainWindow):
         workflow = tree.getroot()
 
         s = workflow.find('Styles')
-        styles.styles.setXMLMatchDefinitionsStyles(s)
+        if s:
+            styles.styles.setXMLMatchDefinitionsStyles(s)
 
         appref = {}
         logging.info("...Loading apps.")
