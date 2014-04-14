@@ -4,6 +4,7 @@ import logging
 logging.debug('Loading resources.py')
 
 import time
+import os
 
 '''
 Interfaces to MATLAB, R and any other resources that are single-threaded and require
@@ -16,7 +17,7 @@ try:
     import mlabwrap
 except:
     mlabwrap = False
-    
+
 try:
     import rpy2.robjects as robjects
 except:
@@ -75,6 +76,7 @@ class MATLABResource(AbstractResource):
             self.exec_path = newpath
             self.stop()
 
+           
 class RResource(AbstractResource):
     
     @property

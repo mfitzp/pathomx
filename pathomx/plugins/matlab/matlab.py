@@ -224,6 +224,8 @@ class MATLABScriptTool(MATLABLock, CodeEditorTool):
 % http://docs.pathomx.org/en/latest/
 %
 % Have fun!
+
+output_data=input_data
 '''
         })
 

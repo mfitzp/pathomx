@@ -212,12 +212,14 @@ class RScriptTool(RLock, ui.CodeEditorTool):
 # ##### R Scripting for Pathomx ####
 # 
 # Source data from input ports is available as same-named variables in the R global
-# workspace (default input). The data matrix is therefore available under input.data
-# Put your modified data output into the variable output.
+# workspace (default input). The data matrix is therefore available under input_data
+# Put your modified data output into the variable output_data.
 # For more information on the Pathomx Dataset object structure see:
 # http://docs.pathomx.org/en/latest/
 #
 # Have fun!
+
+output_data = input_data
 '''
         })
 
