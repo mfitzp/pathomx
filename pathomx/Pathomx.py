@@ -267,8 +267,8 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.config = QSettings()
-        if self.config.value('/Pathomx/Is_setup', False) != True:
+        self.config = QSettings('Pathomx','Pathomx')
+        if self.config.value('/Pathomx/Is_setup', False) == False:
             logging.info("Setting up initial configuration...")
             self.onResetConfig()
             logging.info('Done')
@@ -623,13 +623,14 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
-
+        print self.config.value('/Pathomx/Current_version', '0.0.0')
+        print VERSION_STRING
         # Do version upgrade check
         if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             self.onAbout()
             self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
-
+            
         #if self.config.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    self.config.setValue('/Pathomx/Offered_registration', True)
