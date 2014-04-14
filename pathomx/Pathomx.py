@@ -623,11 +623,10 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
-        print self.config.value('/Pathomx/Current_version', '0.0.0')
-        print VERSION_STRING
         # Do version upgrade check
         if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
+            logging.info('Upgrade to %s' % VERSION_STRING)
             self.onAbout()
             self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
             
