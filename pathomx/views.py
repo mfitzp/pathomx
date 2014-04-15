@@ -41,7 +41,7 @@ from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
 from matplotlib.path import Path
-from matplotlib.patches import BoxStyle
+from matplotlib.patches import BoxStyle, Ellipse
 
 import matplotlib.cm as cm
 
@@ -833,7 +833,7 @@ class MplScatterView(MplView):
     def __init__(self, parent, **kwargs):
         super(MplScatterView, self).__init__(parent, **kwargs)        
 
-    def generate(self, dso=None): #figure_data
+    def generate(self, dso=None, lines=[]): #figure_data
         """
         Generate an XY scatter plot from source dataset object.
 
@@ -855,6 +855,11 @@ class MplScatterView(MplView):
             s = ls.markersize**2 if ls.markersize != None else 20 #default
             plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker, s=s)
 
+            # Calculate 95% confidence interval for data
+            ellip = self.plot_point_cov(df.data, nstd=2, linestyle='dashed', linewidth=0.5, edgecolor=ls.color, alpha=0.5) #**kwargs for ellipse styling
+            self.ax.add_artist(ellip)
+
+
         legend = self.ax.legend(list(plots.values()),
            list(plots.keys()),
            scatterpoints=1,
@@ -869,8 +874,63 @@ class MplScatterView(MplView):
         x0,x1 = self.ax.get_xlim()
         y0,y1 = self.ax.get_ylim()           
         self.ax.set_aspect((x1-x0)/(y1-y0))
+        
         self.draw()
-                
+     
+    # Add ellipses for confidence intervals, with thanks to Joe Kington    
+    # http://stackoverflow.com/questions/12301071/multidimensional-confidence-intervals
+    def plot_point_cov(self, points, nstd=2, **kwargs):
+        """
+        Plots an `nstd` sigma ellipse based on the mean and covariance of a point
+        "cloud" (points, an Nx2 array).
+
+        Parameters
+        ----------
+            points : An Nx2 array of the data points.
+            nstd : The radius of the ellipse in numbers of standard deviations.
+                Defaults to 2 standard deviations.
+            Additional keyword arguments are pass on to the ellipse patch.
+
+        Returns
+        -------
+            A matplotlib ellipse artist
+        """
+        pos = points.mean(axis=0)
+        cov = np.cov(points, rowvar=False)
+        return self.plot_cov_ellipse(cov, pos, nstd, **kwargs)        
+        
+    def plot_cov_ellipse(self, cov, pos, nstd=2, **kwargs):
+        """
+        Plots an `nstd` sigma error ellipse based on the specified covariance
+        matrix (`cov`). Additional keyword arguments are passed on to the 
+        ellipse patch artist.
+
+        Parameters
+        ----------
+            cov : The 2x2 covariance matrix to base the ellipse on
+            pos : The location of the center of the ellipse. Expects a 2-element
+                sequence of [x0, y0].
+            nstd : The radius of the ellipse in numbers of standard deviations.
+                Defaults to 2 standard deviations.
+            Additional keyword arguments are pass on to the ellipse patch.
+
+        Returns
+        -------
+            A matplotlib ellipse artist
+        """
+        def eigsorted(cov):
+            vals, vecs = np.linalg.eigh(cov)
+            order = vals.argsort()[::-1]
+            return vals[order], vecs[:,order]
+
+        vals, vecs = eigsorted(cov)
+        theta = np.degrees(np.arctan2(*vecs[:,0][::-1]))
+
+        # Width and height are "full" widths, not radius
+        width, height = 2 * nstd * np.sqrt(vals)
+        ellip = Ellipse(xy=pos, width=width, height=height, angle=theta, fill=False, **kwargs)
+
+        return ellip
 
 
 
