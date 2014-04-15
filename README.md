@@ -34,8 +34,8 @@ and government use.
  [pathomx-github]: https://github.com/pathomx/pathomx
  [pathomx-github-issues]: https://github.com/pathomx/pathomx/issues
  [metacyc]: http://metacyc.org
- [pathomx-mac]: http://download.pathomx.org/Pathomx-2.2.0.dmg
- [pathomx-windows]: http://download.pathomx.org/Pathomx-2.2.0-amd64.msi
+ [pathomx-mac]: http://download.pathomx.org/Pathomx-2.3.0.dmg
+ [pathomx-windows]: http://download.pathomx.org/Pathomx-2.3.0-amd64.msi
  [pathomx-pypi]: https://pypi.python.org/pypi/Pathomx 
  [graphviz]: http://www.graphviz.org/
  
