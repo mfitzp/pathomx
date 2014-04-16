@@ -851,6 +851,7 @@ class MplScatterView(MplView):
         classes = dso.classes_l[0]
         for c in classes:
             df = dso.as_filtered(dim=0,classes=[c])
+            print df.shape
             ls = styles.get_style_for_class( c )
             s = ls.markersize**2 if ls.markersize != None else 20 #default
             plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker, s=s)
@@ -859,6 +860,12 @@ class MplScatterView(MplView):
             ellip = self.plot_point_cov(df.data, nstd=2, linestyle='dashed', linewidth=0.5, edgecolor=ls.color, alpha=0.5) #**kwargs for ellipse styling
             self.ax.add_artist(ellip)
 
+        # If overlay lines are defined; plot + annotation           
+        for x, y, label in lines:
+            print x, y
+            self.ax.plot(x, y, color='black')
+            self.ax.annotate(label, xy=(x[-1], y[-1]))
+            print x[0], y[0], label
 
         legend = self.ax.legend(list(plots.values()),
            list(plots.keys()),

@@ -1,0 +1,9 @@
+[Core]
+Name = Regression
+Module = regression
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Regression analysis
