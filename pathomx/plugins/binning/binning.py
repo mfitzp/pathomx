@@ -95,8 +95,10 @@ class BinningApp(ui.DataApp):
         # Calculate the number of bins at binsize across range
         dso = DataSet()
         dso.import_data(dsi)
-
+        print dsi.scales, "?"
         r = dsi.scales_r[1]
+        print dsi.scales_r
+        print r
         self._bin_size, self._bin_offset = self.config.get('bin_size'), self.config.get('bin_offset')
 
         bins = np.arange(r[0] + self._bin_offset, r[1] + self._bin_offset, self._bin_size)

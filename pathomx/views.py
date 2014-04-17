@@ -867,12 +867,14 @@ class MplScatterView(MplView):
             self.ax.annotate(label, xy=(x[-1], y[-1]))
             print x[0], y[0], label
 
-        legend = self.ax.legend(list(plots.values()),
-           list(plots.keys()),
-           scatterpoints=1,
-           loc='upper left', bbox_to_anchor=(1, 1))
-        legend.get_frame().set_facecolor('k')                      
-        legend.get_frame().set_alpha(0.05)        
+        if len(plots.keys()) > 1:
+            # Only show a legend if there is >1 class (?)
+            legend = self.ax.legend(list(plots.values()),
+               list(plots.keys()),
+               scatterpoints=1,
+               loc='upper left', bbox_to_anchor=(1, 1))
+            legend.get_frame().set_facecolor('k')                      
+            legend.get_frame().set_alpha(0.05)        
            
         self.ax.set_xlabel(dso.labels[1][0])
         self.ax.set_ylabel(dso.labels[1][1])

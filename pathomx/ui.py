@@ -152,6 +152,30 @@ class QNoneDoubleSpinBox(QDoubleSpinBox):
             return super(QNoneDoubleSpinBox, self).event(e)
 
 
+class QListWidgetAddRemove(QListWidget):
+    itemAddedOrRemoved = pyqtSignal()
+    
+    def addItem(self, *args, **kwargs):
+        r = super(QListWidgetAddRemove, self).addItem(*args, **kwargs)
+        self.itemAddedOrRemoved.emit()
+        return r
+        
+    def addItems(self, *args, **kwargs):
+        r = super(QListWidgetAddRemove, self).addItems(*args, **kwargs)
+        self.itemAddedOrRemoved.emit()
+        return r
+
+    def removeItem(self, *args, **kwargs):
+        r = super(QListWidgetAddRemove, self).removeItem(*args, **kwargs)
+        self.itemAddedOrRemoved.emit()
+        return r
+
+    def clear(self, *args, **kwargs):
+        r = super(QListWidgetAddRemove, self).clear(*args, **kwargs)
+        self.itemAddedOrRemoved.emit()
+        return r
+    
+        
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
 # Generic configuration dialog handling class
@@ -1827,7 +1851,6 @@ class ImportDataApp(DataApp):
         filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
         if filename:
             self.thread_load_datafile(filename)
-
             self.file_watcher = QFileSystemWatcher()
             self.file_watcher.fileChanged.connect(self.onFileChanged)
             self.file_watcher.addPath(filename)
@@ -1835,6 +1858,10 @@ class ImportDataApp(DataApp):
             self.set_name(os.path.basename(filename))
 
         return False
+        
+    def getFileFormatParameters(self, filename):
+        return {}
+        
 
     def onFileChanged(self, file):
         self.load_datafile(file)

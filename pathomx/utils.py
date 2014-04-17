@@ -58,7 +58,8 @@ CONVERT_TYPE_TO_XML = {
     'int': _apply_text_str,
     'float': _apply_text_str,
     'bool': _apply_text_str,
-    'list': _convert_list_type_to_XML
+    'list': _convert_list_type_to_XML,
+    'tuple': _convert_list_type_to_XML,
 }
 
 CONVERT_TYPE_FROM_XML = {
@@ -67,7 +68,8 @@ CONVERT_TYPE_FROM_XML = {
     'int': lambda x: int(x.text),
     'float': lambda x: float(x.text),
     'bool': lambda x: bool(x.text),
-    'list': _convert_list_type_from_XML
+    'list': _convert_list_type_from_XML,
+    'tuple': _convert_list_type_from_XML,
 }
 
 
@@ -150,6 +152,7 @@ if sys.version_info < (3, 0):  # Python 2 only
         """
 
         def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
+        
             self.reader = csv.reader(f, **kwargs)
             self.encoding = encoding
             #f = UTF8Recoder(f, encoding)

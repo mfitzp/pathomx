@@ -10,6 +10,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from pathomx.qt import *
+
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.threads as threads
@@ -18,11 +20,123 @@ import pathomx.utils as utils
 from pathomx.data import DataSet
 from pathomx.custom_exceptions import *
 
+# Dialog box for Metabohunter search options
+class ImportDataConfigPanel(ui.ConfigPanel):
+
+    config_quote_types = {
+        'All': csv.QUOTE_ALL,
+        'Minimal': csv.QUOTE_MINIMAL,
+        'Non-numeric': csv.QUOTE_NONNUMERIC,
+        'None': csv.QUOTE_NONE,    
+    }
+    
+    def __init__(self, parent, filename=None, *args, **kwargs):
+        super(ImportDataConfigPanel, self).__init__(parent, *args, **kwargs)        
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Autodetect')
+        grid = QGridLayout()
+        self.cb_autodetect = QCheckBox()
+        grid.addWidget( QLabel('Autodetect format'), 0,0 )
+        grid.addWidget(self.cb_autodetect, 0,1 )
+        self.config.add_handler( 'autodetect_format', self.cb_autodetect )
+        gb.setLayout(grid)
+        
+        self.layout.addWidget(gb)
+        
+        gb = QGroupBox('Basic configuration')
+        grid = QGridLayout()
+
+        self.cb_delimiter = QLineEdit()
+        grid.addWidget( QLabel('Delimiter'), 0,0 )
+        grid.addWidget(self.cb_delimiter, 0,1 )
+        self.config.add_handler( 'delimiter', self.cb_delimiter)
+        
+        self.cb_quotechar = QLineEdit()
+        grid.addWidget( QLabel('Quote character'), 1,0 )
+        grid.addWidget(self.cb_quotechar, 1,1 )
+        self.config.add_handler( 'quotechar', self.cb_quotechar)
+
+        gb.setLayout(grid)          
+        self.layout.addWidget(gb)
+
+        gb = QGroupBox('Advanced')
+        grid = QGridLayout()
+
+        self.cb_quoting = QComboBox()
+        self.cb_quoting.addItems( self.config_quote_types.keys() )
+        grid.addWidget( QLabel('Quote style'), 2,0 )
+        grid.addWidget(self.cb_quoting, 2,1 )
+        self.config.add_handler( 'quoting', self.cb_quoting, self.config_quote_types )
+
+        self.cb_doublequote = QCheckBox()
+        grid.addWidget( QLabel('Double quote?'), 3,0 )
+        grid.addWidget(self.cb_doublequote, 3,1 )
+        self.config.add_handler( 'doublequote', self.cb_doublequote )
+
+        self.cb_escapechar = QLineEdit()
+        grid.addWidget( QLabel('Escape character'), 4,0 )
+        grid.addWidget(self.cb_escapechar, 4,1 )
+        self.config.add_handler( 'escapechar', self.cb_escapechar)
+
+        self.cb_skipinitialspace = QCheckBox()
+        grid.addWidget( QLabel('Skip initial space?'), 5,0 )
+        grid.addWidget(self.cb_skipinitialspace, 5,1 )
+        self.config.add_handler( 'skipinitialspace', self.cb_skipinitialspace )
+
+        gb.setLayout(grid)          
+        self.layout.addWidget(gb)
+
+        self.finalise()        
 
 class ImportTextApp(ui.ImportDataApp):
 
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
     import_description = "Open experimental data from text file data file"
+
+    def __init__(self, *args, **kwargs):
+        super(ImportTextApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+            'autodetect_format':True,
+            'delimiter':b',',
+            'quotechar':b'"',
+            'doublequote':True,
+            'escapechar':b'',
+            'quoting': csv.QUOTE_MINIMAL,
+            'skipinitialspace': False,
+        })
+        
+        self.addConfigPanel( ImportDataConfigPanel, 'Settings' )
+        
+    def onImportData(self):
+        """ Open a data file with a guided import wizard"""
+        filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
+        if filename:
+            print self.config.config
+            if self.config.get('autodetect_format'):
+                try:
+                    f = open(filename, 'rb')
+                    dialect = csv.Sniffer().sniff(f.read(1024))
+                    f.close()
+                except:
+                    pass
+                else:
+                    # Re-read the dialect back into the config
+                    self.config.set_many( {attr: dialect.__dict__[attr] for attr in ['delimiter', 'quotechar', 'escapechar', 'doublequote', 'quoting', 'skipinitialspace'] if attr in dialect.__dict__} )
+            
+            self.thread_load_datafile(filename)
+            self.file_watcher = QFileSystemWatcher()
+            self.file_watcher.fileChanged.connect(self.onFileChanged)
+            self.file_watcher.addPath(filename)
+
+            self.set_name(os.path.basename(filename))
+
+        return False 
+    
+    def csv_format_kwargs(self):
+        return {k:str(self.config.get(k)) for k in ['delimiter', 'quotechar'] if self.config.get(k) != ''}
 
     def load_datafile(self, filename):
 
@@ -30,6 +144,7 @@ class ImportTextApp(ui.ImportDataApp):
         fn, fe = os.path.splitext(filename)
         formats = {  # Run specific loading function for different source data types
                 '.csv': self.load_csv,
+                '.txt': self.load_csv,
             }
 
         if fe in list(formats.keys()):
@@ -53,7 +168,7 @@ class ImportTextApp(ui.ImportDataApp):
 
         # Wrapper function to allow loading from alternative format CSV files
         # Legacy is experiments in ROWS, limited number by Excel so also support experiments in COLUMNS
-        reader = csv.reader(open(filename, 'rU'), delimiter=str(','), dialect='excel')
+        reader = csv.reader(open(filename, 'rU'), dialect='excel', **self.csv_format_kwargs())
         hrow = next(reader)  # Get top row
         print(hrow)
         if 'sample' in hrow[0].lower():
@@ -69,7 +184,7 @@ class ImportTextApp(ui.ImportDataApp):
         # Read in data for the graphing metabolite, with associated value (generate mean)
         f = open(filename, 'rU')
         fsize = os.path.getsize(filename)
-        reader = csv.reader(f, delimiter=str(','), dialect='excel')
+        reader = csv.reader(f, dialect='excel', **self.csv_format_kwargs())
 
         hrow = next(reader)  # Discard top row (sample no's)
         samples = hrow[1:]
@@ -142,8 +257,7 @@ class ImportTextApp(ui.ImportDataApp):
         # Read in data for the graphing metabolite, with associated value (generate mean)
         f = open(filename, 'rU')
         fsize = os.path.getsize(filename)
-        reader = csv.reader(f, delimiter=str(','), dialect='excel')
-        print('R')
+        reader = csv.reader(f, dialect='excel', **self.csv_format_kwargs())
         hrow = next(reader)  # Get top row
         metabolites = hrow[2:]
         ydim = 0

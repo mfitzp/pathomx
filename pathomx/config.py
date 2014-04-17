@@ -300,6 +300,34 @@ def _event_QListWidget(self):
     return self.itemSelectionChanged
 
 
+# QListWidgetWithAddRemoveEvent
+def _get_QListWidgetAddRemove(self):
+    """
+        Get current values in QListWidget via re-mapping filter.
+        
+        Selected values are returned as a list.
+    """
+    return [self._get_map(self.item(n).text()) for n in range( 0, self.count() )]
+
+
+def _set_QListWidgetAddRemove(self, v):
+    """
+        Set currently values in QListWidget via re-mapping filter.
+        
+        Supply values to be selected as a list.
+    """
+    self.clear()
+    self.addItems([self._set_map(s) for s in v])
+
+
+def _event_QListWidgetAddRemove(self):
+    """
+        Return current selection changed signal for QListWidget.
+    """
+    return self.itemAddedOrRemoved
+
+
+
 # QColorButton
 def _get_QColorButton(self):
     """

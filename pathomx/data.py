@@ -772,7 +772,8 @@ class DataSet( QObject ):
     
     @property
     def scales_r(self):
-        return [ (min([n for n in s if n is not None]), max([n for n in s if n is not None])) for s in self.scales if s is not None]
+        valid = [ [n for n in s if n is not None] for s in self.scales if s is not None]
+        return [ (min(x), max(x)) if x else None for x in valid ]
             
     # Types (most useful on entities)
     @property
