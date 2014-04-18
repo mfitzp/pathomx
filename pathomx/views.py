@@ -176,9 +176,7 @@ class BaseView(object):
         return self.vm.data[ self.name ] 
         
     def autogenerate(self):
-        if self.name in self.vm.data:
-            self.generate( **self.vm.data[ self.name ] )
-
+        self.generate( **self.vm.data[ self.name ] )
         
     def _build_entity_cmp(self,s,e,l):
         return e == None
@@ -561,7 +559,7 @@ class D3SpectraView(D3View):
     d3_template = 'd3/spectra.svg'
 
     def generate(self, dso=None):
-        if not float in [type(t) for t in dso.scales[1]]:   
+        if dso is None or not float in [type(t) for t in dso.scales[1]]:   
             assert False # Can't continue
             
         # If we have scale data, enable and render the Viewer tab
@@ -666,7 +664,7 @@ class MplSpectraView(MplView):
 
     def generate(self, dso=None):
         if dso == None:
-            return False
+            assert False
     
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting
@@ -844,6 +842,9 @@ class MplScatterView(MplView):
                     Multiple classes of data can be supplied as indicated by the axis 0 class list.
         :type dso: DataSet object
         """
+        if dso is None:
+            assert False
+            
         self.ax.cla()
         plots = {}
         colors = self.ax._get_lines.color_cycle

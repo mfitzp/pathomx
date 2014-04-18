@@ -1942,7 +1942,6 @@ class AnalysisApp(GenericApp):
 
     # Build change table
     def build_change_table_of_classes(self, dso, objs, classes):
-        print(dso.shape)
 
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
