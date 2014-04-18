@@ -1128,8 +1128,16 @@ def main():
     mpl.rcParams['lines.color'] = 'black'
     mpl.rcParams['lines.markersize'] = 10
     mpl.rcParams['axes.linewidth'] = 0.5
+    mpl.rcParams['axes.labelsize'] = 9
+    mpl.rcParams['xtick.labelsize'] = 9
+    mpl.rcParams['ytick.labelsize'] = 9
+
+    mpl.rcParams['legend.fontsize'] = 9    
+
     mpl.rcParams['axes.color_cycle'] = utils.category10
-    mpl.rcParams['font.size'] = 8
+    mpl.rcParams['font.size'] = 9
+    mpl.rcParams['font.family'] = 'san-serif'
+    mpl.rcParams['font.serif'] = ['Computer Modern Roman','Times New Roman']
     mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
     mpl.rcParams['patch.linewidth'] = 0
 

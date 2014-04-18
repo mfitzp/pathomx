@@ -1843,6 +1843,9 @@ class ImportDataApp(DataApp):
             self.worker = threads.Worker(self.load_datafile, filename)
         self.start_worker_thread(self.worker)
 
+        self.views.autoSelect()  # Unfocus the help file if we've done something here
+        
+
     def prerender(self, output=None):
         return {'View': {'dso': output}}
 

@@ -109,7 +109,7 @@ class StyleHandler(object):
         for m in MARKERS:
             for l in LINESTYLES:
                 for c in COLORS_CATEGORY10:
-                    ls_def = StyleDefinition(marker=m, linestyle=l, linewidth=1, color=c, markerfacecolor=c, markersize=4.5, fillstyle='full')
+                    ls_def = StyleDefinition(marker=m, linestyle=l, linewidth=1, color=c, markerfacecolor=c, markersize=5, fillstyle='full')
                     if ls_def not in currently_in_use:
                         return ls_def
 

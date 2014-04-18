@@ -75,7 +75,7 @@ class RegressionDialog(ui.GenericDialog):
 
 
     def onRegexpAdd(self):
-        items = self.lw_variables.findItems(self.lw_variables.text(), Qt.MatchContains)
+        items = self.lw_variables.findItems(self.lw_regexp.text(), Qt.MatchContains)
         block = self.lw_variables.blockSignals(True)
         for i in items:
             i.setSelected(True)
@@ -83,7 +83,7 @@ class RegressionDialog(ui.GenericDialog):
         self.lw_variables.itemSelectionChanged.emit()
 
     def onRegexpRemove(self):
-        items = self.lw_variables.findItems(self.lw_variables.text(), Qt.MatchContains)
+        items = self.lw_variables.findItems(self.lw_regexp.text(), Qt.MatchContains)
         block = self.lw_variables.blockSignals(True)
         for i in items:
             i.setSelected(False)

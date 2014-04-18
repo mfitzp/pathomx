@@ -176,7 +176,8 @@ class BaseView(object):
         return self.vm.data[ self.name ] 
         
     def autogenerate(self):
-        self.generate( **self.vm.data[ self.name ] )
+        if self.name in self.vm.data:
+            self.generate( **self.vm.data[ self.name ] )
 
         
     def _build_entity_cmp(self,s,e,l):
@@ -664,6 +665,8 @@ class MplSpectraView(MplView):
         
 
     def generate(self, dso=None):
+        if dso == None:
+            return False
     
         if not float in [type(t) for t in dso.scales[1]]:   
             # Add fake axis scale for plotting
@@ -862,10 +865,9 @@ class MplScatterView(MplView):
 
         # If overlay lines are defined; plot + annotation           
         for x, y, label in lines:
-            print x, y
-            self.ax.plot(x, y, color='black')
+            ls = styles.get_style_for_class(None) # Blank for now; need to replace with general 'info lines' settings
+            self.ax.plot(x, y, **ls.line_kwargs)
             self.ax.annotate(label, xy=(x[-1], y[-1]))
-            print x[0], y[0], label
 
         if len(plots.keys()) > 1:
             # Only show a legend if there is >1 class (?)
