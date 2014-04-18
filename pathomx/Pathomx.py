@@ -71,7 +71,7 @@ from .translate import tr
 
 from distutils.version import StrictVersion
 
-VERSION_STRING = '2.3.0'
+VERSION_STRING = '2.4.0'
 
 
 class Logger(logging.Handler):
