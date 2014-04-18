@@ -306,7 +306,7 @@ class MainWindow(QMainWindow):
 
         self.update_view_callback_enabled = True
 
-        self.printer = QPrinter()
+        #self.printer = QPrinter()
 
         QNetworkProxyFactory.setUseSystemConfiguration(True)
 
