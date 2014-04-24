@@ -38,6 +38,7 @@ MATCH_REGEXP = 5
 
 from . import utils
 
+
 class StyleHandler(object):
     '''
     Interface to return a marker and colour combination for a given classifier
@@ -51,7 +52,7 @@ class StyleHandler(object):
     def __init__(self):
         self.matchdefs = []  # User defined match definitions
         self.automatchdefs = []  # Automatic match definitions (applied after, non-static but consistent)
-    
+
     def add_match_definition(self):
         cm_def = ClassMatchDefinition()
         # Get unique marker definition (algo)
@@ -114,54 +115,54 @@ class StyleHandler(object):
                         return ls_def
 
         return None
-        
+
     def getXMLMatchDefinitionsStyles(self, root):
-    
-        # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
+
+    # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
         for cm, ls in self.matchdefs + self.automatchdefs:
-            
+
             cmls = et.SubElement(root, "ClassMatchStyle")
             if cm.is_auto:
                 cmls.set('is_auto', 'true')
-            
+
             cme = et.SubElement(cmls, "ClassMatch")
             cme.set("match_str", cm.match_str)
-            cme.set("match_type", str(cm.match_type) )
+            cme.set("match_type", str(cm.match_type))
 
             lse = et.SubElement(cmls, "Style")
-            
+
             for attr in ls.attr:
                 value = ls.__dict__[attr]
-                if value != None: # We can skip None values (default anyway)
+                if value != None:  # We can skip None values (default anyway)
                     lse.set(attr, str(value))
 
         return root
-        
+
     def setXMLMatchDefinitionsStyles(self, root):
 
         self.automatchdefs = []
         self.matchdefs = []
 
         for cmls in root.findall('ClassMatchStyle'):
-            
+
             cm = ClassMatchDefinition()
             ls = StyleDefinition()
-            
+
             cme = cmls.find('ClassMatch')
             cm.match_str = cme.get('match_str')
-            cm.match_type = int( cme.get('match_type') )
+            cm.match_type = int(cme.get('match_type'))
 
             lse = cmls.find('Style')
             for attr in ls.attr:
                 ls.__dict__[attr] = lse.get(attr, None)
-                
+
             # Fix types
-            ls.linewidth = float( ls.linewidth )
+            ls.linewidth = float(ls.linewidth)
             if cmls.get('is_auto', False):
                 cm.is_auto = True
-                self.automatchdefs.append( ( cm, ls ) )
+                self.automatchdefs.append((cm, ls))
             else:
-                self.matchdefs.append( ( cm, ls ) )
+                self.matchdefs.append((cm, ls))
 
 
 class StyleDefinition(object):
@@ -259,7 +260,7 @@ class ClassMatchDefinition(object):
             return class_str.endswith(self.match_str)
 
         elif self.match_type == MATCH_REGEXP:
-            m = re.search(self.match_str, class_str) 
+            m = re.search(self.match_str, class_str)
             if m:
                 return True
             else:

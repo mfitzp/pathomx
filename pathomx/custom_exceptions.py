@@ -15,9 +15,10 @@ class PathomxIncorrectFileFormatException(Exception):
 class PathomxIncorrectFileStructureException(Exception):
     pass
 
+
 class PathomxExternalResourceTimeoutException(Exception):
     pass
 
+
 class PathomxExternalResourceUnavailableException(Exception):
     pass
-

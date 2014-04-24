@@ -307,7 +307,7 @@ def _get_QListWidgetAddRemove(self):
         
         Selected values are returned as a list.
     """
-    return [self._get_map(self.item(n).text()) for n in range( 0, self.count() )]
+    return [self._get_map(self.item(n).text()) for n in range(0, self.count())]
 
 
 def _set_QListWidgetAddRemove(self, v):
@@ -325,7 +325,6 @@ def _event_QListWidgetAddRemove(self):
         Return current selection changed signal for QListWidget.
     """
     return self.itemAddedOrRemoved
-
 
 
 # QColorButton

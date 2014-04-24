@@ -263,7 +263,17 @@ class ToolItem(BaseItem):
     def onAddView(self, e, wid):
         self.viewertest = ToolViewItem(self, self.app.views.widget(wid))
 
-        
+    def itemChange(self, change, value):
+        # Snap to grid in QGraphicsView (if enabled)
+        if change == QGraphicsItem.ItemPositionChange:
+            newPos = value  # .toPointF()
+            snap = 100
+            snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
+            return snapPos
+
+        return super(ToolItem, self).itemChange(change, value)
+
+
 class ToolIcon(BaseInteractiveItem):
     """
     A tool item constructed as an item group containing an icon and with 

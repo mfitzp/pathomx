@@ -20,6 +20,7 @@ import pathomx.utils as utils
 from pathomx.data import DataSet
 from pathomx.custom_exceptions import *
 
+
 # Dialog box for Metabohunter search options
 class ImportDataConfigPanel(ui.ConfigPanel):
 
@@ -27,68 +28,69 @@ class ImportDataConfigPanel(ui.ConfigPanel):
         'All': csv.QUOTE_ALL,
         'Minimal': csv.QUOTE_MINIMAL,
         'Non-numeric': csv.QUOTE_NONNUMERIC,
-        'None': csv.QUOTE_NONE,    
+        'None': csv.QUOTE_NONE,
     }
-    
+
     def __init__(self, parent, filename=None, *args, **kwargs):
-        super(ImportDataConfigPanel, self).__init__(parent, *args, **kwargs)        
+        super(ImportDataConfigPanel, self).__init__(parent, *args, **kwargs)
 
         self.v = parent
         self.config = parent.config
         gb = QGroupBox('Autodetect')
         grid = QGridLayout()
         self.cb_autodetect = QCheckBox()
-        grid.addWidget( QLabel('Autodetect format'), 0,0 )
-        grid.addWidget(self.cb_autodetect, 0,1 )
-        self.config.add_handler( 'autodetect_format', self.cb_autodetect )
+        grid.addWidget(QLabel('Autodetect format'), 0, 0)
+        grid.addWidget(self.cb_autodetect, 0, 1)
+        self.config.add_handler('autodetect_format', self.cb_autodetect)
         gb.setLayout(grid)
-        
+
         self.layout.addWidget(gb)
-        
+
         gb = QGroupBox('Basic configuration')
         grid = QGridLayout()
 
         self.cb_delimiter = QLineEdit()
-        grid.addWidget( QLabel('Delimiter'), 0,0 )
-        grid.addWidget(self.cb_delimiter, 0,1 )
-        self.config.add_handler( 'delimiter', self.cb_delimiter)
-        
-        self.cb_quotechar = QLineEdit()
-        grid.addWidget( QLabel('Quote character'), 1,0 )
-        grid.addWidget(self.cb_quotechar, 1,1 )
-        self.config.add_handler( 'quotechar', self.cb_quotechar)
+        grid.addWidget(QLabel('Delimiter'), 0, 0)
+        grid.addWidget(self.cb_delimiter, 0, 1)
+        self.config.add_handler('delimiter', self.cb_delimiter)
 
-        gb.setLayout(grid)          
+        self.cb_quotechar = QLineEdit()
+        grid.addWidget(QLabel('Quote character'), 1, 0)
+        grid.addWidget(self.cb_quotechar, 1, 1)
+        self.config.add_handler('quotechar', self.cb_quotechar)
+
+        gb.setLayout(grid)
         self.layout.addWidget(gb)
 
         gb = QGroupBox('Advanced')
         grid = QGridLayout()
 
         self.cb_quoting = QComboBox()
-        self.cb_quoting.addItems( self.config_quote_types.keys() )
-        grid.addWidget( QLabel('Quote style'), 2,0 )
-        grid.addWidget(self.cb_quoting, 2,1 )
-        self.config.add_handler( 'quoting', self.cb_quoting, self.config_quote_types )
+        self.cb_quoting.addItems(self.config_quote_types.keys())
+        grid.addWidget(QLabel('Quote style'), 2, 0)
+        grid.addWidget(self.cb_quoting, 2, 1)
+        self.config.add_handler('quoting', self.cb_quoting, self.config_quote_types)
 
         self.cb_doublequote = QCheckBox()
-        grid.addWidget( QLabel('Double quote?'), 3,0 )
-        grid.addWidget(self.cb_doublequote, 3,1 )
-        self.config.add_handler( 'doublequote', self.cb_doublequote )
+        grid.addWidget(QLabel('Double quote?'), 3, 0)
+        grid.addWidget(self.cb_doublequote, 3, 1)
+        self.config.add_handler('doublequote', self.cb_doublequote)
 
         self.cb_escapechar = QLineEdit()
-        grid.addWidget( QLabel('Escape character'), 4,0 )
-        grid.addWidget(self.cb_escapechar, 4,1 )
-        self.config.add_handler( 'escapechar', self.cb_escapechar)
+        grid.addWidget(QLabel('Escape character'), 4, 0)
+        grid.addWidget(self.cb_escapechar, 4, 1)
+        self.config.add_handler('escapechar', self.cb_escapechar)
 
         self.cb_skipinitialspace = QCheckBox()
-        grid.addWidget( QLabel('Skip initial space?'), 5,0 )
-        grid.addWidget(self.cb_skipinitialspace, 5,1 )
-        self.config.add_handler( 'skipinitialspace', self.cb_skipinitialspace )
+        grid.addWidget(QLabel('Skip initial space?'), 5, 0)
+        grid.addWidget(self.cb_skipinitialspace, 5, 1)
+        self.config.add_handler('skipinitialspace', self.cb_skipinitialspace)
 
-        gb.setLayout(grid)          
+        gb.setLayout(grid)
         self.layout.addWidget(gb)
 
-        self.finalise()        
+        self.finalise()
+
 
 class ImportTextApp(ui.ImportDataApp):
 
@@ -99,17 +101,17 @@ class ImportTextApp(ui.ImportDataApp):
         super(ImportTextApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
-            'autodetect_format':True,
-            'delimiter':b',',
-            'quotechar':b'"',
-            'doublequote':True,
-            'escapechar':b'',
+            'autodetect_format': True,
+            'delimiter': b',',
+            'quotechar': b'"',
+            'doublequote': True,
+            'escapechar': b'',
             'quoting': csv.QUOTE_MINIMAL,
             'skipinitialspace': False,
         })
-        
-        self.addConfigPanel( ImportDataConfigPanel, 'Settings' )
-        
+
+        self.addConfigPanel(ImportDataConfigPanel, 'Settings')
+
     def onImportData(self):
         """ Open a data file with a guided import wizard"""
         filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
@@ -124,8 +126,8 @@ class ImportTextApp(ui.ImportDataApp):
                     pass
                 else:
                     # Re-read the dialect back into the config
-                    self.config.set_many( {attr: dialect.__dict__[attr] for attr in ['delimiter', 'quotechar', 'escapechar', 'doublequote', 'quoting', 'skipinitialspace'] if attr in dialect.__dict__} )
-            
+                    self.config.set_many({attr: dialect.__dict__[attr] for attr in ['delimiter', 'quotechar', 'escapechar', 'doublequote', 'quoting', 'skipinitialspace'] if attr in dialect.__dict__})
+
             self.thread_load_datafile(filename)
             self.file_watcher = QFileSystemWatcher()
             self.file_watcher.fileChanged.connect(self.onFileChanged)
@@ -133,10 +135,10 @@ class ImportTextApp(ui.ImportDataApp):
 
             self.set_name(os.path.basename(filename))
 
-        return False 
-    
+        return False
+
     def csv_format_kwargs(self):
-        return {k:str(self.config.get(k)) for k in ['delimiter', 'quotechar'] if self.config.get(k) != ''}
+        return {k: str(self.config.get(k)) for k in ['delimiter', 'quotechar'] if self.config.get(k) != ''}
 
     def load_datafile(self, filename):
 

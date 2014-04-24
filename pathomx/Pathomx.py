@@ -135,7 +135,7 @@ class ToolBoxItemDelegate(QAbstractItemDelegate):
             painter.setOpacity(0.25)
         else:
             painter.setOpacity(1)
-        
+
         # GET TITLE, DESCRIPTION AND ICON
         icon = index.data(Qt.DecorationRole)
         title = index.data(Qt.DisplayRole)  # .toString()
@@ -192,7 +192,7 @@ class ToolPanel(QListWidget):
         self.setViewMode(QListView.IconMode)
         self.setGridSize(QSize(64, 96))
         self.setItemDelegate(ToolBoxItemDelegate())
-                
+
         self.tools = tools
         self.addTools()
 
@@ -200,11 +200,11 @@ class ToolPanel(QListWidget):
 
         for n, tool in enumerate(self.tools):
             t = ToolBoxItem(data=tool)
-            
+
             t.setIcon(tool['plugin'].icon)
             t.setText(getattr(tool['app'], 'name', tool['plugin'].name))
             t.setData(Qt.UserRole, tool)
-            
+
             self.addItem(t)
 
         self.sortItems()
@@ -216,14 +216,14 @@ class ToolPanel(QListWidget):
         return row * self._tool_width
 
     def mouseMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton: # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
+        if e.buttons() == Qt.LeftButton:  # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
             logging.debug('Starting drag-drop of workspace item.')
             item = self.currentItem()
             if not item.data['plugin'].has_resources:
                 logging.debug('Cancelled drag drop: neccessary resources for plugin are missing.')
                 e.ignore()
                 return
-                
+
             mimeData = QMimeData()
             mimeData.setData('application/x-pathomx-app', item.data['id'])
 
@@ -236,9 +236,10 @@ class ToolPanel(QListWidget):
 
             dropAction = drag.exec_(Qt.CopyAction)
             logging.debug('Drag-drop complete.')
-            
+
         else:
             e.ignore()
+
 
 class MainWindow(QMainWindow):
 
@@ -267,17 +268,17 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.config = QSettings('Pathomx','Pathomx')
-        if self.config.value('/Pathomx/Is_setup', False) == False:
+        self.settings = QSettings('Pathomx', 'Pathomx')
+        if self.settings.value('/Pathomx/Is_setup', False) == False:
             logging.info("Setting up initial configuration...")
             self.onResetConfig()
             logging.info('Done')
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(self.config.value('/Pathomx/Latest_version', '0.0.0')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(self.settings.value('/Pathomx/Latest_version', '0.0.0')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
-            logging.warning('A new version (v%s) is available' % self.config.value('/Pathomx/Update/Latest_version', '0.0.0'))
+            logging.warning('A new version (v%s) is available' % self.settings.value('/Pathomx/Update/Latest_version', '0.0.0'))
 
         # Create database accessor
         self.db = db.databaseManager()
@@ -305,7 +306,6 @@ class MainWindow(QMainWindow):
         self.templateEngine.global_vars.update({'tr': tr})
 
         self.update_view_callback_enabled = True
-
         #self.printer = QPrinter()
 
         QNetworkProxyFactory.setUseSystemConfiguration(True)
@@ -363,7 +363,6 @@ class MainWindow(QMainWindow):
         self.menuBars['file'].addAction(saveAsAction)
 
         self.menuBars['file'].addSeparator()
-
         #printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
         #printAction.setShortcut('Ctrl+P')
         #printAction.setStatusTip(tr('Print current figure'))
@@ -405,14 +404,11 @@ class MainWindow(QMainWindow):
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
         linemarkerstyleAction.triggered.connect(self.onDefineClassStyles)
         self.menuBars['appearance'].addAction(linemarkerstyleAction)
-        
 
         matlabpathAction = QAction('Edit MATLAB path…', self)
         matlabpathAction.setStatusTip(tr('Set MATLAB path'))
         matlabpathAction.triggered.connect(self.onMATLABPathEdit)
         self.menuBars['resources'].addAction(matlabpathAction)
-
-        
 
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
@@ -450,7 +446,7 @@ class MainWindow(QMainWindow):
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
 
-        resources.matlab.set_exec_path( self.config.value('/Resources/MATLAB_path', 'matlab') )
+        resources.matlab.set_exec_path(self.settings.value('/Resources/MATLAB_path', 'matlab'))
 
         self.resources = {
             'MATLAB': resources.matlab,
@@ -479,7 +475,7 @@ class MainWindow(QMainWindow):
             logging.info(place)
 
         self.tools = defaultdict(list)
-        
+
         self.pluginManager.setPluginPlaces(self.plugin_places)
         self.pluginManager.setPluginInfoExtension('pathomx-plugin')
         categories_filter = {
@@ -509,12 +505,12 @@ class MainWindow(QMainWindow):
 
                 if not os.path.isfile(plugin_image):
                     plugin_image = None
-                
+
                 try:
-                    resource_list = plugin.details.get('Documentation','Resources').split(',')
+                    resource_list = plugin.details.get('Documentation', 'Resources').split(',')
                 except:
                     resource_list = []
-                
+
                 metadata = {
                     'id': plugin.plugin_object.__class__.__name__,  # __module__,
                     'image': plugin_image,
@@ -552,7 +548,6 @@ class MainWindow(QMainWindow):
         self.workspace.setHeaderLabels(['', 'ID', ' ◎', ' ⚑'])  # ,'#'])
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
-
 
         app_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
@@ -611,28 +606,27 @@ class MainWindow(QMainWindow):
         self.progressTracker = {}  # Dict storing values for each view/object
 
         self.editor = WorkspaceEditor(self)
-        
+
         self.central = QTabWidget()
-        self.central.setTabPosition( QTabWidget.South )
-        
-        self.central.addTab( self.editor, 'Editor')
-        self.central.addTab( self.logView, 'Log')
-        self.central.addTab( self.dataView, 'Data')
+        self.central.setTabPosition(QTabWidget.South)
+
+        self.central.addTab(self.editor, 'Editor')
+        self.central.addTab(self.logView, 'Log')
+        self.central.addTab(self.dataView, 'Data')
 
         self.setCentralWidget(self.central)
 
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
         # Do version upgrade check
-        if StrictVersion(self.config.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(self.settings.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             logging.info('Upgrade to %s' % VERSION_STRING)
             self.onAbout()
-            self.config.setValue('/Pathomx/Current_version', VERSION_STRING)
-            
-        #if self.config.value('/Pathomx/Offered_registration', False) != True:
+            self.settings.setValue('/Pathomx/Current_version', VERSION_STRING)
+        #if self.settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
-        #    self.config.setValue('/Pathomx/Offered_registration', True)
+        #    self.settings.setValue('/Pathomx/Offered_registration', True)
 
     def onLogItemClicked(self, item):
         # When an item in the log viewer is clicked, center on the associated Tool
@@ -651,13 +645,12 @@ class MainWindow(QMainWindow):
             pass
 
     def onMATLABPathEdit(self):
-    
-        dialog = ui.MATLABPathDialog(self, path=self.config.value('/Resources/MATLAB_path', 'matlab'))
+
+        dialog = ui.MATLABPathDialog(self, path=self.settings.value('/Resources/MATLAB_path', 'matlab'))
         if dialog.exec_():
             path = dialog.path.text()
-            resources.matlab.set_exec_path( path )
-            self.config.setValue('/Resources/MATLAB_path', path)
-
+            resources.matlab.set_exec_path(path)
+            self.settings.setValue('/Resources/MATLAB_path', path)
 
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
@@ -673,19 +666,18 @@ class MainWindow(QMainWindow):
     # Init application configuration
     def onResetConfig(self):
         # Defaults not set, apply now and save complete config file
-        self.config.setValue('Pathomx/Is_setup', True)
-        self.config.setValue('Pathomx/Current_version', '0.0.0')
-        self.config.setValue('Pathomx/Update/Latest_version', '0.0.0')
-        self.config.setValue('Pathomx/Update/Last_checked', None)
-        self.config.setValue('Pathomx/Offered_registration', False)
+        self.settings.setValue('Pathomx/Is_setup', True)
+        self.settings.setValue('Pathomx/Current_version', '0.0.0')
+        self.settings.setValue('Pathomx/Update/Latest_version', '0.0.0')
+        self.settings.setValue('Pathomx/Update/Last_checked', None)
+        self.settings.setValue('Pathomx/Offered_registration', False)
 
-        self.config.setValue('Plugins/Active', [])
-        self.config.setValue('Plugins/Disabled', [])
-        self.config.setValue('Plugins/Available', [])
-        self.config.setValue('Plugins/Paths', [])
-        
-        self.config.setValue('/Resources/MATLAB_path', 'matlab')
-        
+        self.settings.setValue('Plugins/Active', [])
+        self.settings.setValue('Plugins/Disabled', [])
+        self.settings.setValue('Plugins/Available', [])
+        self.settings.setValue('Plugins/Paths', [])
+
+        self.settings.setValue('/Resources/MATLAB_path', 'matlab')
     # UI Events
 
     def onGoToPathomxWeb(self):
@@ -723,7 +715,6 @@ class MainWindow(QMainWindow):
     def onRefreshAllViews(self):
         for t in self.apps:
             t.views.style_updated.emit()
-
 
     def onBrowserNav(self, url):
         # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface
@@ -978,7 +969,7 @@ class MainWindow(QMainWindow):
 
         root = et.Element("Workflow")
         root.set('xmlns:mpwfml', "http://pathomx.org/schema/Workflow/2013a")
-        
+
         s = et.SubElement(root, "Styles")
         s = styles.styles.getXMLMatchDefinitionsStyles(s)
 
@@ -1073,7 +1064,6 @@ class MainWindow(QMainWindow):
         # Focus the home tab & refresh the view
         self.workspace_updated.emit()
 
-
 #class QApplicationExtend(QApplication):
     #def event(self, e):
     #    if e.type() == QEvent.FileOpen:
@@ -1088,7 +1078,6 @@ class MainWindow(QMainWindow):
     #
     #    else:
     #        return super(QApplicationExtend, self).event(e)
-
 
 def main():
     # Create a Qt application
@@ -1132,19 +1121,19 @@ def main():
     mpl.rcParams['xtick.labelsize'] = 9
     mpl.rcParams['ytick.labelsize'] = 9
 
-    mpl.rcParams['legend.fontsize'] = 9    
+    mpl.rcParams['legend.fontsize'] = 9
 
     mpl.rcParams['axes.color_cycle'] = utils.category10
     mpl.rcParams['font.size'] = 9
     mpl.rcParams['font.family'] = 'san-serif'
-    mpl.rcParams['font.serif'] = ['Computer Modern Roman','Times New Roman']
+    mpl.rcParams['font.serif'] = ['Computer Modern Roman', 'Times New Roman']
     mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
     mpl.rcParams['patch.linewidth'] = 0
 
     MainWindow()
-    logging.info('Ready.')        	
-    app.exec_() # Enter Qt application main loop
-    logging.info('Exiting.')        	
+    logging.info('Ready.')
+    app.exec_()  # Enter Qt application main loop
+    logging.info('Exiting.')
     sys.exit()
 
 if __name__ == "__main__":

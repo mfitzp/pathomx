@@ -20,6 +20,7 @@ from pathomx.qt import *
 from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
 from pathomx.resources import matlab, MATLABLock
 
+
 class MATLABTool(MATLABLock, ui.DataApp):
     def __init__(self, **kwargs):
         super(MATLABTool, self).__init__(**kwargs)

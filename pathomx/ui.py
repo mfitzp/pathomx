@@ -120,6 +120,7 @@ class QNoneDoubleSpinBox(QDoubleSpinBox):
     The value can be set to null with right-click. When set to null the widget
     appears faded.
     '''
+
     def __init__(self, *args, **kwargs):
         super(QNoneDoubleSpinBox, self).__init__(*args, **kwargs)
         self.is_None = False
@@ -154,12 +155,12 @@ class QNoneDoubleSpinBox(QDoubleSpinBox):
 
 class QListWidgetAddRemove(QListWidget):
     itemAddedOrRemoved = pyqtSignal()
-    
+
     def addItem(self, *args, **kwargs):
         r = super(QListWidgetAddRemove, self).addItem(*args, **kwargs)
         self.itemAddedOrRemoved.emit()
         return r
-        
+
     def addItems(self, *args, **kwargs):
         r = super(QListWidgetAddRemove, self).addItems(*args, **kwargs)
         self.itemAddedOrRemoved.emit()
@@ -174,8 +175,8 @@ class QListWidgetAddRemove(QListWidget):
         r = super(QListWidgetAddRemove, self).clear(*args, **kwargs)
         self.itemAddedOrRemoved.emit()
         return r
-    
-        
+
+
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
 # Generic configuration dialog handling class
@@ -185,6 +186,7 @@ class GenericDialog(QDialog):
     
     Support for config, etc. to be added for auto-handling widgets and config load/save. 
     '''
+
     def __init__(self, parent, buttons=['ok', 'cancel'], **kwargs):
         super(GenericDialog, self).__init__(parent, **kwargs)
 
@@ -229,24 +231,26 @@ class MATLABPathDialog(GenericDialog):
     '''
     Dialog for MATLAB exectuable path setting.
     '''
+
     def __init__(self, parent, path='matlab', **kwargs):
         super(MATLABPathDialog, self).__init__(parent, **kwargs)
         self.setWindowTitle('Set MATLAB Path')
 
         self.path = QLineEdit()
-        self.path.setText( path )
-        self.layout.addWidget( self.path )
+        self.path.setText(path)
+        self.layout.addWidget(self.path)
         self.dialogFinalise()
 
     def sizeHint(self):
         return QSize(600, 100)
+
 
 class DialogAbout(QDialog):
     def __init__(self, parent, **kwargs):
         super(DialogAbout, self).__init__(parent, **kwargs)
 
         self.setWindowTitle('About Pathomx')
-        self.help = QWebView(self)#, parent.onBrowserNav)
+        self.help = QWebView(self)  # , parent.onBrowserNav)
         template = parent.templateEngine.get_template('about.html')
         self.help.setHtml(template.render({
                     'htmlbase': os.path.join(utils.scriptdir, 'html'),
@@ -818,6 +822,7 @@ class ExportImageDialog(GenericDialog):
         else:
             return False
 
+
 class MatchStyleDialog(GenericDialog):
     '''
     Edit individual match rules and styles
@@ -831,10 +836,10 @@ class MatchStyleDialog(GenericDialog):
         'Regular expression': MATCH_REGEXP,
     }
 
-    LINESTYLES_dict = OrderedDict([('None', None)] + list( zip(LINESTYLES, LINESTYLES) ) )
-    MARKERS_dict = OrderedDict([('None', None)] + list( zip(MARKERS, MARKERS) ) )
-    FILLSTYLES_dict = OrderedDict([('None', None)] + list( zip(FILLSTYLES, FILLSTYLES) ) ) 
-    HATCHSTYLES_dict = OrderedDict([('None', None)] + list( zip(HATCHSTYLES, HATCHSTYLES) ) )
+    LINESTYLES_dict = OrderedDict([('None', None)] + list(zip(LINESTYLES, LINESTYLES)))
+    MARKERS_dict = OrderedDict([('None', None)] + list(zip(MARKERS, MARKERS)))
+    FILLSTYLES_dict = OrderedDict([('None', None)] + list(zip(FILLSTYLES, FILLSTYLES)))
+    HATCHSTYLES_dict = OrderedDict([('None', None)] + list(zip(HATCHSTYLES, HATCHSTYLES)))
 
     def __init__(self, parent, mdls=None, **kwargs):
         super(MatchStyleDialog, self).__init__(parent, **kwargs)
@@ -1797,13 +1802,12 @@ class GenericApp(QMainWindow):
         if self._previous_size:
             return self._previous_size
         return QSize(600 + 300, 400 + 100)
-        
+
     def wait_for_lock(self):
         return True
-        
+
     def release_lock(self):
         return True
-    
 
 # Data view prototypes
 
@@ -1844,7 +1848,6 @@ class ImportDataApp(DataApp):
         self.start_worker_thread(self.worker)
 
         self.views.autoSelect()  # Unfocus the help file if we've done something here
-        
 
     def prerender(self, output=None):
         return {'View': {'dso': output}}
@@ -1861,10 +1864,9 @@ class ImportDataApp(DataApp):
             self.set_name(os.path.basename(filename))
 
         return False
-        
+
     def getFileFormatParameters(self, filename):
         return {}
-        
 
     def onFileChanged(self, file):
         self.load_datafile(file)

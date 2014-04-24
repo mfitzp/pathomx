@@ -374,12 +374,12 @@ class BasePlugin(IPlugin):
             self.help_tab_html_filename = 'readme.html'
         else:
             self.help_tab_html_filename = None
-        
+
         self.metadata = metadata
 
     @property
     def has_resources(self):
-        return set( [k for k, v in self.m.resources.items() if v.is_available] ).issuperset( set(self.metadata['resources']) ) 
+        return set([k for k, v in self.m.resources.items() if v.is_available]).issuperset(set(self.metadata['resources']))
 
     @property
     def icon(self):

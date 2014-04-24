@@ -19,7 +19,6 @@ from matplotlib.backend_bases import cursors
 from matplotlib.backend_bases import TimerBase
 from matplotlib.backend_bases import ShowBase
 
-
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.figure import Figure
 

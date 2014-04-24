@@ -18,13 +18,12 @@ rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
 
-
 def _convert_list_type_from_XML(vs):
     '''
     Lists are a complex type with possibility for mixed sub-types. Therefore each
     sub-entity must be wrapped with a type specifier.
     '''
-    vlist = vs.findall('ListItem') + vs.findall('ConfigListItem') # ConfigListItem is legacy
+    vlist = vs.findall('ListItem') + vs.findall('ConfigListItem')  # ConfigListItem is legacy
     l = []
     for xconfig in vlist:
         v = xconfig.text
@@ -152,7 +151,7 @@ if sys.version_info < (3, 0):  # Python 2 only
         """
 
         def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
-        
+
             self.reader = csv.reader(f, **kwargs)
             self.encoding = encoding
             #f = UTF8Recoder(f, encoding)
@@ -213,16 +212,18 @@ def mkdir_p(path):
         else:
             raise
 
+
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
     import os
+
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
     def ext_candidates(fpath):
-            yield fpath
-            for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
-                yield fpath + ext
+        yield fpath
+        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
+            yield fpath + ext
 
     fpath, fname = os.path.split(program)
     if fpath:
@@ -234,9 +235,10 @@ def which(program):
             exe_file = os.path.join(path, program)
             for candidate in ext_candidates(exe_file):
                 if is_exe(candidate):
-                    return candidate            
+                    return candidate
 
     return None
+
 
 def find_packager():
 

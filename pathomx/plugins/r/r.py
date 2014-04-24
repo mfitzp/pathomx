@@ -231,7 +231,6 @@ output_data = input_data
 
         self.finalise()
 
-
     def generate(self, input):
         self.status.emit('active')
 
