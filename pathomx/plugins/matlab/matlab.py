@@ -5,7 +5,6 @@ import copy
 
 import numpy as np
 import scipy as sp
-import mlabwrap
 
 import pathomx.ui as ui
 import pathomx.db as db

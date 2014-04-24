@@ -4,7 +4,6 @@ import os
 import copy
 
 import numpy as np
-import mlabwrap
 import logging
 
 import pathomx.ui as ui
