@@ -672,11 +672,17 @@ class MplSpectraView(MplView):
             
         #FIXME: Should probably be somewhere else. Label up the top N
         wmx = np.amax( np.absolute( dso.data), axis=0 )
+        N = 10
+        idx = wmx.argsort()[-10:][::-1] # Indices of maximum N values
         dummy_scale = list(range(0,len(dso.scales[1]) ) )
-        dso_z = list(zip( dummy_scale, dso.entities[1], dso.labels[1] ))
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-10:] # Top N
-        dso_z = [x for x, wmx in dso_z ]  
+        dso_z = [ (dummy_scale[i], dso.entities[1][i], dso.labels[1][i]) for i in idx ]
 
+        ylimP = np.amax( dso.data, axis=0 ) # Positive limit
+        ylimN = -np.amax( -dso.data, axis=0 ) # Negative limit
+        ylims = ylimP
+        ni = ylimP<-ylimN
+        ylims[ ni ] = ylimN[ ni ]
+        
         # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
         dsot = dso.as_summary(dim=0, match_attribs=['classes'])
 
@@ -716,9 +722,6 @@ class MplSpectraView(MplView):
             
             self.ax.plot(scale, data_mean.T, linewidth=0.75, color=utils.category10[0])
             
-
-        ylims = np.max(data, axis=0)
-        
         axlimits= ( self.ax.get_xlim(), self.ax.get_ylim() )
 
         for c in self.build_markers( dso_z, 1, self._build_entity_cmp ):

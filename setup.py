@@ -99,6 +99,19 @@ else:
         for d in explore_dirs:
             files.extend( glob2.glob( os.path.join(d, '**', '*.pyd') ) )
             
+        # Add DLLs to avoid target needing to install MS distributable packages
+        # This is a specific hack to build a distributable version on my own Windows 8 PC
+        # PyQt is built using vc110, but only vc90 (Python2.7) is included. This will go away
+        # when migrated to Python 3 (also vc110).
+        for f in [
+            'C:/Windows/System32/msvcr110.dll',
+            'C:/Windows/System32/msvcp110.dll',
+            #'C:/Windows/WinSxS/amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.8387_none_08e793bfa83a89b5/msvcr90.dll',
+            #'C:/Windows/WinSxS/amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.8387_none_08e793bfa83a89b5/msvcp90.dll',
+            ]:
+        
+            build_all['include_files'].append( (f, os.path.basename(f) ) )
+            
         # Now we have a list of .pyd files; iterate to build a list of tuples into 
         # include files containing the source path and the basename
         for f in files:
