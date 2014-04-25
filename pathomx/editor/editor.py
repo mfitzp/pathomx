@@ -55,7 +55,8 @@ class WorkspaceEditor(QGraphicsView):
 
     def saveAsImage(self, f):
         self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
-        self.image.fill(Qt.transparent)
+        #self.image.fill(Qt.transparent)
+        self.image.fill( QBrush(self.background_image) )
         painter = QPainter(self.image)
         self.scene.render(painter)
         self.image.save(f)
