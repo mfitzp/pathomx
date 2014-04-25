@@ -677,6 +677,11 @@ class MainWindow(QMainWindow):
         t = self.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
 
+        save_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Save workflow image…'), self)
+        save_imageAction.setStatusTip('Show grid in workspace editor')
+        save_imageAction.triggered.connect(self.editor.onSaveAsImage)
+        t.addAction(save_imageAction)
+
         snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid…'), self)
         snap_gridAction.setStatusTip('Snap tools to grid')
         snap_gridAction.setCheckable(True)
@@ -852,19 +857,6 @@ class MainWindow(QMainWindow):
                 self.data.translate(self.db)
                 self.generateGraphView(regenerate_analysis=True)
 
-    def onSaveAs(self):
-        """ Save a copy of the graph as one of the supported formats"""
-        # Note this will regenerate the graph with the current settings, with output type specified appropriately
-        filename, _ = QFileDialog.getSaveFileName(self, 'Save current metabolic pathway map', '')
-        if filename:
-            fn, ext = os.path.splitext(filename)
-            format = ext.replace('.', '')
-            # Check format is supported
-            if format in ['bmp', 'canon', 'dot', 'xdot', 'cmap', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'ico', 'imap', 'cmapx', 'imap_np', 'cmapx_np', 'ismap', 'jpg', 'jpeg', 'jpe', 'pdf', 'plain', 'plain-ext', 'png', 'ps', 'ps2', 'svg', 'svgz', 'tif', 'tiff', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'xlib']:
-                self.generateGraph(filename, format)
-            else:
-                # Unsupported format error
-                pass
 
     def onAbout(self):
         dlg = ui.DialogAbout(self)

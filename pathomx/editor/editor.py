@@ -46,6 +46,12 @@ class WorkspaceEditor(QGraphicsView):
                 self.mapToScene(QPoint(0, 0)),
                 self.mapToScene(QPoint(self.width(), self.height()))
                 ))
+                
+    def onSaveAsImage(self):
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+                                                                                     Portable Network Graphics (*.png)")
+        if filename:
+            self.saveAsImage(filename)
 
     def saveAsImage(self, f):
         self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
