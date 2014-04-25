@@ -59,6 +59,7 @@ from . import data
 from . import utils
 from . import ui
 from . import threads
+from . import config
 from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
@@ -268,17 +269,36 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.settings = QSettings('Pathomx', 'Pathomx')
-        if self.settings.value('/Pathomx/Is_setup', False) == False:
+        self.settings = config.QSettingsManager()# QSettings('Pathomx', 'Pathomx')
+        self.settings.set_defaults({
+            'Pathomx/Is_setup': False,
+            'Pathomx/Current_version': '0.0.0',
+            'Pathomx/Update/Latest_version': '0.0.0',
+            'Pathomx/Update/Last_checked': None,
+            'Pathomx/Offered_registration': False,
+
+            'Plugins/Active': [],
+            'Plugins/Disabled': [],
+            'Plugins/Available': [],
+            'Plugins/Paths': [],
+
+            'Resources/MATLAB_path': 'matlab',
+            
+            'Editor/Snap_to_grid': False,
+        })
+        
+        print self.settings.get('Resources/MATLAB_path'), "!!!"
+        
+        if self.settings.get('Pathomx/Is_setup') == False:
             logging.info("Setting up initial configuration...")
-            self.onResetConfig()
+            #self.onResetConfig()
             logging.info('Done')
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(self.settings.value('/Pathomx/Latest_version', '0.0.0')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(self.settings.get('Pathomx/Latest_version')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
-            logging.warning('A new version (v%s) is available' % self.settings.value('/Pathomx/Update/Latest_version', '0.0.0'))
+            logging.warning('A new version (v%s) is available' % self.settings.get('Pathomx/Update/Latest_version'))
 
         # Create database accessor
         self.db = db.databaseManager()
@@ -446,7 +466,7 @@ class MainWindow(QMainWindow):
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
 
-        resources.matlab.set_exec_path(self.settings.value('/Resources/MATLAB_path', 'matlab'))
+        resources.matlab.set_exec_path(self.settings.get('Resources/MATLAB_path'))
 
         self.resources = {
             'MATLAB': resources.matlab,
@@ -481,6 +501,7 @@ class MainWindow(QMainWindow):
         categories_filter = {
                "Import": plugins.ImportPlugin,
                "Processing": plugins.ProcessingPlugin,
+               "Filter": plugins.FilterPlugin,
                "Identification": plugins.IdentificationPlugin,
                "Analysis": plugins.AnalysisPlugin,
                "Visualisation": plugins.VisualisationPlugin,
@@ -490,7 +511,7 @@ class MainWindow(QMainWindow):
         self.pluginManager.setCategoriesFilter(categories_filter)
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ["Import", "Processing", "Identification", "Analysis", "Visualisation", "Export", "Scripting"]  # categories_filter.keys()
+        plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export", "Scripting"]  # categories_filter.keys()
         apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
@@ -552,6 +573,7 @@ class MainWindow(QMainWindow):
         app_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
                "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
+               "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
                "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
                "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
                "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
@@ -606,7 +628,7 @@ class MainWindow(QMainWindow):
         self.progressTracker = {}  # Dict storing values for each view/object
 
         self.editor = WorkspaceEditor(self)
-
+        
         self.central = QTabWidget()
         self.central.setTabPosition(QTabWidget.South)
 
@@ -619,14 +641,56 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
         # Do version upgrade check
-        if StrictVersion(self.settings.value('/Pathomx/Current_version', '0.0.0')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(self.settings.get('Pathomx/Current_version')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             logging.info('Upgrade to %s' % VERSION_STRING)
             self.onAbout()
-            self.settings.setValue('/Pathomx/Current_version', VERSION_STRING)
+            self.settings.set('Pathomx/Current_version', VERSION_STRING)
         #if self.settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    self.settings.setValue('/Pathomx/Offered_registration', True)
+        
+        self.addFileToolBar()
+        self.addEditorToolBar()
+
+    def addFileToolBar(self):
+        t = self.addToolBar('File')
+        t.setIconSize(QSize(16, 16))
+        
+        clear_workspaceAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'document.png')), 'New workspace…', self)
+        clear_workspaceAction.setStatusTip('Create new workspace (clear current)')
+        clear_workspaceAction.triggered.connect(self.onClearWorkspace)
+        t.addAction(clear_workspaceAction)
+        
+        open_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Open workflow…', self)
+        open_workflowAction.setStatusTip('Open a saved workflow')
+        open_workflowAction.triggered.connect(self.onOpenWorkflow)
+        t.addAction(open_workflowAction)
+
+        save_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), 'Save workflow As…', self)
+        save_workflowAction.setStatusTip('Save workflow for future re-use')
+        save_workflowAction.triggered.connect(self.onSaveWorkflowAs)
+        t.addAction(save_workflowAction)
+
+
+    def addEditorToolBar(self):
+        t = self.addToolBar('Editor')
+        t.setIconSize(QSize(16, 16))
+
+        snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid…'), self)
+        snap_gridAction.setStatusTip('Snap tools to grid')
+        snap_gridAction.setCheckable(True)
+        self.settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
+        
+        t.addAction(snap_gridAction)
+        
+        
+        #popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
+        #popout_selfAction.setStatusTip('Open this app in a separate window')
+        #popout_selfAction.setCheckable(True)
+        #popout_selfAction.setChecked(False)
+        #popout_selfAction.toggled.connect(self.onPopOutToggle)
+        #t.addAction(popout_selfAction)  
 
     def onLogItemClicked(self, item):
         # When an item in the log viewer is clicked, center on the associated Tool
@@ -646,7 +710,7 @@ class MainWindow(QMainWindow):
 
     def onMATLABPathEdit(self):
 
-        dialog = ui.MATLABPathDialog(self, path=self.settings.value('/Resources/MATLAB_path', 'matlab'))
+        dialog = ui.MATLABPathDialog(self, path=self.settings.get('/Resources/MATLAB_path'))
         if dialog.exec_():
             path = dialog.path.text()
             resources.matlab.set_exec_path(path)

@@ -3,7 +3,7 @@
 import os
 
 import pathomx.ui as ui
-from pathomx.plugins import ProcessingPlugin
+from pathomx.plugins import FilterPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.qt import *
 
@@ -31,7 +31,7 @@ class NOOPApp(ui.GenericApp):
         return {'output': input}
 
 
-class NOOP(ProcessingPlugin):
+class NOOP(FilterPlugin):
 
     def __init__(self, **kwargs):
         super(NOOP, self).__init__(**kwargs)

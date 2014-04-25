@@ -10,7 +10,7 @@ import pathomx.utils as utils
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.utils import UnicodeReader, UnicodeWriter
-from pathomx.plugins import ProcessingPlugin
+from pathomx.plugins import FilterPlugin
 
 
 class MergeApp( ui.DataApp ):
@@ -120,7 +120,7 @@ class MergeApp( ui.DataApp ):
         return {'output':dso}
 
  
-class Merge(ProcessingPlugin):
+class Merge(FilterPlugin):
 
     def __init__(self, **kwargs):
         super(Merge, self).__init__(**kwargs)

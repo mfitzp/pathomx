@@ -13,7 +13,7 @@ import pathomx.db as db
 import pathomx.utils as utils
 
 from pathomx.data import DataSet, DataDefinition
-from pathomx.plugins import ProcessingPlugin
+from pathomx.plugins import FilterPlugin
 from pathomx.qt import *
 
 
@@ -146,7 +146,7 @@ class FilterApp(ui.DataApp):
         return {'output': self.apply_filters(input)}
 
 
-class Filter(ProcessingPlugin):
+class Filter(FilterPlugin):
 
     def __init__(self, **kwargs):
         super(Filter, self).__init__(**kwargs)

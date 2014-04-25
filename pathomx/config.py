@@ -384,6 +384,12 @@ class ConfigManager(QObject):
         self.reset()
         self.defaults = defaults  # Same mapping as above, used when config not set
 
+    def _get(self, key):
+        if key in self.config:
+            return self.config[key]
+        else:
+            return None
+
     # Get config
     def get(self, key):
         """ 
@@ -396,12 +402,16 @@ class ConfigManager(QObject):
             :type key: str
             :rtype: Any supported (str, int, bool, list-of-supported-types)
         """
-        if key in self.config:
-            return self.config[key]
+        v = self._get(key)
+        if v is not None:
+            return v
         elif key in self.defaults:
             return self.defaults[key]
         else:
             return None
+
+    def _set(self, key, value):
+        self.config[key] = value
 
     def set(self, key, value, trigger_update=True):
         """ 
@@ -417,19 +427,19 @@ class ConfigManager(QObject):
             :type value: Any supported (str, int, bool, list-of-supported-types)
             :rtype: bool (success)              
         """
-        if key in self.config and self.config[key] == value:
+        if self._get(key) == value:
             return False  # Not updating
 
         # Set value
-        self.config[key] = value
+        self._set(key, value)
 
         if key in self.handlers:
             # Trigger handler to update the view
             getter = self.handlers[key].getter  # (self, '_get_%s' % self.handlers[key].__class__.__name__, False)
             setter = self.handlers[key].setter  # getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
 
-            if setter and getter() != self.config[key]:
-                setter(self.config[key])
+            if setter and getter() != self._get(key):
+                setter(self._get(key))
 
         # Trigger update notification
         if trigger_update:
@@ -559,8 +569,8 @@ class ConfigManager(QObject):
         handler.updater().connect(lambda x = None: self.set(key, handler.getter()))
 
         # Keep handler and data consistent
-        if key in self.config:
-            handler.setter(self.config[key])
+        if self._get(key):
+            handler.setter(self._get(key))
 
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
@@ -568,18 +578,11 @@ class ConfigManager(QObject):
 
         # If the key is not in defaults, set the config to match the handler
         else:
-            self.config[key] = handler.getter()
+            self._set(key, handler.getter())
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
             self.add_handler(key, handler)
-
-    # JSON
-    def json_dumps(self):
-        return json.dumps(self.config)
-
-    def json_loads(self, json):
-        self.config = json.loads(json)
 
     def reset(self):
         """ 
@@ -592,3 +595,44 @@ class ConfigManager(QObject):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
+        
+
+class QSettingsManager(ConfigManager):
+
+
+    def reset(self):
+        """ 
+            Reset the config manager to it's initialised state.
+            
+            This initialises QSettings, unsets all defaults and removes all handlers, maps, and hooks.
+        """
+        self.settings = QSettings()
+        self.handlers = {}
+        self.defaults = {}
+        self.maps = {}
+        self.eventhooks = {}
+         
+
+    def _get(self, key):
+        if self.settings.value(key, None) is not None:
+            # Map type to that in defaults: required in case QVariant is a string
+            # representation of the actual value (e.g. on Windows Reg)
+            v = self.settings.value(key)
+            if key in self.defaults and type(v) != type(self.defaults[key]):
+                t = type(self.defaults[key])
+                type_munge = {
+                    int: lambda x: x.toInt(),
+                    float: lambda x: x.toFloat(),
+                    str: lambda x: x,
+                    unicode: lambda x: x,
+                    bool: lambda x: x.toBool(),
+                    list: lambda x: x.toList(),
+                }
+                v = type_munge[t](v)
+            return v
+
+        else:
+            return None
+
+    def _set(self, key, value):
+        self.settings.setValue(key, value)

@@ -265,7 +265,7 @@ class ToolItem(BaseItem):
 
     def itemChange(self, change, value):
         # Snap to grid in QGraphicsView (if enabled)
-        if change == QGraphicsItem.ItemPositionChange:
+        if change == QGraphicsItem.ItemPositionChange and self.app.m.settings.get('Editor/Snap_to_grid'):
             newPos = value  # .toPointF()
             snap = 100
             snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
