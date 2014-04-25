@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.settings = config.QSettingsManager()# QSettings('Pathomx', 'Pathomx')
+        self.settings = config.QSettingsManager()  # QSettings('Pathomx', 'Pathomx')
         self.settings.set_defaults({
             'Pathomx/Is_setup': False,
             'Pathomx/Current_version': '0.0.0',
@@ -285,10 +285,9 @@ class MainWindow(QMainWindow):
             'Resources/MATLAB_path': 'matlab',
             
             'Editor/Snap_to_grid': False,
+            'Editor/Show_grid': True,
         })
-        
-        print self.settings.get('Resources/MATLAB_path'), "!!!"
-        
+
         if self.settings.get('Pathomx/Is_setup') == False:
             logging.info("Setting up initial configuration...")
             #self.onResetConfig()
@@ -628,7 +627,7 @@ class MainWindow(QMainWindow):
         self.progressTracker = {}  # Dict storing values for each view/object
 
         self.editor = WorkspaceEditor(self)
-        
+
         self.central = QTabWidget()
         self.central.setTabPosition(QTabWidget.South)
 
@@ -637,7 +636,7 @@ class MainWindow(QMainWindow):
         self.central.addTab(self.dataView, 'Data')
 
         self.setCentralWidget(self.central)
-        
+
         self.addFileToolBar()
         self.addEditorToolBar()
 
@@ -652,18 +651,18 @@ class MainWindow(QMainWindow):
         #if self.settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    self.settings.setValue('/Pathomx/Offered_registration', True)
-        
+
         self.statusBar().showMessage(tr('Ready'))
 
     def addFileToolBar(self):
         t = self.addToolBar('File')
         t.setIconSize(QSize(16, 16))
-        
+
         clear_workspaceAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'document.png')), 'New workspace…', self)
         clear_workspaceAction.setStatusTip('Create new workspace (clear current)')
         clear_workspaceAction.triggered.connect(self.onClearWorkspace)
         t.addAction(clear_workspaceAction)
-        
+
         open_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Open workflow…', self)
         open_workflowAction.setStatusTip('Open a saved workflow')
         open_workflowAction.triggered.connect(self.onOpenWorkflow)
@@ -674,7 +673,6 @@ class MainWindow(QMainWindow):
         save_workflowAction.triggered.connect(self.onSaveWorkflowAs)
         t.addAction(save_workflowAction)
 
-
     def addEditorToolBar(self):
         t = self.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
@@ -683,9 +681,20 @@ class MainWindow(QMainWindow):
         snap_gridAction.setStatusTip('Snap tools to grid')
         snap_gridAction.setCheckable(True)
         self.settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
-        
         t.addAction(snap_gridAction)
 
+        show_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid.png')), tr('Snap to grid…'), self)
+        show_gridAction.setStatusTip('Show grid in workspace editor')
+        show_gridAction.setCheckable(True)
+        self.settings.add_handler('Editor/Show_grid', show_gridAction)
+        show_gridAction.triggered.connect(self.onGridToggle)
+        t.addAction(show_gridAction)
+
+    def onGridToggle(self):
+        if self.settings.get('Editor/Show_grid'):
+            self.editor.showGrid()
+        else:
+            self.editor.hideGrid()
 
     def onLogItemClicked(self, item):
         # When an item in the log viewer is clicked, center on the associated Tool
@@ -726,7 +735,6 @@ class MainWindow(QMainWindow):
     def onResetConfig(self):
         # Reset the QSettings object on the QSettings Manager (will auto-fallback to defined defaults)
         self.settings.settings.clear()
-
     # UI Events
 
     def onGoToPathomxWeb(self):

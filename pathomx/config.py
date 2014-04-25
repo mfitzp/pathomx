@@ -595,10 +595,9 @@ class ConfigManager(QObject):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
-        
+
 
 class QSettingsManager(ConfigManager):
-
 
     def reset(self):
         """ 
@@ -611,7 +610,6 @@ class QSettingsManager(ConfigManager):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
-         
 
     def _get(self, key):
         if self.settings.value(key, None) is not None:

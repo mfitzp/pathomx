@@ -84,7 +84,7 @@ class RResource(AbstractResource):
     @property
     def is_available(self):
         return robjects != False
-    
+
 matlab = MATLABResource()
 r = RResource()
 

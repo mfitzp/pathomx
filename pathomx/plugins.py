@@ -496,7 +496,8 @@ class AnalysisPlugin(BasePlugin):
     '''
     default_workspace_category = 'Analysis'
     pass
-    
+
+
 class FilterPlugin(BasePlugin):
     '''
     Filter plugin.

@@ -420,7 +420,7 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
             mat_out = self.matlab.autoscale2d(input.data,
                             nout=1)
             input.data = mat_out.reshape(input.shape)
-        
+
         return {'output': input}
 
 

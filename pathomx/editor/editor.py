@@ -29,8 +29,17 @@ class WorkspaceEditor(QGraphicsView):
 
         self.setAcceptDrops(True)
 
-        image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid100.png'))
-        self.setBackgroundBrush(QBrush(image))
+        self.background_image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid100.png'))
+        if self.m.settings.get('Editor/Show_grid'):
+            self.showGrid()
+        else:
+            self.hideGrid()
+
+    def showGrid(self):
+        self.setBackgroundBrush(QBrush(self.background_image))
+
+    def hideGrid(self):
+        self.setBackgroundBrush(QBrush(None))
 
     def resizeEvent(self, e):
         self._scene_extreme_rect.setRect(QRectF(
