@@ -637,9 +637,12 @@ class MainWindow(QMainWindow):
         self.central.addTab(self.dataView, 'Data')
 
         self.setCentralWidget(self.central)
+        
+        self.addFileToolBar()
+        self.addEditorToolBar()
 
-        self.statusBar().showMessage(tr('Ready'))
         self.showMaximized()
+
         # Do version upgrade check
         if StrictVersion(self.settings.get('Pathomx/Current_version')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
@@ -650,8 +653,7 @@ class MainWindow(QMainWindow):
         #    self.onDoRegister()
         #    self.settings.setValue('/Pathomx/Offered_registration', True)
         
-        self.addFileToolBar()
-        self.addEditorToolBar()
+        self.statusBar().showMessage(tr('Ready'))
 
     def addFileToolBar(self):
         t = self.addToolBar('File')
@@ -683,14 +685,7 @@ class MainWindow(QMainWindow):
         self.settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
         
         t.addAction(snap_gridAction)
-        
-        
-        #popout_selfAction = QAction( QIcon( os.path.join(  utils.scriptdir, 'icons', 'applications-blue.png' ) ), tr('Move to new window'), self.m)
-        #popout_selfAction.setStatusTip('Open this app in a separate window')
-        #popout_selfAction.setCheckable(True)
-        #popout_selfAction.setChecked(False)
-        #popout_selfAction.toggled.connect(self.onPopOutToggle)
-        #t.addAction(popout_selfAction)  
+
 
     def onLogItemClicked(self, item):
         # When an item in the log viewer is clicked, center on the associated Tool
@@ -714,7 +709,7 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             path = dialog.path.text()
             resources.matlab.set_exec_path(path)
-            self.settings.setValue('/Resources/MATLAB_path', path)
+            self.settings.set('/Resources/MATLAB_path', path)
 
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
@@ -729,19 +724,9 @@ class MainWindow(QMainWindow):
 
     # Init application configuration
     def onResetConfig(self):
-        # Defaults not set, apply now and save complete config file
-        self.settings.setValue('Pathomx/Is_setup', True)
-        self.settings.setValue('Pathomx/Current_version', '0.0.0')
-        self.settings.setValue('Pathomx/Update/Latest_version', '0.0.0')
-        self.settings.setValue('Pathomx/Update/Last_checked', None)
-        self.settings.setValue('Pathomx/Offered_registration', False)
+        # Reset the QSettings object on the QSettings Manager (will auto-fallback to defined defaults)
+        self.settings.settings.clear()
 
-        self.settings.setValue('Plugins/Active', [])
-        self.settings.setValue('Plugins/Disabled', [])
-        self.settings.setValue('Plugins/Available', [])
-        self.settings.setValue('Plugins/Paths', [])
-
-        self.settings.setValue('/Resources/MATLAB_path', 'matlab')
     # UI Events
 
     def onGoToPathomxWeb(self):

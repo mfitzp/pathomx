@@ -29,7 +29,7 @@ class WorkspaceEditor(QGraphicsView):
 
         self.setAcceptDrops(True)
 
-        image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid.png'))
+        image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid100.png'))
         self.setBackgroundBrush(QBrush(image))
 
     def resizeEvent(self, e):
