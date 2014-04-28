@@ -648,6 +648,12 @@ class BaseAnnotationItem( QGraphicsItem ):
         self.config = config.ConfigManager()
         self.config.updated.connect( self.applyStyleConfig )
 
+        self.setFlag(QGraphicsItem.ItemIsMovable)
+        self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemIsFocusable)
+
+        self.setZValue(-1)
+
     def delete(self):
         self.scene().removeItem(self)
         self.removeHandlers()
@@ -688,21 +694,13 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
     def __init__(self, *args, **kwargs):
         super(EditorTextItem, self).__init__(*args, **kwargs)
         
-        self.setFlag(QGraphicsItem.ItemIsMovable)
-        self.setFlag(QGraphicsItem.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.ItemIsFocusable)
-        
         self.text = QGraphicsTextItem(parent=self)
         self.text.setTextInteractionFlags(Qt.TextEditable)
         self.text.setPlainText('Your text here')
         self.text.setParentItem(self)
         
         self.setFocusProxy( self.text )
-        
-        self.setPen( QPen( Qt.NoPen ) )
-        self.setBrush( QBrush( Qt.NoBrush) )
-        
-        self.setZValue(-1)
+
 
     def applyStyleConfig(self):
     
@@ -734,15 +732,7 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
 
     def __init__(self, *args, **kwargs):
         super(EditorRegionItem, self).__init__(*args, **kwargs)
-        
-        self.setFlag(QGraphicsItem.ItemIsMovable)
-        self.setFlag(QGraphicsItem.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.ItemIsFocusable)
-        
-        self.setPen( QPen( Qt.NoPen ) )
-        
-        self.setZValue(-1)
-        
+
     def applyStyleConfig(self):
 
         if self.config.get('color-border'):
