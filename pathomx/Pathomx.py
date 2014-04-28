@@ -65,14 +65,14 @@ from . import custom_exceptions
 from . import plugins  # plugin helper/manager
 from . import styles
 from . import resources
-from .editor.editor import WorkspaceEditor
+from .editor.editor import WorkspaceEditor, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
 
 # Translation (@default context)
 from .translate import tr
 
 from distutils.version import StrictVersion
 
-VERSION_STRING = '2.4.3'
+VERSION_STRING = '2.5.0'
 
 
 class Logger(logging.Handler):
@@ -298,6 +298,8 @@ class MainWindow(QMainWindow):
         if StrictVersion(self.settings.get('Pathomx/Latest_version')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
             logging.warning('A new version (v%s) is available' % self.settings.get('Pathomx/Update/Latest_version'))
+
+        self.fonts = QFontDatabase()
 
         # Create database accessor
         self.db = db.databaseManager()
@@ -639,6 +641,8 @@ class MainWindow(QMainWindow):
 
         self.addFileToolBar()
         self.addEditorToolBar()
+        self.addEditModeToolBar()
+        self.addEditStyleToolBar()
 
         self.showMaximized()
 
@@ -694,7 +698,99 @@ class MainWindow(QMainWindow):
         self.settings.add_handler('Editor/Show_grid', show_gridAction)
         show_gridAction.triggered.connect(self.onGridToggle)
         t.addAction(show_gridAction)
+        
+    def addEditModeToolBar(self):
+        t = self.addToolBar('Edit mode')
+        t.setIconSize(QSize(16, 16))
+        
+        editormodeag = QActionGroup(self)
 
+        normalAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cursor.png')), tr('Edit mode'), self)
+        normalAction.setCheckable(True)
+        normalAction.setChecked(True)
+        normalAction.setStatusTip('Default edit mode')
+        normalAction.setActionGroup( editormodeag )
+        #normalAction._px_value = EDITOR_MODE_NORMAL
+        t.addAction(normalAction)
+
+        add_textAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layer-shape-text.png')), tr('Add text annotation…'), self)
+        add_textAction.setCheckable(True)
+        add_textAction.setStatusTip('Add text annotations to workflow')
+        add_textAction.setActionGroup( editormodeag )
+        #add_textAction._px_value = EDITOR_MODE_TEXT
+        t.addAction(add_textAction)
+
+        add_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone.png')), tr('Add region annotation…'), self)
+        add_regionAction.setCheckable(True)
+        add_regionAction.setStatusTip('Add region annotations to workflow')
+        add_regionAction.setActionGroup( editormodeag )
+        #add_regionAction._px_value = EDITOR_MODE_REGION
+        t.addAction(add_regionAction)
+        
+        self.editor.config.add_handler('mode', editormodeag)
+        #self.editormodeag.triggered.connect( self.onEditorModeToggle )
+        
+    def addEditStyleToolBar(self):
+    
+        # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
+    
+        t = self.addToolBar('Style')
+        t.setIconSize(QSize(16, 16))
+        self.styletoolbarwidgets = {}
+        
+        font_listcb = QComboBox()
+        font_listcb.addItems( self.fonts.families(QFontDatabase.Any) )
+        self.editor.config.add_handler('font-family', font_listcb)
+        t.addWidget(font_listcb)
+        self.styletoolbarwidgets['font-family'] = font_listcb
+
+        font_sizecb = QComboBox()
+        font_sizecb.addItems( ['8','9','10','11','12','14','16','18','20','22','24','26','28','36','48','72'] )
+        font_sizecb.setEditable(True)
+        self.editor.config.add_handler('font-size', font_sizecb)
+        t.addWidget(font_sizecb)
+        self.styletoolbarwidgets['font-size'] = font_sizecb
+        
+        text_colorcb = ui.QColorButton()
+        self.editor.config.add_handler('text-color', text_colorcb)
+        t.addWidget(text_colorcb)
+        self.styletoolbarwidgets['text-color'] = text_colorcb
+        
+        text_boldAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-bold.png')), tr('Bold'), self)
+        text_boldAction.setStatusTip('Set text bold')
+        text_boldAction.setCheckable(True)
+        self.editor.config.add_handler('text-bold', text_boldAction)
+        t.addAction(text_boldAction)
+        self.styletoolbarwidgets['text-bold'] = text_boldAction
+
+        text_italicAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-italic.png')), tr('Italic'), self)
+        text_italicAction.setStatusTip('Set text italic')
+        text_italicAction.setCheckable(True)
+        self.editor.config.add_handler('text-italic', text_italicAction)
+        t.addAction(text_italicAction)
+        self.styletoolbarwidgets['text-italic'] = text_italicAction
+
+        text_underlineAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-underline.png')), tr('Underline'), self)
+        text_underlineAction.setStatusTip('Set text underline')
+        text_underlineAction.setCheckable(True)
+        self.editor.config.add_handler('text-underline', text_underlineAction)
+        t.addAction(text_underlineAction)
+        self.styletoolbarwidgets['text-underline'] = text_underlineAction
+        
+        border_colorcb = ui.QColorButton()
+        self.editor.config.add_handler('color-border', border_colorcb)
+        t.addWidget(border_colorcb)
+        self.styletoolbarwidgets['color-border'] = border_colorcb
+        
+        background_colorcb = ui.QColorButton()
+        self.editor.config.add_handler('color-background', background_colorcb)
+        t.addWidget(background_colorcb)
+        self.styletoolbarwidgets['color-background'] = background_colorcb
+
+
+    def onEditorModeToggle(self, action):
+        self.editor.mode = action._px_value
+    
     def onGridToggle(self):
         if self.settings.get('Editor/Show_grid'):
             self.editor.showGrid()

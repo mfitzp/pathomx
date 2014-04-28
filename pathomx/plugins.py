@@ -418,7 +418,7 @@ class BasePlugin(IPlugin):
         app.plugin = self
         key = "%s.%s" % (self.id, app.__name__)
         self.m.app_launchers[key] = app
-
+        
         if workspace_category == None:
             workspace_category = self.default_workspace_category
 
@@ -427,6 +427,10 @@ class BasePlugin(IPlugin):
             'app': app,
             'plugin': self,
         })
+
+        # Support legacy app launchers (so moving apps between plugins doesn't kill them)
+        for lkey in app.legacy_launchers:
+            self.m.app_launchers[lkey] = app
 
     def register_file_handler(self, app, ext):
         self.m.file_handlers[ext] = app

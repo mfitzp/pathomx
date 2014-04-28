@@ -134,9 +134,34 @@ def _event_QAction(self):
         Return state change signal for QAction
     """
     return self.toggled
+    
+
+# QActionGroup
+def _get_QActionGroup(self):
+    """
+        Get checked state of QAction
+    """
+    if self.checkedAction():
+        return self.actions().index( self.checkedAction() )
+    else:
+        return None
 
 
-# QAction
+def _set_QActionGroup(self, v):
+    """
+        Set checked state of QAction
+    """
+    self.actions()[v].setChecked(True)
+
+
+def _event_QActionGroup(self):
+    """
+        Return state change signal for QAction
+    """
+    return self.triggered    
+
+
+# QPushButton
 def _get_QPushButton(self):
     """
         Get checked state of QPushButton
@@ -156,6 +181,8 @@ def _event_QPushButton(self):
         Return state change signal for QPushButton
     """
     return self.toggled
+    
+
 
 
 # QSpinBox
@@ -583,6 +610,15 @@ class ConfigManager(QObject):
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
             self.add_handler(key, handler)
+            
+    def remove_handler(self, key):
+        if key in self.handlers:
+            handler = self.handlers[key]
+            handler.setter = None
+            handler.getter = None
+            handler.updater().disconnect()
+            handler.updater = None
+            del self.handlers[key]
 
     def reset(self):
         """ 

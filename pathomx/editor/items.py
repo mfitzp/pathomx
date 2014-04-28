@@ -2,6 +2,7 @@ import os
 import copy
 import math
 from .. import utils
+from .. import config
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -471,15 +472,19 @@ class LinkItem(QGraphicsPathItem):
         sinkPoint = self.sink.scenePos() + self.sink._offset if hasattr(self.sink, '_offset') else self.sink.scenePos()
         bezierPath = QPainterPath()
         bezierPath.moveTo(sourcePoint)
+        
+        pi = abs(sourcePoint.x()-sinkPoint.x()) / 2
+        if pi > 100:
+            pi = 100
 
-        p1 = sourcePoint + QPointF(100, 0)
-        p2 = sinkPoint - QPointF(100, 0)
-
+        p1 = sourcePoint + QPointF(pi, 0)
+        p2 = sinkPoint - QPointF(pi, 0)
+            
         # Shrink the horizontal port extension if we're too close
-        if p1.x() > p2.x():
-            pi = (p1.x() + p2.x()) / 2
-            p1 = QPointF(pi, p1.y())
-            p2 = QPointF(pi, p2.y())
+        #if p1.x() > p2.x():
+        #    pi = (p1.x() + p2.x()) / 2
+        #    p1 = QPointF(pi, p1.y())
+        #    p2 = QPointF(pi, p2.y())
 
         bezierPath.cubicTo(p1, p2, sinkPoint)
         self.bezierPath = bezierPath
@@ -627,3 +632,120 @@ class FigureItem(BaseItem):
     Render a figure from the given app directly to the workflow viewer 
     """
     pass
+    
+    
+class BaseAnnotationItem( QGraphicsItem ):
+
+    handler_cache = {}
+    styles = ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
+
+    def __init__(self, *args, **kwargs):
+        super(BaseAnnotationItem, self).__init__(*args, **kwargs)
+        # Config for each annotation item, holding the settings (styles, etc)
+        # update-control via the toolbar using add_handler linking
+        self.config = config.ConfigManager()
+        self.config.updated.connect( self.applyStyleConfig )
+        
+    def importStyleConfig(self, config):
+        for k in self.styles:
+            self.config.set(k, config.get(k) )
+    
+    def addHandlers(self):
+        m = self.scene().views()[0].m # Hack; need to switch to importing this
+        for k in self.styles:
+            self.config.add_handler(k, m.styletoolbarwidgets[k])
+                
+    def removeHandlers(self):
+        for k in self.styles:
+            self.config.remove_handler(k)
+    
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            if self.isSelected():
+                self.addHandlers()
+            else:
+                self.removeHandlers()
+     
+        return super(BaseAnnotationItem, self).itemChange(change, value)
+            
+                
+class QGraphicsTextItemExtend(QGraphicsTextItem):
+    def focusInEvent( self, e):
+        self.parentItem().setSelected(True)
+        return super(QGraphicsTextItemExtend, self).focusInEvent(e)
+
+
+class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
+
+    def __init__(self, *args, **kwargs):
+        super(EditorTextItem, self).__init__(*args, **kwargs)
+        
+        self.setFlag(QGraphicsItem.ItemIsMovable)
+        self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemIsFocusable)
+        
+        self.text = QGraphicsTextItemExtend(parent=self)
+        self.text.setTextInteractionFlags(Qt.TextEditable)
+        self.text.setPlainText('Your text here')
+        self.text.setParentItem(self)
+        
+        self.setFocusProxy( self.text )
+        
+        self.setPen( QPen( Qt.NoPen ) )
+        self.setBrush( QBrush( Qt.NoBrush) )
+        
+        self.setZValue(-1)
+        
+    def applyStyleConfig(self):
+    
+        font = QFont()
+        font.setFamily( self.config.get('font-family') )
+        font.setPointSizeF( float(self.config.get('font-size') ) )
+        font.setBold( self.config.get('text-bold') )
+        font.setItalic( self.config.get('text-italic') )
+        font.setUnderline( self.config.get('text-underline') )
+    
+        self.text.setFont( font )
+        self.text.setDefaultTextColor( QColor(self.config.get('text-color') ) )
+
+        if self.config.get('color-border'):
+            c = QColor(self.config.get('color-border') )
+            self.setPen(c)
+        else:
+            self.setPen( QPen(Qt.NoPen ) )
+
+        if self.config.get('color-background'):
+            c = QColor(self.config.get('color-background') )
+            c.setAlpha(25)
+            self.setBrush(c)
+        else:
+            self.setBrush( QBrush(Qt.NoBrush ) )
+
+        
+class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
+
+    def __init__(self, *args, **kwargs):
+        super(EditorRegionItem, self).__init__(*args, **kwargs)
+        
+        self.setFlag(QGraphicsItem.ItemIsMovable)
+        self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemIsFocusable)
+        
+        self.setPen( QPen( Qt.NoPen ) )
+        
+        self.setZValue(-1)
+        #self.setBrush( QColor(63, 255, 63, 10) )
+        
+    def applyStyleConfig(self):
+
+        if self.config.get('color-border'):
+            c = QColor(self.config.get('color-border') )
+            self.setPen(c)
+        else:
+            self.setPen( QPen(Qt.NoPen ) )        
+        if self.config.get('color-background'):
+            c = QColor(self.config.get('color-background') )
+            c.setAlpha(25)
+            self.setBrush(c)
+        else:
+            self.setBrush( QBrush(Qt.NoBrush ) )        

@@ -10,8 +10,15 @@ from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtPrintSupport import *
 
 from .items import *
+from .. import config
+
+EDITOR_MODE_NORMAL = 0
+EDITOR_MODE_TEXT = 1
+EDITOR_MODE_REGION = 2
 
 
+
+    
 class WorkspaceEditor(QGraphicsView):
     def __init__(self, parent=None):
         super(WorkspaceEditor, self).__init__(parent)
@@ -22,6 +29,24 @@ class WorkspaceEditor(QGraphicsView):
         self.setRenderHint(QPainter.SmoothPixmapTransform, True)
 
         self.scene = QGraphicsScene(self)
+        
+        self.config = config.ConfigManager()
+        # These config settings are transient (ie. not stored between sessions)
+        self.config.set_defaults({
+            'mode': EDITOR_MODE_NORMAL,
+            'font-family': 'Arial',
+            'font-size': '12',
+            'text-bold': False,
+            'text-italic': False,
+            'text-underline': False,
+            'text-color': '#000000',
+            'color-border': None, #'#000000',
+            'color-background': None,
+        })
+        
+        # Pre-set these values (will be used by default)
+        self.config.set('color-background', '#ff0000')
+        
 
         self.setScene(self.scene)
         self._scene_extreme_rect = self.scene.addRect(QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height()))), pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
@@ -34,6 +59,9 @@ class WorkspaceEditor(QGraphicsView):
             self.showGrid()
         else:
             self.hideGrid()
+            
+        self.mode = EDITOR_MODE_NORMAL
+        self.mode_origin_xy = None
 
     def showGrid(self):
         self.setBackgroundBrush(QBrush(self.background_image))
@@ -55,8 +83,7 @@ class WorkspaceEditor(QGraphicsView):
 
     def saveAsImage(self, f):
         self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
-        #self.image.fill(Qt.transparent)
-        self.image.fill( QBrush(self.background_image) )
+        self.image.fill(Qt.white)
         painter = QPainter(self.image)
         self.scene.render(painter)
         self.image.save(f)
@@ -104,3 +131,54 @@ class WorkspaceEditor(QGraphicsView):
                     a = self.m.file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
                     self.centerOn(a.editorItem)
                     e.accept()
+                    
+    def mousePressEvent(self, e):
+        if self.config.get('mode') == EDITOR_MODE_TEXT:
+            tw = EditorTextItem()
+            tw.setPos( self.mapToScene(e.pos()) )
+            tw.setRect(  QRectF( QPointF(0,0), QPointF(0,0) ) )
+            tw.importStyleConfig( self.config )
+
+            self.mode_current_object = tw
+            self.scene.addItem(tw)
+            #tw.setStyleFromConfig()
+        
+        if self.config.get('mode') == EDITOR_MODE_REGION:
+            tw = EditorRegionItem()
+            tw.setPos( self.mapToScene(e.pos()) )
+            tw.setRect( QRectF( QPointF(0,0), QPointF(0,0) ) )
+            tw.importStyleConfig( self.config )
+
+            self.mode_current_object = tw
+            self.scene.addItem(tw)
+            #tw.setStyleFromConfig()
+        
+        else:
+            super(WorkspaceEditor, self).mousePressEvent(e)
+        
+
+    def mouseMoveEvent(self, e):
+        if self.config.get('mode') == EDITOR_MODE_TEXT and self.mode_current_object:
+            r = self.mode_current_object.rect()
+            r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
+            self.mode_current_object.setRect(r)
+            self.mode_current_object.text.setTextWidth( r.width() )
+            
+        elif self.config.get('mode') == EDITOR_MODE_REGION and self.mode_current_object:
+            r = self.mode_current_object.rect()
+            r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
+            self.mode_current_object.setRect(r)
+        else:
+            super(WorkspaceEditor, self).mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        if self.config.get('mode') == EDITOR_MODE_TEXT:
+            pass #self.mode_current_object.setStyleFromConfig()
+                        
+        elif self.config.get('mode') == EDITOR_MODE_REGION:
+            pass #self.mode_current_object.setStyleFromConfig()
+
+        self.config.set('mode', EDITOR_MODE_NORMAL)
+        self.mode_current_object = None
+        super(WorkspaceEditor, self).mouseReleaseEvent(e)
+

@@ -68,13 +68,15 @@ class QColorButton(QPushButton):
 
     colorChanged = pyqtSignal()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, is_reset_enabled = True, *args, **kwargs):
         super(QColorButton, self).__init__(*args, **kwargs)
 
         self._color = None
         self.setMaximumWidth(32)
         self.pressed.connect(self.onColorPicker)
-
+        
+        self.is_reset_enabled = is_reset_enabled
+        
     def setColor(self, color):
         if color != self._color:
             self._color = color
@@ -107,10 +109,10 @@ class QColorButton(QPushButton):
             self.setColor(dlg.currentColor().name())
 
     def mousePressEvent(self, e):
-        if e.button() == Qt.RightButton:
+        if self.is_reset_enabled and e.button() == Qt.RightButton:
             self.setColor(None)
-
-        return super(QColorButton, self).mousePressEvent(e)
+        else:
+            return super(QColorButton, self).mousePressEvent(e)
 
 
 class QNoneDoubleSpinBox(QDoubleSpinBox):
@@ -1376,6 +1378,8 @@ class GenericApp(QMainWindow):
     complete = pyqtSignal()
 
     nameChanged = pyqtSignal(str)
+
+    legacy_launchers = []
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
