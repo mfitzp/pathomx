@@ -65,7 +65,7 @@ from . import custom_exceptions
 from . import plugins  # plugin helper/manager
 from . import styles
 from . import resources
-from .editor.editor import WorkspaceEditor, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
+from .editor.editor import WorkspaceEditorView, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
 
 # Translation (@default context)
 from .translate import tr
@@ -628,12 +628,13 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.progressBar)
         self.progressTracker = {}  # Dict storing values for each view/object
 
-        self.editor = WorkspaceEditor(self)
+        self.editView = WorkspaceEditorView(self)
+        self.editor = self.editView.scene
 
         self.central = QTabWidget()
         self.central.setTabPosition(QTabWidget.South)
 
-        self.central.addTab(self.editor, 'Editor')
+        self.central.addTab(self.editView, 'Editor')
         self.central.addTab(self.logView, 'Log')
         self.central.addTab(self.dataView, 'Data')
 

@@ -15,21 +15,17 @@ from .. import config
 EDITOR_MODE_NORMAL = 0
 EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
+EDITOR_MODE_ARROW = 3
 
-ANNOTATION_MINIMUM_SIZE = 10
+ANNOTATION_MINIMUM_SIZE = 100
 
+class QGraphicsSceneExtend(QGraphicsScene):
+
+    def __init__(self, parent, *args, **kwargs):
+        super(QGraphicsSceneExtend, self).__init__(parent, *args, **kwargs)
     
-class WorkspaceEditor(QGraphicsView):
-    def __init__(self, parent=None):
-        super(WorkspaceEditor, self).__init__(parent)
-
-        self.m = parent
-
-        self.setRenderHint(QPainter.Antialiasing, True)
-        self.setRenderHint(QPainter.SmoothPixmapTransform, True)
-
-        self.scene = QGraphicsScene(self)
-        
+        self.m = parent.m
+    
         self.config = config.ConfigManager()
         # These config settings are transient (ie. not stored between sessions)
         self.config.set_defaults({
@@ -45,14 +41,7 @@ class WorkspaceEditor(QGraphicsView):
         })
         
         # Pre-set these values (will be used by default)
-        self.config.set('color-background', '#ff0000')
-        
-
-        self.setScene(self.scene)
-        self._scene_extreme_rect = self.scene.addRect(QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height()))), pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
-        self.objs = []
-
-        self.setAcceptDrops(True)
+        self.config.set('color-background', '#5555ff')
 
         self.background_image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid100.png'))
         if self.m.settings.get('Editor/Show_grid'):
@@ -61,7 +50,50 @@ class WorkspaceEditor(QGraphicsView):
             self.hideGrid()
             
         self.mode = EDITOR_MODE_NORMAL
-        self.mode_origin_xy = None
+        self.mode_current_object = None
+            
+                    
+    def mousePressEvent(self, e):
+        if self.config.get('mode') != EDITOR_MODE_NORMAL:
+        
+            if self.config.get('mode') == EDITOR_MODE_TEXT:
+                tw = EditorTextItem(position=e.scenePos())
+        
+            elif self.config.get('mode') == EDITOR_MODE_REGION:
+                tw = EditorRegionItem(position=e.scenePos())
+
+            elif self.config.get('mode') == EDITOR_MODE_ARROW:
+                tw = EditorRegionItem(position=e.scenePos())
+
+            self.addItem(tw)
+            self.mode_current_object = tw
+            tw._createFromMousePressEvent(e)
+            tw.importStyleConfig( self.config )
+        
+        else:
+            super(QGraphicsSceneExtend, self).mousePressEvent(e)
+        
+
+    def mouseMoveEvent(self, e):
+        if self.config.get('mode') == EDITOR_MODE_TEXT and self.mode_current_object:
+            self.mode_current_object._resizeFromMouseMoveEvent(e)
+                        
+        elif self.config.get('mode') == EDITOR_MODE_REGION and self.mode_current_object:
+            self.mode_current_object._resizeFromMouseMoveEvent(e)
+
+        else:
+            super(QGraphicsSceneExtend, self).mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        if self.config.get('mode') == EDITOR_MODE_TEXT:
+            pass #self.mode_current_object.setStyleFromConfig()
+                        
+        elif self.config.get('mode') == EDITOR_MODE_REGION:
+            pass #self.mode_current_object.setStyleFromConfig()
+
+        self.config.set('mode', EDITOR_MODE_NORMAL)
+        self.mode_current_object = None
+        super(QGraphicsSceneExtend, self).mouseReleaseEvent(e)
 
     def showGrid(self):
         self.setBackgroundBrush(QBrush(self.background_image))
@@ -69,12 +101,6 @@ class WorkspaceEditor(QGraphicsView):
     def hideGrid(self):
         self.setBackgroundBrush(QBrush(None))
 
-    def resizeEvent(self, e):
-        self._scene_extreme_rect.setRect(QRectF(
-                self.mapToScene(QPoint(0, 0)),
-                self.mapToScene(QPoint(self.width(), self.height()))
-                ))
-                
     def onSaveAsImage(self):
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
@@ -82,21 +108,21 @@ class WorkspaceEditor(QGraphicsView):
             self.saveAsImage(filename)
 
     def saveAsImage(self, f):
-        self.image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_ARGB32)
+        self.image = QImage(self.Rect().size().toSize(), QImage.Format_ARGB32)
         self.image.fill(Qt.white)
         painter = QPainter(self.image)
-        self.scene.render(painter)
+        self.render(painter)
         self.image.save(f)
-
+        
     def addApp(self, app, position=None):
-        i = ToolItem(self.scene, app, position=position)
-        self.scene.addItem(i)
+        i = ToolItem(self, app, position=position)
+        self.addItem(i)
         return i
 
     def removeApp(self, app):
         i = app.editorItem
         i.hide()
-        self.scene.removeItem(i)
+        self.removeItem(i)
         app.editorItem = None
 
     def dragEnterEvent(self, e):
@@ -109,7 +135,7 @@ class WorkspaceEditor(QGraphicsView):
         e.accept()
 
     def dropEvent(self, e):
-        scenePos = self.mapToScene(e.pos()) - QPointF(32, 32)
+        scenePos = e.scenePos() - QPointF(32, 32)
 
         if e.mimeData().hasFormat('application/x-pathomx-app'):
             try:
@@ -131,54 +157,30 @@ class WorkspaceEditor(QGraphicsView):
                     a = self.m.file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
                     self.centerOn(a.editorItem)
                     e.accept()
-                    
-    def mousePressEvent(self, e):
-        if self.config.get('mode') == EDITOR_MODE_TEXT:
-            tw = EditorTextItem()
-            tw.setPos( self.mapToScene(e.pos()) )
-            tw.setRect(  QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
-            tw.importStyleConfig( self.config )
-
-            self.mode_current_object = tw
-            self.scene.addItem(tw)
-        
-        if self.config.get('mode') == EDITOR_MODE_REGION:
-            tw = EditorRegionItem()
-            tw.setPos( self.mapToScene(e.pos()) )
-            tw.setRect( QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
-            tw.importStyleConfig( self.config )
-
-            self.mode_current_object = tw
-            self.scene.addItem(tw)
-        
-        else:
-            super(WorkspaceEditor, self).mousePressEvent(e)
         
 
-    def mouseMoveEvent(self, e):
-        if self.config.get('mode') == EDITOR_MODE_TEXT and self.mode_current_object:
-            r = self.mode_current_object.rect()
-            r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
-            if r.width() > ANNOTATION_MINIMUM_SIZE and r.height() > ANNOTATION_MINIMUM_SIZE:
-                self.mode_current_object.setRect(r)
-                self.mode_current_object.text.setTextWidth( r.width() )
-            
-        elif self.config.get('mode') == EDITOR_MODE_REGION and self.mode_current_object:
-            r = self.mode_current_object.rect()
-            r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
-            if r.width() > ANNOTATION_MINIMUM_SIZE and r.height() > ANNOTATION_MINIMUM_SIZE:
-                self.mode_current_object.setRect(r)
-        else:
-            super(WorkspaceEditor, self).mouseMoveEvent(e)
+    
+class WorkspaceEditorView(QGraphicsView):
+    def __init__(self, parent=None):
+        super(WorkspaceEditorView, self).__init__(parent)
 
-    def mouseReleaseEvent(self, e):
-        if self.config.get('mode') == EDITOR_MODE_TEXT:
-            pass #self.mode_current_object.setStyleFromConfig()
-                        
-        elif self.config.get('mode') == EDITOR_MODE_REGION:
-            pass #self.mode_current_object.setStyleFromConfig()
+        self.m = parent
 
-        self.config.set('mode', EDITOR_MODE_NORMAL)
-        self.mode_current_object = None
-        super(WorkspaceEditor, self).mouseReleaseEvent(e)
+        self.setRenderHint(QPainter.Antialiasing, True)
+        self.setRenderHint(QPainter.SmoothPixmapTransform, True)
+
+        self.scene = QGraphicsSceneExtend(self)
+
+        self.setScene(self.scene)
+        self._scene_extreme_rect = self.scene.addRect(QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height()))), pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
+        self.objs = []
+
+        self.setAcceptDrops(True)
+
+    def resizeEvent(self, e):
+        self._scene_extreme_rect.setRect(QRectF(
+                self.mapToScene(QPoint(0, 0)),
+                self.mapToScene(QPoint(self.width(), self.height()))
+                ))
+
 

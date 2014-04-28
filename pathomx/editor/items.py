@@ -38,6 +38,18 @@ STATUS_COLORS = {
     'done': 'blue'
 }
 
+ANNOTATION_MINIMUM_SIZE = 100
+
+
+def minimalQRect(r):
+    if r.width() < ANNOTATION_MINIMUM_SIZE:
+        r.setWidth(ANNOTATION_MINIMUM_SIZE)
+
+    if r.height() < ANNOTATION_MINIMUM_SIZE:
+        r.setHeight(ANNOTATION_MINIMUM_SIZE)
+
+    return r
+
 
 class BaseGroup(QGraphicsItemGroup):
 
@@ -641,7 +653,7 @@ class BaseAnnotationItem( QGraphicsItem ):
     handler_cache = {}
     styles = ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, position=None, *args, **kwargs):
         super(BaseAnnotationItem, self).__init__(*args, **kwargs)
         # Config for each annotation item, holding the settings (styles, etc)
         # update-control via the toolbar using add_handler linking
@@ -651,6 +663,9 @@ class BaseAnnotationItem( QGraphicsItem ):
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsFocusable)
+    
+        if position:
+            self.setPos(position)
 
         self.setZValue(-1)
 
@@ -687,20 +702,36 @@ class BaseAnnotationItem( QGraphicsItem ):
                 self.addHandlers()
      
         return super(BaseAnnotationItem, self).itemChange(change, value)
+        
+
             
+class QGraphicsTextItemExtend(QGraphicsTextItem):
+    
+    def focusInEvent(self, e):
+        # Deselect other objects; set the parent selected
+        for i in self.scene().selectedItems():
+            if i != self.parentItem():
+                i.setSelected(False)
+
+        self.parentItem().setSelected(True)
+        super(QGraphicsTextItemExtend, self).focusInEvent(e)
+
 
 class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
 
     def __init__(self, *args, **kwargs):
         super(EditorTextItem, self).__init__(*args, **kwargs)
         
-        self.text = QGraphicsTextItem(parent=self)
+        self.text = QGraphicsTextItemExtend(parent=self)
         self.text.setTextInteractionFlags(Qt.TextEditable)
         self.text.setPlainText('Your text here')
         self.text.setParentItem(self)
         
         self.setFocusProxy( self.text )
-
+        
+    def delete(self):
+        self.setFocusProxy( None )
+        super(EditorTextItem, self).delete()
 
     def applyStyleConfig(self):
     
@@ -726,6 +757,22 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
             self.setBrush(c)
         else:
             self.setBrush( QBrush(Qt.NoBrush ) )
+            
+    def _createFromMousePressEvent(self, e):
+        r = QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) )
+        self.setPos( e.scenePos() )
+        self.setRect( r )
+        self.text.setTextWidth( r.width() )
+        self.importStyleConfig( self.config )
+
+    def _resizeFromMouseMoveEvent(self, e):
+        r = self.rect()
+        r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
+        r = minimalQRect(r)
+        self.setRect(r)
+        self.text.setTextWidth( r.width() )
+        
+
 
         
 class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
@@ -745,4 +792,13 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
             c.setAlpha(25)
             self.setBrush(c)
         else:
-            self.setBrush( QBrush(Qt.NoBrush ) )        
+            self.setBrush( QBrush(Qt.NoBrush ) )   
+            
+    def _createFromMousePressEvent(self, e):
+        self.setRect( QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
+      
+    def _resizeFromMouseMoveEvent(self, e):
+        r = self.rect()
+        r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
+        r = minimalQRect(r)
+        self.setRect(r)

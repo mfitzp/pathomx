@@ -576,8 +576,7 @@ class ConfigManager(QObject):
         shown in the UI and those saved/loaded from the config.
 
         """
-
-    # Add map handler for converting displayed values to internal config data
+        # Add map handler for converting displayed values to internal config data
         if type(mapper) == dict or type(mapper) == OrderedDict:  # By default allow dict types to be used
             mapper = build_dict_mapper(mapper)
 
@@ -585,6 +584,9 @@ class ConfigManager(QObject):
             mapper = build_tuple_mapper(mapper)
 
         handler._get_map, handler._set_map = mapper
+
+        if key in self.handlers: # Already there; so skip must remove first to replace
+            return
 
         self.handlers[key] = handler
 

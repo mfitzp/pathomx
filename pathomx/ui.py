@@ -26,7 +26,6 @@ from .styles import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END,
                     StyleDefinition, ClassMatchDefinition
 
 from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
-from .editor.editor import WorkspaceEditor
 # Translation (@default context)
 from .translate import tr
 
