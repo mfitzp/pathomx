@@ -649,8 +649,8 @@ class BaseAnnotationItem( QGraphicsItem ):
         self.config.updated.connect( self.applyStyleConfig )
 
     def delete(self):
-        self.removeHandlers()
         self.scene().removeItem(self)
+        self.removeHandlers()
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
@@ -703,7 +703,7 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.setBrush( QBrush( Qt.NoBrush) )
         
         self.setZValue(-1)
-        
+
     def applyStyleConfig(self):
     
         font = QFont()
