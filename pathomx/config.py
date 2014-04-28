@@ -440,7 +440,7 @@ class ConfigManager(QObject):
     def _set(self, key, value):
         self.config[key] = value
 
-    def set(self, key, value, trigger_update=True):
+    def set(self, key, value, trigger_handler=True, trigger_update=True):
         """ 
             Set config value for a given key in the config manager.
             
@@ -460,7 +460,7 @@ class ConfigManager(QObject):
         # Set value
         self._set(key, value)
 
-        if key in self.handlers:
+        if trigger_handler and key in self.handlers:
             # Trigger handler to update the view
             getter = self.handlers[key].getter  # (self, '_get_%s' % self.handlers[key].__class__.__name__, False)
             setter = self.handlers[key].setter  # getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
@@ -591,9 +591,13 @@ class ConfigManager(QObject):
         handler.setter = types_MethodType(globals().get('_set_%s' % handler.__class__.__name__), handler, handler.__class__)
         handler.getter = types_MethodType(globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__)
         handler.updater = types_MethodType(globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__)
-
+    
         print("Add handler %s for %s" % (handler.__class__.__name__, key))
-        handler.updater().connect(lambda x = None: self.set(key, handler.getter()))
+        handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
+        handler.updater().connect(handler_callback)
+        
+        # Store this so we can issue a specific remove on deletes
+        self.handler_callbacks[key] = handler_callback
 
         # Keep handler and data consistent
         if self._get(key):
@@ -614,11 +618,9 @@ class ConfigManager(QObject):
     def remove_handler(self, key):
         if key in self.handlers:
             handler = self.handlers[key]
-            handler.setter = None
-            handler.getter = None
-            handler.updater().disconnect()
-            handler.updater = None
+            handler.updater().disconnect( self.handler_callbacks[key])
             del self.handlers[key]
+    
 
     def reset(self):
         """ 
@@ -628,6 +630,7 @@ class ConfigManager(QObject):
         """
         self.config = {}
         self.handlers = {}
+        self.handler_callbacks = {}
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
@@ -643,6 +646,7 @@ class QSettingsManager(ConfigManager):
         """
         self.settings = QSettings()
         self.handlers = {}
+        self.handler_callbacks = {}
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}

@@ -225,6 +225,7 @@ class ToolItem(BaseItem):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.app.delete()
+        return super(ToolItem, self).keyPressEvent(e)
 
     def contextMenuEvent(self, e):
 
@@ -621,6 +622,7 @@ class ToolViewItem(BaseInteractiveItem):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.parentItem().scene.removeItem(self)
+        return super(ToolViewItem, self).keyPressEvent(e)
 
     def mouseDoubleClickEvent(self, e):
         if self.view:
@@ -645,7 +647,17 @@ class BaseAnnotationItem( QGraphicsItem ):
         # update-control via the toolbar using add_handler linking
         self.config = config.ConfigManager()
         self.config.updated.connect( self.applyStyleConfig )
-        
+
+    def delete(self):
+        self.removeHandlers()
+        self.scene().removeItem(self)
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
+            self.delete()
+        return super(BaseAnnotationItem, self).keyPressEvent(e)
+
+
     def importStyleConfig(self, config):
         for k in self.styles:
             self.config.set(k, config.get(k) )
@@ -660,20 +672,16 @@ class BaseAnnotationItem( QGraphicsItem ):
             self.config.remove_handler(k)
     
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedHasChanged:
-            if self.isSelected():
-                self.addHandlers()
-            else:
+        if change == QGraphicsItem.ItemSelectedChange:
+            if value == False:
                 self.removeHandlers()
+
+        elif change == QGraphicsItem.ItemSelectedHasChanged:
+            if value == True:
+                self.addHandlers()
      
         return super(BaseAnnotationItem, self).itemChange(change, value)
             
-                
-class QGraphicsTextItemExtend(QGraphicsTextItem):
-    def focusInEvent( self, e):
-        self.parentItem().setSelected(True)
-        return super(QGraphicsTextItemExtend, self).focusInEvent(e)
-
 
 class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
 
@@ -684,7 +692,7 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsFocusable)
         
-        self.text = QGraphicsTextItemExtend(parent=self)
+        self.text = QGraphicsTextItem(parent=self)
         self.text.setTextInteractionFlags(Qt.TextEditable)
         self.text.setPlainText('Your text here')
         self.text.setParentItem(self)
@@ -734,7 +742,6 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.setPen( QPen( Qt.NoPen ) )
         
         self.setZValue(-1)
-        #self.setBrush( QColor(63, 255, 63, 10) )
         
     def applyStyleConfig(self):
 

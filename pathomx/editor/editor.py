@@ -16,7 +16,7 @@ EDITOR_MODE_NORMAL = 0
 EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
 
-
+ANNOTATION_MINIMUM_SIZE = 10
 
     
 class WorkspaceEditor(QGraphicsView):
@@ -136,22 +136,20 @@ class WorkspaceEditor(QGraphicsView):
         if self.config.get('mode') == EDITOR_MODE_TEXT:
             tw = EditorTextItem()
             tw.setPos( self.mapToScene(e.pos()) )
-            tw.setRect(  QRectF( QPointF(0,0), QPointF(0,0) ) )
+            tw.setRect(  QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
             tw.importStyleConfig( self.config )
 
             self.mode_current_object = tw
             self.scene.addItem(tw)
-            #tw.setStyleFromConfig()
         
         if self.config.get('mode') == EDITOR_MODE_REGION:
             tw = EditorRegionItem()
             tw.setPos( self.mapToScene(e.pos()) )
-            tw.setRect( QRectF( QPointF(0,0), QPointF(0,0) ) )
+            tw.setRect( QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
             tw.importStyleConfig( self.config )
 
             self.mode_current_object = tw
             self.scene.addItem(tw)
-            #tw.setStyleFromConfig()
         
         else:
             super(WorkspaceEditor, self).mousePressEvent(e)
@@ -161,13 +159,15 @@ class WorkspaceEditor(QGraphicsView):
         if self.config.get('mode') == EDITOR_MODE_TEXT and self.mode_current_object:
             r = self.mode_current_object.rect()
             r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
-            self.mode_current_object.setRect(r)
-            self.mode_current_object.text.setTextWidth( r.width() )
+            if r.width() > ANNOTATION_MINIMUM_SIZE and r.height() > ANNOTATION_MINIMUM_SIZE:
+                self.mode_current_object.setRect(r)
+                self.mode_current_object.text.setTextWidth( r.width() )
             
         elif self.config.get('mode') == EDITOR_MODE_REGION and self.mode_current_object:
             r = self.mode_current_object.rect()
             r.setBottomRight( self.mapToScene(e.pos()) - self.mode_current_object.pos() )
-            self.mode_current_object.setRect(r)
+            if r.width() > ANNOTATION_MINIMUM_SIZE and r.height() > ANNOTATION_MINIMUM_SIZE:
+                self.mode_current_object.setRect(r)
         else:
             super(WorkspaceEditor, self).mouseMoveEvent(e)
 
