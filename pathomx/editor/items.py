@@ -38,7 +38,7 @@ STATUS_COLORS = {
     'done': 'blue'
 }
 
-ANNOTATION_MINIMUM_SIZE = 100
+ANNOTATION_MINIMUM_SIZE = 50
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
 
 RESIZE_HANDLE_SIZE = 8
@@ -249,7 +249,8 @@ class ToolItem(BaseItem):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.app.delete()
-        return super(ToolItem, self).keyPressEvent(e)
+        else:
+            return super(ToolItem, self).keyPressEvent(e)
 
     def contextMenuEvent(self, e):
 
@@ -646,7 +647,8 @@ class ToolViewItem(BaseInteractiveItem):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.parentItem().scene.removeItem(self)
-        return super(ToolViewItem, self).keyPressEvent(e)
+        else:
+            return super(ToolViewItem, self).keyPressEvent(e)
 
     def mouseDoubleClickEvent(self, e):
         if self.view:
@@ -763,7 +765,7 @@ class ResizableGraphicsItem(QGraphicsItem):
             painter.drawRect(self.topLeft)
             painter.drawRect(self.topRight)
             painter.drawRect(self.bottomLeft)     
-            painter.drawRect(self.bottomRight)     
+            painter.drawRect(self.bottomRight)    
 
                        
     
@@ -797,7 +799,8 @@ class BaseAnnotationItem( ResizableGraphicsItem ):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.delete()
-        return super(BaseAnnotationItem, self).keyPressEvent(e)
+        else:
+            return super(BaseAnnotationItem, self).keyPressEvent(e)
 
 
     def importStyleConfig(self, config):
@@ -892,6 +895,7 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         r = minimalQRect(r, self.minSize)
         self.setRect(r)
         self.text.setTextWidth( r.width() )
+        self.updateResizeHandles()        
         
     def paint(self, painter, option, widget):
         super(EditorTextItem, self).paint( painter, option, widget)
@@ -924,6 +928,7 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
         r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
         r = minimalQRect(r, self.minSize)
         self.setRect(r)
+        self.updateResizeHandles()
 
     def paint(self, painter, option, widget):
         super(EditorRegionItem, self).paint( painter, option, widget)

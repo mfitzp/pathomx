@@ -83,14 +83,13 @@ class QGraphicsSceneExtend(QGraphicsScene):
             super(QGraphicsSceneExtend, self).mouseMoveEvent(e)
 
     def mouseReleaseEvent(self, e):
-        if self.config.get('mode') == EDITOR_MODE_TEXT:
-            pass #self.mode_current_object.setStyleFromConfig()
-                        
-        elif self.config.get('mode') == EDITOR_MODE_REGION:
-            pass #self.mode_current_object.setStyleFromConfig()
+        if self.config.get('mode'):
+            self.mode_current_object.setSelected(True)
+            self.mode_current_object.setFocus()
 
-        self.config.set('mode', EDITOR_MODE_NORMAL)
-        self.mode_current_object = None
+            self.config.set('mode', EDITOR_MODE_NORMAL)
+            self.mode_current_object = None
+
         super(QGraphicsSceneExtend, self).mouseReleaseEvent(e)
 
     def showGrid(self):
