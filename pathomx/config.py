@@ -57,6 +57,11 @@ def build_dict_mapper(mdict):
         lambda x: rdict[x] if x in rdict else x,
         )
 
+try:
+    unicode
+except:
+    unicode = str
+
 
 def build_tuple_mapper(mlist):
     '''
@@ -689,14 +694,16 @@ class QSettingsManager(ConfigManager):
             if key in self.defaults and type(v) != type(self.defaults[key]):
                 t = type(self.defaults[key])
                 type_munge = {
-                    int: lambda x: x.toInt(),
-                    float: lambda x: x.toFloat(),
-                    str: lambda x: x,
-                    unicode: lambda x: x,
-                    bool: lambda x: x.toBool(),
-                    list: lambda x: x.toList(),
-                }
-                v = type_munge[t](v)
+                    int: QMetaType.Int,
+                    float: QMetaType.Float,
+                    str: QMetaType.QString,
+                    unicode: QMetaType.QString,
+                    bool: QMetaType.Bool,
+                    list: QMetaType.QStringList,
+                }   
+                qv = QVariant( v )
+                qv.convert(type_munge[t])
+                v = qv.value()
             return v
 
         else:

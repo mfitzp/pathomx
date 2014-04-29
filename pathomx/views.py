@@ -857,7 +857,6 @@ class MplScatterView(MplView):
         classes = dso.classes_l[0]
         for c in classes:
             df = dso.as_filtered(dim=0,classes=[c])
-            print df.shape
             ls = styles.get_style_for_class( c )
             s = ls.markersize**2 if ls.markersize != None else 20 #default
             plots[c] = self.ax.scatter(df.data[:,0], df.data[:,1], color=ls.markerfacecolor, marker=ls.marker, s=s)
