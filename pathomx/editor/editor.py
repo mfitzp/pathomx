@@ -99,13 +99,13 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.setBackgroundBrush(QBrush(None))
 
     def onSaveAsImage(self):
-        filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+        filename, _ = QFileDialog.getSaveFileName(self.m, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
         if filename:
             self.saveAsImage(filename)
 
     def saveAsImage(self, f):
-        self.image = QImage(self.Rect().size().toSize(), QImage.Format_ARGB32)
+        self.image = QImage(self.sceneRect().size().toSize(), QImage.Format_ARGB32)
         self.image.fill(Qt.white)
         painter = QPainter(self.image)
         self.render(painter)

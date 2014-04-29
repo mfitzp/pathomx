@@ -736,7 +736,6 @@ class ResizableGraphicsItem(QGraphicsItem):
             self.updateResizeHandles()
             self.prepareGeometryChange()
         else:
-
             super(ResizableGraphicsItem, self).mouseMoveEvent(event)
         
     def updateResizeHandles(self):
@@ -882,20 +881,29 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         else:
             self.setBrush( QBrush(Qt.NoBrush ) )
             
+    def setRect(self, r):
+        self.text.setTextWidth( r.width()-RESIZE_HANDLE_SIZE*2 )
+        # Add size padding
+        tr = self.text.boundingRect()
+        nr = QRect( 0, 0, tr.width()+RESIZE_HANDLE_SIZE*2, tr.height()+RESIZE_HANDLE_SIZE*2 )
+        super(EditorTextItem, self).setRect( minimalQRect(r, nr ) )
+        self.text.setPos( QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) )
+            
     def _createFromMousePressEvent(self, e):
         r = QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) )
         self.setPos( e.scenePos() )
+        self.prepareGeometryChange()
         self.setRect( r )
-        self.text.setTextWidth( r.width() )
         self.importStyleConfig( self.config )
+        self.updateResizeHandles()     
 
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
         r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
         r = minimalQRect(r, self.minSize)
+        self.prepareGeometryChange()
         self.setRect(r)
-        self.text.setTextWidth( r.width() )
-        self.updateResizeHandles()        
+        self.updateResizeHandles()     
         
     def paint(self, painter, option, widget):
         super(EditorTextItem, self).paint( painter, option, widget)
@@ -921,12 +929,15 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
             self.setBrush( QBrush(Qt.NoBrush ) )   
             
     def _createFromMousePressEvent(self, e):
+        self.prepareGeometryChange()
         self.setRect( QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
+        self.updateResizeHandles()     
       
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
         r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
         r = minimalQRect(r, self.minSize)
+        self.prepareGeometryChange()
         self.setRect(r)
         self.updateResizeHandles()
 
