@@ -38,6 +38,8 @@ STATUS_COLORS = {
     'done': 'blue'
 }
 
+
+
 ANNOTATION_MINIMUM_SIZE = 50
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
 
@@ -791,6 +793,7 @@ class BaseAnnotationItem( ResizableGraphicsItem ):
         self.setZValue(-1)
         
     def delete(self):
+        self.scene().annotations.remove(self)
         self.scene().removeItem(self)
         self.removeHandlers()
 
@@ -948,3 +951,4 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
     def paint(self, painter, option, widget):
         super(EditorRegionItem, self).paint( painter, option, widget)
         self.paintResizeHandles(painter)
+

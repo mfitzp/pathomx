@@ -7,6 +7,7 @@ logging.debug('Loading config.py')
 
 # Import PyQt5 classes
 from .qt import *
+from .utils import CONVERT_TYPE_TO_XML, CONVERT_TYPE_FROM_XML
 
 import os
 import sys
@@ -21,6 +22,12 @@ import json
 import logging
 
 from copy import copy, deepcopy
+
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
+
 
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
@@ -636,6 +643,28 @@ class ConfigManager(QObject):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
+        
+    def getXMLConfig(self, root):
+        config = et.SubElement(root, "Config")
+        for ck, cv in list(self.config.items()):
+            co = et.SubElement(config, "ConfigSetting")
+            co.set("id", ck)
+            t = type(cv).__name__
+            co.set("type", type(cv).__name__)
+            co = CONVERT_TYPE_TO_XML[t](co, cv)
+            
+        return root
+    
+    def setXMLConfig(self, root):
+
+        config = {}
+        for xconfig in root.findall('Config/ConfigSetting'):
+            #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
+            if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
+                v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
+            config[xconfig.get('id')] = v
+
+        self.set_many(config, trigger_update=True)
 
 
 class QSettingsManager(ConfigManager):

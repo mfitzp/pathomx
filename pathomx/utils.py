@@ -66,7 +66,7 @@ CONVERT_TYPE_FROM_XML = {
     'unicode': lambda x: str(x.text),
     'int': lambda x: int(x.text),
     'float': lambda x: float(x.text),
-    'bool': lambda x: bool(x.text),
+    'bool': lambda x: bool(x.text.lower()=='true'),
     'list': _convert_list_type_from_XML,
     'tuple': _convert_list_type_from_XML,
 }

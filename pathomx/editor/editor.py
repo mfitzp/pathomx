@@ -12,10 +12,17 @@ from PyQt5.QtPrintSupport import *
 from .items import *
 from .. import config
 
+try:
+    import xml.etree.cElementTree as et
+except ImportError:
+    import xml.etree.ElementTree as et
+
+
 EDITOR_MODE_NORMAL = 0
 EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
 EDITOR_MODE_ARROW = 3
+
 
 class QGraphicsSceneExtend(QGraphicsScene):
 
@@ -49,10 +56,15 @@ class QGraphicsSceneExtend(QGraphicsScene):
             
         self.mode = EDITOR_MODE_NORMAL
         self.mode_current_object = None
+        
+        self.annotations = []
             
                     
     def mousePressEvent(self, e):
         if self.config.get('mode') != EDITOR_MODE_NORMAL:
+        
+            for i in self.selectedItems():
+                i.setSelected(False)
         
             if self.config.get('mode') == EDITOR_MODE_TEXT:
                 tw = EditorTextItem(position=e.scenePos())
@@ -67,6 +79,8 @@ class QGraphicsSceneExtend(QGraphicsScene):
             self.mode_current_object = tw
             tw._createFromMousePressEvent(e)
             tw.importStyleConfig( self.config )
+            
+            self.annotations.append(tw)
         
         else:
             super(QGraphicsSceneExtend, self).mousePressEvent(e)
@@ -155,7 +169,50 @@ class QGraphicsSceneExtend(QGraphicsScene):
                     self.centerOn(a.editorItem)
                     e.accept()
         
+    def getXMLAnnotations(self, root):
 
+    # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
+        for annotation in self.annotations:
+
+            ase = et.SubElement(root, "Annotation")
+            ase.set('type', type(annotation).__name__)
+
+            ase.set('x', str( annotation.x() ) )
+            ase.set('y', str( annotation.y() ) )
+            ase.set('width', str( annotation.rect().width() ) )
+            ase.set('height', str( annotation.rect().height() ) )
+            
+            if hasattr(annotation, 'text'):
+                text = et.SubElement(ase, "Text")
+                text.text = annotation.text.toPlainText()
+            
+            ase = annotation.config.getXMLConfig( ase )
+
+        return root
+
+    def setXMLAnnotations(self, root):
+    
+        ANNOTATION_TYPES = {
+            'EditorTextItem': EditorTextItem,
+            'EditorRegionItem': EditorRegionItem,
+        }
+
+        for ase in root.findall('Annotation'):
+
+            # Validate the class definition before creating it
+            if ase.get('type') in ANNOTATION_TYPES:
+            
+                pos = QPointF(float( ase.get('x') ), float( ase.get('y') ) )
+                aobj = ANNOTATION_TYPES[ase.get('type')](position=pos)
+                aobj.setRect( QRectF( 0, 0, float( ase.get('width') ), float( ase.get('height') ) ) )
+                
+                to = ase.find('Text')
+                if to is not None:
+                    aobj.text.setPlainText(to.text)
+                
+                self.addItem(aobj)
+                self.annotations.append(aobj)
+                aobj.config.setXMLConfig( ase )
     
 class WorkspaceEditorView(QGraphicsView):
     def __init__(self, parent=None):

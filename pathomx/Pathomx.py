@@ -789,9 +789,6 @@ class MainWindow(QMainWindow):
         self.styletoolbarwidgets['color-background'] = background_colorcb
 
 
-    def onEditorModeToggle(self, action):
-        self.editor.mode = action._px_value
-    
     def onGridToggle(self):
         if self.settings.get('Editor/Show_grid'):
             self.editor.showGrid()
@@ -892,7 +889,6 @@ class MainWindow(QMainWindow):
 
                 # Update workspace viewer
                 self.workspace_updated.emit()  # Notify change to workspace layout        
-
 
             elif app == 'db':
                 kind, id, action = url.path().strip('/').split('/')
@@ -1072,8 +1068,8 @@ class MainWindow(QMainWindow):
 
     def register_url_handler(self, identifier, url_handler):
         self.url_handlers[identifier].append(url_handler)
-    ### OPEN/SAVE WORKSPACE
 
+    ### OPEN/SAVE WORKSPACE
     def onOpenWorkspace(self):
         self.openWorkspace('/Users/mxf793/Desktop/test.mpw')
 
@@ -1088,8 +1084,8 @@ class MainWindow(QMainWindow):
 
     def saveWorkspace(self, fn):
         pass
-    ### RESET WORKSPACE
 
+    ### RESET WORKSPACE
     def onClearWorkspace(self):
         reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
                             QMessageBox.Yes | QMessageBox.No)
@@ -1099,13 +1095,19 @@ class MainWindow(QMainWindow):
     def clearWorkspace(self):
         for v in self.apps[:]:  # Copy as v.delete modifies the self.apps list
             v.delete()
+            
+        for i in self.editor.items():
+            try:
+                i.delete()
+            except:
+                pass
 
         # Remove all workspace datasets
         del self.datasets[:]
 
         self.workspace_updated.emit()
-    ### OPEN/SAVE WORKFLOWS
 
+    ### OPEN/SAVE WORKFLOWS
     def onSaveWorkflowAs(self):
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current workflow', '', "Pathomx Workflow Format (*.mpf)")
         if filename:
@@ -1118,6 +1120,9 @@ class MainWindow(QMainWindow):
 
         s = et.SubElement(root, "Styles")
         s = styles.styles.getXMLMatchDefinitionsStyles(s)
+        
+        s = et.SubElement(root, "Annotations")
+        s = self.editor.getXMLAnnotations(s)
 
         # Build a JSONable object representing the entire current workspace and write it to file
         for v in self.apps:
@@ -1138,13 +1143,7 @@ class MainWindow(QMainWindow):
             position.set("x", str(v.editorItem.x()))
             position.set("y", str(v.editorItem.y()))
 
-            config = et.SubElement(app, "Config")
-            for ck, cv in list(v.config.config.items()):
-                co = et.SubElement(config, "ConfigSetting")
-                co.set("id", ck)
-                t = type(cv).__name__
-                co.set("type", type(cv).__name__)
-                co = utils.CONVERT_TYPE_TO_XML[t](co, cv)
+            app = v.config.getXMLConfig( app )
 
             datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
@@ -1173,8 +1172,12 @@ class MainWindow(QMainWindow):
         workflow = tree.getroot()
 
         s = workflow.find('Styles')
-        if s:
+        if s is not None:
             styles.styles.setXMLMatchDefinitionsStyles(s)
+
+        a = workflow.find('Annotations')
+        if a is not None:
+            self.editor.setXMLAnnotations(a)
 
         appref = {}
         logging.info("...Loading apps.")
@@ -1188,15 +1191,8 @@ class MainWindow(QMainWindow):
             #app = self.app_launchers[ item.find("launcher").text ]()
             #app.set_name(  )
             appref[xapp.get('id')] = app
-
-            config = {}
-            for xconfig in xapp.findall('Config/ConfigSetting'):
-                #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
-                if xconfig.get('type') in utils.CONVERT_TYPE_FROM_XML:
-                    v = utils.CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
-                config[xconfig.get('id')] = v
-
-            app.config.set_many(config, trigger_update=False)
+            
+            app.config.setXMLConfig( xapp )
 
         logging.info("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present
