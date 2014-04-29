@@ -664,7 +664,7 @@ class ConfigManager(QObject):
                 v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
             config[xconfig.get('id')] = v
 
-        self.set_many(config, trigger_update=True)
+        self.set_many(config, trigger_update=False)
 
 
 class QSettingsManager(ConfigManager):

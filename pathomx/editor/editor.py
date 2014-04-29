@@ -213,6 +213,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
                 self.addItem(aobj)
                 self.annotations.append(aobj)
                 aobj.config.setXMLConfig( ase )
+                aobj.applyStyleConfig()
     
 class WorkspaceEditorView(QGraphicsView):
     def __init__(self, parent=None):
