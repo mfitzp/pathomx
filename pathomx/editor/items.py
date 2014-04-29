@@ -39,14 +39,26 @@ STATUS_COLORS = {
 }
 
 ANNOTATION_MINIMUM_SIZE = 100
+ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
+
+RESIZE_HANDLE_SIZE = 8
+
+RESIZE_TOPLEFT = 1
+RESIZE_TOP = 2
+RESIZE_TOPRIGHT = 3
+RESIZE_RIGHT = 4
+RESIZE_BOTTOMRIGHT = 5
+RESIZE_BOTTOM = 6
+RESIZE_BOTTOMLEFT = 7
+RESIZE_LEFT = 8
 
 
-def minimalQRect(r):
-    if r.width() < ANNOTATION_MINIMUM_SIZE:
-        r.setWidth(ANNOTATION_MINIMUM_SIZE)
+def minimalQRect(r, min):
+    if r.width() < min.width():
+        r.setWidth(min.width())
 
-    if r.height() < ANNOTATION_MINIMUM_SIZE:
-        r.setHeight(ANNOTATION_MINIMUM_SIZE)
+    if r.height() < min.height():
+        r.setHeight(min.height())
 
     return r
 
@@ -646,12 +658,121 @@ class FigureItem(BaseItem):
     Render a figure from the given app directly to the workflow viewer 
     """
     pass
+
     
+class ResizableGraphicsItem(QGraphicsItem):
+
+    def __init__(self,  *args, **kwargs):
+        super(ResizableGraphicsItem, self).__init__(*args, **kwargs)
+        self._resizeMode = None
+
+        self.setAcceptHoverEvents(True)
+        self.updateResizeHandles()
+
+    def hoverEnterEvent(self, event):
+        self.updateResizeHandles()
+        
+    def hoverMoveEvent(self, event):
+        if self.topLeft.contains(event.pos()) or self.bottomRight.contains(event.pos()):
+            self.setCursor(Qt.SizeFDiagCursor)
+        elif self.topRight.contains(event.pos()) or self.bottomLeft.contains(event.pos()):
+            self.setCursor(Qt.SizeBDiagCursor)
+        else:
+            self.setCursor(Qt.SizeAllCursor)
+            
+
+    def mousePressEvent(self, event):
+        """
+        Capture mouse press events and find where the mosue was pressed on the object
+        """
+        # Top left corner
+        if self.topLeft.contains(event.pos()):
+            self._resizeMode = RESIZE_TOPLEFT
+        # top right corner            
+        elif self.topRight.contains(event.pos()):
+            self._resizeMode = RESIZE_TOPRIGHT
+        #  bottom left corner            
+        elif self.bottomLeft.contains(event.pos()):
+            self._resizeMode = RESIZE_BOTTOMLEFT
+        # bottom right corner            
+        elif self.bottomRight.contains(event.pos()):
+            self._resizeMode = RESIZE_BOTTOMRIGHT
+        # entire rectangle
+        else:
+            self._resizeMode = None
+        
+        super(ResizableGraphicsItem, self).mousePressEvent(event)
+        
+    def mouseReleaseEvent(self, event):
+        self.updateResizeHandles()
+        self.prepareGeometryChange()
+        super(ResizableGraphicsItem, self).mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._resizeMode:
+            r = self.rect()
+            
+            # Move top left corner
+            if self._resizeMode == RESIZE_TOPLEFT:
+                r.setTopLeft(event.pos())
+
+            # Move top right corner            
+            elif self._resizeMode == RESIZE_TOPRIGHT:
+                r.setTopRight(event.pos())
+
+            # Move bottom left corner            
+            elif self._resizeMode ==RESIZE_BOTTOMLEFT:
+                r.setBottomLeft(event.pos())
+
+            # Move bottom right corner            
+            elif  self._resizeMode ==RESIZE_BOTTOMRIGHT:
+                r.setBottomRight(event.pos())
+
+            r = minimalQRect(r, self.minSize)
+
+            self.setRect(r)
+            self.updateResizeHandles()
+            self.prepareGeometryChange()
+        else:
+
+            super(ResizableGraphicsItem, self).mouseMoveEvent(event)
+        
+    def updateResizeHandles(self):
+        """
+        Update bounding rectangle and resize handles
+        """
+        r = self.rect()
+        s = QSizeF( RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE)
+        self.topLeft = QRectF( r.topLeft(), s )
+        self.topRight = QRectF( QPointF( r.topRight().x() - RESIZE_HANDLE_SIZE, r.topRight().y() ), s )
+
+        self.bottomLeft = QRectF( QPointF( r.bottomLeft().x(), r.bottomLeft().y() - RESIZE_HANDLE_SIZE ), s )
+        self.bottomRight = QRectF( QPointF( r.bottomRight().x() - RESIZE_HANDLE_SIZE, r.bottomRight().y() - RESIZE_HANDLE_SIZE ), s )
+        
+    def paintResizeHandles(self, painter):
+        """
+        Paint Widget
+        """
+        # If mouse is over, draw handles
+        # if rect selected, fill in handles
+        if self.isSelected():
+            p, b = painter.pen(), painter.brush()
+            painter.setBrush(QColor(0,0,0))
+            painter.setPen(QPen(Qt.NoPen))
+            
+            painter.drawRect(self.topLeft)
+            painter.drawRect(self.topRight)
+            painter.drawRect(self.bottomLeft)     
+            painter.drawRect(self.bottomRight)     
+
+                       
     
-class BaseAnnotationItem( QGraphicsItem ):
+class BaseAnnotationItem( ResizableGraphicsItem ):
 
     handler_cache = {}
     styles = ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
+
+    minSize = ANNOTATION_MINIMUM_QSIZE
 
     def __init__(self, position=None, *args, **kwargs):
         super(BaseAnnotationItem, self).__init__(*args, **kwargs)
@@ -668,7 +789,7 @@ class BaseAnnotationItem( QGraphicsItem ):
             self.setPos(position)
 
         self.setZValue(-1)
-
+        
     def delete(self):
         self.scene().removeItem(self)
         self.removeHandlers()
@@ -768,12 +889,13 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
         r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
-        r = minimalQRect(r)
+        r = minimalQRect(r, self.minSize)
         self.setRect(r)
         self.text.setTextWidth( r.width() )
         
-
-
+    def paint(self, painter, option, widget):
+        super(EditorTextItem, self).paint( painter, option, widget)
+        self.paintResizeHandles(painter)
         
 class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
 
@@ -800,5 +922,9 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
         r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
-        r = minimalQRect(r)
+        r = minimalQRect(r, self.minSize)
         self.setRect(r)
+
+    def paint(self, painter, option, widget):
+        super(EditorRegionItem, self).paint( painter, option, widget)
+        self.paintResizeHandles(painter)
