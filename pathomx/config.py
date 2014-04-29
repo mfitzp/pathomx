@@ -39,7 +39,6 @@ def types_MethodType(fn, handler, handler_class):
     except TypeError:
         return types.MethodType(fn, handler)
 
-    
 def build_dict_mapper(mdict):
     '''
     Build a map function pair for forward and reverse mapping from a specified dict

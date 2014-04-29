@@ -668,6 +668,8 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
 
 class MetaVizApp(ui.AnalysisApp):
 
+    legacy_inputs = {'input':'compound_data', 'data':'compound_data'}
+
     def __init__(self, auto_consume_data=True, **kwargs):
         super(MetaVizApp, self).__init__(**kwargs)
 

@@ -211,7 +211,6 @@ class ToolItem(BaseItem):
         pass
 
     def addDataLink(self, datao, datai):
-
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
         # (data.manager, data.manager_interface), (self, interface)
@@ -226,7 +225,6 @@ class ToolItem(BaseItem):
         i._links.append(linker)
 
         self._links[datai] = linker
-        print("LINKS", self._links)
 
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
@@ -234,7 +232,6 @@ class ToolItem(BaseItem):
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
 
-        print(datai, "LINKS", self._links)
         if datai in self._links:
 
             linker = self._links[datai]

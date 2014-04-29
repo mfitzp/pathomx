@@ -223,15 +223,18 @@ class WorkspaceEditorView(QGraphicsView):
 
         self.setRenderHint(QPainter.Antialiasing, True)
         self.setRenderHint(QPainter.SmoothPixmapTransform, True)
-
-        self.scene = QGraphicsSceneExtend(self)
-
-        self.setScene(self.scene)
-        self._scene_extreme_rect = self.scene.addRect(QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height()))), pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
-        self.objs = []
-
         self.setAcceptDrops(True)
 
+        self.scene = QGraphicsSceneExtend(self)
+        self.setScene(self.scene)
+
+        self.resetScene()
+
+    def resetScene(self):
+        self.scene.clear()
+        r = QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height())))
+        self._scene_extreme_rect = self.scene.addRect(r, pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
+        
     def resizeEvent(self, e):
         self._scene_extreme_rect.setRect(QRectF(
                 self.mapToScene(QPoint(0, 0)),

@@ -1093,17 +1093,22 @@ class MainWindow(QMainWindow):
             self.clearWorkspace()
 
     def clearWorkspace(self):
-        for v in self.apps[:]:  # Copy as v.delete modifies the self.apps list
+        for v in self.apps[:]: # Copy as v.delete modifies the self.apps list
             v.delete()
             
-        for i in self.editor.items():
+        for i in self.editor.items()[:]: # Copy as i.delete modifies the list
             try:
+                # If has a delete handler use it (for clean up) else just remove from the scene
                 i.delete()
             except:
-                pass
+                self.editor.removeItem(i)
 
         # Remove all workspace datasets
         del self.datasets[:]
+        
+        # Completely wipe the scene
+        self.editView.resetScene()
+        self.editor = self.editView.scene
 
         self.workspace_updated.emit()
 
@@ -1200,7 +1205,16 @@ class MainWindow(QMainWindow):
             app = appref[xapp.get('id')]
 
             for idef in xapp.findall('DataInputs/Input'):
-                app.data._consume_action(idef.get('id'), appref[idef.get('manager')].data.o[idef.get('interface')])
+                source = appref[idef.get('manager')].data.o[idef.get('interface')]
+                sink = idef.get('id')
+                
+                if sink in app.legacy_inputs.keys():
+                    sink = app.legacy_inputs[sink]
+                
+                if source in app.legacy_outputs.keys():
+                    source = app.legacy_outputs[source]
+                
+                app.data._consume_action(sink, source)
 
         logging.info("Load complete.")
         # Focus the home tab & refresh the view

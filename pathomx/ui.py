@@ -1379,6 +1379,8 @@ class GenericApp(QMainWindow):
     nameChanged = pyqtSignal(str)
 
     legacy_launchers = []
+    legacy_inputs = {}
+    legacy_outputs = {}
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
