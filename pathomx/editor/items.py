@@ -681,7 +681,6 @@ class ResizableGraphicsItem(QGraphicsItem):
             self.setCursor(Qt.SizeBDiagCursor)
         else:
             self.setCursor(Qt.SizeAllCursor)
-            
 
     def mousePressEvent(self, event):
         """
@@ -839,6 +838,10 @@ class QGraphicsTextItemExtend(QGraphicsTextItem):
         self.parentItem().setSelected(True)
         super(QGraphicsTextItemExtend, self).focusInEvent(e)
 
+    def hoverMoveEvent(self, e):
+        self.setCursor(Qt.IBeamCursor)
+        e.accept()
+        #super(QGraphicsTextItemExtend, self).hoverMoveEvent(e)
 
 class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
 
@@ -846,7 +849,8 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         super(EditorTextItem, self).__init__(*args, **kwargs)
         
         self.text = QGraphicsTextItemExtend(parent=self)
-        self.text.setTextInteractionFlags(Qt.TextEditable)
+        self.text.setTextInteractionFlags(Qt.TextEditable|Qt.TextSelectableByMouse|Qt.TextSelectableByKeyboard)
+        self.text.setAcceptHoverEvents(True)
         self.text.setPlainText('Your text here')
         self.text.setParentItem(self)
         
