@@ -687,13 +687,13 @@ class MainWindow(QMainWindow):
         save_imageAction.triggered.connect(self.editor.onSaveAsImage)
         t.addAction(save_imageAction)
 
-        snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid…'), self)
+        snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid'), self)
         snap_gridAction.setStatusTip('Snap tools to grid')
         snap_gridAction.setCheckable(True)
         self.settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
         t.addAction(snap_gridAction)
 
-        show_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid.png')), tr('Snap to grid…'), self)
+        show_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid.png')), tr('Show grid'), self)
         show_gridAction.setStatusTip('Show grid in workspace editor')
         show_gridAction.setCheckable(True)
         self.settings.add_handler('Editor/Show_grid', show_gridAction)

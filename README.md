@@ -3,7 +3,7 @@
 **Stable** The current trunk of Pathomx is stable and can be built using cx_Freeze (as-is on Windows, with some tweaks on Mac). The latest version (2.5.0) is now available to download
 [Windows 7 & 8 (x64)][pathomx-windows] &bull; [Mac OS X Mountain Lion .app][pathomx-mac] &bull; [Github][pathomx-github] &bull; [Python .eggs or .gz source][pathomx-pypi].
 
-![Screenshot](http://pathomx.org/images/software/pathomx/pathomx-v2-visual-editor.png)
+![Screenshot](http://pathomx.org/images/software/pathomx/annotation_demo.png)
 
 Pathomx is an interactive tool for the analysis and visualisation of metabolic data.
 Built on the [MetaCyc][metacyc] database it allows rapid exploration of complex datasets
