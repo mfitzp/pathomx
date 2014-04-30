@@ -1,6 +1,6 @@
 # Pathomx
 
-**Stable** The current trunk of Pathomx is stable and can be built using cx_Freeze (as-is on Windows, with some tweaks on Mac). The latest version (2.4.0) is now available to download
+**Stable** The current trunk of Pathomx is stable and can be built using cx_Freeze (as-is on Windows, with some tweaks on Mac). The latest version (2.5.0) is now available to download
 [Windows 7 & 8 (x64)][pathomx-windows] &bull; [Mac OS X Mountain Lion .app][pathomx-mac] &bull; [Github][pathomx-github] &bull; [Python .eggs or .gz source][pathomx-pypi].
 
 ![Screenshot](http://pathomx.org/images/software/pathomx/pathomx-v2-visual-editor.png)
@@ -34,8 +34,8 @@ and government use.
  [pathomx-github]: https://github.com/pathomx/pathomx
  [pathomx-github-issues]: https://github.com/pathomx/pathomx/issues
  [metacyc]: http://metacyc.org
- [pathomx-mac]: http://download.pathomx.org/Pathomx-2.4.0.dmg
- [pathomx-windows]: http://download.pathomx.org/Pathomx-2.4.3-amd64.msi
+ [pathomx-mac]: http://download.pathomx.org/Pathomx-2.5.0.dmg
+ [pathomx-windows]: http://download.pathomx.org/Pathomx-2.5.0-amd64.msi
  [pathomx-pypi]: https://pypi.python.org/pypi/Pathomx 
  [graphviz]: http://www.graphviz.org/
  
