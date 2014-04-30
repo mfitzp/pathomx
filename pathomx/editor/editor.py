@@ -67,13 +67,13 @@ class QGraphicsSceneExtend(QGraphicsScene):
                 i.setSelected(False)
         
             if self.config.get('mode') == EDITOR_MODE_TEXT:
-                tw = EditorTextItem(position=e.scenePos())
+                tw = AnnotationTextItem(position=e.scenePos())
         
             elif self.config.get('mode') == EDITOR_MODE_REGION:
-                tw = EditorRegionItem(position=e.scenePos())
+                tw = AnnotationRegionItem(position=e.scenePos())
 
             elif self.config.get('mode') == EDITOR_MODE_ARROW:
-                tw = EditorRegionItem(position=e.scenePos())
+                tw = AnnotationRegionItem(position=e.scenePos())
 
             self.addItem(tw)
             self.mode_current_object = tw
@@ -193,8 +193,8 @@ class QGraphicsSceneExtend(QGraphicsScene):
     def setXMLAnnotations(self, root):
     
         ANNOTATION_TYPES = {
-            'EditorTextItem': EditorTextItem,
-            'EditorRegionItem': EditorRegionItem,
+            'AnnotationTextItem': AnnotationTextItem,
+            'AnnotationRegionItem': AnnotationRegionItem,
         }
 
         for ase in root.findall('Annotation'):

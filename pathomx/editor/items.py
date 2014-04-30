@@ -843,10 +843,10 @@ class QGraphicsTextItemExtend(QGraphicsTextItem):
         e.accept()
         #super(QGraphicsTextItemExtend, self).hoverMoveEvent(e)
 
-class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
+class AnnotationTextItem( QGraphicsRectItem, BaseAnnotationItem ):
 
     def __init__(self, *args, **kwargs):
-        super(EditorTextItem, self).__init__(*args, **kwargs)
+        super(AnnotationTextItem, self).__init__(*args, **kwargs)
         
         self.text = QGraphicsTextItemExtend(parent=self)
         self.text.setTextInteractionFlags(Qt.TextEditable|Qt.TextSelectableByMouse|Qt.TextSelectableByKeyboard)
@@ -858,7 +858,7 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         
     def delete(self):
         self.setFocusProxy( None )
-        super(EditorTextItem, self).delete()
+        super(AnnotationTextItem, self).delete()
 
     def applyStyleConfig(self):
     
@@ -890,7 +890,7 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         # Add size padding
         tr = self.text.boundingRect()
         nr = QRect( 0, 0, tr.width()+RESIZE_HANDLE_SIZE*2, tr.height()+RESIZE_HANDLE_SIZE*2 )
-        super(EditorTextItem, self).setRect( minimalQRect(r, nr ) )
+        super(AnnotationTextItem, self).setRect( minimalQRect(r, nr ) )
         self.text.setPos( QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) )
             
     def _createFromMousePressEvent(self, e):
@@ -910,13 +910,13 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.updateResizeHandles()     
         
     def paint(self, painter, option, widget):
-        super(EditorTextItem, self).paint( painter, option, widget)
+        super(AnnotationTextItem, self).paint( painter, option, widget)
         self.paintResizeHandles(painter)
         
-class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
+class AnnotationRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
 
     def __init__(self, *args, **kwargs):
-        super(EditorRegionItem, self).__init__(*args, **kwargs)
+        super(AnnotationRegionItem, self).__init__(*args, **kwargs)
 
     def applyStyleConfig(self):
 
@@ -946,6 +946,6 @@ class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.updateResizeHandles()
 
     def paint(self, painter, option, widget):
-        super(EditorRegionItem, self).paint( painter, option, widget)
+        super(AnnotationRegionItem, self).paint( painter, option, widget)
         self.paintResizeHandles(painter)
 
