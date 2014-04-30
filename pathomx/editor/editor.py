@@ -175,7 +175,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         for annotation in self.annotations:
 
             ase = et.SubElement(root, "Annotation")
-            ase.set('type', annotation.annotation_type)
+            ase.set('type', type(annotation).__name__)
 
             ase.set('x', str( annotation.x() ) )
             ase.set('y', str( annotation.y() ) )
@@ -193,8 +193,8 @@ class QGraphicsSceneExtend(QGraphicsScene):
     def setXMLAnnotations(self, root):
     
         ANNOTATION_TYPES = {
-            'text': EditorTextItem,
-            'region': EditorRegionItem,
+            'EditorTextItem': EditorTextItem,
+            'EditorRegionItem': EditorRegionItem,
         }
 
         for ase in root.findall('Annotation'):

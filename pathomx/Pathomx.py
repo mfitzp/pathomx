@@ -534,7 +534,7 @@ class MainWindow(QMainWindow):
                     resource_list = []
 
                 metadata = {
-                    'id': plugin.plugin_object.__class__.__name__,  # __module__,
+                    'id': type(plugin.plugin_object).__name__,  # __module__,
                     'image': plugin_image,
                     'image_forward_slashes': plugin_image.replace('\\', '/'),  # Slashes fix for CSS in windows
                     'name': plugin.name,
@@ -1139,10 +1139,10 @@ class MainWindow(QMainWindow):
 
             plugin = et.SubElement(app, "Plugin")
             plugin.set("version", '1.0')
-            plugin.text = v.plugin.__class__.__name__
+            plugin.text = type(v.plugin).__name__
 
             plugin_class = et.SubElement(app, "Launcher")
-            plugin_class.text = v.__class__.__name__
+            plugin_class.text = type(v).__name__
 
             position = et.SubElement(app, "EditorXY")
             position.set("x", str(v.editorItem.x()))

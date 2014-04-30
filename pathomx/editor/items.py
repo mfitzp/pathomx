@@ -845,8 +845,6 @@ class QGraphicsTextItemExtend(QGraphicsTextItem):
 
 class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
 
-    annotation_type = 'text'
-
     def __init__(self, *args, **kwargs):
         super(EditorTextItem, self).__init__(*args, **kwargs)
         
@@ -916,8 +914,6 @@ class EditorTextItem( QGraphicsRectItem, BaseAnnotationItem ):
         self.paintResizeHandles(painter)
         
 class EditorRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
-
-    annotation_type = 'region'
 
     def __init__(self, *args, **kwargs):
         super(EditorRegionItem, self).__init__(*args, **kwargs)
