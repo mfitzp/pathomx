@@ -272,8 +272,8 @@ class MainWindow(QMainWindow):
         self.settings = config.QSettingsManager()  # QSettings('Pathomx', 'Pathomx')
         self.settings.set_defaults({
             'Pathomx/Is_setup': False,
-            'Pathomx/Current_version': '0.0.0',
-            'Pathomx/Update/Latest_version': '0.0.0',
+            'Pathomx/Current_version': '0.0.1',
+            'Pathomx/Update/Latest_version': '0.0.1',
             'Pathomx/Update/Last_checked': None,
             'Pathomx/Offered_registration': False,
 
@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(self.settings.get('Pathomx/Latest_version')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(self.settings.get('Pathomx/Update/Latest_version')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
             logging.warning('A new version (v%s) is available' % self.settings.get('Pathomx/Update/Latest_version'))
 
