@@ -102,32 +102,21 @@ class PLSDAApp( ui.AnalysisApp ):
         
         plsr = PLSRegression(n_components=self.config.get('number_of_components'), scale=self.config.get('autoscale')) #, algorithm=self.config.get('algorithm'))
         Y = np.array([0 if c == _experiment_control else 1 for c in dso.classes[0] ])
-        #Y = Y.reshape( (len(dso.classes[0]),1) )
 
         plsr.fit(data, Y) # Transpose it, as vars need to along the top
-        
-        #figure_data = zip( dso.classes[0], plsr.x_scores_[:,0], plsr.x_scores_[:,1])
         
         # Build scores into a dso no_of_samples x no_of_principal_components
         scored = DataSet(size=(len(plsr.x_scores_),len(plsr.x_scores_[0])))  
         scored.labels[0] = input.labels[0]
         scored.classes[0] = input.classes[0]
-        
-        print(plsr.x_scores_.shape)
-        print(scored.data.shape)
-        
+
         for n,s in enumerate(plsr.x_scores_.T):
             scored.data[:,n] = s
-            scored.labels[1][n] = 'Latent Variable %d (%0.2f%%)' % (n+1, plsr.y_weights_[0][0]*100)
+            scored.labels[1][n] = 'Latent Variable %d' % (n+1) #, plsr.y_weights_[0][n])
                 
-        
         # PLS-DA regions; mean +- 95% confidence in each axis for each cluster
         cw_x = defaultdict(list)
         cw_y = defaultdict(list)
-        #figure_regions = []
-        #for c,x,y in figure_data:
-        #    cw_x[c].append( x )
-        #    cw_y[c].append( y )
             
         for c in list(cw_x.keys()):
             # Calculate mean point
@@ -137,12 +126,7 @@ class PLSDAApp( ui.AnalysisApp ):
             # Calculate 95% CI
             rx = np.std( cw_x[c] ) *2 # 2sd = 95% #1.95 * ( / srn) # 1.95 * SEM => 95% confidence
             ry = np.std( cw_y[c] ) *2 #1.95 * ( / srn)
-            
-            # Calculate 95% CI
-            #srn = np.sqrt( len( cw_x[c] ) ) # Sample numbers sqrt
-            #rx = 1.95*(np.std( cw_x[c] )/srn ) # 2sd = 95% #1.95 * ( / srn) # 1.95 * SEM => 95% confidence
-            #ry = 1.95*(np.std( cw_y[c] )/srn ) #1.95 * ( / srn)
-            
+
             figure_regions.append( 
                 (c, cx, cy, rx, ry)
             )
@@ -182,6 +166,7 @@ class PLSDAApp( ui.AnalysisApp ):
         
         
     def prerender(self, scores=None, lv1=None, lv2=None, **kwargs):
+        scores.crop( (scores.shape[0], 2) )
         return {
             'Scores':{'dso': scores}, 
             'LV1':{'dso':lv1},

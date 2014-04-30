@@ -344,7 +344,7 @@ class BasePlugin(IPlugin):
         manager = PluginManagerSingleton.get()
         self.m = manager.m
         self.instances = []
-        self.id = self.__class__.__name__  # self.__module__
+        self.id = type(self).__name__  # self.__module__
         self.module = self.__module__
         self.m.plugins_obj[self.id] = self
         #self.name = "%s %s " % (self.default_workspace_category, "Plugin")

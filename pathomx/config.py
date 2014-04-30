@@ -473,8 +473,8 @@ class ConfigManager(QObject):
 
         if trigger_handler and key in self.handlers:
             # Trigger handler to update the view
-            getter = self.handlers[key].getter  # (self, '_get_%s' % self.handlers[key].__class__.__name__, False)
-            setter = self.handlers[key].setter  # getattr(self, '_set_%s' % self.handlers[key].__class__.__name__, False)
+            getter = self.handlers[key].getter
+            setter = self.handlers[key].setter
 
             if setter and getter() != self._get(key):
                 setter(self._get(key))
@@ -601,11 +601,11 @@ class ConfigManager(QObject):
 
         self.handlers[key] = handler
 
-        handler.setter = types_MethodType(globals().get('_set_%s' % handler.__class__.__name__), handler, handler.__class__)
-        handler.getter = types_MethodType(globals().get('_get_%s' % handler.__class__.__name__), handler, handler.__class__)
-        handler.updater = types_MethodType(globals().get('_event_%s' % handler.__class__.__name__), handler, handler.__class__)
+        handler.setter = types_MethodType(globals().get('_set_%s' % type(handler).__name__), handler, type(handler) )
+        handler.getter = types_MethodType(globals().get('_get_%s' % type(handler).__name__), handler, type(handler) )
+        handler.updater = types_MethodType(globals().get('_event_%s' % type(handler).__name__), handler, type(handler) )
     
-        print("Add handler %s for %s" % (handler.__class__.__name__, key))
+        print("Add handler %s for %s" % ( type(handler).__name__, key))
         handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
         handler.updater().connect(handler_callback)
         

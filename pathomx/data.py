@@ -736,7 +736,7 @@ class DataSet( QObject ):
         # Collapse for each dimension    
         et = []
         for el in self._l( ls ):
-            et.append( list( set([e.__class__.__name__ for e in el ] ) ) )
+            et.append( list( set([type(e).__name__ for e in el ] ) ) )
         return et
     
     # List of unique labels, entities, classes

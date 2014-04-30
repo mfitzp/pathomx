@@ -83,53 +83,46 @@ class PCAApp( ui.AnalysisApp ):
         data = input.data
         
         pca = PCA(n_components=self.config.get('number_of_components'))
-        pca.fit(data.T) # Transpose it, as vars need to along the top
-        
-        weights = pca.transform(data.T) # Get weights?
-        
-        # Label up the top 50 (the values are retained; just for clarity)
-        wmx = np.amax( np.absolute( weights), axis=1 )
-
-        dso_z = list(zip( input.scales[1], input.entities[1], input.labels[1] ))
-        dso_z = sorted( zip( dso_z, wmx ), key=lambda x: x[1])[-50:] # Top 50
-        
-        dso_z = [x for x, wmx in dso_z ]  
+        pca.fit(data)
+        scores = pca.transform(data)
         
         # Build scores into a dso no_of_samples x no_of_principal_components
-        scored = DataSet(size=(len(pca.components_[0]),len(pca.components_)))  
+        scored = DataSet(size=(scores.shape) )  
         scored.labels[0] = input.labels[0]
         scored.classes[0] = input.classes[0]
-        
-        for n,s in enumerate(pca.components_):
-            scored.data[:,n] = s
-            scored.labels[1][n] = 'Principal Component %d (%0.2f%%)' % (n+1, pca.explained_variance_ratio_[0] * 100.)
+        scored.data = scores
 
-        weightsd = DataSet(size=weights.T.shape)
-        weightsd.data = weights.T
+        for n in range(0, scored.shape[1]):
+            scored.labels[1][n] = 'Principal Component %d (%0.2f%%)' % (n+1, pca.explained_variance_ratio_[0] * 100.)
+        
+        weightsd = DataSet(size=pca.components_.shape)
+        weightsd.data = pca.components_
         
         weightsd.scales[1] = input.scales[1]
         
+        print weightsd.shape, "@"
+        print pca.components_.shape, "|"
+        
         dso_pc = {}
-        for n in range(0, weights.shape[1] ):
+        for n in range(0, pca.components_.shape[0] ):
             pcd =  DataSet( size=(1, input.shape[1] ) )
             pcd.entities[1] = input.entities[1]
             pcd.labels[1] = input.labels[1]
             pcd.scales[1] = input.scales[1]
-            pcd.data = weights[:,n:n+1].T
+            pcd.data = weightsd.data[n:n+1,:]
             dso_pc['pc%s' % (n+1)] = pcd
             weightsd.labels[0][n] = "PC %s" % (n+1)
-            weightsd.classes[0][n] = "PC %s" % (n+1)            
+            #weightsd.classes[0][n] = "PC %s" % (n+1)            
         
         return dict( list({
             'dso': input,
             'pca': pca,
             'scores': scored,
             'weights': weightsd,
-            'wmx': wmx,
-            'dso_z': dso_z,        
         }.items()) + list(dso_pc.items()) )
         
     def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, pc3=None, pc4=None, pc5=None, **kwargs):
+        scores.crop( (scores.shape[0], 2) )
         return {
             'Scores':{'dso': scores}, 
             'PC1':{'dso':pc1},
