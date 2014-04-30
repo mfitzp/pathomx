@@ -669,22 +669,27 @@ class MplSpectraView(MplView):
             # Add fake axis scale for plotting
             dso.scales[1] = list(range( len(dso.scales[1])))
             
+        # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
+        dsot = dso.as_summary(dim=0, match_attribs=['classes'])
+
         #FIXME: Should probably be somewhere else. Label up the top N
-        wmx = np.amax( np.absolute( dso.data), axis=0 )
+        if dsot.shape[0] > 1:
+            dsc = dsot
+        else:
+            dsc = dso
+            
+        wmx = np.amax( np.absolute( dsc.data), axis=0 )
         N = 10
         idx = wmx.argsort()[-10:][::-1] # Indices of maximum N values
-        dummy_scale = list(range(0,len(dso.scales[1]) ) )
-        dso_z = [ (dummy_scale[i], dso.entities[1][i], dso.labels[1][i]) for i in idx ]
+        dummy_scale = list(range(0,len(dsc.scales[1]) ) )
+        dso_z = [ (dummy_scale[i], dsc.entities[1][i], dsc.labels[1][i]) for i in idx ]
 
-        ylimP = np.amax( dso.data, axis=0 ) # Positive limit
-        ylimN = -np.amax( -dso.data, axis=0 ) # Negative limit
+        ylimP = np.amax( dsc.data, axis=0 ) # Positive limit
+        ylimN = -np.amax( -dsc.data, axis=0 ) # Negative limit
         ylims = ylimP
         ni = ylimP<-ylimN
         ylims[ ni ] = ylimN[ ni ]
         
-        # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
-        dsot = dso.as_summary(dim=0, match_attribs=['classes'])
-
         # Copy to sort without affecting original
         scale = np.array(dso.scales[1])
         data = np.array(dsot.data)

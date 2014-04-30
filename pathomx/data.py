@@ -845,7 +845,7 @@ class DataSet( QObject ):
         #print "!!", [ dso.__dict__[ma][dim] for ma in match_attribs ]
         identities = [ tuple(o) for o in zip( *[ dso.__dict__[ma][dim] for ma in match_attribs ] )  ]#dso.classes[dim], dso.labels[dim], dso.entities[dim]) ]
         identities_na = np.array( identities )
-        
+            
         # Unique values, without affecting order
         unique = list(OrderedDict.fromkeys( identities )) #tuple( set( identities ) )
         
