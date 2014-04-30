@@ -91,7 +91,7 @@ class PCAApp( ui.AnalysisApp ):
         scored.labels[0] = input.labels[0]
         scored.classes[0] = input.classes[0]
         scored.data = scores
-
+        
         for n in range(0, scored.shape[1]):
             scored.labels[1][n] = 'Principal Component %d (%0.2f%%)' % (n+1, pca.explained_variance_ratio_[0] * 100.)
         
@@ -99,9 +99,7 @@ class PCAApp( ui.AnalysisApp ):
         weightsd.data = pca.components_
         
         weightsd.scales[1] = input.scales[1]
-        
-        print weightsd.shape, "@"
-        print pca.components_.shape, "|"
+
         
         dso_pc = {}
         for n in range(0, pca.components_.shape[0] ):
@@ -123,6 +121,7 @@ class PCAApp( ui.AnalysisApp ):
         
     def prerender(self, dso=None, pca=None, scores=None, pc1=None, pc2=None, pc3=None, pc4=None, pc5=None, **kwargs):
         scores.crop( (scores.shape[0], 2) )
+        print scores.data
         return {
             'Scores':{'dso': scores}, 
             'PC1':{'dso':pc1},

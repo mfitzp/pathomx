@@ -681,9 +681,9 @@ class DataSet( QObject ):
                 self.scales[d] = self.scales[d][:s]
                 self.classes[d] = self.classes[d][:s]
                 final_shape[d] = shape[d]
-                
-        self.data.resize( final_shape )
-        
+
+        # Crop numpy array to shape                
+        self.data = self.data[ [slice(0,n) for n in shape] ]                
     
     @property 
     def is_empty(self):
