@@ -200,6 +200,7 @@ class MetaboHunterApp(ui.DataApp):
                  }
 
         self.status.emit('waiting')
+        self.progress.emit(0.2)
 
         try:
             r = requests.post(url, data=values)
@@ -208,7 +209,9 @@ class MetaboHunterApp(ui.DataApp):
             return None
 
         html = r.content
+
         self.status.emit('active')
+        self.progress.emit(0.4)
 
         m = re.search('name="hits" value="(.*?)\n(.*?)\n"', html, re.MULTILINE | re.DOTALL)
         remote_data['metabolite_table'] = m.group(2)
@@ -243,7 +246,8 @@ class MetaboHunterApp(ui.DataApp):
                   'hits': 'Rank\tID\tMetabolite name\tMatching peaks score\tTaxonomic origin\r\n' + remote_data['metabolite_table'] + '\r\n',
          }
 
-        self.status.emit('waiting')
+        self.status.emit('active')
+        self.progress.emit(0.6)
 
         # Create the Request object
         url = 'http://www.nrcbioinformatics.ca/metabohunter/download_matched_peaks.php'
@@ -254,7 +258,9 @@ class MetaboHunterApp(ui.DataApp):
             return None
 
         matched_peaks_text = r.content
-        self.status.emit('active')
+
+        self.progress.emit(0.8)
+
         logging.info("Extracting data...")
 
         # Need to do this in two steps, so they are in the correct order for output
