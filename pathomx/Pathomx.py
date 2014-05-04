@@ -306,7 +306,6 @@ class MainWindow(QMainWindow):
         self.data = None  # deprecated
         self.datasets = []  # List of instances of data.datasets() // No data loaded by default
 
-        self.experiment = dict()
         self.layout = None  # No map by default
 
         #self.linestyles = styles.LineStyleHandler()

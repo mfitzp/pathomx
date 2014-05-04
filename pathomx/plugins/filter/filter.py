@@ -100,7 +100,7 @@ class FilterApp(ui.DataApp):
 
     def onDefineFilter(self):
         """ Open a data file"""
-        dialog = DialogDefineFilter(parent=self, view=self)
+        dialog = DialogDefineFilter(parent=self.w, view=self)
         ok = dialog.exec_()
         if ok:
             # Extract the settings and store in the _annotations_targets settings
@@ -144,11 +144,144 @@ class FilterApp(ui.DataApp):
 
     def generate(self, input=None):
         return {'output': self.apply_filters(input)}
+        
 
+
+# Dialog box for Metabohunter search options
+class ReclassifyDialog(ui.GenericDialog):
+    
+    def __init__(self, parent=None, view=None, *args, **kwargs):
+        super(ReclassifyDialog, self).__init__(parent=parent, *args, **kwargs)        
+
+        self.v = view
+
+        # Correlation variables
+        gb = QGroupBox('Regexp search and replace')
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.lw_regexp = QLineEdit()
+        vbox.addWidget(self.lw_regexp)
+        vbox.addWidget(QLabel('Search:'))
+
+        self.lw_replace = QLineEdit()
+        vbox.addWidget(self.lw_replace)
+        vbox.addWidget(QLabel('Replace:'))
+
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
+
+        self.dialogFinalise()        
+        
+
+# Dialog box for Metabohunter search options
+class ReclassifyConfigPanel(ui.ConfigPanel):
+    
+    def __init__(self, *args, **kwargs):
+        super(ReclassifyConfigPanel, self).__init__(*args, **kwargs)        
+
+        # Correlation variables
+        gb = QGroupBox('Reclassifications')
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.lw_filters = ui.QListWidgetAddRemove()
+        self.lw_filters.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        vbox.addWidget(self.lw_filters)
+
+        vboxh = QHBoxLayout()
+        addfr = QPushButton('Remove')
+        addfr.clicked.connect(self.onFilterRemove)
+
+        remfr = QPushButton('Add')
+        remfr.clicked.connect(self.onFilterAdd)
+
+        vboxh.addWidget(addfr)
+        vboxh.addWidget(remfr)
+        vbox.addLayout(vboxh)
+
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
+                    
+        self.config.add_handler('filters', self.lw_filters, (self.v.map_list_fwd, self.v.map_list_rev) )
+        self.finalise()        
+        
+    def onFilterAdd(self):
+        dlg = ReclassifyDialog(parent=self.v.w, view=self.v)
+        
+        if dlg.exec_():
+            l = self.config.get('filters')[:] # Copy
+            if dlg.lw_regexp.text() !='' and dlg.lw_replace.text() !='':
+                l.append( ( dlg.lw_regexp.text(), dlg.lw_replace.text() ) )
+            self.config.set('filters', l)
+
+    def onFilterRemove(self):
+        l = self.config.get('filters')[:]
+        for i in self.lw_filters.selectedItems():
+            l[self.lw_filters.row(i)] = (None,None)
+    
+        self.config.set('filters', [(k,v) for k,v in l if v is not None])
+  
+        
+        
+class ReclassifyTool(ui.DataApp):
+
+    name = "Reclassify"
+
+    def __init__(self, **kwargs):
+        super(ReclassifyTool, self).__init__(**kwargs)
+
+        self.addDataToolBar()
+        self.addFigureToolBar()
+
+        self.data.add_input('input')  # Add input slot
+        self.data.add_output('output')  # Add output slot
+        self.table.setModel(self.data.o['output'].as_table)
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input', {  # Accept anything!
+            })
+        )
+
+        self.config.set_default('filters', [])
+
+        self.addConfigPanel(ReclassifyConfigPanel, 'Settings')
+        self.finalise()
+
+    def apply_filters(self, dso):
+
+        classes = dso.classes[0]
+        for search, replace in self.config.get('filters'):
+            classes_f = []
+            for c in classes:   
+                match = re.search(search, c)
+                if match:
+                   classes_f.append(replace)
+                else:
+                   classes_f.append(c)
+
+            classes = classes_f
+            
+        dso.classes[0] = classes
+        return dso
+
+    def generate(self, input=None):
+        return {'output': self.apply_filters(input)}        
+
+        
+    def map_list_fwd(self, s):
+        " Receive text label, return the filter"
+        return tuple( s.split('\t') )
+
+    def map_list_rev(self, f):
+        " Receive the filter, return the label"
+        if f:
+            return "%s\t%s" % tuple(f)
+        else:
+            return "\t"
 
 class Filter(FilterPlugin):
 
     def __init__(self, **kwargs):
         super(Filter, self).__init__(**kwargs)
-        FilterApp.plugin = self
         self.register_app_launcher(FilterApp)
+        self.register_app_launcher(ReclassifyTool)

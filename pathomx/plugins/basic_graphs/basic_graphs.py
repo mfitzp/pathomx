@@ -70,7 +70,7 @@ class SpectraTool(ui.DataApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             DataDefinition('input', {
-            'labels_n': ('>1', None),
+            'labels_n': ('>0', None),
             'entities_t': (None, None),
             #'scales_t': (None, ['float']),
             })

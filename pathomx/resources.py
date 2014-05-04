@@ -104,7 +104,7 @@ class AbstractLock(object):
 
         logging.debug('Waiting for lock on %s' % self.__class__)
         # Loop until we have lock; this approach ensures we don't give to the lock simultaneously to two tools
-        for n in range(0, 15):  # Wait for maximum 15secs for completion
+        for n in range(0, 60):  # Wait for maximum 60secs for completion
             if self.lock == False:
                 self.lock = lock_id
                 break

@@ -54,36 +54,6 @@ class FoldChangeApp(ui.AnalysisApp):
 
         self.finalise()
 
-    def onModifyExperiment(self):
-        """ Update the experimental settings for analysis then regenerate """
-        self.config.set('experiment_control', self.toolbars['experiment'].cb_control.currentText())
-        self.config.set('experiment_test', self.toolbars['experiment'].cb_test.currentText())
-
-    def onDefineExperiment(self):
-        """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogDefineExperiment(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            # Regenerate the graph view
-            self.experiment['control'] = dialog.cb_control.currentText()
-            self.experiment['test'] = dialog.cb_test.currentText()
-            # Update toolbar to match any change caused by timecourse settings
-            #self.update_view_callback_enabled = False # Disable to stop multiple refresh as updating the list
-            #self.cb_control.clear()
-            #self.cb_test.clear()
-
-            #self.cb_control.addItems( [dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())] )
-            #self.cb_test.addItems( [dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())] )
-
-            #if dialog.le_timecourseRegExp.text() != '':
-            #    self.experiment['timecourse'] = dialog.le_timecourseRegExp.text()
-            #elif 'timecourse' in self.experiment:
-            #    del(self.experiment['timecourse'])
-
-            # Update the toolbar dropdown to match
-            self.toolbars['experiment'].cb_control.setCurrentIndex(self.cb_control.findText(self.experiment['control']))
-            self.toolbars['experiment'].cb_test.setCurrentIndex(self.cb_test.findText(self.experiment['test']))
-            self.generate()
 
     def generate(self, input):
         dso = input
@@ -175,5 +145,4 @@ class FoldChange(AnalysisPlugin):
 
     def __init__(self, **kwargs):
         super(FoldChange, self).__init__(**kwargs)
-        FoldChangeApp.plugin = self
         self.register_app_launcher(FoldChangeApp)

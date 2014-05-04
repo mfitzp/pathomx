@@ -17,11 +17,11 @@ import numpy as np
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
-    'c': 'Compound change scores for pathway',
-    'u': 'Compound up-regulation scores for pathway',
-    'd': 'Compound down-regulation scores for pathway',
-    'm': 'Number compounds with data per pathway',
-    't': 'Pathway overall tendency',
+    'Compound change scores for pathway': 'c',
+    'Compound up-regulation scores for pathway': 'u',
+    'Compound down-regulation scores for pathway': 'd',
+    'Number compounds with data per pathway': 'm',
+    'Pathway overall tendency': 't',
 }
 
 
@@ -32,7 +32,7 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
         super(PathwayMiningConfigPanel, self).__init__(*args, **kwargs)
 
         self.cb_miningType = QComboBox()
-        self.cb_miningType.addItems(list(METAPATH_MINING_TYPES.values()))
+        self.cb_miningType.addItems(list(METAPATH_MINING_TYPES.keys()))
         self.config.add_handler('/Data/MiningType', self.cb_miningType, METAPATH_MINING_TYPES)
 
         self.xb_miningRelative = QCheckBox('Relative score to pathway size')
@@ -214,44 +214,9 @@ class PathwayMiningApp(ui.AnalysisApp):
 
         return {'output': dso}
 
-    def onMiningSettings(self):
-        """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogMiningSettings(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            self.config.set('/Data/MiningDepth', dialog.sb_miningDepth.value())
-            self.config.set('/Data/MiningType', METAPATH_MINING_TYPE_CODE[dialog.cb_miningType.currentIndex()])
-            self.config.set('/Data/MiningRelative', dialog.xb_miningRelative.isChecked())
-            self.config.set('/Data/MiningShared', dialog.xb_miningShared.isChecked())
-
-            # Update the toolbar dropdown to match
-            self.sb_miningDepth.setValue(dialog.sb_miningDepth.value())
-
-    def onModifyMiningDepth(self):
-        """ Change mine depth via toolbar spinner """
-        self.config.set('/Data/MiningDepth', self.sb_miningDepth.value())
-
-    def onDefineExperiment(self):
-        """ Open the experimental setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = dialogDefineExperiment(parent=self)
-        ok = dialog.exec_()
-        if ok:
-            # Regenerate the graph view
-            self.config.set('experiment_control', dialog.cb_control.currentText())
-            self.config.set('experiment_test', dialog.cb_test.currentText())
-
-            # Update toolbar to match any change caused by timecourse settings
-            self.update_view_callback_enabled = False  # Disable to stop multiple refresh as updating the list
-            self.cb_control.clear()
-            self.cb_test.clear()
-
-            self.cb_control.addItems([dialog.cb_control.itemText(i) for i in range(dialog.cb_control.count())])
-            self.cb_test.addItems([dialog.cb_test.itemText(i) for i in range(dialog.cb_test.count())])
-
 
 class PathwayMining(AnalysisPlugin):
 
     def __init__(self, **kwargs):
         super(PathwayMining, self).__init__(**kwargs)
-        PathwayMiningApp.plugin = self
         self.register_app_launcher(PathwayMiningApp)

@@ -18,6 +18,8 @@ import numpy as np
 
 from .translate import tr
 
+from .qt import *
+
 try:
     from urllib.request import urlopen
     from urllib.parse import urlparse
@@ -182,10 +184,13 @@ class ReactionIntermediate(_PathomxObject):
 
 class databaseManager():
 
+
     # compounds, reactions, pathways = dict()
     def __init__(self):
 
-    # Initialise variables
+        self.mutex = QMutex()
+
+        # Initialise variables
         self.synfwd = defaultdict(set)  # ID -> Synonyms
         self.synrev = dict()  # Synonym -> ID
         self.synrev_by_type = defaultdict(dict)  # Synonym -> ID
@@ -221,19 +226,68 @@ class databaseManager():
         # Load additional chemical data
         self.load_gibbs()
 
-    # Helper functions
-    def get_via_unification(self, database, id):
-        try:
-            return self.unification[database][id]
-        except:
-            return None
+    def pathway(self,id):
+        with QMutexLocker(self.mutex):
+            return self.pathways[id]
+        
+    def reaction(self,id):
+        with QMutexLocker(self.mutex):
+            return self.reactions[id]
+        
+    def compound(self,id):
+        with QMutexLocker(self.mutex):
+            return self.compounds[id]
+
+    def gene(self,id):
+        with QMutexLocker(self.mutex):
+            return self.genes[id]
+
+    def protein(self,id):
+        with QMutexLocker(self.mutex):
+            return self.proteins[id]
+
+        
+        
+    def get_pathways(self):
+        with QMutexLocker(self.mutex):
+            return self.pathways.items()
+
+    def get_reactions(self):
+        with QMutexLocker(self.mutex):
+            return self.reactions.items()
+
+    def get_compounds(self):
+        with QMutexLocker(self.mutex):
+            return self.compounds.items()
+
+    def get_genes(self):
+        with QMutexLocker(self.mutex):
+            return self.genes.items()
+
+    def get_proteins(self):
+        with QMutexLocker(self.mutex):
+            return self.proteins.items()
+        
 
     # Helper functions
-    def get_via_synonym(self, id):
-        try:
-            return self.synrev[id]
-        except:
-            return None
+    def get_via_unification(self, database, id):
+        with QMutexLocker(self.mutex):
+            try:
+                return self.unification[database][id]
+            except:
+                return None
+        
+
+    # Helper functions
+    def get_via_synonym(self, id, type=None):
+        with QMutexLocker(self.mutex):
+            try:
+                if type:
+                    return self.synrev_by_type[type][id]
+                else:
+                    return self.synrev[id]
+            except:
+                return None
 
     # Handler to load all identity files in /identities
     def load_identities(self):

@@ -44,17 +44,22 @@ class ImportMetabolightsApp( ui.ImportDataApp ):
         sample_ids = hrow[1:]    
 
         # Sample classes from second row; crop off after u_
-        hrow = next(reader)
-        classes = hrow[1:]    
+        classes = [c for c in hrow if 'u_' in c]
+
+        data_starts_at = hrow.index(classes[0])
+        metabolite_names_at = hrow.index('metabolite_identification')
+
         classes = [ c.split('u_')[0] for c in classes]
+        
 
         metabolites = []
         metabolite_data = []
+
         # Read in metabolite data n.b. can have >1 entry / metabolite so need to allow for this
         for row in reader:
             if row[0] != '': # Skip empty rows
-                metabolites.append( row[0] )
-                metabolite_data.append( row[1:] )
+                metabolites.append( row[metabolite_names_at] )
+                metabolite_data.append( row[data_starts_at:] )
             
         ydim = len( classes )
         xdim = len( metabolites )
@@ -67,6 +72,7 @@ class ImportMetabolightsApp( ui.ImportDataApp ):
         dso.labels[1] = metabolites
 
         for n,md in enumerate(metabolite_data):
+            print md
             dso.data[:,n] = np.array(md)
             
         return dso

@@ -27,11 +27,11 @@ class MergeApp( ui.DataApp ):
         # Setup data consumer options
         self.data.consumer_defs.extend([ 
             DataDefinition('input_1', {
-            'labels_n':     (None, '>1'),
+            'labels_n':     (None, '>0'),
             'entities_t':   (None, None), 
             }),
             DataDefinition('input_2', {
-            'labels_n':     (None, '>1'),
+            'labels_n':     (None, '>0'),
             'entities_t':   (None, None), 
             }),
             ]

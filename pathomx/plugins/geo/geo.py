@@ -163,7 +163,7 @@ class GEOApp(ui.ImportDataApp):
         dso.labels[0] = sample_ids
         dso.classes[0] = [class_lookup[s_id] for s_id in sample_ids]
         dso.labels[1] = [dataset_data[gene_id]['IDENTIFIER'] for gene_id in gene_ids]
-        dso.entities[1] = [self.m.db.get_via_synonym(gene_id) for gene_id in dso.labels[1]]
+        dso.entities[1] = [self.m.db.get_via_synonym(gene_id, type='gene') for gene_id in dso.labels[1]]
 
         for xn, gene_id in enumerate(gene_ids):
             for yn, sample_id in enumerate(sample_ids):

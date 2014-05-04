@@ -111,7 +111,7 @@ class NMRPeakAdjApp( ui.DataApp ):
         # Setup data consumer options
         self.data.consumer_defs.append( 
             DataDefinition('input', {
-            'labels_n':     ('>1', None),
+            'labels_n':     ('>0', None),
             'entities_t':   (None, None), 
             'scales_t': (None, ['float']),
             })
@@ -236,5 +236,4 @@ class NMRPeakAdj(ProcessingPlugin):
 
     def __init__(self, **kwargs):
         super(NMRPeakAdj, self).__init__(**kwargs)
-        NMRPeakAdjApp.plugin = self
         self.register_app_launcher( NMRPeakAdjApp )

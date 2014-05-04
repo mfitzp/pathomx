@@ -415,18 +415,21 @@ class ConfigManager(QObject):
 
     # Signals
     updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
-
+    
     def __init__(self, defaults={}, *args, **kwargs):
         super(ConfigManager, self).__init__(*args, **kwargs)
+
+        self.mutex = QMutex()
 
         self.reset()
         self.defaults = defaults  # Same mapping as above, used when config not set
 
     def _get(self, key):
-        if key in self.config:
-            return self.config[key]
-        else:
-            return None
+        with QMutexLocker(self.mutex):
+            try:
+                return self.config[key]
+            except:
+                return None
 
     # Get config
     def get(self, key):
@@ -449,7 +452,8 @@ class ConfigManager(QObject):
             return None
 
     def _set(self, key, value):
-        self.config[key] = value
+        with QMutexLocker(self.mutex):
+            self.config[key] = value
 
     def set(self, key, value, trigger_handler=True, trigger_update=True):
         """ 
@@ -568,6 +572,8 @@ class ConfigManager(QObject):
 
         if has_updated and trigger_update:
             self.updated.emit(RECALCULATE_ALL)
+            
+        return has_updated
     # HANDLERS
 
     # Handlers are UI elements (combo, select, checkboxes) that automatically update
@@ -687,27 +693,29 @@ class QSettingsManager(ConfigManager):
         self.eventhooks = {}
 
     def _get(self, key):
-        if self.settings.value(key, None) is not None:
-            # Map type to that in defaults: required in case QVariant is a string
-            # representation of the actual value (e.g. on Windows Reg)
-            v = self.settings.value(key)
-            if key in self.defaults and type(v) != type(self.defaults[key]):
-                t = type(self.defaults[key])
-                type_munge = {
-                    int: QMetaType.Int,
-                    float: QMetaType.Float,
-                    str: QMetaType.QString,
-                    unicode: QMetaType.QString,
-                    bool: QMetaType.Bool,
-                    list: QMetaType.QStringList,
-                }   
-                qv = QVariant( v )
-                qv.convert(type_munge[t])
-                v = qv.value()
-            return v
+        with QMutexLocker(self.mutex):
+            if self.settings.value(key, None) is not None:
+                # Map type to that in defaults: required in case QVariant is a string
+                # representation of the actual value (e.g. on Windows Reg)
+                v = self.settings.value(key)
+                if key in self.defaults and type(v) != type(self.defaults[key]):
+                    t = type(self.defaults[key])
+                    type_munge = {
+                        int: QMetaType.Int,
+                        float: QMetaType.Float,
+                        str: QMetaType.QString,
+                        unicode: QMetaType.QString,
+                        bool: QMetaType.Bool,
+                        list: QMetaType.QStringList,
+                    }   
+                    qv = QVariant( v )
+                    qv.convert(type_munge[t])
+                    v = qv.value()
+                return v
 
-        else:
-            return None
+            else:
+                return None
 
     def _set(self, key, value):
-        self.settings.setValue(key, value)
+        with QMutexLocker(self.mutex):
+            self.settings.setValue(key, value)

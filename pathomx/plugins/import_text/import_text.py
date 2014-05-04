@@ -114,9 +114,8 @@ class ImportTextApp(ui.ImportDataApp):
 
     def onImportData(self):
         """ Open a data file with a guided import wizard"""
-        filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
+        filename, _ = QFileDialog.getOpenFileName(self.w, self.import_description, '', self.import_filename_filter)
         if filename:
-            print self.config.config
             if self.config.get('autodetect_format'):
                 try:
                     f = open(filename, 'rb')

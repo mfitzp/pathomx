@@ -51,6 +51,35 @@ def _convert_list_type_to_XML(co, vs):
         c.set("type", t)
         c = CONVERT_TYPE_TO_XML[t](c, cv)
     return co
+    
+def _convert_dict_type_from_XML(vs):
+    '''
+    Dicts are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    vlist = vs.findall('DictItem')
+    d = {}
+    for xconfig in vlist:
+        v = xconfig.text
+        if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
+            # Recursive; woo!
+            v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
+        d[ xconfig.get('key') ] = v
+    return d
+
+
+def _convert_dict_type_to_XML(co, vs):
+    '''
+    Dicts are a complex type with possibility for mixed sub-types. Therefore each
+    sub-entity must be wrapped with a type specifier.
+    '''
+    for k,v in vs.items():
+        c = et.SubElement(co, "DictItem")
+        t = type(v).__name__
+        c.set("type", t)
+        c.set("key", k)
+        c = CONVERT_TYPE_TO_XML[t](c, v)
+    return co
 
 
 def _apply_text_str(co, s):
@@ -65,6 +94,7 @@ CONVERT_TYPE_TO_XML = {
     'bool': _apply_text_str,
     'list': _convert_list_type_to_XML,
     'tuple': _convert_list_type_to_XML,
+    'dict': _convert_dict_type_to_XML,
 }
 
 CONVERT_TYPE_FROM_XML = {
@@ -75,6 +105,7 @@ CONVERT_TYPE_FROM_XML = {
     'bool': lambda x: bool(x.text.lower()=='true'),
     'list': _convert_list_type_from_XML,
     'tuple': _convert_list_type_from_XML,
+    'dict': _convert_dict_type_from_XML,
 }
 
 

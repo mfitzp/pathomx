@@ -14,6 +14,7 @@ import re
 import json
 import importlib
 import sys
+import time
 import numpy as np
 from . import utils
 from . import data
@@ -1359,7 +1360,7 @@ class QTabWidgetExtend(QTabWidget):
 
 
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
-class GenericApp(QMainWindow):
+class GenericApp(QObject):
     """
     Base definition for all tools.
     
@@ -1381,11 +1382,15 @@ class GenericApp(QMainWindow):
     legacy_launchers = []
     legacy_inputs = {}
     legacy_outputs = {}
+    
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
         self.id = str(id(self))
 
+        self.w = QMainWindow()
+
+        self._lock = False
         self._previous_size = None
 
         self.m = self.plugin.m
@@ -1399,7 +1404,7 @@ class GenericApp(QMainWindow):
 
         self.logger = logging.getLogger(self.id)
 
-        self.setDockOptions(QMainWindow.ForceTabbedDocks)
+        self.w.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         if name == None:
             name = getattr(self, 'name', self.m.plugin_names[id(self.plugin)])
@@ -1433,7 +1438,7 @@ class GenericApp(QMainWindow):
         logging.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
 
-        self.setCentralWidget(self.views)
+        self.w.setCentralWidget(self.views)
 
         logging.debug('Connect event handlers...')
         self.status.connect(self.setWorkspaceStatus)
@@ -1476,7 +1481,7 @@ class GenericApp(QMainWindow):
         self.m.apps.remove(self)
         # Trigger notification for state change
         self.m.workspace_updated.emit()
-        self.close()
+        self.w.close()
 
     def autoconfig(self, signal):
         if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:
@@ -1486,6 +1491,7 @@ class GenericApp(QMainWindow):
             self.autoprerender(self._latest_generator_result)
 
     def autogenerate(self, *args, **kwargs):
+        self.logger.debug("autogenerate %s" % self.name)
         if self._pause_analysis_flag:
             self.setWorkspaceStatus('paused')
             return False
@@ -1494,11 +1500,13 @@ class GenericApp(QMainWindow):
         self.thread_generate()
 
     def thread_generate(self):
+        self.logger.debug("thread_generate %s" % self.name)
         # Automatically trigger generator using inputs
         kwargs_dict = {}
         for i in list(self.data.i.keys()):
             kwargs_dict[i] = self.data.get(i)  # Will be 'None' if not available
 
+        self.status.emit('active')
         self.progress.emit(0.)
         self.worker = threads.Worker(self.generate, **kwargs_dict)
         self.wait_for_lock()
@@ -1506,15 +1514,19 @@ class GenericApp(QMainWindow):
 
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
+        self.logger.debug("generated %s" % self.name)
+    
         # Automated pass on generated data if matching output port names
         for o in list(self.data.o.keys()):
             if o in kwargs:
                 self.data.put(o, kwargs[o])
 
     def prerender(self, output=None, **kwargs):
+        self.logger.debug("prerender %s" % self.name)
         return {'View': dict(list({'dso': output}.items()) + list(kwargs.items()))}
 
     def _generate_worker_result_callback(self, kwargs_dict):
+        self.logger.debug("_generate_worker_result_callback %s" % self.name)
         self.release_lock()
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
@@ -1522,11 +1534,13 @@ class GenericApp(QMainWindow):
         self.autoprerender(kwargs_dict)
 
     def autoprerender(self, kwargs_dict):
+        self.logger.debug("autoprerender %s" % self.name)
         self.status.emit('render')
         self.prerender_worker = threads.Worker(self.prerender, **kwargs_dict)
         self.start_worker_thread(self.prerender_worker, callback=self._prerender_worker_result_callback)
 
     def _prerender_worker_result_callback(self, kwargs):
+        self.logger.debug("_prerender_worker_result_callback %s" % self.name)
         self.views.data = kwargs
         self.views.source_data_updated.emit()
         #self.views.redraw()
@@ -1535,6 +1549,7 @@ class GenericApp(QMainWindow):
         self.views.updated.emit()
 
     def _worker_error_callback(self, error=None):
+        self.logger.debug("_worker_error_callback %s" % self.name)
         self.release_lock()
         self._latest_exception = error[1]
         self.progress.emit(1.)
@@ -1542,19 +1557,21 @@ class GenericApp(QMainWindow):
         self.logger.error(error[1])
 
     def _worker_status_callback(self, s):
+        self.logger.debug("_worker_status_callback %s" % self.name)
         self.setWorkspaceStatus(s)
 
     def _thread_finished_callback(self):
+        self.logger.debug("_thread_finished_callback %s" % self.name)
         self.thread = None
 
     def start_worker_thread(self, worker, callback=None):
+        self.logger.debug("start_worker_thread %s" % self.name)
         if callback == None:
             callback = self._generate_worker_result_callback
 
         worker.signals.result.connect(callback)
         worker.signals.error.connect(self._worker_error_callback)
 
-        self.status.emit('active')
         self.m.threadpool.start(worker)
 
     def store_views_data(self, kwargs_dict):
@@ -1562,13 +1579,22 @@ class GenericApp(QMainWindow):
 
     def set_name(self, name):
         self.name = name
-        self.setWindowTitle(name)
+        self.w.setWindowTitle(name)
         self.nameChanged.emit(name)
 
         try:
             self.workspace_item.setText(0, name)
         except:
             pass
+            
+    def show(self):
+        self.w.show()
+
+    def raise_(self):
+        self.w.raise_()
+        
+    def addToolBar(self, *args, **kwargs):
+        return self.w.addToolBar(*args, **kwargs)
 
     def updateProgress(self, progress):
         self.m.updateProgress(self.workspace_item, progress)
@@ -1588,15 +1614,15 @@ class GenericApp(QMainWindow):
         dw.setMinimumWidth(300)
         dw.setMaximumWidth(300)
 
-        self.addDockWidget(Qt.LeftDockWidgetArea, dw)
+        self.w.addDockWidget(Qt.LeftDockWidgetArea, dw)
         if self._latest_dock_widget:
-            self.tabifyDockWidget(dw, self._latest_dock_widget)
+            self.w.tabifyDockWidget(dw, self._latest_dock_widget)
 
         self._latest_dock_widget = dw
         dw.raise_()
 
     def addSelfToolBar(self):
-        t = self.addToolBar('App')
+        t = self.w.addToolBar('App')
         t.setIconSize(QSize(16, 16))
 
         delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cross.png')), tr('Delete this app…'), self.m)
@@ -1613,7 +1639,7 @@ class GenericApp(QMainWindow):
         self.toolbars['self'] = t
 
     def addDataToolBar(self, default_pause_analysis=False):
-        t = self.addToolBar('Data')
+        t = self.w.addToolBar('Data')
         t.setIconSize(QSize(16, 16))
 
         select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-source.png')), tr('Select a data source…'), self.m)
@@ -1644,7 +1670,7 @@ class GenericApp(QMainWindow):
     def onSelectDataSource(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.
         """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = DialogDataSource(parent=self, view=self)
+        dialog = DialogDataSource(parent=self.w, view=self)
         ok = dialog.exec_()
         if ok:
             for cb in dialog.lw_consumeri:  # Get list of comboboxes
@@ -1665,7 +1691,7 @@ class GenericApp(QMainWindow):
     def onViewDataOutput(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.
         """ Open the mining setup dialog to define conditions, ranges, class-comparisons, etc. """
-        dialog = DialogDataOutput(parent=self, view=self)
+        dialog = DialogDataOutput(parent=self.w, view=self)
         dialog.exec_()
 
     def closeEvent(self, e):
@@ -1674,7 +1700,7 @@ class GenericApp(QMainWindow):
 
     def getCreatedToolbar(self, name, id):
         if id not in self.toolbars:
-            self.toolbars[id] = self.addToolBar(name)
+            self.toolbars[id] = self.w.addToolBar(name)
             self.toolbars[id].setIconSize(QSize(16, 16))
 
         return self.toolbars[id]
@@ -1778,7 +1804,7 @@ class GenericApp(QMainWindow):
 
         # Load dialog for image export dimensions and resolution
         # TODO: dialog!
-        sizedialog = ExportImageDialog(self, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save)
+        sizedialog = ExportImageDialog(self.w, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save)
         ok = sizedialog.exec_()
         if ok:
             cw.saveAsImage(sizedialog)
@@ -1809,9 +1835,18 @@ class GenericApp(QMainWindow):
         return QSize(600 + 300, 400 + 100)
 
     def wait_for_lock(self):
+        for n in range(0, 15):  # Wait for maximum 15 secs for lock; then proceed regardless
+            if self._lock == False:
+                break
+            time.sleep(1)
+
+        logging.debug("Get lock for %s" % self.name)        
+        self._lock = False
         return True
 
     def release_lock(self):
+        logging.debug("Release lock for %s" % self.name)        
+        self._lock = False
         return True
 
 # Data view prototypes
@@ -1859,7 +1894,7 @@ class ImportDataApp(DataApp):
 
     def onImportData(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self, self.import_description, '', self.import_filename_filter)
+        filename, _ = QFileDialog.getOpenFileName(self.w, self.import_description, '', self.import_filename_filter)
         if filename:
             self.thread_load_datafile(filename)
             self.file_watcher = QFileSystemWatcher()
@@ -1932,7 +1967,7 @@ class ExportDataApp(GenericApp):
 
     def onExportData(self):
         """ Open a data file"""
-        filename, _ = QFileDialog.getSaveFileName(self, self.export_description, '', self.export_filename_filter)
+        filename, _ = QFileDialog.getSaveFileName(self.w, self.export_description, '', self.export_filename_filter)
         if filename:
             self.thread_save_datafile(filename, self.data.get('input'))
             self.set_name(os.path.basename(filename))
@@ -2076,16 +2111,16 @@ class AnalysisApp(GenericApp):
 
     def addExperimentToolBar(self):
 
-        t = self.addToolBar(tr('Experiment'))
+        t = self.w.addToolBar(tr('Experiment'))
         t.setIconSize(QSize(16, 16))
 
         # DATA MENU
-        define_experimentAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layout-design.png')), tr('Define experiment…'), self)
-        define_experimentAction.setShortcut('Ctrl+Q')
-        define_experimentAction.setStatusTip(tr('Define experiment control, test and timecourse settings'))
-        define_experimentAction.triggered.connect(self.onDefineExperiment)
+        #define_experimentAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layout-design.png')), tr('Define experiment…'), self)
+        #define_experimentAction.setShortcut('Ctrl+Q')
+        #define_experimentAction.setStatusTip(tr('Define experiment control, test and timecourse settings'))
+        #define_experimentAction.triggered.connect(self.onDefineExperiment)
 
-        t.addAction(define_experimentAction)
+        #t.addAction(define_experimentAction)
 
         t.cb_control = QComboBox()
         t.cb_control.addItems(['Control'])
@@ -2129,10 +2164,14 @@ class AnalysisApp(GenericApp):
             _control = _control if _control in self.data.i['input'].classes_l[0] else self.data.i['input'].classes_l[0][0]
             _test = _test if _test in self.data.i['input'].classes_l[0] else '*'
 
-            self.config.set_many({
+            is_updated = self.config.set_many({
                 'experiment_control': _control,
                 'experiment_test': _test,
-            })
+            }, trigger_update=False)
+            
+            logging.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
+            
+            
 
     def onDataChanged(self):
         self.repopulate_experiment_classes()
@@ -2140,11 +2179,6 @@ class AnalysisApp(GenericApp):
     def onDefineExperiment(self):
         pass
 
-    def onModifyExperiment(self):
-        """ Update the experimental settings for analysis then regenerate """
-        self._experiment_control = self.toolbars['experiment'].cb_control.currentText()
-        self._experiment_test = self.toolbars['experiment'].cb_test.currentText()
-        self.generate()
 
 
 class remoteQueryDialog(GenericDialog):
@@ -2188,7 +2222,7 @@ class remoteQueryDialog(GenericDialog):
 class ConfigPanel(QWidget):
 
     def __init__(self, parent, *args, **kwargs):
-        super(ConfigPanel, self).__init__(parent, *args, **kwargs)
+        super(ConfigPanel, self).__init__(parent.w, *args, **kwargs)
 
         self.v = parent
         self.m = parent.m
