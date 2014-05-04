@@ -55,8 +55,8 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
 
 class PathwayMiningApp(ui.AnalysisApp):
 
-    legacy_inputs = {'input':'input_1'}
-    
+    legacy_inputs = {'input': 'input_1'}
+
     def __init__(self, **kwargs):
         super(PathwayMiningApp, self).__init__(**kwargs)
 

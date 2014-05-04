@@ -68,15 +68,15 @@ class QColorButton(QPushButton):
 
     colorChanged = pyqtSignal()
 
-    def __init__(self, is_reset_enabled = True, *args, **kwargs):
+    def __init__(self, is_reset_enabled=True, *args, **kwargs):
         super(QColorButton, self).__init__(*args, **kwargs)
 
         self._color = None
         self.setMaximumWidth(32)
         self.pressed.connect(self.onColorPicker)
-        
+
         self.is_reset_enabled = is_reset_enabled
-        
+
     def setColor(self, color):
         if color != self._color:
             self._color = color
@@ -1382,7 +1382,6 @@ class GenericApp(QObject):
     legacy_launchers = []
     legacy_inputs = {}
     legacy_outputs = {}
-    
 
     def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
         super(GenericApp, self).__init__()
@@ -1515,7 +1514,7 @@ class GenericApp(QObject):
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
         self.logger.debug("generated %s" % self.name)
-    
+
         # Automated pass on generated data if matching output port names
         for o in list(self.data.o.keys()):
             if o in kwargs:
@@ -1586,13 +1585,13 @@ class GenericApp(QObject):
             self.workspace_item.setText(0, name)
         except:
             pass
-            
+
     def show(self):
         self.w.show()
 
     def raise_(self):
         self.w.raise_()
-        
+
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
 
@@ -1840,12 +1839,12 @@ class GenericApp(QObject):
                 break
             time.sleep(1)
 
-        logging.debug("Get lock for %s" % self.name)        
+        logging.debug("Get lock for %s" % self.name)
         self._lock = False
         return True
 
     def release_lock(self):
-        logging.debug("Release lock for %s" % self.name)        
+        logging.debug("Release lock for %s" % self.name)
         self._lock = False
         return True
 
@@ -2113,7 +2112,6 @@ class AnalysisApp(GenericApp):
 
         t = self.w.addToolBar(tr('Experiment'))
         t.setIconSize(QSize(16, 16))
-
         # DATA MENU
         #define_experimentAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layout-design.png')), tr('Define experiment…'), self)
         #define_experimentAction.setShortcut('Ctrl+Q')
@@ -2168,17 +2166,14 @@ class AnalysisApp(GenericApp):
                 'experiment_control': _control,
                 'experiment_test': _test,
             }, trigger_update=False)
-            
+
             logging.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
             
-            
-
     def onDataChanged(self):
         self.repopulate_experiment_classes()
 
     def onDefineExperiment(self):
         pass
-
 
 
 class remoteQueryDialog(GenericDialog):

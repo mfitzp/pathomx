@@ -18,7 +18,6 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-
 rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
@@ -51,7 +50,8 @@ def _convert_list_type_to_XML(co, vs):
         c.set("type", t)
         c = CONVERT_TYPE_TO_XML[t](c, cv)
     return co
-    
+
+
 def _convert_dict_type_from_XML(vs):
     '''
     Dicts are a complex type with possibility for mixed sub-types. Therefore each
@@ -64,7 +64,7 @@ def _convert_dict_type_from_XML(vs):
         if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
             # Recursive; woo!
             v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
-        d[ xconfig.get('key') ] = v
+        d[xconfig.get('key')] = v
     return d
 
 
@@ -73,7 +73,7 @@ def _convert_dict_type_to_XML(co, vs):
     Dicts are a complex type with possibility for mixed sub-types. Therefore each
     sub-entity must be wrapped with a type specifier.
     '''
-    for k,v in vs.items():
+    for k, v in vs.items():
         c = et.SubElement(co, "DictItem")
         t = type(v).__name__
         c.set("type", t)
@@ -102,7 +102,7 @@ CONVERT_TYPE_FROM_XML = {
     'unicode': lambda x: str(x.text),
     'int': lambda x: int(x.text),
     'float': lambda x: float(x.text),
-    'bool': lambda x: bool(x.text.lower()=='true'),
+    'bool': lambda x: bool(x.text.lower() == 'true'),
     'list': _convert_list_type_from_XML,
     'tuple': _convert_list_type_from_XML,
     'dict': _convert_dict_type_from_XML,

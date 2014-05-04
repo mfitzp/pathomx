@@ -17,7 +17,6 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-
 EDITOR_MODE_NORMAL = 0
 EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
@@ -28,9 +27,9 @@ class QGraphicsSceneExtend(QGraphicsScene):
 
     def __init__(self, parent, *args, **kwargs):
         super(QGraphicsSceneExtend, self).__init__(parent, *args, **kwargs)
-    
+
         self.m = parent.m
-    
+
         self.config = config.ConfigManager()
         # These config settings are transient (ie. not stored between sessions)
         self.config.set_defaults({
@@ -41,10 +40,10 @@ class QGraphicsSceneExtend(QGraphicsScene):
             'text-italic': False,
             'text-underline': False,
             'text-color': '#000000',
-            'color-border': None, #'#000000',
+            'color-border': None,  # '#000000',
             'color-background': None,
         })
-        
+
         # Pre-set these values (will be used by default)
         self.config.set('color-background', '#5555ff')
 
@@ -53,22 +52,21 @@ class QGraphicsSceneExtend(QGraphicsScene):
             self.showGrid()
         else:
             self.hideGrid()
-            
+
         self.mode = EDITOR_MODE_NORMAL
         self.mode_current_object = None
-        
+
         self.annotations = []
-            
                     
     def mousePressEvent(self, e):
         if self.config.get('mode') != EDITOR_MODE_NORMAL:
-        
+
             for i in self.selectedItems():
                 i.setSelected(False)
-        
+
             if self.config.get('mode') == EDITOR_MODE_TEXT:
                 tw = AnnotationTextItem(position=e.scenePos())
-        
+
             elif self.config.get('mode') == EDITOR_MODE_REGION:
                 tw = AnnotationRegionItem(position=e.scenePos())
 
@@ -78,18 +76,17 @@ class QGraphicsSceneExtend(QGraphicsScene):
             self.addItem(tw)
             self.mode_current_object = tw
             tw._createFromMousePressEvent(e)
-            tw.importStyleConfig( self.config )
-            
+            tw.importStyleConfig(self.config)
+
             self.annotations.append(tw)
-        
+
         else:
             super(QGraphicsSceneExtend, self).mousePressEvent(e)
-        
 
     def mouseMoveEvent(self, e):
         if self.config.get('mode') == EDITOR_MODE_TEXT and self.mode_current_object:
             self.mode_current_object._resizeFromMouseMoveEvent(e)
-                        
+
         elif self.config.get('mode') == EDITOR_MODE_REGION and self.mode_current_object:
             self.mode_current_object._resizeFromMouseMoveEvent(e)
 
@@ -113,7 +110,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.setBackgroundBrush(QBrush(None))
 
     def onSaveAsImage(self):
-        filename, _ = QFileDialog.getSaveFileName(self.m, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
+        filename, _ = QFileDialog.getSaveFileName(self.m, 'Save current figure', '', "Tagged Image File Format (*.tif);;\
                                                                                      Portable Network Graphics (*.png)")
         if filename:
             self.saveAsImage(filename)
@@ -124,7 +121,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         painter = QPainter(self.image)
         self.render(painter)
         self.image.save(f)
-        
+
     def addApp(self, app, position=None):
         i = ToolItem(self, app, position=position)
         self.addItem(i)
@@ -168,7 +165,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
                     a = self.m.file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
                     self.centerOn(a.editorItem)
                     e.accept()
-        
+
     def getXMLAnnotations(self, root):
 
     # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
@@ -177,21 +174,21 @@ class QGraphicsSceneExtend(QGraphicsScene):
             ase = et.SubElement(root, "Annotation")
             ase.set('type', type(annotation).__name__)
 
-            ase.set('x', str( annotation.x() ) )
-            ase.set('y', str( annotation.y() ) )
-            ase.set('width', str( annotation.rect().width() ) )
-            ase.set('height', str( annotation.rect().height() ) )
-            
+            ase.set('x', str(annotation.x()))
+            ase.set('y', str(annotation.y()))
+            ase.set('width', str(annotation.rect().width()))
+            ase.set('height', str(annotation.rect().height()))
+
             if hasattr(annotation, 'text'):
                 text = et.SubElement(ase, "Text")
                 text.text = annotation.text.toPlainText()
-            
-            ase = annotation.config.getXMLConfig( ase )
+
+            ase = annotation.config.getXMLConfig(ase)
 
         return root
 
     def setXMLAnnotations(self, root):
-    
+
         ANNOTATION_TYPES = {
             'AnnotationTextItem': AnnotationTextItem,
             'AnnotationRegionItem': AnnotationRegionItem,
@@ -201,20 +198,21 @@ class QGraphicsSceneExtend(QGraphicsScene):
 
             # Validate the class definition before creating it
             if ase.get('type') in ANNOTATION_TYPES:
-            
-                pos = QPointF(float( ase.get('x') ), float( ase.get('y') ) )
+
+                pos = QPointF(float(ase.get('x')), float(ase.get('y')))
                 aobj = ANNOTATION_TYPES[ase.get('type')](position=pos)
-                aobj.setRect( QRectF( 0, 0, float( ase.get('width') ), float( ase.get('height') ) ) )
-                
+                aobj.setRect(QRectF(0, 0, float(ase.get('width')), float(ase.get('height'))))
+
                 to = ase.find('Text')
                 if to is not None:
                     aobj.text.setPlainText(to.text)
-                
+
                 self.addItem(aobj)
                 self.annotations.append(aobj)
-                aobj.config.setXMLConfig( ase )
+                aobj.config.setXMLConfig(ase)
                 aobj.applyStyleConfig()
-    
+
+
 class WorkspaceEditorView(QGraphicsView):
     def __init__(self, parent=None):
         super(WorkspaceEditorView, self).__init__(parent)
@@ -234,11 +232,9 @@ class WorkspaceEditorView(QGraphicsView):
         self.scene.clear()
         r = QRectF(self.mapToScene(QPoint(0, 0)), self.mapToScene(QPoint(self.width(), self.height())))
         self._scene_extreme_rect = self.scene.addRect(r, pen=QPen(Qt.NoPen), brush=QBrush(Qt.NoBrush))
-        
+
     def resizeEvent(self, e):
         self._scene_extreme_rect.setRect(QRectF(
                 self.mapToScene(QPoint(0, 0)),
                 self.mapToScene(QPoint(self.width(), self.height()))
                 ))
-
-

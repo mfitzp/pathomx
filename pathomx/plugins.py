@@ -418,7 +418,7 @@ class BasePlugin(IPlugin):
         app.plugin = self
         key = "%s.%s" % (self.id, app.__name__)
         self.m.app_launchers[key] = app
-        
+
         if workspace_category == None:
             workspace_category = self.default_workspace_category
 

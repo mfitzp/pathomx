@@ -28,7 +28,6 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
@@ -38,6 +37,7 @@ def types_MethodType(fn, handler, handler_class):
         return types.MethodType(fn, handler, handler_class)
     except TypeError:
         return types.MethodType(fn, handler)
+
 
 def build_dict_mapper(mdict):
     '''
@@ -145,7 +145,7 @@ def _event_QAction(self):
         Return state change signal for QAction
     """
     return self.toggled
-    
+
 
 # QActionGroup
 def _get_QActionGroup(self):
@@ -153,7 +153,7 @@ def _get_QActionGroup(self):
         Get checked state of QAction
     """
     if self.checkedAction():
-        return self.actions().index( self.checkedAction() )
+        return self.actions().index(self.checkedAction())
     else:
         return None
 
@@ -169,7 +169,7 @@ def _event_QActionGroup(self):
     """
         Return state change signal for QAction
     """
-    return self.triggered    
+    return self.triggered
 
 
 # QPushButton
@@ -192,8 +192,6 @@ def _event_QPushButton(self):
         Return state change signal for QPushButton
     """
     return self.toggled
-    
-
 
 
 # QSpinBox
@@ -415,7 +413,7 @@ class ConfigManager(QObject):
 
     # Signals
     updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
-    
+
     def __init__(self, defaults={}, *args, **kwargs):
         super(ConfigManager, self).__init__(*args, **kwargs)
 
@@ -572,7 +570,7 @@ class ConfigManager(QObject):
 
         if has_updated and trigger_update:
             self.updated.emit(RECALCULATE_ALL)
-            
+
         return has_updated
     # HANDLERS
 
@@ -602,19 +600,19 @@ class ConfigManager(QObject):
 
         handler._get_map, handler._set_map = mapper
 
-        if key in self.handlers: # Already there; so skip must remove first to replace
+        if key in self.handlers:  # Already there; so skip must remove first to replace
             return
 
         self.handlers[key] = handler
 
-        handler.setter = types_MethodType(globals().get('_set_%s' % type(handler).__name__), handler, type(handler) )
-        handler.getter = types_MethodType(globals().get('_get_%s' % type(handler).__name__), handler, type(handler) )
-        handler.updater = types_MethodType(globals().get('_event_%s' % type(handler).__name__), handler, type(handler) )
-    
-        print("Add handler %s for %s" % ( type(handler).__name__, key))
+        handler.setter = types_MethodType(globals().get('_set_%s' % type(handler).__name__), handler, type(handler))
+        handler.getter = types_MethodType(globals().get('_get_%s' % type(handler).__name__), handler, type(handler))
+        handler.updater = types_MethodType(globals().get('_event_%s' % type(handler).__name__), handler, type(handler))
+
+        print("Add handler %s for %s" % (type(handler).__name__, key))
         handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
         handler.updater().connect(handler_callback)
-        
+
         # Store this so we can issue a specific remove on deletes
         self.handler_callbacks[key] = handler_callback
 
@@ -633,13 +631,12 @@ class ConfigManager(QObject):
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
             self.add_handler(key, handler)
-            
+
     def remove_handler(self, key):
         if key in self.handlers:
             handler = self.handlers[key]
-            handler.updater().disconnect( self.handler_callbacks[key])
+            handler.updater().disconnect(self.handler_callbacks[key])
             del self.handlers[key]
-    
 
     def reset(self):
         """ 
@@ -653,7 +650,7 @@ class ConfigManager(QObject):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
-        
+
     def getXMLConfig(self, root):
         config = et.SubElement(root, "Config")
         for ck, cv in list(self.config.items()):
@@ -662,9 +659,9 @@ class ConfigManager(QObject):
             t = type(cv).__name__
             co.set("type", type(cv).__name__)
             co = CONVERT_TYPE_TO_XML[t](co, cv)
-            
+
         return root
-    
+
     def setXMLConfig(self, root):
 
         config = {}
@@ -707,8 +704,8 @@ class QSettingsManager(ConfigManager):
                         unicode: QMetaType.QString,
                         bool: QMetaType.Bool,
                         list: QMetaType.QStringList,
-                    }   
-                    qv = QVariant( v )
+                    }
+                    qv = QVariant(v)
                     qv.convert(type_munge[t])
                     v = qv.value()
                 return v

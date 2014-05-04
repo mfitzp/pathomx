@@ -184,7 +184,6 @@ class ReactionIntermediate(_PathomxObject):
 
 class databaseManager():
 
-
     # compounds, reactions, pathways = dict()
     def __init__(self):
 
@@ -226,27 +225,25 @@ class databaseManager():
         # Load additional chemical data
         self.load_gibbs()
 
-    def pathway(self,id):
+    def pathway(self, id):
         with QMutexLocker(self.mutex):
             return self.pathways[id]
-        
-    def reaction(self,id):
+
+    def reaction(self, id):
         with QMutexLocker(self.mutex):
             return self.reactions[id]
-        
-    def compound(self,id):
+
+    def compound(self, id):
         with QMutexLocker(self.mutex):
             return self.compounds[id]
 
-    def gene(self,id):
+    def gene(self, id):
         with QMutexLocker(self.mutex):
             return self.genes[id]
 
-    def protein(self,id):
+    def protein(self, id):
         with QMutexLocker(self.mutex):
             return self.proteins[id]
-
-        
         
     def get_pathways(self):
         with QMutexLocker(self.mutex):
@@ -267,7 +264,6 @@ class databaseManager():
     def get_proteins(self):
         with QMutexLocker(self.mutex):
             return self.proteins.items()
-        
 
     # Helper functions
     def get_via_unification(self, database, id):
@@ -276,7 +272,6 @@ class databaseManager():
                 return self.unification[database][id]
             except:
                 return None
-        
 
     # Helper functions
     def get_via_synonym(self, id, type=None):

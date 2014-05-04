@@ -142,17 +142,17 @@ class StyleHandler(object):
 
         self.automatchdefs = []
         self.matchdefs = []
-        
+
         convert = {
-            'linestyle':str,
-            'color':str,
+            'linestyle': str,
+            'color': str,
             'linewidth': float,
-            'marker':str,
-            'markersize':float,
-            'markeredgecolor':str,
-            'markerfacecolor':str,
-            'fillstyle':str,
-            'hatch':str,
+            'marker': str,
+            'markersize': float,
+            'markeredgecolor': str,
+            'markerfacecolor': str,
+            'fillstyle': str,
+            'hatch': str,
             }
 
         for cmls in root.findall('ClassMatchStyle'):
@@ -166,7 +166,7 @@ class StyleHandler(object):
 
             lse = cmls.find('Style')
             for attr in ls.attr:
-                ls.__dict__[attr] = convert[attr]( lse.get(attr, None) )
+                ls.__dict__[attr] = convert[attr](lse.get(attr, None))
 
             # Fix types
             ls.linewidth = float(ls.linewidth)

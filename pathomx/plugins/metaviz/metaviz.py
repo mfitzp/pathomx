@@ -230,7 +230,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                 clusternodes = add_clusternodes(clusternodes, 'compartment', compartments, [mtout])
 
     # id,type,names
-    for id, m in db.get_compounds(): #(db.compounds.values()):
+    for id, m in db.get_compounds():  # (db.compounds.values()):
 
         # It's in one of our pathways (union)
         if set(m.pathways) & set(pathways):
@@ -674,7 +674,7 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
 
 class MetaVizApp(ui.AnalysisApp):
 
-    legacy_inputs = {'input':'compound_data', 'data':'compound_data'}
+    legacy_inputs = {'input': 'compound_data', 'data': 'compound_data'}
 
     def __init__(self, auto_consume_data=True, **kwargs):
         super(MetaVizApp, self).__init__(**kwargs)

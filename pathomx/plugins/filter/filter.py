@@ -144,14 +144,13 @@ class FilterApp(ui.DataApp):
 
     def generate(self, input=None):
         return {'output': self.apply_filters(input)}
-        
 
 
 # Dialog box for Metabohunter search options
 class ReclassifyDialog(ui.GenericDialog):
-    
+
     def __init__(self, parent=None, view=None, *args, **kwargs):
-        super(ReclassifyDialog, self).__init__(parent=parent, *args, **kwargs)        
+        super(ReclassifyDialog, self).__init__(parent=parent, *args, **kwargs)
 
         self.v = view
 
@@ -170,14 +169,14 @@ class ReclassifyDialog(ui.GenericDialog):
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
 
-        self.dialogFinalise()        
-        
+        self.dialogFinalise()
+
 
 # Dialog box for Metabohunter search options
 class ReclassifyConfigPanel(ui.ConfigPanel):
-    
+
     def __init__(self, *args, **kwargs):
-        super(ReclassifyConfigPanel, self).__init__(*args, **kwargs)        
+        super(ReclassifyConfigPanel, self).__init__(*args, **kwargs)
 
         # Correlation variables
         gb = QGroupBox('Reclassifications')
@@ -200,27 +199,26 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
 
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
-                    
-        self.config.add_handler('filters', self.lw_filters, (self.v.map_list_fwd, self.v.map_list_rev) )
-        self.finalise()        
-        
+
+        self.config.add_handler('filters', self.lw_filters, (self.v.map_list_fwd, self.v.map_list_rev))
+        self.finalise()
+
     def onFilterAdd(self):
         dlg = ReclassifyDialog(parent=self.v.w, view=self.v)
-        
+
         if dlg.exec_():
-            l = self.config.get('filters')[:] # Copy
-            if dlg.lw_regexp.text() !='' and dlg.lw_replace.text() !='':
-                l.append( ( dlg.lw_regexp.text(), dlg.lw_replace.text() ) )
+            l = self.config.get('filters')[:]  # Copy
+            if dlg.lw_regexp.text() != '' and dlg.lw_replace.text() != '':
+                l.append((dlg.lw_regexp.text(), dlg.lw_replace.text()))
             self.config.set('filters', l)
 
     def onFilterRemove(self):
         l = self.config.get('filters')[:]
         for i in self.lw_filters.selectedItems():
-            l[self.lw_filters.row(i)] = (None,None)
-    
-        self.config.set('filters', [(k,v) for k,v in l if v is not None])
-  
-        
+            l[self.lw_filters.row(i)] = (None, None)
+
+        self.config.set('filters', [(k, v) for k, v in l if v is not None])
+
         
 class ReclassifyTool(ui.DataApp):
 
@@ -252,25 +250,24 @@ class ReclassifyTool(ui.DataApp):
         classes = dso.classes[0]
         for search, replace in self.config.get('filters'):
             classes_f = []
-            for c in classes:   
+            for c in classes:
                 match = re.search(search, c)
                 if match:
-                   classes_f.append(replace)
+                    classes_f.append(replace)
                 else:
-                   classes_f.append(c)
+                    classes_f.append(c)
 
             classes = classes_f
-            
+
         dso.classes[0] = classes
         return dso
 
     def generate(self, input=None):
-        return {'output': self.apply_filters(input)}        
-
+        return {'output': self.apply_filters(input)}
         
     def map_list_fwd(self, s):
         " Receive text label, return the filter"
-        return tuple( s.split('\t') )
+        return tuple(s.split('\t'))
 
     def map_list_rev(self, f):
         " Receive the filter, return the label"
@@ -278,6 +275,7 @@ class ReclassifyTool(ui.DataApp):
             return "%s\t%s" % tuple(f)
         else:
             return "\t"
+
 
 class Filter(FilterPlugin):
 

@@ -72,7 +72,7 @@ from .translate import tr
 
 from distutils.version import StrictVersion
 
-VERSION_STRING = '2.5.0'
+VERSION_STRING = '2.5.1'
 
 
 class Logger(logging.Handler):
@@ -698,64 +698,63 @@ class MainWindow(QMainWindow):
         self.settings.add_handler('Editor/Show_grid', show_gridAction)
         show_gridAction.triggered.connect(self.onGridToggle)
         t.addAction(show_gridAction)
-        
+
     def addEditModeToolBar(self):
         t = self.addToolBar('Edit mode')
         t.setIconSize(QSize(16, 16))
-        
+
         editormodeag = QActionGroup(self)
 
         normalAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cursor.png')), tr('Edit mode'), self)
         normalAction.setCheckable(True)
         normalAction.setChecked(True)
         normalAction.setStatusTip('Default edit mode')
-        normalAction.setActionGroup( editormodeag )
+        normalAction.setActionGroup(editormodeag)
         #normalAction._px_value = EDITOR_MODE_NORMAL
         t.addAction(normalAction)
 
         add_textAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layer-shape-text.png')), tr('Add text annotation…'), self)
         add_textAction.setCheckable(True)
         add_textAction.setStatusTip('Add text annotations to workflow')
-        add_textAction.setActionGroup( editormodeag )
+        add_textAction.setActionGroup(editormodeag)
         #add_textAction._px_value = EDITOR_MODE_TEXT
         t.addAction(add_textAction)
 
         add_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone.png')), tr('Add region annotation…'), self)
         add_regionAction.setCheckable(True)
         add_regionAction.setStatusTip('Add region annotations to workflow')
-        add_regionAction.setActionGroup( editormodeag )
+        add_regionAction.setActionGroup(editormodeag)
         #add_regionAction._px_value = EDITOR_MODE_REGION
         t.addAction(add_regionAction)
-        
+
         self.editor.config.add_handler('mode', editormodeag)
         #self.editormodeag.triggered.connect( self.onEditorModeToggle )
-        
+
     def addEditStyleToolBar(self):
-    
-        # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
-    
+    # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
+
         t = self.addToolBar('Style')
         t.setIconSize(QSize(16, 16))
         self.styletoolbarwidgets = {}
-        
+
         font_listcb = QComboBox()
-        font_listcb.addItems( self.fonts.families(QFontDatabase.Any) )
+        font_listcb.addItems(self.fonts.families(QFontDatabase.Any))
         self.editor.config.add_handler('font-family', font_listcb)
         t.addWidget(font_listcb)
         self.styletoolbarwidgets['font-family'] = font_listcb
 
         font_sizecb = QComboBox()
-        font_sizecb.addItems( ['8','9','10','11','12','14','16','18','20','22','24','26','28','36','48','72'] )
+        font_sizecb.addItems(['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'])
         font_sizecb.setEditable(True)
         self.editor.config.add_handler('font-size', font_sizecb)
         t.addWidget(font_sizecb)
         self.styletoolbarwidgets['font-size'] = font_sizecb
-        
+
         text_colorcb = ui.QColorButton()
         self.editor.config.add_handler('text-color', text_colorcb)
         t.addWidget(text_colorcb)
         self.styletoolbarwidgets['text-color'] = text_colorcb
-        
+
         text_boldAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-bold.png')), tr('Bold'), self)
         text_boldAction.setStatusTip('Set text bold')
         text_boldAction.setCheckable(True)
@@ -776,17 +775,16 @@ class MainWindow(QMainWindow):
         self.editor.config.add_handler('text-underline', text_underlineAction)
         t.addAction(text_underlineAction)
         self.styletoolbarwidgets['text-underline'] = text_underlineAction
-        
+
         border_colorcb = ui.QColorButton()
         self.editor.config.add_handler('color-border', border_colorcb)
         t.addWidget(border_colorcb)
         self.styletoolbarwidgets['color-border'] = border_colorcb
-        
+
         background_colorcb = ui.QColorButton()
         self.editor.config.add_handler('color-background', background_colorcb)
         t.addWidget(background_colorcb)
         self.styletoolbarwidgets['color-background'] = background_colorcb
-
 
     def onGridToggle(self):
         if self.settings.get('Editor/Show_grid'):
@@ -949,7 +947,6 @@ class MainWindow(QMainWindow):
                 self.data.translate(self.db)
                 self.generateGraphView(regenerate_analysis=True)
 
-
     def onAbout(self):
         dlg = ui.DialogAbout(self)
         dlg.exec_()
@@ -1092,10 +1089,10 @@ class MainWindow(QMainWindow):
             self.clearWorkspace()
 
     def clearWorkspace(self):
-        for v in self.apps[:]: # Copy as v.delete modifies the self.apps list
+        for v in self.apps[:]:  # Copy as v.delete modifies the self.apps list
             v.delete()
-            
-        for i in self.editor.items()[:]: # Copy as i.delete modifies the list
+
+        for i in self.editor.items()[:]:  # Copy as i.delete modifies the list
             try:
                 # If has a delete handler use it (for clean up) else just remove from the scene
                 i.delete()
@@ -1104,7 +1101,7 @@ class MainWindow(QMainWindow):
 
         # Remove all workspace datasets
         del self.datasets[:]
-        
+
         # Completely wipe the scene
         self.editView.resetScene()
         self.editor = self.editView.scene
@@ -1124,7 +1121,7 @@ class MainWindow(QMainWindow):
 
         s = et.SubElement(root, "Styles")
         s = styles.styles.getXMLMatchDefinitionsStyles(s)
-        
+
         s = et.SubElement(root, "Annotations")
         s = self.editor.getXMLAnnotations(s)
 
@@ -1147,7 +1144,7 @@ class MainWindow(QMainWindow):
             position.set("x", str(v.editorItem.x()))
             position.set("y", str(v.editorItem.y()))
 
-            app = v.config.getXMLConfig( app )
+            app = v.config.getXMLConfig(app)
 
             datasources = et.SubElement(app, "DataInputs")
             # Build data inputs table (outputs are pre-specified by the object; this == links)
@@ -1195,8 +1192,8 @@ class MainWindow(QMainWindow):
             #app = self.app_launchers[ item.find("launcher").text ]()
             #app.set_name(  )
             appref[xapp.get('id')] = app
-            
-            app.config.setXMLConfig( xapp )
+
+            app.config.setXMLConfig(xapp)
 
         logging.info("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present
@@ -1206,13 +1203,13 @@ class MainWindow(QMainWindow):
             for idef in xapp.findall('DataInputs/Input'):
                 source = appref[idef.get('manager')].data.o[idef.get('interface')]
                 sink = idef.get('id')
-                
+
                 if sink in app.legacy_inputs.keys():
                     sink = app.legacy_inputs[sink]
-                
+
                 if source in app.legacy_outputs.keys():
                     source = app.legacy_outputs[source]
-                
+
                 app.data._consume_action(sink, source)
 
         logging.info("Load complete.")

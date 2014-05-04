@@ -53,7 +53,7 @@ class GPMLView(HTMLView):
 # Supports loading from local file and WikiPathways
 class GPMLPathwayApp(ui.AnalysisApp):
 
-    legacy_inputs = {'input':'compound_data'}
+    legacy_inputs = {'input': 'compound_data'}
 
     def __init__(self, gpml=None, svg=None, filename=None, **kwargs):
         super(GPMLPathwayApp, self).__init__(**kwargs)

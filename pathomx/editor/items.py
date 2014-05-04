@@ -38,8 +38,6 @@ STATUS_COLORS = {
     'done': 'blue'
 }
 
-
-
 ANNOTATION_MINIMUM_SIZE = 50
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
 
@@ -497,14 +495,13 @@ class LinkItem(QGraphicsPathItem):
         sinkPoint = self.sink.scenePos() + self.sink._offset if hasattr(self.sink, '_offset') else self.sink.scenePos()
         bezierPath = QPainterPath()
         bezierPath.moveTo(sourcePoint)
-        
-        pi = abs(sourcePoint.x()-sinkPoint.x()) / 2
+
+        pi = abs(sourcePoint.x() - sinkPoint.x()) / 2
         if pi > 100:
             pi = 100
 
         p1 = sourcePoint + QPointF(pi, 0)
         p2 = sinkPoint - QPointF(pi, 0)
-            
         # Shrink the horizontal port extension if we're too close
         #if p1.x() > p2.x():
         #    pi = (p1.x() + p2.x()) / 2
@@ -663,7 +660,7 @@ class FigureItem(BaseItem):
     
 class ResizableGraphicsItem(QGraphicsItem):
 
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ResizableGraphicsItem, self).__init__(*args, **kwargs)
         self._resizeMode = None
 
@@ -672,7 +669,7 @@ class ResizableGraphicsItem(QGraphicsItem):
 
     def hoverEnterEvent(self, event):
         self.updateResizeHandles()
-        
+
     def hoverMoveEvent(self, event):
         if self.topLeft.contains(event.pos()) or self.bottomRight.contains(event.pos()):
             self.setCursor(Qt.SizeFDiagCursor)
@@ -688,21 +685,21 @@ class ResizableGraphicsItem(QGraphicsItem):
         # Top left corner
         if self.topLeft.contains(event.pos()):
             self._resizeMode = RESIZE_TOPLEFT
-        # top right corner            
+        # top right corner
         elif self.topRight.contains(event.pos()):
             self._resizeMode = RESIZE_TOPRIGHT
-        #  bottom left corner            
+        #  bottom left corner
         elif self.bottomLeft.contains(event.pos()):
             self._resizeMode = RESIZE_BOTTOMLEFT
-        # bottom right corner            
+        # bottom right corner
         elif self.bottomRight.contains(event.pos()):
             self._resizeMode = RESIZE_BOTTOMRIGHT
         # entire rectangle
         else:
             self._resizeMode = None
-        
+
         super(ResizableGraphicsItem, self).mousePressEvent(event)
-        
+
     def mouseReleaseEvent(self, event):
         self.updateResizeHandles()
         self.prepareGeometryChange()
@@ -711,21 +708,21 @@ class ResizableGraphicsItem(QGraphicsItem):
     def mouseMoveEvent(self, event):
         if self._resizeMode:
             r = self.rect()
-            
+
             # Move top left corner
             if self._resizeMode == RESIZE_TOPLEFT:
                 r.setTopLeft(event.pos())
 
-            # Move top right corner            
+            # Move top right corner
             elif self._resizeMode == RESIZE_TOPRIGHT:
                 r.setTopRight(event.pos())
 
-            # Move bottom left corner            
-            elif self._resizeMode ==RESIZE_BOTTOMLEFT:
+            # Move bottom left corner
+            elif self._resizeMode == RESIZE_BOTTOMLEFT:
                 r.setBottomLeft(event.pos())
 
-            # Move bottom right corner            
-            elif  self._resizeMode ==RESIZE_BOTTOMRIGHT:
+            # Move bottom right corner
+            elif  self._resizeMode == RESIZE_BOTTOMRIGHT:
                 r.setBottomRight(event.pos())
 
             r = minimalQRect(r, self.minSize)
@@ -735,19 +732,19 @@ class ResizableGraphicsItem(QGraphicsItem):
             self.prepareGeometryChange()
         else:
             super(ResizableGraphicsItem, self).mouseMoveEvent(event)
-        
+
     def updateResizeHandles(self):
         """
         Update bounding rectangle and resize handles
         """
         r = self.rect()
-        s = QSizeF( RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE)
-        self.topLeft = QRectF( r.topLeft(), s )
-        self.topRight = QRectF( QPointF( r.topRight().x() - RESIZE_HANDLE_SIZE, r.topRight().y() ), s )
+        s = QSizeF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE)
+        self.topLeft = QRectF(r.topLeft(), s)
+        self.topRight = QRectF(QPointF(r.topRight().x() - RESIZE_HANDLE_SIZE, r.topRight().y()), s)
 
-        self.bottomLeft = QRectF( QPointF( r.bottomLeft().x(), r.bottomLeft().y() - RESIZE_HANDLE_SIZE ), s )
-        self.bottomRight = QRectF( QPointF( r.bottomRight().x() - RESIZE_HANDLE_SIZE, r.bottomRight().y() - RESIZE_HANDLE_SIZE ), s )
-        
+        self.bottomLeft = QRectF(QPointF(r.bottomLeft().x(), r.bottomLeft().y() - RESIZE_HANDLE_SIZE), s)
+        self.bottomRight = QRectF(QPointF(r.bottomRight().x() - RESIZE_HANDLE_SIZE, r.bottomRight().y() - RESIZE_HANDLE_SIZE), s)
+
     def paintResizeHandles(self, painter):
         """
         Paint Widget
@@ -756,17 +753,16 @@ class ResizableGraphicsItem(QGraphicsItem):
         # if rect selected, fill in handles
         if self.isSelected():
             p, b = painter.pen(), painter.brush()
-            painter.setBrush(QColor(0,0,0))
+            painter.setBrush(QColor(0, 0, 0))
             painter.setPen(QPen(Qt.NoPen))
-            
+
             painter.drawRect(self.topLeft)
             painter.drawRect(self.topRight)
-            painter.drawRect(self.bottomLeft)     
-            painter.drawRect(self.bottomRight)    
+            painter.drawRect(self.bottomLeft)
+            painter.drawRect(self.bottomRight)
 
                        
-    
-class BaseAnnotationItem( ResizableGraphicsItem ):
+class BaseAnnotationItem(ResizableGraphicsItem):
 
     handler_cache = {}
     styles = ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
@@ -778,17 +774,17 @@ class BaseAnnotationItem( ResizableGraphicsItem ):
         # Config for each annotation item, holding the settings (styles, etc)
         # update-control via the toolbar using add_handler linking
         self.config = config.ConfigManager()
-        self.config.updated.connect( self.applyStyleConfig )
+        self.config.updated.connect(self.applyStyleConfig)
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsFocusable)
-    
+
         if position:
             self.setPos(position)
 
         self.setZValue(-1)
-        
+
     def delete(self):
         self.scene().annotations.remove(self)
         self.scene().removeItem(self)
@@ -800,20 +796,19 @@ class BaseAnnotationItem( ResizableGraphicsItem ):
         else:
             return super(BaseAnnotationItem, self).keyPressEvent(e)
 
-
     def importStyleConfig(self, config):
         for k in self.styles:
-            self.config.set(k, config.get(k) )
-    
+            self.config.set(k, config.get(k))
+
     def addHandlers(self):
-        m = self.scene().views()[0].m # Hack; need to switch to importing this
+        m = self.scene().views()[0].m  # Hack; need to switch to importing this
         for k in self.styles:
             self.config.add_handler(k, m.styletoolbarwidgets[k])
-                
+
     def removeHandlers(self):
         for k in self.styles:
             self.config.remove_handler(k)
-    
+
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedChange:
             if value == False:
@@ -822,13 +817,12 @@ class BaseAnnotationItem( ResizableGraphicsItem ):
         elif change == QGraphicsItem.ItemSelectedHasChanged:
             if value == True:
                 self.addHandlers()
-     
-        return super(BaseAnnotationItem, self).itemChange(change, value)
-        
 
-            
+        return super(BaseAnnotationItem, self).itemChange(change, value)
+
+
 class QGraphicsTextItemExtend(QGraphicsTextItem):
-    
+
     def focusInEvent(self, e):
         # Deselect other objects; set the parent selected
         for i in self.scene().selectedItems():
@@ -841,79 +835,81 @@ class QGraphicsTextItemExtend(QGraphicsTextItem):
     def hoverMoveEvent(self, e):
         self.setCursor(Qt.IBeamCursor)
         e.accept()
+
         #super(QGraphicsTextItemExtend, self).hoverMoveEvent(e)
 
-class AnnotationTextItem( QGraphicsRectItem, BaseAnnotationItem ):
+class AnnotationTextItem(QGraphicsRectItem, BaseAnnotationItem):
 
     def __init__(self, *args, **kwargs):
         super(AnnotationTextItem, self).__init__(*args, **kwargs)
-        
+
         self.text = QGraphicsTextItemExtend(parent=self)
-        self.text.setTextInteractionFlags(Qt.TextEditable|Qt.TextSelectableByMouse|Qt.TextSelectableByKeyboard)
+        self.text.setTextInteractionFlags(Qt.TextEditable | Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
         self.text.setAcceptHoverEvents(True)
         self.text.setPlainText('Your text here')
         self.text.setParentItem(self)
-        
-        self.setFocusProxy( self.text )
-        
+
+        self.setFocusProxy(self.text)
+
     def delete(self):
-        self.setFocusProxy( None )
+        self.setFocusProxy(None)
         super(AnnotationTextItem, self).delete()
 
     def applyStyleConfig(self):
-    
+
         font = QFont()
-        font.setFamily( self.config.get('font-family') )
-        font.setPointSizeF( float(self.config.get('font-size') ) )
-        font.setBold( self.config.get('text-bold') )
-        font.setItalic( self.config.get('text-italic') )
-        font.setUnderline( self.config.get('text-underline') )
-    
-        self.text.setFont( font )
-        self.text.setDefaultTextColor( QColor(self.config.get('text-color') ) )
+        font.setFamily(self.config.get('font-family'))
+        font.setPointSizeF(float(self.config.get('font-size')))
+        font.setBold(self.config.get('text-bold'))
+        font.setItalic(self.config.get('text-italic'))
+        font.setUnderline(self.config.get('text-underline'))
+
+        self.text.setFont(font)
+        self.text.setDefaultTextColor(QColor(self.config.get('text-color')))
 
         if self.config.get('color-border'):
-            c = QColor(self.config.get('color-border') )
+            c = QColor(self.config.get('color-border'))
             self.setPen(c)
         else:
-            self.setPen( QPen(Qt.NoPen ) )
+            self.setPen(QPen(Qt.NoPen))
 
         if self.config.get('color-background'):
-            c = QColor(self.config.get('color-background') )
+            c = QColor(self.config.get('color-background'))
             c.setAlpha(25)
             self.setBrush(c)
         else:
-            self.setBrush( QBrush(Qt.NoBrush ) )
-            
+            self.setBrush(QBrush(Qt.NoBrush))
+
     def setRect(self, r):
-        self.text.setTextWidth( r.width()-RESIZE_HANDLE_SIZE*2 )
+        self.text.setTextWidth(r.width() - RESIZE_HANDLE_SIZE * 2)
         # Add size padding
         tr = self.text.boundingRect()
-        nr = QRect( 0, 0, tr.width()+RESIZE_HANDLE_SIZE*2, tr.height()+RESIZE_HANDLE_SIZE*2 )
-        super(AnnotationTextItem, self).setRect( minimalQRect(r, nr ) )
-        self.text.setPos( QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) )
-            
+        nr = QRect(0, 0, tr.width() + RESIZE_HANDLE_SIZE * 2, tr.height() + RESIZE_HANDLE_SIZE * 2)
+        super(AnnotationTextItem, self).setRect(minimalQRect(r, nr))
+        self.text.setPos(QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE))
+
     def _createFromMousePressEvent(self, e):
-        r = QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) )
-        self.setPos( e.scenePos() )
+        r = QRectF(QPointF(0, 0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE))
+        self.setPos(e.scenePos())
         self.prepareGeometryChange()
-        self.setRect( r )
-        self.importStyleConfig( self.config )
-        self.updateResizeHandles()     
+        self.setRect(r)
+        self.importStyleConfig(self.config)
+        self.updateResizeHandles()
 
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
-        r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
+        r.setBottomRight(e.scenePos() - self.pos())  # self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
         r = minimalQRect(r, self.minSize)
         self.prepareGeometryChange()
         self.setRect(r)
-        self.updateResizeHandles()     
-        
+        self.updateResizeHandles()
+
     def paint(self, painter, option, widget):
-        super(AnnotationTextItem, self).paint( painter, option, widget)
+        super(AnnotationTextItem, self).paint(painter, option, widget)
         self.paintResizeHandles(painter)
-        
-class AnnotationRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
+
+
+class AnnotationRegionItem(QGraphicsRectItem, BaseAnnotationItem):
 
     def __init__(self, *args, **kwargs):
         super(AnnotationRegionItem, self).__init__(*args, **kwargs)
@@ -921,31 +917,30 @@ class AnnotationRegionItem( QGraphicsRectItem, BaseAnnotationItem ):
     def applyStyleConfig(self):
 
         if self.config.get('color-border'):
-            c = QColor(self.config.get('color-border') )
+            c = QColor(self.config.get('color-border'))
             self.setPen(c)
         else:
-            self.setPen( QPen(Qt.NoPen ) )        
+            self.setPen(QPen(Qt.NoPen))
         if self.config.get('color-background'):
-            c = QColor(self.config.get('color-background') )
+            c = QColor(self.config.get('color-background'))
             c.setAlpha(25)
             self.setBrush(c)
         else:
-            self.setBrush( QBrush(Qt.NoBrush ) )   
-            
+            self.setBrush(QBrush(Qt.NoBrush))
+
     def _createFromMousePressEvent(self, e):
         self.prepareGeometryChange()
-        self.setRect( QRectF( QPointF(0,0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE) ) )
-        self.updateResizeHandles()     
-      
+        self.setRect(QRectF(QPointF(0, 0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)))
+        self.updateResizeHandles()
+
     def _resizeFromMouseMoveEvent(self, e):
         r = self.rect()
-        r.setBottomRight( e.scenePos() - self.pos() ) #self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
+        r.setBottomRight(e.scenePos() - self.pos())  # self.mapToScene(e.pos()) ) #- self.mode_current_object.pos() )
         r = minimalQRect(r, self.minSize)
         self.prepareGeometryChange()
         self.setRect(r)
         self.updateResizeHandles()
 
     def paint(self, painter, option, widget):
-        super(AnnotationRegionItem, self).paint( painter, option, widget)
+        super(AnnotationRegionItem, self).paint(painter, option, widget)
         self.paintResizeHandles(painter)
-

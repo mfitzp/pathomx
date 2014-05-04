@@ -54,7 +54,6 @@ class FoldChangeApp(ui.AnalysisApp):
 
         self.finalise()
 
-
     def generate(self, input):
         dso = input
         # Get config (convenience)
