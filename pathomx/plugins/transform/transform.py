@@ -39,7 +39,7 @@ class TransformApp(ui.DataApp):
         self.finalise()
 
     def onChangeTransform(self):
-        self.set_name(self.hm_control.currentText())
+        self.change_name.emit(self.hm_control.currentText())
 
         #self.config.set('apply_transform', self.hm_control.currentText())
 

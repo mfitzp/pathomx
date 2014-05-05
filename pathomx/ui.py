@@ -1378,6 +1378,7 @@ class GenericApp(QObject):
     complete = pyqtSignal()
 
     nameChanged = pyqtSignal(str)
+    change_name = pyqtSignal(str)
 
     legacy_launchers = []
     legacy_inputs = {}
@@ -1454,6 +1455,8 @@ class GenericApp(QObject):
 
         logging.debug('Add default toolbar...')
         self.addSelfToolBar()  # Everything has one
+
+        self.change_name.connect( self.set_name )
 
         logging.debug('Completed default tool (%s) setup.' % name)
 
@@ -1578,7 +1581,6 @@ class GenericApp(QObject):
         self.name = name
         self.w.setWindowTitle(name)
         self.nameChanged.emit(name)
-
         try:
             self.workspace_item.setText(0, name)
         except:

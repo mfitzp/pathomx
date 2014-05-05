@@ -116,7 +116,7 @@ class FilterApp(ui.DataApp):
 
             self.config.set('filters', filters)
             # Annotation name
-            self.set_name(','.join(['%s:%s' % (k, v) for k, v in list(filters.items())]))
+            self.change_name.emit(','.join(['%s:%s' % (k, v) for k, v in list(filters.items())]))
             self.generate()
 
     def apply_filters(self, dso):

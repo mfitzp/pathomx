@@ -137,7 +137,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
         m = re.search('^KEGG PATHWAY: (.*)$', html, flags=re.MULTILINE)
         title = m.group(1)
-        self.set_name(title)
+        self.change_name.emit(title)
         output_html = '<html><body><img src="http://www.kegg.jp%s"></body></html>' % img
 
         return {'View': {'html': output_html}}

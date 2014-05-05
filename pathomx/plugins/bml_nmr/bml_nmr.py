@@ -68,8 +68,7 @@ class BMLNMRApp(ui.ImportDataApp):
 
             dsos[l] = self.load_bml_datafile(data_path, l, "%s (%s)" % (bml_job, l))
 
-        self.set_name(bml_job)
-        print(dsos)
+        self.change_name.emit(bml_job)
         return dsos
 
     def load_bml_datafile(self, data_path, target, name):

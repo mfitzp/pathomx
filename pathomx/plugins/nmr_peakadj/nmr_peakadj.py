@@ -165,7 +165,7 @@ class NMRPeakAdjApp( ui.DataApp ):
         start = min(list(range(len(scale))), key=lambda i: abs(scale[i]-start_ppm))        
         end = min(list(range(len(scale))), key=lambda i: abs(scale[i]-end_ppm))        
         
-        self.set_name('%s align @%.2f ±%.2f' % ( self.config.get('peak_target'), target_ppm, tolerance_ppm) )
+        self.change_name.emit('%s align @%.2f ±%.2f' % ( self.config.get('peak_target'), target_ppm, tolerance_ppm) )
 
         # Shift first; then scale
         d = 1 if end>start else -1

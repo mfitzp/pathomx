@@ -118,7 +118,7 @@ class NMRApp(ui.ImportDataApp):
 
         # We now have a list of ft'd Bruker fids; run them into a data object
         dso = self.process_data_to_dso(nmr_data, nmr_ppms, sample_labels, experiment_name)
-        self.set_name(dso.name)
+        self.change_name.emit(dso.name)
 
         return {'output': dso}
 

@@ -38,7 +38,7 @@ class GEOApp(ui.ImportDataApp):
             dso = formats[fe](filename)
 
             dso.name = os.path.basename(filename)
-            self.set_name(dso.name)
+            self.change_name.emit(dso.name)
             dso.description = 'Imported %s file' % fe
 
             return {'output': dso}

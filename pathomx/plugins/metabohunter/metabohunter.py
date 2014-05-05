@@ -294,7 +294,7 @@ class MetaboHunterApp(ui.DataApp):
                 dso.labels[1][n] = hmdbid
                 # All in HMDBIDs; if we have it use the entity
                 if hmdbid in self.m.db.unification['HMDB']:
-                    dso.entities[1][n] = self.m.db.unification['HMDB'][hmdbid]
+                    dso.entities[1][n] = self.m.db.get_via_unification('HMDB', hmdbid)
         # Now remove any data from the object that isn't assigned?
         #
         #

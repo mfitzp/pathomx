@@ -132,7 +132,7 @@ class ImportTextApp(ui.ImportDataApp):
             self.file_watcher.fileChanged.connect(self.onFileChanged)
             self.file_watcher.addPath(filename)
 
-            self.set_name(os.path.basename(filename))
+            self.change_name.emit(os.path.basename(filename))
 
         return False
 
@@ -156,7 +156,7 @@ class ImportTextApp(ui.ImportDataApp):
 
             dso.name = os.path.basename(filename)
 
-            self.set_name(dso.name)
+            self.change_name.emit(dso.name)
             dso.description = 'Imported %s file' % fe
 
             return {'output': dso}

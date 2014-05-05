@@ -115,7 +115,7 @@ class ImportPeakMLApp(ui.ImportDataApp):
 
         dso.name = os.path.basename(filename)
         dso.description = 'Imported PeakML file'
-        self.set_name(dso.name)
+        self.change_name.emit(dso.name)
 
         return {'output': dso}
 

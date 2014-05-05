@@ -822,8 +822,6 @@ class MetaVizApp(ui.AnalysisApp):
         else:
             pathway_ids = []
 
-        print(self.config.get('/Pathways/Show'))
-
         # Add the manually Shown pathways
         pathway_ids_show = self.config.get('/Pathways/Show')
         pathway_ids.extend(pathway_ids_show)
