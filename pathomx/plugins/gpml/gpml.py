@@ -46,7 +46,7 @@ class GPMLView(HTMLView):
         if gpml:
             svg, metadata = gpml2svg.gpml2svg(gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors)  # Add Pathomx required customisations here
             self.setHtml(svg, QUrl("~"))
-            self.change_name.emit( metadata['Name'] )
+            #self.v.change_name.emit( metadata['Name'] )
 
 
 # Class for data visualisations using GPML formatted pathways
