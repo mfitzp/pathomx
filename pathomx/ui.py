@@ -1401,6 +1401,8 @@ class GenericApp(QObject):
         self._latest_dock_widget = None
         self._latest_generator_result = None
         self._auto_consume_data = auto_consume_data
+        
+        self.worker = None
 
         self.logger = logging.getLogger(self.id)
 
@@ -1510,9 +1512,9 @@ class GenericApp(QObject):
 
         self.status.emit('active')
         self.progress.emit(0.)
-        self.worker = threads.Worker(self.generate, **kwargs_dict)
-        self.wait_for_lock()
-        self.start_worker_thread(self.worker, callback=self._generate_worker_result_callback)
+        is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.generate, **kwargs_dict) )
+        if is_worker_locked:
+            self.start_worker_thread(self.worker, callback=self._generate_worker_result_callback)
 
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
@@ -1529,7 +1531,6 @@ class GenericApp(QObject):
 
     def _generate_worker_result_callback(self, kwargs_dict):
         self.logger.debug("_generate_worker_result_callback %s" % self.name)
-        self.release_lock()
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
@@ -1538,8 +1539,9 @@ class GenericApp(QObject):
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
         self.status.emit('render')
-        self.prerender_worker = threads.Worker(self.prerender, **kwargs_dict)
-        self.start_worker_thread(self.prerender_worker, callback=self._prerender_worker_result_callback)
+        is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.prerender, **kwargs_dict) )
+        if is_worker_locked:
+            self.start_worker_thread(self.worker, callback=self._prerender_worker_result_callback)
 
     def _prerender_worker_result_callback(self, kwargs):
         self.logger.debug("_prerender_worker_result_callback %s" % self.name)
@@ -1551,7 +1553,6 @@ class GenericApp(QObject):
 
     def _worker_error_callback(self, error=None):
         self.logger.debug("_worker_error_callback %s" % self.name)
-        self.release_lock()
         self._latest_exception = error[1]
         self.progress.emit(1.)
         self.status.emit('error')
@@ -1563,6 +1564,7 @@ class GenericApp(QObject):
 
     def _thread_finished_callback(self):
         self.logger.debug("_thread_finished_callback %s" % self.name)
+        self.worker = None
 
     def start_worker_thread(self, worker, callback=None):
         self.logger.debug("start_worker_thread %s" % self.name)
@@ -1571,8 +1573,20 @@ class GenericApp(QObject):
 
         worker.signals.result.connect(callback)
         worker.signals.error.connect(self._worker_error_callback)
-
+        worker.signals.finished.connect(self._thread_finished_callback)
+        
         self.m.threadpool.start(worker)
+
+    def wait_for_worker_lock(self, worker):
+        timer = QTimer()
+        timer.start(15000)
+        while timer.isActive():  # Wait for maximum 15 secs for lock; then abort
+            if self.worker == None:
+                self.worker = worker
+                return True
+            QCoreApplication.processEvents() # Prevent freeze
+        
+        return False
 
     def store_views_data(self, kwargs_dict):
         self.views.source_data = kwargs_dict
@@ -1833,20 +1847,6 @@ class GenericApp(QObject):
             return self._previous_size
         return QSize(600 + 300, 400 + 100)
 
-    def wait_for_lock(self):
-        for n in range(0, 15):  # Wait for maximum 15 secs for lock; then proceed regardless
-            if self._lock == False:
-                break
-            time.sleep(1)
-
-        logging.debug("Get lock for %s" % self.name)
-        self._lock = False
-        return True
-
-    def release_lock(self):
-        logging.debug("Release lock for %s" % self.name)
-        self._lock = False
-        return True
 
 # Data view prototypes
 
@@ -1880,13 +1880,16 @@ class ImportDataApp(DataApp):
 
     # Data file import handlers (#FIXME probably shouldn't be here)
     def thread_load_datafile(self, filename, type=None):
+        self.status.emit('active')
         if type:
-            self.worker = threads.Worker(self.load_datafile_by_type, filename, type)
+            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile_by_type, filename, type) )
         else:
-            self.worker = threads.Worker(self.load_datafile, filename)
-        self.start_worker_thread(self.worker)
+            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile, filename) )
+            
+        if is_worker_locked:
+            self.start_worker_thread(self.worker)
 
-        self.views.autoSelect()  # Unfocus the help file if we've done something here
+            self.views.autoSelect()  # Unfocus the help file if we've done something here
 
     def prerender(self, output=None):
         return {'View': {'dso': output}}
@@ -1900,7 +1903,7 @@ class ImportDataApp(DataApp):
             self.file_watcher.fileChanged.connect(self.onFileChanged)
             self.file_watcher.addPath(filename)
 
-            self.set_name(os.path.basename(filename))
+            self.change_name.emit(os.path.basename(filename))
 
         return False
 
@@ -1959,10 +1962,12 @@ class ExportDataApp(GenericApp):
     # Data file import handlers (#FIXME probably shouldn't be here)
     def thread_save_datafile(self, filename, dso, type=None):
         if type:
-            self.worker = threads.Worker(self.save_datafile_by_type, filename, dso, type)
+            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.save_datafile_by_type, filename, dso, type) )
         else:
-            self.worker = threads.Worker(self.save_datafile, filename, dso)
-        self.start_worker_thread(self.worker)
+            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.save_datafile, filename, dso) )
+
+        if is_worker_locked:
+            self.start_worker_thread(self.worker)
 
     def onExportData(self):
         """ Open a data file"""
