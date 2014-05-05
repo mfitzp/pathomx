@@ -25,7 +25,7 @@ from . import utils, threads
 
 import numpy as np
 
-from . import data, config, utils
+from . import data, config, utils, db
 
 from .styles import styles
 
@@ -518,7 +518,7 @@ class D3ForceView(D3View):
 
 
     def generate(self):
-        current_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',') if p in self.parent.db.pathways]
+        current_pathways = [db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',') if db.dbm.pathway(p) is not None]
         # Iterate pathways and get a list of all metabolites (list, for index)
         metabolites = []
         reactions = []
@@ -544,7 +544,7 @@ class D3ForceView(D3View):
         # Loop metabolites (nodes; plus their groups)
     
         metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
-                     'pathways':[self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')],
+                     'pathways':[db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',')],
                      'metabolites':metabolites,
                      'metabolite_pathway_groups':metabolite_pathway_groups, 
                      'reactions':reactions,
@@ -1026,17 +1026,17 @@ class D3CircosView(D3View):
 class AnalysisCircosPathwayView(D3LegacyView):
 
     def generate(self):
-        pathways = list(self.parent.db.pathways.keys())
+        pathways = [k for k,v in db.dbm.get_pathways()]
         pathway_metabolites = dict()
         
-        for k,p in list(self.parent.db.pathways.items()):
+        for k,p in db.dbm.pathways():
             pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
 
         data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
 
         pathway_reactions = dict()
         
-        for k,p in list(self.parent.db.pathways.items()):
+        for k,p in db.dbm.pathways():
             pathway_reactions[p.id] = set( [m for m in p.reactions] )
 
         data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
@@ -1044,7 +1044,7 @@ class AnalysisCircosPathwayView(D3LegacyView):
 
         pathway_active_reactions = dict()
         pathway_active_metabolites = dict()
-        active_pathways = [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways = [db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',')]
         active_pathways_id = []
         
         for p in active_pathways:
