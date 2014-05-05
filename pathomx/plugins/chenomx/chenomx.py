@@ -33,7 +33,7 @@ class ChenomxApp(ui.ImportDataApp):
             next(reader)  # Skip date row
             hrow = next(reader)
             labels = hrow[2:]  # We strip off the pH here; might be nice to keep it
-            entities = [self.m.db.synrev[l] if l in self.m.db.synrev else None for l in labels]  # Map to entities if they exist
+            entities = [db.dbm.synrev[l] if l in db.dbm.synrev else None for l in labels]  # Map to entities if they exist
 
             next(reader)  # Skip compound ID
             next(reader)  # Skip InChI

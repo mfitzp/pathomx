@@ -3,6 +3,7 @@ import os
 
 import pathomx.ui as ui
 import pathomx.utils as utils
+import pathomx.db as db
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
@@ -54,24 +55,24 @@ class PathwayConnectsApp(ui.AnalysisApp):
 
     def generate(self, input=None):
 
-        pathways = list(self.m.db.pathways.keys())
+        pathways = [k for k,v in db.dbm.get_pathways()]
         pathway_compounds = dict()
 
-        for k, p in list(self.m.db.pathways.items()):
+        for k, p in db.dbm.get_pathways():
             pathway_compounds[p.id] = set([m for m in p.compounds])
 
         data_m, labels_m = self.build_matrix(pathways, pathway_compounds)
 
         pathway_reactions = dict()
 
-        for k, p in list(self.m.db.pathways.items()):
+        for k, p in list(db.dbm.pathways.items()):
             pathway_reactions[p.id] = set([m for m in p.reactions])
 
         data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
 
         pathway_active_reactions = dict()
         pathway_active_compounds = dict()
-        active_pathways = input.entities[1]  # [self.parent.db.pathways[p] for p in self.parent.config.value('/Pathways/Show').split(',')]
+        active_pathways = input.entities[1]
         active_pathways_id = []
 
         for p in active_pathways:

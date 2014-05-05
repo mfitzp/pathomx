@@ -72,7 +72,7 @@ from .translate import tr
 
 from distutils.version import StrictVersion
 
-VERSION_STRING = '2.5.1'
+VERSION_STRING = '2.5.2'
 
 
 class Logger(logging.Handler):
@@ -302,7 +302,9 @@ class MainWindow(QMainWindow):
         self.fonts = QFontDatabase()
 
         # Create database accessor
-        self.db = db.databaseManager()
+        self.db = db.dbm # FIXME: Remove this eventually
+        db.dbm.populate()
+
         self.data = None  # deprecated
         self.datasets = []  # List of instances of data.datasets() // No data loaded by default
 

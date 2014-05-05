@@ -44,6 +44,7 @@ GENE_URL = 'pathomx://db/gene/%s/view'
 
 # Global Pathomx db object class to simplify object display, synonym referencing, etc.
 class _PathomxObject(object):
+
     def __unicode__(self):
         return self.name
 
@@ -55,6 +56,7 @@ class _PathomxObject(object):
 
     def __init__(self, **entries):
         object.__init__(self)
+        self.__dict__ = utils.MutexDict()
         self.__dict__.update(entries)
 
     def __hash__(self):
@@ -182,7 +184,7 @@ class ReactionIntermediate(_PathomxObject):
     name = 'n/a'
 
 
-class databaseManager():
+class DatabaseManager():
 
     # compounds, reactions, pathways = dict()
     def __init__(self):
@@ -208,6 +210,7 @@ class databaseManager():
 
         self.unification = defaultdict(dict)
 
+    def populate(self):
         # Load the data
         self.load_pathways()
         self.load_compounds()
@@ -224,6 +227,7 @@ class databaseManager():
 
         # Load additional chemical data
         self.load_gibbs()
+
 
     def pathway(self, id):
         with QMutexLocker(self.mutex):
@@ -272,6 +276,11 @@ class databaseManager():
                 return self.unification[database][id]
             except:
                 return None
+                
+    def get_via_index(self, id):
+        with QMutexLocker(self.mutex):
+            return self.index[id]
+                
 
     # Helper functions
     def get_via_synonym(self, id, type=None):
@@ -584,3 +593,5 @@ class databaseManager():
             for syn in synv:
                 row = [synk, syn]
                 writer.writerow(row)
+
+dbm = DatabaseManager()

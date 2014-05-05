@@ -13,6 +13,7 @@ import logging
 import pathomx.ui as ui
 import pathomx.utils as utils
 import pathomx.threads as threads
+import pathomx.db as db
 
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataSet, DataDefinition
@@ -205,7 +206,6 @@ class MetaboHunterApp(ui.DataApp):
         try:
             r = requests.post(url, data=values)
         except e:
-            print(e)
             return None
 
         html = r.content
@@ -293,8 +293,8 @@ class MetaboHunterApp(ui.DataApp):
                 hmdbid = matched_peak_metabolites[sp2]
                 dso.labels[1][n] = hmdbid
                 # All in HMDBIDs; if we have it use the entity
-                if hmdbid in self.m.db.unification['HMDB']:
-                    dso.entities[1][n] = self.m.db.get_via_unification('HMDB', hmdbid)
+                if hmdbid in db.dbm.unification['HMDB']:
+                    dso.entities[1][n] = db.dbm.get_via_unification('HMDB', hmdbid)
         # Now remove any data from the object that isn't assigned?
         #
         #

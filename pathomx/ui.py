@@ -21,6 +21,7 @@ from . import data
 from . import config
 from . import threads
 from . import config
+from . import db
 from .data import DataSet
 from .styles import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
@@ -1403,6 +1404,7 @@ class GenericApp(QObject):
         self._auto_consume_data = auto_consume_data
         
         self.worker = None
+        self.worker_stack = []
 
         self.logger = logging.getLogger(self.id)
 
@@ -1564,6 +1566,11 @@ class GenericApp(QObject):
 
     def _thread_finished_callback(self):
         self.logger.debug("_thread_finished_callback %s" % self.name)
+        QCoreApplication.sendPostedEvents(self)
+        # Wait for events to finish, then trigger worker cleanup
+        QTimer.singleShot( 0, self._thread_finished_cleanup )
+
+    def _thread_finished_cleanup(self):
         self.worker = None
 
     def start_worker_thread(self, worker, callback=None):
@@ -1580,11 +1587,11 @@ class GenericApp(QObject):
     def wait_for_worker_lock(self, worker):
         timer = QTimer()
         timer.start(15000)
-        while timer.isActive():  # Wait for maximum 15 secs for lock; then abort
+        while timer.isActive():  # Wait for maximum 15 second for lock; then abort
             if self.worker == None:
                 self.worker = worker
                 return True
-            QCoreApplication.processEvents() # Prevent freeze
+            QCoreApplication.processEvents()
         
         return False
 
@@ -2017,7 +2024,7 @@ class AnalysisApp(GenericApp):
         dso = dso.as_summary()
         entities = []
         for o in objs:
-            entities.extend([self.m.db.index[id] for id in o if id in self.m.db.index])
+            entities.extend([db.dbm.get_by_index(id) for id in o if db.dbm.get_by_index(id) is not None])
 
         # Filter for the things we're displaying
         dso = dso.as_filtered(entities=entities)
@@ -2027,7 +2034,7 @@ class AnalysisApp(GenericApp):
         for y, obj in enumerate(objs):  # [u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
             for x, o in enumerate(obj):
                 try:
-                    e = self.m.db.index[o]  # Get entity for lookup
+                    e = db.dbm.get_by_index(o)  # Get entity for lookup
                     data[y, x] = dso.data[0, dso.entities[1].index(e)]
                 except:  # Can't find it
                     pass

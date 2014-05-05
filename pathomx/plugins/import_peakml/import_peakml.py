@@ -102,8 +102,7 @@ class ImportPeakMLApp(ui.ImportDataApp):
         dso.classes[0] = [midclass[mid] for mid in measurements]
 
         dso.labels[1] = all_identities
-        db_hmdbids = self.m.db.unification['HMDB']
-        dso.entities[1] = [db_hmdbids[hmdbid] if hmdbid in db_hmdbids else None for hmdbid in all_identities]
+        dso.entities[1] = [db.dbm.get_via_unification(hmdbid,'HMDB') for hmdbid in all_identities]
         dso.scales[1] = [float(masses[i]) for i in all_identities]
 
         for mid, identities in list(quantities.items()):

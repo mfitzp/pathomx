@@ -9,6 +9,7 @@ import os
 
 import pathomx.ui as ui
 import pathomx.utils as utils
+import pathomx.db as db
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
@@ -54,7 +55,7 @@ class HeatmapApp(ui.AnalysisApp):
 
     def equilibrium_table_builder(self, objs):
         result = []
-        for rk, r in list(self.m.db.reactions.items()):
+        for rk, r in list(db.dbm.reactions.items()):
             inH = sum([objs[m.id] for m in r.smtins if m.id in objs])
             outH = sum([objs[m.id] for m in r.smtouts if m.id in objs])
 
@@ -74,11 +75,11 @@ class HeatmapApp(ui.AnalysisApp):
     def cofactor_table_builder(self, objs):
         result = []
         for p in objs:
-            pin = self.m.db.metabolites[p[0]] if p[0] in list(self.m.db.metabolites.keys()) else False
-            pout = self.m.db.metabolites[p[1]] if p[1] in list(self.m.db.metabolites.keys()) else False
+            pin = db.dbm.metabolites[p[0]] if p[0] in list(db.dbm.metabolites.keys()) else False
+            pout = db.dbm.metabolites[p[1]] if p[1] in list(db.dbm.metabolites.keys()) else False
 
             if pin and pout:
-                for rk, r in list(self.m.db.reactions.items()):
+                for rk, r in list(db.dbm.reactions.items()):
                     add_it = False
                     if pin in r.smtins and pout in r.smtouts:
                         add_it = (r.mtins, r.mtouts)
@@ -96,7 +97,7 @@ class HeatmapApp(ui.AnalysisApp):
     # i.e. metabolites not at the 'in' point of any reactions (or in a bidirectional)
     def endpoint_table_builder(self):
         endpoints = []
-        for k, m in list(self.m.db.compounds.items()):
+        for k, m in list(db.dbm.compounds.items()):
             if m.type == 'compound':
                 for r in m.reactions:
                     if m in r.mtins or r.dir == 'both':
@@ -200,7 +201,7 @@ class HeatmapApp(ui.AnalysisApp):
         o = []
         [o.extend(i) for i in input]
 
-        return [self.m.db.index[i] for i in o if i in self.m.db.index]
+        return [db.dbm.index[i] for i in o if i in db.dbm.index]
 
     def _phosphorylation(self, dso=None):
         dso = dso.as_filtered(dim=1, entities=self.get_flattened_entity_list(self.phosphate))

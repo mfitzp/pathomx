@@ -143,7 +143,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
             'CAS': 'CAS',
             }
         if database in xref_translate:
-            obj = self.m.db.get_via_unification(xref_translate[database], id)
+            obj = db.dbm.get_via_unification(xref_translate[database], id)
             if obj:
                 return ('MetaCyc %s' % obj.type, obj.id)
         return None

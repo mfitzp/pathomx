@@ -115,8 +115,6 @@ class PathwayMiningApp(ui.AnalysisApp):
         # Pass this in as the list to view
         # + requested pathways, - excluded pathways
 
-        db = self.m.db
-
         mining_depth = self.config.get('/Data/MiningDepth')
         mining_type = self.config.get('/Data/MiningType')
 

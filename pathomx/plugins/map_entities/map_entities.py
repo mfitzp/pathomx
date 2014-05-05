@@ -196,8 +196,8 @@ class MapEntityApp(ui.GenericApp):
         # If either can find an entity (via synonyms; make the link)
         for row in reader:
             for s in row:
-                if s in self.m.db.index:
-                    e = self.m.db.index[s]
+                if s in db.dbm.index:
+                    e = db.dbm.get_via_index(s)
                     break
             else:
                 continue  # next row if we find nothing
@@ -209,16 +209,16 @@ class MapEntityApp(ui.GenericApp):
             self.generate()
 
     def generate(self, input=None):
-        dso = self.translate(input, self.m.db)
+        dso = self.translate(input)
         return {'output': dso}
     ###### TRANSLATION to METACYC IDENTIFIERS
 
-    def translate(self, data, db):
+    def translate(self, data):
         lku = {
-            MAP_ENTITY_ALL: db.synrev,
-            MAP_ENTITY_GENE: db.synrev_by_type['gene'],
-            MAP_ENTITY_PROTEIN: db.synrev_by_type['protein'],
-            MAP_ENTITY_COMPOUND: db.synrev_by_type['compound'],
+            MAP_ENTITY_ALL: None,
+            MAP_ENTITY_GENE: 'gene',
+            MAP_ENTITY_PROTEIN: 'protein',
+            MAP_ENTITY_COMPOUND: 'compound',
                 }[self.config.get('map_object_type')]
 
         # Translate loaded data names to metabolite IDs using provided database for lookup
@@ -229,8 +229,10 @@ class MapEntityApp(ui.GenericApp):
                 data.entities[1][n] = self._entity_mapping_table[m]
 
             # Use the internal database identities
-            elif m and m.lower() in lku:
-                data.entities[1][n] = lku[m.lower()]
+            else:
+                e = db.dbm.get_via_synonym(m, lku)
+                if e:
+                    data.entities[1][n] =  e
 
                 #self.quantities[ transid ] = self.quantities.pop( m )
         #print self.metabolites

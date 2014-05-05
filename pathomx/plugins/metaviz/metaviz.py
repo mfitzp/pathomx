@@ -77,7 +77,7 @@ def get_reaction_color(analysis, r):
     return '"%s"' % ':'.join(colors)
 
 
-def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
+def generator(pathways, options, analysis=None, layout=None, verbose=True):
 
     #id,origin,dest,enzyme,dir,pathway
     #options.fit_paper = 'A4'
@@ -130,7 +130,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
     pathway_edges_alternates = defaultdict(tuple)  # Dict of tuples pathway => 
 
     for p in pathways:
-        for r in db.pathway(p.id).reactions:
+        for r in db.dbm.pathway(p.id).reactions:
         # Check that this edge is between items in one of the specified pathways
             compartments = [c for pr in r.proteins for c in pr.compartments]
             if compartments == []:
@@ -230,7 +230,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                 clusternodes = add_clusternodes(clusternodes, 'compartment', compartments, [mtout])
 
     # id,type,names
-    for id, m in db.get_compounds():  # (db.compounds.values()):
+    for id, m in db.dbm.get_compounds():  # (db.dbm.compounds.values()):
 
         # It's in one of our pathways (union)
         if set(m.pathways) & set(pathways):
@@ -253,7 +253,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
 
         pathway_annotate = set()
         pathway_annotate_dupcheck = set()
-        for id, r in db.get_reactions():
+        for id, r in db.dbm.get_reactions():
 
         # Check that a reaction for this isn't already on the map
             if r not in visible_reactions:
@@ -264,14 +264,14 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
                     for mt in r.mtins:
                         if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck:  # Compound is already on the graph
                             print(mt)
-                            mp = db.compound(mt.id).pathways[0]
+                            mp = db.dbm.compound(mt.id).pathways[0]
                             pathway_annotate.add((p, mp, pathway_node, mt, pathway_node, r.dir))
                             pathway_annotate_dupcheck.add((p, mt))
                             break
 
                     for mt in r.mtouts:
                         if mt in visible_nodes and (p, mt) not in pathway_annotate_dupcheck:  # Compound is already on the graph
-                            mp = db.compound(mt.id).pathways[0]
+                            mp = db.dbm.compound(mt.id).pathways[0]
                             pathway_annotate.add((p, mp, pathway_node, pathway_node, mt, r.dir))
                             pathway_annotate_dupcheck.add((p, mt))
                             break
@@ -383,7 +383,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         elif m.type == 'pathway':
             shape = 'point'
             label = '%s' % m.name
-            size = len(db.pathways(m.id).compounds)
+            size = len(db.dbm.pathways(m.id).compounds)
             width, height = size / 24., size / 24.
             if node_color is None:
                 fillcolor = '#cccccc'
@@ -527,14 +527,14 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
     def __init__(self, *args, **kwargs):
         super(MetaVizPathwayConfigPanel, self).__init__(*args, **kwargs)
 
-        #all_pathways = parent.db.pathways.keys()
-        self.all_pathways = sorted([p.name for id, p in self.m.db.get_pathways()])
+        #all_pathways = parent.db.dbm.pathways.keys()
+        self.all_pathways = sorted([p.name for id, p in db.dbm.get_pathways()])
 
         self.label = defaultdict(dict)
         #selected_pathways = str(  ).split(',')
-        self.setupSection('Show', '/Pathways/Show')  # selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )
+        self.setupSection('Show', '/Pathways/Show')  # selected_pathways=[p.name for p in db.dbm.pathways.values() if p.id in selected_pathways] )
         #selected_pathways = str( self.config.get() ).split(',')
-        self.setupSection('Hide', '/Pathways/Hide')  # selected_pathways=[p.name for p in self.m.db.pathways.values() if p.id in selected_pathways] )        
+        self.setupSection('Hide', '/Pathways/Hide')  # selected_pathways=[p.name for p in db.dbm.pathways.values() if p.id in selected_pathways] )        
 
         self.finalise()
 
@@ -565,8 +565,8 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         self.label[label]['lw_pathways'].setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.label[label]['lw_pathways'].addItems(self.all_pathways)
 
-        fwd_map = lambda x: self.m.db.get_via_synonym(x, type='pathway').id
-        rev_map = lambda x: self.m.db.pathway(x).name
+        fwd_map = lambda x: db.dbm.get_via_synonym(x, type='pathway').id
+        rev_map = lambda x: db.dbm.pathway(x).name
 
         self.config.add_handler(pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map))
         #for p in selected_pathways:
@@ -738,7 +738,7 @@ class MetaVizApp(ui.AnalysisApp):
         if action == 'add':
 
             # FIXME: Hacky test of an idea
-            if kind == 'pathway' and self.m.db.pathway(id) is not None:
+            if kind == 'pathway' and db.dbm.pathway(id) is not None:
                 # Add the pathway and regenerate
                 pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.append(urllib.parse.unquote(id))
@@ -749,7 +749,7 @@ class MetaVizApp(ui.AnalysisApp):
         if action == 'remove':
 
             # FIXME: Hacky test of an idea
-            if kind == 'pathway' and self.m.db.pathway(id) is not None:
+            if kind == 'pathway' and db.dbm.pathway(id) is not None:
                 # Add the pathway and regenerate
                 pathways = self.config.get('/Pathways/Show').split(',')
                 pathways.remove(urllib.parse.unquote(id))
@@ -831,7 +831,7 @@ class MetaVizApp(ui.AnalysisApp):
         pathway_ids = [p for p in pathway_ids if p not in pathway_ids_hide]
 
         # Convert pathways_ids to pathways
-        pathways = [self.m.db.pathway(pid) for pid in pathway_ids if self.m.db.pathway(pid) is not None]
+        pathways = [db.dbm.pathway(pid) for pid in pathway_ids if db.dbm.pathway(pid) is not None]
 
         
         if pathway_ids == []:
@@ -871,13 +871,13 @@ class MetaVizApp(ui.AnalysisApp):
                         if ecol is not None:
                             node_colors[m.id] = ecol
 
-            graph = generator(pathways, options, self.m.db, analysis=node_colors)  # , layout=self.layout)
+            graph = generator(pathways, options, analysis=node_colors)  # , layout=self.layout)
             self.status.emit('waiting')
             self.progress.emit(0.5)
             graph.write(filename, format=options.output, prog='neato')
             return None
         else:
-            graph = generator(pathways, options, self.m.db)  # , layout=self.layout)
+            graph = generator(pathways, options)  # , layout=self.layout)
             self.status.emit('waiting')
             self.progress.emit(0.5)
             graph.write(filename, format=options.output, prog='neato')

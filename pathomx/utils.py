@@ -13,6 +13,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from .qt import *
+
 try:
     import xml.etree.cElementTree as et
 except ImportError:
@@ -238,6 +240,21 @@ if sys.version_info < (3, 0):  # Python 2 only
 else:
     from csv import reader as UnicodeReader
     from csv import writer as UnicodeWriter
+
+
+class MutexDict(dict):
+    
+    def __init__(self, *args, **kwargs):
+        self.mutex = QMutex()
+        return super(MutexDict, self).__init__(*args, **kwargs)
+    
+    def __getattribute__(self, attr):
+        if attr == 'mutex':
+            return super(MutexDict, self).__getattribute__(attr)
+        else:
+            # Lock all other attributes with the mutex
+            with QMutexLocker(self.mutex):
+                return super(MutexDict, self).__getattribute__(attr)
 
 
 def mkdir_p(path):
