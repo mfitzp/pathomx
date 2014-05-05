@@ -134,6 +134,8 @@ class ViewManager( QTabWidget ):
                 else:
                     # Success; enable the tab
                     self.setTabEnabled( w, True)
+
+        self.updated.emit()
         
     def addTab(self, widget, name, **kwargs):
         '''

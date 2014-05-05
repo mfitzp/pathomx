@@ -383,7 +383,7 @@ def generator(pathways, options, db, analysis=None, layout=None, verbose=True):
         elif m.type == 'pathway':
             shape = 'point'
             label = '%s' % m.name
-            size = len(db.pathways[m.id].compounds)
+            size = len(db.pathways(m.id).compounds)
             width, height = size / 24., size / 24.
             if node_color is None:
                 fillcolor = '#cccccc'

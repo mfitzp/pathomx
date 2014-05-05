@@ -1545,7 +1545,6 @@ class GenericApp(QObject):
         #self.views.redraw()
         self.progress.emit(1.)
         self.status.emit('done')
-        self.views.updated.emit()
 
     def _worker_error_callback(self, error=None):
         self.logger.debug("_worker_error_callback %s" % self.name)
@@ -1561,7 +1560,6 @@ class GenericApp(QObject):
 
     def _thread_finished_callback(self):
         self.logger.debug("_thread_finished_callback %s" % self.name)
-        self.thread = None
 
     def start_worker_thread(self, worker, callback=None):
         self.logger.debug("start_worker_thread %s" % self.name)
