@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
 import logging
-logging.basicConfig(level=logging.DEBUG)
+
+frozen = getattr(sys, 'frozen', None)
+if frozen:
+    logging.basicConfig(level=logging.INFO)
+else:
+    logging.basicConfig(level=logging.DEBUG)
 
 import os
-import sys
 import re
 import math
 import codecs
@@ -1279,7 +1284,7 @@ def main():
 
     mpl.rcParams['axes.color_cycle'] = utils.category10
     mpl.rcParams['font.size'] = 9
-    mpl.rcParams['font.family'] = 'san-serif'
+    mpl.rcParams['font.family'] = 'sans-serif'
     mpl.rcParams['font.serif'] = ['Computer Modern Roman', 'Times New Roman']
     mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
     mpl.rcParams['patch.linewidth'] = 0

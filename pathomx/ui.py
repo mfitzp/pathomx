@@ -1404,7 +1404,7 @@ class GenericApp(QObject):
         self._auto_consume_data = auto_consume_data
         
         self.worker = None
-        self.worker_stack = []
+        self._worker_lock = None
 
         self.logger = logging.getLogger(self.id)
 
@@ -1571,7 +1571,7 @@ class GenericApp(QObject):
         QTimer.singleShot( 0, self._thread_finished_cleanup )
 
     def _thread_finished_cleanup(self):
-        self.worker = None
+        self._worker_lock = None
 
     def start_worker_thread(self, worker, callback=None):
         self.logger.debug("start_worker_thread %s" % self.name)
@@ -1588,7 +1588,8 @@ class GenericApp(QObject):
         timer = QTimer()
         timer.start(15000)
         while timer.isActive():  # Wait for maximum 15 second for lock; then abort
-            if self.worker == None:
+            if self._worker_lock == None:
+                self.logger.debug("wait_for_worker_lock %s" % self.name)
                 self.worker = worker
                 return True
             QCoreApplication.processEvents()
