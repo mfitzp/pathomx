@@ -55,6 +55,7 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
 
 class PathwayMiningApp(ui.AnalysisApp):
 
+    name = "Pathway Mining"
     legacy_inputs = {'input': 'input_1'}
 
     def __init__(self, **kwargs):
@@ -90,16 +91,16 @@ class PathwayMiningApp(ui.AnalysisApp):
         # Setup data consumer options
         self.data.consumer_defs.extend([
             DataDefinition('input_1', {
-            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            'entities_t': (None, ['Compound', 'Gene', 'Protein', 'Reaction']),
             }, title='Source compound, gene or protein data'),
             DataDefinition('input_2', {
-            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            'entities_t': (None, ['Compound', 'Gene', 'Protein', 'Reaction']),
             }, title='Source compound, gene or protein data'),
             DataDefinition('input_3', {
-            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            'entities_t': (None, ['Compound', 'Gene', 'Protein', 'Reaction']),
             }, title='Source compound, gene or protein data'),
             DataDefinition('input_4', {
-            'entities_t': (None, ['Compound', 'Gene', 'Protein']),
+            'entities_t': (None, ['Compound', 'Gene', 'Protein', 'Reaction']),
             }, title='Source compound, gene or protein data'),
         ])
 
@@ -211,6 +212,140 @@ class PathwayMiningApp(ui.AnalysisApp):
         dso.labels[0][0] = "Pathway mining scores"
 
         return {'output': dso}
+        
+        
+        
+class ReactionMiningApp(ui.AnalysisApp):
+
+    name = "Reaction Mining"
+
+    def __init__(self, **kwargs):
+        super(ReactionMiningApp, self).__init__(**kwargs)
+
+        # Define automatic mapping (settings will determine the route; allow manual tweaks later)
+        self.addDataToolBar()
+        #self.addExperimentToolBar()
+
+        self.config.set_defaults({
+        })
+
+        self.data.add_input('compounds')  # Add input slot
+        self.data.add_input('genes')  # Add input slot
+        self.data.add_input('proteins')  # Add input slot
+        self.data.add_output('output')
+
+        self.table = TableView()
+        self.table.setModel(self.data.o['output'].as_table)
+        self.views.addView(self.table, 'Table', unfocus_on_refresh=True)
+
+        # Setup data consumer options
+        self.data.consumer_defs.extend([
+            DataDefinition('compounds', {
+            'entities_t': (None, ['Compound']),
+            }, title='Source compound data'),
+            DataDefinition('genes', {
+            'entities_t': (None, ['Gene']),
+            }, title='Source gene data'),
+            DataDefinition('proteins', {
+            'entities_t': (None, ['Protein']),
+            }, title='Source protein data'),
+        ])
+
+        #self.addConfigPanel(PathwayMiningConfigPanel, 'Pathway Mining')
+
+        self.finalise()
+
+    def get_dso_entity_score(self, dso, entities):
+        if dso is None:
+            return 0
+        else:
+            return sum( [ dso.data[0, dso.entities[1].index(e) ] for e in entities if e in dso.entities[1] ] )
+
+    def generate(self, compounds=None, genes=None, proteins=None, **kwargs):
+        #dsi = input
+        # Iterate all the compounds in the current analysis
+        # Assign score to each of the compound's pathways
+        # Sum up, crop and return a list of pathway_ids to display
+        # Pass this in as the list to view
+        # + requested pathways, - excluded pathways
+
+        reaction_scores = defaultdict(int)
+
+        for n, compound in enumerate(compounds.entities[1]):
+            if compound == None:
+                continue  # Skip
+
+            # Get the compounds reactions
+            for reaction in compound.reactions:
+        
+                compounds_in = reaction.mtins + reaction.smtins 
+                compounds_out = reaction.mtouts + reaction.smtouts 
+        
+                source_score = self.get_dso_entity_score( compounds, compounds_in )
+                sink_score = self.get_dso_entity_score( compounds, compounds_out )
+
+                protein_score = self.get_dso_entity_score( proteins, reaction.proteins )
+                    
+                genesl = []
+                for p in reaction.proteins:
+                    genesl += p.genes
+                gene_score = self.get_dso_entity_score( genes, genesl )
+                
+                score = 0
+                # Determine whether the entity is the source or the sink of the reaction
+                # only calculate when in the source (the sink will be picked up on reverse if the metabolite data is available)
+                if compound in compounds_in:
+                    # Source
+                    if source_score > sink_score: # No flow
+                        if gene_score + protein_score < 0: # Blocking
+
+                            score = compounds.data[0, n] # Score with the metabolite hit (?)
+                    
+                    elif source_score < sink_score: # Flow(?):
+                        if gene_score + protein_score > 0: # Allowing
+
+                            score = compounds.data[0, n] # Score with the metabolite hit (?)
+
+                    elif source_score == sink_score and source_score != 0: # Equil:
+                        if gene_score + protein_score > 0: # Allowing
+
+                            score = compounds.data[0, n] # Score with the metabolite hit (?)
+                                        
+                
+                mining_val = {
+                    'c': abs(score),
+                    'u': max(0, score),
+                    'd': abs(min(0, score)),
+                    'm': 1.0,
+                    't': score,
+                    }
+                reaction_scores[p] += mining_val['c']
+
+        mining_depth = 10
+
+        # Now take the accumulated scores; and create the output
+        reaction_scorest = list(reaction_scores.items())  # Switch it to a dict so we can sort
+        reaction_scorest = [(p, v) for p, v in reaction_scorest if v > 0]  # Remove any scores of 0
+        reaction_scorest.sort(key=lambda tup: tup[1], reverse=True)  # Sort by scores (either system)
+
+        # Get top N defined by mining_depth parameter
+        keep_reactions = reaction_scorest[0:mining_depth]
+        remaining_reactions = reaction_scorest[mining_depth + 1:mining_depth + 100]
+
+        print("Mining recommended %d out of %d" % (len(keep_reactions), len(reaction_scores)))
+
+        for n, p in enumerate(keep_reactions):
+            print("- %d. %s [%.2f]" % (n + 1, p[0].name, p[1]))
+
+        #self.analysis_suggested_reactions = [db.reactions[p[0]] for p in reaction_scorest]
+        dso = DataSet(size=(1, len(keep_reactions)))
+        dso.entities[1] = [k for k, v in keep_reactions]
+        dso.labels[1] = [k.name for k, v in keep_reactions]
+        dso.data = np.array([v for k, v in keep_reactions], ndmin=2)
+
+        dso.labels[0][0] = "Reaction mining scores"
+
+        return {'output': dso}        
 
 
 class PathwayMining(AnalysisPlugin):
@@ -218,3 +353,4 @@ class PathwayMining(AnalysisPlugin):
     def __init__(self, **kwargs):
         super(PathwayMining, self).__init__(**kwargs)
         self.register_app_launcher(PathwayMiningApp)
+        self.register_app_launcher(ReactionMiningApp)

@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
             'Plugins/Paths': [],
 
             'Resources/MATLAB_path': 'matlab',
-            
+
             'Editor/Snap_to_grid': False,
             'Editor/Show_grid': True,
         })
@@ -892,7 +892,7 @@ class MainWindow(QMainWindow):
                     a = self.app_launchers[app]()
 
                 # Update workspace viewer
-                self.workspace_updated.emit()  # Notify change to workspace layout        
+                self.workspace_updated.emit()  # Notify change to workspace layout
 
             elif app == 'db':
                 kind, id, action = url.path().strip('/').split('/')

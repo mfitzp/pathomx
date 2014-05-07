@@ -1488,6 +1488,7 @@ class GenericApp(QObject):
         # Trigger notification for state change
         self.m.workspace_updated.emit()
         self.w.close()
+        self.deleteLater()
 
     def autoconfig(self, signal):
         if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:

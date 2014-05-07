@@ -174,9 +174,10 @@ def generator(pathways, options, analysis=None, layout=None, verbose=True):
                 # Make a copy of the reaction object, so we can add link data
                 inter_react = copy.copy(r)  # FIXME:? This was a deepcopy, but causing recursion - switched to simple copy and still works
                 inter_react.name = ''
-                inter_react.proteins = []  # Hide the enzyme name, it'll be on the other object
+                inter_react.proteins = r.proteins[:] 
                 inter_react.smtins = []  # Hide the small compounds
                 inter_react.smtouts = []  # Hide the small compounds
+                inter_react.type = 'dummy'
 
                 edgecluster['pathway'][inter_react].append(p)
                 edgecluster['compartment'][inter_react].extend(compartments)
@@ -471,14 +472,10 @@ def generator(pathways, options, analysis=None, layout=None, verbose=True):
             color = '"%s"' % ':'.join([colors[n] for n in sorted([clusterclu[c] for c in r_clusterclu])])
             colorscheme = 'paired12'
 
-        if r.type == 'dummy':
-            color = '#cccccc'
-        else:
+        if r.type != 'dummy' and options.show_enzymes:
+            label.append('%s' % r.name)
 
-            if options.show_enzymes:
-                label.append('%s' % r.name)
-
-            if options.show_enzymes and hasattr(r, 'proteins') and r.proteins:
+            if hasattr(r, 'proteins') and r.proteins:
                 if analysis:
                     prgenestr = ''
                     for pr in r.proteins:
