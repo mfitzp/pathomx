@@ -1537,7 +1537,6 @@ class GenericApp(QObject):
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
-
         # Copy the data for the views here; or we're sending the same data to the get (main thread)
         # as to the prerender loop (seperate thread) without a lock
         self.autoprerender({copy(k): deepcopy(v) for k,v in kwargs_dict.items()})
@@ -1571,7 +1570,7 @@ class GenericApp(QObject):
         self.logger.debug("_thread_finished_callback %s" % self.name)
         QCoreApplication.sendPostedEvents(self)
         # Wait for events to finish, then trigger worker cleanup
-        QTimer.singleShot( 0, self._thread_finished_cleanup )
+        QTimer.singleShot( 500, self._thread_finished_cleanup )
 
     def _thread_finished_cleanup(self):
         self._worker_lock = None

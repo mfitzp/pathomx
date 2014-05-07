@@ -58,7 +58,6 @@ class MergeApp( ui.DataApp ):
         for n,dso in enumerate(todo):
             self.progress.emit( float(n)/todo_n )
 
-            print(dso.name)
             # Check if we have sample ids; if yes then build index to the working dso
             if dso.labels_n[0] != dso.shape[0]: # Need labels for everything
                 self.setWorkspaceStatus('error')

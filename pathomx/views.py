@@ -281,6 +281,40 @@ class TableView(QTableView):
     """
     is_floatable_view = False
     is_mpl_toolbar_enabled = False
+    
+    def copy(self):
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+        model = self.model()
+        
+        if len(indexes) < 1:
+            return
+
+        previous = indexes[0]
+        indexes = indexes[1:]
+        
+        selected_text = ''
+
+        for current in indexes:
+            data = model.data(previous, Qt.DisplayRole)
+            text = str(data)
+            selected_text += text
+            if current.row() != previous.row():
+                selected_text += '\n'
+            else:
+                selected_text += '\t'
+            previous = current
+
+        selected_text += str( model.data(current, Qt.DisplayRole) )
+        selected_text += '\n'
+        qApp.clipboard().setText(selected_text)
+
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.Copy):
+            self.copy()
+        else:
+            return super(TableView, self).keyPressEvent(event)        
+
 
 class WebView(QWebView, BaseView):
     """
@@ -1110,7 +1144,6 @@ class MplCategoryBarView(MplView):
         self.ax.cla()
         
         limit_to = 10
-        colors = self.ax._get_lines.color_cycle
 
         # FIXME: Remove this once UI allows selection of data to plot
         fd = np.mean( dso.data, axis=0 )

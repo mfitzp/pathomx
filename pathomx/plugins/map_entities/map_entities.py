@@ -206,7 +206,7 @@ class MapEntityApp(ui.GenericApp):
             for s in row:
                 self._entity_mapping_table[s] = e
 
-            self.generate()
+            self.autogenerate()
 
     def generate(self, input=None):
         dso = self.translate(input)
@@ -221,12 +221,21 @@ class MapEntityApp(ui.GenericApp):
             MAP_ENTITY_COMPOUND: 'compound',
                 }[self.config.get('map_object_type')]
 
+        print "------------------------"
+        print self._entity_mapping_table
+        print "------------------------"
         # Translate loaded data names to metabolite IDs using provided database for lookup
         for n, m in enumerate(data.labels[1]):
-
+            
+            print str(data.scales[1][n])
+            print str(data.scales[1][n]) in self._entity_mapping_table
         # Match first using entity mapping table if set (allows override of defaults)
-            if m in self._entity_mapping_table:
-                data.entities[1][n] = self._entity_mapping_table[m]
+            if data.labels[1][n] in self._entity_mapping_table:
+                data.entities[1][n] = self._entity_mapping_table[ data.labels[1][n] ]
+            
+            elif str(data.scales[1][n]) in self._entity_mapping_table:
+                print str(data.scales[1][n]), self._entity_mapping_table[ str(data.scales[1][n]) ]
+                data.entities[1][n] = self._entity_mapping_table[ str(data.scales[1][n]) ]
 
             # Use the internal database identities
             else:
