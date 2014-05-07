@@ -9,7 +9,7 @@ from .qt import *
 
 from collections import defaultdict, OrderedDict
 import os
-import copy
+from copy import copy, deepcopy
 import re
 import json
 import importlib
@@ -1537,7 +1537,10 @@ class GenericApp(QObject):
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
-        self.autoprerender(kwargs_dict)
+
+        # Copy the data for the views here; or we're sending the same data to the get (main thread)
+        # as to the prerender loop (seperate thread) without a lock
+        self.autoprerender({copy(k): deepcopy(v) for k,v in kwargs_dict.items()})
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
@@ -1549,10 +1552,9 @@ class GenericApp(QObject):
     def _prerender_worker_result_callback(self, kwargs):
         self.logger.debug("_prerender_worker_result_callback %s" % self.name)
         self.views.data = kwargs
-        self.views.source_data_updated.emit()
-        #self.views.redraw()
         self.progress.emit(1.)
         self.status.emit('done')
+        self.views.source_data_updated.emit()
 
     def _worker_error_callback(self, error=None):
         self.logger.debug("_worker_error_callback %s" % self.name)

@@ -307,19 +307,16 @@ class MainWindow(QMainWindow):
         self.fonts = QFontDatabase()
 
         # Create database accessor
-        self.db = db.dbm # FIXME: Remove this eventually
+        #self.db = db.dbm # FIXME: Remove this eventually
+        # Initialise data (load from disk)
         db.dbm.populate()
 
-        self.data = None  # deprecated
         self.datasets = []  # List of instances of data.datasets() // No data loaded by default
 
         self.layout = None  # No map by default
 
         #self.linestyles = styles.LineStyleHandler()
 
-        # The following holds tabs & pathway objects for gpml imported pathways
-        self.gpmlpathways = []
-        self.tab_handlers = []
         self.url_handlers = defaultdict(list)
         self.app_launchers = {}
         self.app_launcher_categories = defaultdict(list)
