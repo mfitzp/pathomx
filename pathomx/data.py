@@ -691,21 +691,21 @@ class DataSet( QObject ):
               
     
     def import_data(self, dso):
-        
-        self.name = copy(dso.name)
-        self.description = copy(dso.description)
-        self.type = copy(dso.type)
+        if dso:
+            self.name = copy(dso.name)
+            self.description = copy(dso.description)
+            self.type = copy(dso.type)
 
-        self.axes = deepcopy(dso.axes)
+            self.axes = deepcopy(dso.axes)
 
-        self.labels = deepcopy(dso.labels)
-        self.entities = [copy(e) for e in dso.entities]
-        self.scales = deepcopy(dso.scales)
-        self.classes = deepcopy(dso.classes)
+            self.labels = deepcopy(dso.labels)
+            self.entities = [copy(e) for e in dso.entities]
+            self.scales = deepcopy(dso.scales)
+            self.classes = deepcopy(dso.classes)
 
-        self.data  = deepcopy(dso.data)
+            self.data  = deepcopy(dso.data)
     
-        self.previously_managed_by = [n for n in dso.previously_managed_by]
+            self.previously_managed_by = [n for n in dso.previously_managed_by]
 
     
     def register_interface(self, interface_name, interface):

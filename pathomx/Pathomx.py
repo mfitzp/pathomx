@@ -1063,8 +1063,6 @@ class MainWindow(QMainWindow):
 
         if self.progressBar.value() < pt:  # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
             self.progressBar.setValue(pt)
-        # Keep things ticking
-        #QCoreApplication.processEvents()
 
     def register_url_handler(self, identifier, url_handler):
         self.url_handlers[identifier].append(url_handler)

@@ -284,7 +284,7 @@ class ReclassifyTool(ui.DataApp):
     def map_list_rev(self, f):
         " Receive the filter, return the label"
         if f:
-            return "%s\t%s\t%s" % tuple(f)
+            '\t'.join(f)
         else:
             return "\t"
 
