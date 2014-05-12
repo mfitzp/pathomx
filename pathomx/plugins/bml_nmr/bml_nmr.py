@@ -30,9 +30,6 @@ class BMLNMRApp(ui.ImportDataApp):
         self.data.add_output('PQN')  # Add output slot
         self.data.add_output('TSA')  # Add output slot
 
-        self.t = self.addToolBar('Data Import')
-        self.t.setIconSize(QSize(16, 16))
-
         self.table.setModel(self.data.o['Raw'].as_table)
 
         self.finalise()

@@ -29,7 +29,7 @@ def make_label_for_entry(x):
 class RegressionDialog(ui.GenericDialog):
     
     def __init__(self, parent, *args, **kwargs):
-        super(RegressionDialog, self).__init__(parent, *args, **kwargs)        
+        super(RegressionDialog, self).__init__(parent.w, *args, **kwargs)        
 
         self.v = parent
 

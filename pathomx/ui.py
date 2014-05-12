@@ -1800,7 +1800,7 @@ class GenericApp(QObject):
 
     def onMplToolBarCanvasChanged(self, w):
         selected_view = self.views.widget(w)
-        if selected_view.is_mpl_toolbar_enabled:
+        if selected_view and selected_view.is_mpl_toolbar_enabled:
             # Reset buttons to current view state for the selected tabs' Canvas
             for c, m in [('zoom', 'ZOOM'), ('pan', 'PAN')]:
                 self.toolbars['figure']._checkable_actions[c].setChecked(selected_view.navigation._active == m)
@@ -2257,6 +2257,17 @@ class ConfigPanel(QWidget):
                     control.Deselect(idx)
         except:
             pass
+
+
+class ConfigTablePanel(QTableWidget):
+
+    def __init__(self, parent, *args, **kwargs):
+        super(ConfigTablePanel, self).__init__(parent.w, *args, **kwargs)
+
+        self.v = parent
+        self.m = parent.m
+        self.config = parent.config
+
 
 
 class WebPanel(QWebView):

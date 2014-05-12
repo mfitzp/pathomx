@@ -1188,7 +1188,6 @@ class MplCategoryBarView(MplView):
             else:
                 yerr = None
 
-            color = next(colors)
             ls = styles.get_style_for_class( c )
             plots[c] = self.ax.bar(x[:,n], cdata, align='center', yerr=yerr, **ls.bar_kwargs)
 

@@ -159,12 +159,16 @@ class ReclassifyDialog(ui.GenericDialog):
         vbox = QVBoxLayout()
         # Populate the list boxes
         self.lw_regexp = QLineEdit()
-        vbox.addWidget(self.lw_regexp)
         vbox.addWidget(QLabel('Search:'))
+        
+        self.lw_matchfield = QComboBox()
+        self.lw_matchfield.addItems(['classes','labels'])
+        vbox.addWidget(self.lw_matchfield)
+        vbox.addWidget(self.lw_regexp)
 
         self.lw_replace = QLineEdit()
-        vbox.addWidget(self.lw_replace)
         vbox.addWidget(QLabel('Replace:'))
+        vbox.addWidget(self.lw_replace)
 
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
@@ -209,15 +213,15 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
         if dlg.exec_():
             l = self.config.get('filters')[:]  # Copy
             if dlg.lw_regexp.text() != '' and dlg.lw_replace.text() != '':
-                l.append((dlg.lw_regexp.text(), dlg.lw_replace.text()))
+                l.append((dlg.lw_regexp.text(), dlg.lw_replace.text(), dlg.lw_matchfield.currentText() ))
             self.config.set('filters', l)
 
     def onFilterRemove(self):
         l = self.config.get('filters')[:]
         for i in self.lw_filters.selectedItems():
-            l[self.lw_filters.row(i)] = (None, None)
+            l[self.lw_filters.row(i)] = (None, None, None)
 
-        self.config.set('filters', [(k, v) for k, v in l if v is not None])
+        self.config.set('filters', [(k, v, m) for k, v, m in l if v is not None])
 
         
 class ReclassifyTool(ui.DataApp):
@@ -247,19 +251,27 @@ class ReclassifyTool(ui.DataApp):
 
     def apply_filters(self, dso):
 
-        classes = dso.classes[0]
-        for search, replace in self.config.get('filters'):
+        for search, replace, match in self.config.get('filters'):
             classes_f = []
-            for c in classes:
-                match = re.search(search, c)
-                if match:
-                    classes_f.append(replace)
-                else:
-                    classes_f.append(c)
 
-            classes = classes_f
+            if match == 'classes' or match == 'None':
+                for c in dso.classes[0]:
+                    match = re.search(search, c)
+                    if match:
+                        classes_f.append(replace)
+                    else:
+                        classes_f.append(c)
+                        
+            elif match == 'labels':
+                for n, l in enumerate(dso.labels[0]):
+                    match = re.search(search, l)
+                    if match:
+                        classes_f.append(replace)
+                    else:
+                        classes_f.append(dso.classes[0][n])
 
-        dso.classes[0] = classes
+            dso.classes[0] = classes_f
+
         return dso
 
     def generate(self, input=None):
@@ -272,7 +284,7 @@ class ReclassifyTool(ui.DataApp):
     def map_list_rev(self, f):
         " Receive the filter, return the label"
         if f:
-            return "%s\t%s" % tuple(f)
+            return "%s\t%s\t%s" % tuple(f)
         else:
             return "\t"
 

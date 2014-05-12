@@ -11,6 +11,8 @@ import codecs
 import io
 from collections import defaultdict
 
+import cStringIO
+
 import numpy as np
 
 from .qt import *
@@ -216,12 +218,13 @@ if sys.version_info < (3, 0):  # Python 2 only
 
         def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
             # Redirect output to a queue
-            self.queue = io.StringIO()
+            self.queue = cStringIO.StringIO()
             self.writer = csv.writer(self.queue, dialect=dialect, **kwargs)
             self.stream = f
             self.encoder = codecs.getincrementalencoder(encoding)()
 
         def writerow(self, row):
+            row = [unicode(s) for s in row]
             self.writer.writerow([s.encode("utf-8") for s in row])
             # Fetch UTF-8 output from the queue ...
             data = self.queue.getvalue()

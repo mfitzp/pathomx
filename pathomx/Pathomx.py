@@ -895,32 +895,32 @@ class MainWindow(QMainWindow):
                 kind, id, action = url.path().strip('/').split('/')
                             # View an object
                 if action == 'view':
-                    if kind == 'pathway' and id in self.db.pathways:
-                        pathway = self.db.pathways[id]
+                    if kind == 'pathway' and db.dbm.pathway(id) is not None:
+                        pathway = db.dbm.pathway(id)
                         self.generatedbBrowserView(template='db/pathway.html', data={
                             'title': pathway.name,
                             'object': pathway,
                             })
-                    elif kind == 'reaction' and id in self.db.reactions:
-                        reaction = self.db.reactions[id]
+                    elif kind == 'reaction' and db.dbm.reaction(id) is not None:
+                        reaction = db.dbm.reaction(id)
                         self.generatedbBrowserView(template='db/reaction.html', data={
                             'title': reaction.name,
                             'object': reaction,
                             })
-                    elif kind == 'compound' and id in self.db.compounds:
-                        compound = self.db.compounds[id]
+                    elif kind == 'compound' and db.dbm.compound(id) is not None:
+                        compound = db.dbm.compound(id)
                         self.generatedbBrowserView(template='db/compound.html', data={
                             'title': compound.name,
                             'object': compound,
                             })
-                    elif kind == 'protein' and id in self.db.proteins:
-                        protein = self.db.proteins[id]
+                    elif kind == 'protein' and db.dbm.protein(id) is not None:
+                        protein = db.dbm.protein(id)
                         self.generatedbBrowserView(template='db/protein.html', data={
                             'title': protein.name,
                             'object': protein,
                             })
-                    elif kind == 'gene' and id in self.db.genes:
-                        gene = self.db.genes[id]
+                    elif kind == 'gene' and db.dbm.gene(id) is not None:
+                        gene = db.dbm.gene(id)
                         self.generatedbBrowserView(template='db/gene.html', data={
                             'title': gene.name,
                             'object': gene,
@@ -945,7 +945,7 @@ class MainWindow(QMainWindow):
         """ Open a data file"""
         filename, _ = QFileDialog.getOpenFileName(self, 'Load compound identities file', '')
         if filename:
-            self.db.load_synonyms(filename)
+            db.dbm.load_synonyms(filename)
             # Re-translate the datafile if there is one and refresh
             if self.data:
                 self.data.translate(self.db)
@@ -959,7 +959,7 @@ class MainWindow(QMainWindow):
         self.Close(True)  # Close the frame.
 
     def onReloadDB(self):
-        self.db = db.databaseManager()
+        db.dbm.populate()
 
     def onRefresh(self):
         self.generateGraphView()
@@ -969,7 +969,7 @@ class MainWindow(QMainWindow):
             'htmlbase': os.path.join(utils.scriptdir, 'html'),
             # Current state data
             'current_pathways': [],  # self.config.value('/Pathways/Show').split(','),
-            'data': self.data,
+            'data': None #self.data,
             # Color schemes
             # 'rdbu9':['b2182b', 'd6604d', 'f4a582', '33a02c', 'fddbc7', 'f7f7f7', 'd1e5f0', '92c5de', '4393c3', '2166ac']
         }
