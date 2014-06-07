@@ -25,6 +25,8 @@ default_build_options=dict(
         'nmrglue.fileio.fileiobase',
         'matplotlib',
         'dateutil',
+        'mplstyler',
+        'pyqtconfig',
 #        'mlabwrap', mlabwrap doesn't currently work on Windows x64
         ],
     includes=[

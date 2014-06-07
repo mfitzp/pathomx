@@ -34,6 +34,19 @@ from .qt import *
 import textwrap
 
 try:
+    from IPython.kernel import KernelManager
+except ImportError:
+    from IPython.zmq.blockingkernelmanager import BlockingKernelManager as KernelManager
+
+from IPython.nbformat.current import reads, NotebookNode
+from IPython.nbconvert.exporters import export as IPyexport
+from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
+
+from IPython.utils.ipstruct import Struct
+from runipy.notebook_runner import NotebookRunner
+
+
+try:
     from urllib.request import urlopen
     from urllib.parse import urlparse
 except ImportError:
@@ -59,18 +72,21 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 import matplotlib as mpl
-from . import db
+
+from pyqtconfig import QSettingsManager
+
 from . import data
 from . import utils
 from . import ui
 from . import threads
-from . import config
 from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
-from . import styles
 from . import resources
 from .editor.editor import WorkspaceEditorView, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
+
+from .globals import db, styles
+
 
 # Translation (@default context)
 from .translate import tr
@@ -274,7 +290,7 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.settings = config.QSettingsManager()  # QSettings('Pathomx', 'Pathomx')
+        self.settings = QSettingsManager()  # QSettings('Pathomx', 'Pathomx')
         self.settings.set_defaults({
             'Pathomx/Is_setup': False,
             'Pathomx/Current_version': '0.0.1',
@@ -309,13 +325,11 @@ class MainWindow(QMainWindow):
         # Create database accessor
         #self.db = db.dbm # FIXME: Remove this eventually
         # Initialise data (load from disk)
-        db.dbm.populate()
+        db.populate()
 
         self.datasets = []  # List of instances of data.datasets() // No data loaded by default
 
         self.layout = None  # No map by default
-
-        #self.linestyles = styles.LineStyleHandler()
 
         self.url_handlers = defaultdict(list)
         self.app_launchers = {}
@@ -619,6 +633,16 @@ class MainWindow(QMainWindow):
 
         self.tabifyDockWidget(self.toolDock, self.workspaceDock)
         self.toolDock.raise_()
+
+        #self.viewerDock = QDockWidget(tr('View'))
+        #self.viewerDock.setMinimumWidth(300)
+        #self.viewerDock.setMaximumWidth(300)
+
+        #self.addDockWidget(Qt.RightDockWidgetArea, self.viewerDock)
+
+        #self.configDock = QDockWidget(tr('Configuration'))
+        #self.addDockWidget(Qt.RightDockWidgetArea, self.configDock)
+
 
         self.dbtool = ui.DbApp(self)
         self.dbBrowser = self.dbtool.dbBrowser
@@ -1122,7 +1146,7 @@ class MainWindow(QMainWindow):
         root.set('xmlns:mpwfml', "http://pathomx.org/schema/Workflow/2013a")
 
         s = et.SubElement(root, "Styles")
-        s = styles.styles.getXMLMatchDefinitionsStyles(s)
+        s = styles.getXMLMatchDefinitionsStyles(s)
 
         s = et.SubElement(root, "Annotations")
         s = self.editor.getXMLAnnotations(s)
@@ -1176,7 +1200,7 @@ class MainWindow(QMainWindow):
 
         s = workflow.find('Styles')
         if s is not None:
-            styles.styles.setXMLMatchDefinitionsStyles(s)
+            styles.setXMLMatchDefinitionsStyles(s)
 
         a = workflow.find('Annotations')
         if a is not None:

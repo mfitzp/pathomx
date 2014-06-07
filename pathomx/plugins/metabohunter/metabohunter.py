@@ -13,7 +13,7 @@ import logging
 import pathomx.ui as ui
 import pathomx.utils as utils
 import pathomx.threads as threads
-import pathomx.db as db
+from pathomx.globals import db
 
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataSet, DataDefinition
@@ -58,7 +58,7 @@ class MetaboHunterConfigPanel(ui.ConfigPanel):
         'Water': 'water',
         'CDCl3': 'cdcl3',
         'CD3OD': '5d3od',
-        '5% DMSO': '5d30d',
+        '5% DMSO': '5dmso',
     },
     'Frequency': {
         'All': 'all',
@@ -293,11 +293,7 @@ class MetaboHunterApp(ui.DataApp):
                 hmdbid = matched_peak_metabolites[sp2]
                 dso.labels[1][n] = hmdbid
                 # All in HMDBIDs; if we have it use the entity
-                if hmdbid in db.dbm.unification['HMDB']:
-                    dso.entities[1][n] = db.dbm.get_via_unification('HMDB', hmdbid)
-        # Now remove any data from the object that isn't assigned?
-        #
-        #
+                dso.entities[1][n] = db.get_via_unification('HMDB', hmdbid)
 
         return dso
 

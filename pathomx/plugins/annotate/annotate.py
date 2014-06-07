@@ -122,7 +122,7 @@ class AnnotateApp(ui.DataApp):
 
     def onEditAnnotationsSettings(self):
         """ Open a data file"""
-        dialog = DialogAnnotationTargets(parent=self, view=self)
+        dialog = DialogAnnotationTargets(parent=self.m, view=self)
         ok = dialog.exec_()
         if ok:
             # Extract the settings and store in the _annotations_targets settings

@@ -1,7 +1,4 @@
 from __future__ import unicode_literals
-import logging
-logging.debug('Loading qt.py')
-
 import sys
 
 # Import PyQt5 classes accessible in elsewhere through

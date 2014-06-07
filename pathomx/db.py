@@ -593,5 +593,3 @@ class DatabaseManager():
             for syn in synv:
                 row = [synk, syn]
                 writer.writerow(row)
-
-dbm = DatabaseManager()

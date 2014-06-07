@@ -16,18 +16,18 @@ import importlib
 import sys
 import time
 import numpy as np
+from pyqtconfig import ConfigManager
 from . import utils
 from . import data
 from . import config
 from . import threads
-from . import config
 from . import db
 from .data import DataSet
-from .styles import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
+from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition
 
-from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView
+from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView
 # Translation (@default context)
 from .translate import tr
 
@@ -43,6 +43,19 @@ from matplotlib.backend_bases import NavigationToolbar2
 from .backend_qt5agg import NavigationToolbar2QTAgg
 
 import logging
+
+
+from IPython.nbformat.current import reads, NotebookNode
+from IPython.nbconvert.exporters import export as IPyexport
+from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
+
+from IPython.utils.ipstruct import Struct
+from runipy.notebook_runner import NotebookRunner
+
+try:
+    import cPickle as pickle
+except:
+    import pickle as pickle
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -850,7 +863,7 @@ class MatchStyleDialog(GenericDialog):
         self.setWindowTitle("Define class match and line-marker style")
         # '', 'RE', 'Marker', 'Fill', 'Line', 'Hatch', 'Color', 'Face', 'Edge'
 
-        self.config = config.ConfigManager()
+        self.config = ConfigManager()
         self.config.set_defaults({
             'match_str': '',
             'match_type': MATCH_EXACT,
@@ -1435,7 +1448,8 @@ class GenericApp(QObject):
                         'view': self,
                         })
 
-            self.views.addView(StaticHTMLView(self, html), '?', unfocus_on_refresh=True)
+            self.nbview = NotebookView(self, html)
+            self.views.addView(self.nbview, '?', unfocus_on_refresh=True)
 
         self.toolbars = {}
 
@@ -1450,7 +1464,7 @@ class GenericApp(QObject):
         self.complete.connect(self.views.onRefreshAll)
 
         logging.debug('Setup config manager...')
-        self.config = config.ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
+        self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
 
         logging.debug('Create editor icon...')
         self.editorItem = self.m.editor.addApp(self, position=position)
@@ -1463,7 +1477,7 @@ class GenericApp(QObject):
         self.change_name.connect( self.set_name )
 
         logging.debug('Completed default tool (%s) setup.' % name)
-
+        
     def finalise(self):
 
         self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
@@ -1615,6 +1629,11 @@ class GenericApp(QObject):
 
     def raise_(self):
         self.w.raise_()
+        
+    def showDock(self):
+        if self.m.viewerDock.widget() == self:
+            self.m.viewerDock.setWidget(None)
+        self.m.viewerDock.setWidget(self.views)
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
@@ -1856,6 +1875,77 @@ class GenericApp(QObject):
         if self._previous_size:
             return self._previous_size
         return QSize(600 + 300, 400 + 100)
+
+
+class IPythonApp(GenericApp):
+    # Needs work for the communication (passing variables in (HDF5 files?) and getting out (publish_data)) 
+    # We want access to both the processed data and also graphics e.g. plots, etc.
+    # without that there is not much point
+    def __init__(self, **kwargs):
+        super(IPythonApp, self).__init__(**kwargs)
+    
+        self.runner = NotebookRunner(None, pylab=True, mpl_inline=True)
+        self.latest_run = dict()
+
+        if self.notebook_fn:
+            self.load_notebook( os.path.join(self.plugin.path, self.notebook_fn) )
+
+    def load_notebook(self, notebook_path):
+        with open(notebook_path,  'r') as f:
+            self.notebook = reads(f.read(), 'json')
+                
+    def generate(self, *args, **kwargs):
+        self.run_notebook(kwargs)
+        return None
+                
+    def run_notebook(self, vars={}):
+        nb = self.notebook
+        
+        if len(nb['worksheets']) == 0:
+            nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
+
+        # Pickle all variables and import to the notebook (depickler)
+        pvars = {}
+        for k,v in vars.items():
+            pvars[k] = pickle.dumps(v.data)
+
+        start = nb['worksheets'][0]['cells']
+        start.insert(0, Struct(**{
+            'cell_type': 'code',
+            'language': 'python',
+            'outputs': [],
+            'collapsed': True,
+            'prompt_number': -1,
+            'input': '',
+            'metadata': {},
+        }))
+        self.runner.nb = nb
+
+        try:
+            self.runner.run_notebook()
+        except:
+            self.latest_run['success'] = False
+            raise
+        else:
+            self.latest_run['success'] = True
+        finally:
+            ext = dict(
+                html='html',
+                slides='slides',
+                latex='latex',
+                markdown='md',
+                python='py',
+                rst='rst',
+            )
+            # self.config.get('output_format')
+            
+            output, resources = IPyexport(IPyexporter_map['html'], self.runner.nb)
+            
+            self.nbview.setHtml( output )
+                
+            # Return the variable state (matching output values only?)
+            
+            return 
 
 
 # Data view prototypes

@@ -27,7 +27,7 @@ import numpy as np
 
 from . import data, config, utils, db
 
-from .styles import styles
+from .globals import styles
 
 
 # Translation (@default context)
@@ -115,7 +115,7 @@ class ViewManager( QTabWidget ):
         :rtype: int tab/view index     
         '''
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        # Automagically unfocus the help (+any other equivalent) tabs if were' refreshing a more interesting one
+        # Automagically unfocus the help (+any other equivalent) tabs if we're refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
         widget.name = name
@@ -246,7 +246,6 @@ class RenderPageToFile(QWebPage):
         if self.resample: # If resampling we need to regenerate the graph
             frame.evaluateJavaScript( "_pathomx_render_trigger();" )
 
-        #self.size = frame.contentsSize()#        self.setViewportSize(self.size)
         image = QImage(self.size, QImage.Format_ARGB32)
         image.setDotsPerMeterX(self.dpm)
         image.setDotsPerMeterY(self.dpm)
@@ -415,6 +414,10 @@ class HTMLView(WebView):
     
     def generate(self, html):
         self.setHtml(html, QUrl('file:///')) 
+
+class NotebookView(HTMLView):
+    autogenerate = False
+    pass
         
 class StaticHTMLView(HTMLView):
     """
@@ -499,7 +502,7 @@ class MplView(FigureCanvas, BaseView):
                                                                                      Encapsulated Postscript File (*.eps);;\
                                                                                      Scalable Vector Graphics (*.svg);;\
                                                                                      Portable Network Graphics (*.png)")
-                                                                                     
+
         if filename:
             size = settings.get_print_size('in')
             dpi = settings.get_dots_per_inch()

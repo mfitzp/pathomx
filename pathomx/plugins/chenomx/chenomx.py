@@ -8,13 +8,13 @@ from collections import defaultdict
 import numpy as np
 
 import pathomx.ui as ui
-import pathomx.db as db
 import pathomx.threads as threads
 import pathomx.utils as utils
 
 from pathomx.plugins import ImportPlugin
 from pathomx.data import DataSet
 
+from pathomx.globals import db
 
 class ChenomxApp(ui.ImportDataApp):
 
@@ -23,41 +23,85 @@ class ChenomxApp(ui.ImportDataApp):
 
     def load_datafile(self, file):
 
-        reader = csv.reader(open(file, 'rU'), delimiter='\t', dialect='excel')
-        hrow = next(reader)  # Get top row
-
         slabels = []
         data = []
 
-        if hrow[0] == 'Profiled Data Type':  # Is a Chenomx output file; use the other columns to map data scale/etc. once implemented
-            next(reader)  # Skip date row
-            hrow = next(reader)
-            labels = hrow[2:]  # We strip off the pH here; might be nice to keep it
-            entities = [db.dbm.synrev[l] if l in db.dbm.synrev else None for l in labels]  # Map to entities if they exist
+        # First read the header and get the labels and entities
+        with open(file, 'rU') as f:
+            reader = csv.reader(f, delimiter=',', dialect='excel')
 
-            next(reader)  # Skip compound ID
-            next(reader)  # Skip InChI
-            next(reader)  # Skip SMILES
+            hrow = next(reader)  # Get top row
+
+
+            if hrow[0] == 'Profiled Data Type':  # Is a Chenomx output file; use the other columns to map data scale/etc. once implemented
+                next(reader)  # Skip date row
+                hrow = next(reader)
+                #labels = hrow[2:]  # We strip off the pH here; might be nice to keep it
+                #entities = [db.synrev[l] if l in db.synrev else None for l in labels]  # Map to entities if they exist
+
+                db_refs = {}
+                db_translate = {
+                    'HMDB Accession Number':'HMDB',
+                    'KEGG Compound ID':'KEGG',
+                    'PubChem Compound':'PUBCHEM',
+                    'ChEBI ID':'CHEBI',
+                    }
+                
+                db_pref = ['HMDB','KEGG','PUBCHEM','CHEBI']
+                
+                labels = None
+                for hrow in reader:
+                    if hrow[0] == '':
+                        labels = hrow
+                    elif hrow[0] in db_translate:
+                        db_refs[ db_translate[hrow[0]] ] = hrow[1:]
+                    else:
+                        # We've hit the data; store the row and stop
+                        data_row_start = reader.line_num
+                        break
+            
+                # Define the labels and entities using the database items in preference, then finally the labels                    
+                entities = []
+                for i in range(len(hrow[1:]) ):
+                    for dbr in db_pref:
+                        if db_refs[ dbr ][i] != '' and db.get_via_unification( dbr, db_refs[dbr][i] ) is not None:
+                            entities.append( db.get_via_unification( dbr, db_refs[dbr][i] ) )
+                    
+                    else:
+                        # Try label
+                        if labels:
+                            l = labels[i]
+                            entities.append(db.get_via_synonym(l))
+                        else:
+                            entities.append(None)
+
+        # Re-open and seek to the start point of the 
+        with open(file, 'rU') as f:
+            reader = csv.reader(f, delimiter=',', dialect='excel')
+            
+            # Read to data row
+            [next(reader) for n in range(data_row_start-1)]
 
             for hrow in reader:  # Now read the data rows
                 slabels.append(hrow[0])
                 td = []
-                for x in hrow[2:]:
+                for x in hrow[1:]:
                     try:
                         td.append(float(x))
                     except:
                         td.append(0)
                 data.append(td)
 
-        data = np.array(data)
-        dso = DataSet(size=data.shape)
-        print(data.shape)
-        dso.labels[1] = labels
-        dso.entities[1] = entities
-        dso.labels[0] = slabels
-        dso.data = data
+            data = np.array(data)
+            dso = DataSet(size=data.shape)
 
-        return {'output': dso}
+            if labels:
+                dso.labels[1] = labels
+            dso.entities[1] = entities
+            dso.labels[0] = slabels
+            dso.data = data
+
+            return {'output': dso}
 
     #Profiled Data Type    Concentrations ( mM )
     #Export Date    Tue Nov 12 14:13:57 GMT 2013

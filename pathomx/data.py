@@ -591,7 +591,7 @@ class TableInterface(QAbstractTableModel):
 #### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.
 ## TODO: Chaining and update notification/re-processing 
 
-class DataSet( QObject ):
+class DataSet( object ):
     def __init__(self, manager=None, size=(0,), name='', description='', *args, **kwargs):
         super(DataSet, self).__init__(*args, **kwargs)
 
@@ -635,6 +635,25 @@ class DataSet( QObject ):
         o.name = copy(self.name) 
         o.description = copy(self.description)
         o.type = copy(self.type) 
+
+        '''
+        NOTES: Switch to pandas for dataframes
+        
+        (sample) labels as < indexes
+        scales as index ^ (++)
+        
+        classes (+ multiple class-assign types; allow multi-class) as columns
+        will need a filter when e.g. doing "MEAN" etc. to exclude but these will be wiped anyway
+        
+        Entities are unclear: unless create a object that can hold the db association; the scale (float); etc.
+        and return different values for each e.g float(e) would return the ppm
+        .float()
+        .entity()
+        
+        Would work nicely with the previous plan to allow multi-entity and 'scoring' e.g. most-less likely
+        '''
+        
+        
 
         o.labels = [x[:] for x in self.labels]
         o.entities = [x[:] for x in self.entities]

@@ -242,6 +242,9 @@ class ToolItem(BaseItem):
 
     def mouseDoubleClickEvent(self, e):
         self.onShow()
+        
+    #def mousePressEvent(self, e):
+    #    self.app.showDock()
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
