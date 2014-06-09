@@ -16,6 +16,7 @@ import importlib
 import sys
 import time
 import numpy as np
+import pandas as pd
 from pyqtconfig import ConfigManager
 from . import utils
 from . import data
@@ -27,7 +28,9 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition
 
-from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView
+import tempfile
+
+from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView, IPyMplView, DataFrameWidget
 # Translation (@default context)
 from .translate import tr
 
@@ -38,12 +41,16 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
 
+import cStringIO
+
 from numpy import arange, sin, pi
 from matplotlib.backend_bases import NavigationToolbar2
 from .backend_qt5agg import NavigationToolbar2QTAgg
+from matplotlib.axes._subplots import Subplot
+from matplotlib.figure import Figure
+from matplotlib import rcParams
 
 import logging
-
 
 from IPython.nbformat.current import reads, NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
@@ -1449,7 +1456,7 @@ class GenericApp(QObject):
                         })
 
             self.nbview = NotebookView(self, html)
-            self.views.addView(self.nbview, '?', unfocus_on_refresh=True)
+            self.views.addView(self.nbview, 'Notebook', unfocus_on_refresh=True)
 
         self.toolbars = {}
 
@@ -1482,7 +1489,8 @@ class GenericApp(QObject):
 
         self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
         if self._auto_consume_data:
-            self.data.consume_any_of(self.m.datasets[::-1])  # Try consume any dataset; work backwards
+            self.data.consume_any_app(self.m.apps[::-1])  # Try consume from any app; work backwards
+            # self.data.consume_any_of(self.m.datasets[::-1])  # Try consume any dataset; work backwards
         self.config.updated.connect(self.autoconfig)  # Auto-regenerate if the configuration changes
 
     def register_url_handler(self, url_handler):
@@ -1551,23 +1559,24 @@ class GenericApp(QObject):
         self.__latest_generator_result = kwargs_dict
         self.generated(**kwargs_dict)
         self.progress.emit(1.)
+
+        # FIXME Should this be somewhere else?
+        # Handle the global vars pass-back
+        if 'styles' in kwargs_dict:
+            global styles
+            styles = kwargs_dict['styles']
+        
         # Copy the data for the views here; or we're sending the same data to the get (main thread)
         # as to the prerender loop (seperate thread) without a lock
-        self.autoprerender({copy(k): deepcopy(v) for k,v in kwargs_dict.items()})
+        # self.autoprerender({copy(k): deepcopy(v) for k,v in kwargs_dict.items()})
+        self.autoprerender(kwargs_dict)
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
         self.status.emit('render')
-        is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.prerender, **kwargs_dict) )
-        if is_worker_locked:
-            self.start_worker_thread(self.worker, callback=self._prerender_worker_result_callback)
-
-    def _prerender_worker_result_callback(self, kwargs):
-        self.logger.debug("_prerender_worker_result_callback %s" % self.name)
-        self.views.data = kwargs
-        self.progress.emit(1.)
-        self.status.emit('done')
+        self.views.data = self.prerender(**kwargs_dict)
         self.views.source_data_updated.emit()
+        self.status.emit('done')
 
     def _worker_error_callback(self, error=None):
         self.logger.debug("_worker_error_callback %s" % self.name)
@@ -1883,70 +1892,101 @@ class IPythonApp(GenericApp):
     # without that there is not much point
     def __init__(self, **kwargs):
         super(IPythonApp, self).__init__(**kwargs)
+        
+        self._working_path = os.path.join( tempfile.gettempdir(), str( id(self) ) )
+        utils.mkdir_p(self._working_path)
+    
+        self._pathomx_pickle_in = os.path.join(self._working_path, 'in')
+        self._pathomx_pickle_out =  os.path.join(self._working_path, 'out')
     
         self.runner = NotebookRunner(None, pylab=True, mpl_inline=True)
         self.latest_run = dict()
 
-        if self.notebook_fn:
-            self.load_notebook( os.path.join(self.plugin.path, self.notebook_fn) )
+        if self.notebook:
+            self.load_notebook( os.path.join(self.plugin.path, self.notebook) )
+
 
     def load_notebook(self, notebook_path):
         with open(notebook_path,  'r') as f:
-            self.notebook = reads(f.read(), 'json')
+            self.nb = reads(f.read(), 'json')
+
+
+        if len(self.nb['worksheets']) == 0:
+            self.nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
+            
+        start = self.nb['worksheets'][0]['cells']
+        self.add_code_cell(start, 0, '''
+from pathomx import pathomx_notebook_start, pathomx_notebook_stop
+pathomx_notebook_start('%s', vars())
+''' % (self._pathomx_pickle_in) )
+
+        self.add_code_cell(start, len(self.nb['worksheets'][0]['cells']), '''pathomx_notebook_stop('%s', vars());''' % (self._pathomx_pickle_out) )
+            
                 
     def generate(self, *args, **kwargs):
-        self.run_notebook(kwargs)
-        return None
+        return self.run_notebook(kwargs)
+
+    def prerender(self, *args, **kwargs):
+    
+        output, resources = IPyexport(IPyexporter_map['html'], self.runner.nb)
+        result_dict = {
+            'Notebook':{'html':output}
+            }
+
+        for k,v in kwargs.items():
+
+            if type(v) == Figure:
+                self.views.addView( IPyMplView(self), k)
+                result_dict[k] = {'fig':v}
                 
-    def run_notebook(self, vars={}):
-        nb = self.notebook
+            elif type(v) == pd.DataFrame:
+                self.views.addView( DataFrameWidget( pd.DataFrame({}), parent=self), k)
+                result_dict[k] = {'data':v}
+
+        return result_dict
         
-        if len(nb['worksheets']) == 0:
-            nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
-
-        # Pickle all variables and import to the notebook (depickler)
-        pvars = {}
-        for k,v in vars.items():
-            pvars[k] = pickle.dumps(v.data)
-
-        start = nb['worksheets'][0]['cells']
-        start.insert(0, Struct(**{
+    def add_code_cell(self, nb, index, code):
+        nb.insert(index, Struct(**{
             'cell_type': 'code',
             'language': 'python',
             'outputs': [],
             'collapsed': True,
-            'prompt_number': -1,
-            'input': '',
+            'prompt_number': 0,
+            'input': code,
             'metadata': {},
-        }))
-        self.runner.nb = nb
+        }))    
+                
+    def run_notebook(self, varsi={}):
+        
+        varso = copy(varsi)
+        #varsi['input'] = np.array((10,10))
+        varsi['config'] = self.config.as_dict()
+        varsi['rcParams'] = rcParams
+        varsi['styles'] = styles
+
+        # Pickle all variables and import to the notebook (depickler)
+        with open(self._pathomx_pickle_in, 'w') as f:
+            pickle.dump(varsi, f) 
+
+        self.runner.nb = self.nb
 
         try:
             self.runner.run_notebook()
         except:
             self.latest_run['success'] = False
-            raise
         else:
             self.latest_run['success'] = True
-        finally:
-            ext = dict(
-                html='html',
-                slides='slides',
-                latex='latex',
-                markdown='md',
-                python='py',
-                rst='rst',
-            )
-            # self.config.get('output_format')
-            
-            output, resources = IPyexport(IPyexporter_map['html'], self.runner.nb)
-            
-            self.nbview.setHtml( output )
-                
-            # Return the variable state (matching output values only?)
-            
-            return 
 
+
+        # Return input; temp
+        try:
+            with open(self._pathomx_pickle_out,'r') as f:
+                varso = pickle.load(f)
+        except:
+            varso = {}
+        
+        return varso
+            
 
 # Data view prototypes
 
@@ -1959,7 +1999,7 @@ class DataApp(GenericApp):
 
 # Import Data viewer
 
-class ImportDataApp(DataApp):
+class ImportDataApp(IPythonApp):
 
     import_type = tr('Data')
     import_filename_filter = tr("All Files") + " (*.*);;"
@@ -1968,9 +2008,9 @@ class ImportDataApp(DataApp):
     def __init__(self, filename=None, **kwargs):
         super(ImportDataApp, self).__init__(**kwargs)
 
-        self.data.add_output('output')  # Add output slot
-        self.table.setModel(self.data.o['output'].as_table)
-        self.views.addTab(MplSpectraView(self), 'View')
+        self.data.add_output('output_data')  # Add output slot
+        #self.table.setModel(self.data.o['output'].as_table)
+        self.views.addView(MplSpectraView(self), 'View')
 
         self.addImportDataToolbar()
         self.addFigureToolBar()
@@ -1979,33 +2019,28 @@ class ImportDataApp(DataApp):
             self.thread_load_datafile(filename)
 
     # Data file import handlers (#FIXME probably shouldn't be here)
-    def thread_load_datafile(self, filename, type=None):
-        self.status.emit('active')
-        if type:
-            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile_by_type, filename, type) )
-        else:
-            is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile, filename) )
-            
-        if is_worker_locked:
-            self.start_worker_thread(self.worker)
+    #def thread_load_datafile(self, filename, type=None):
+    #    self.status.emit('active')
+    #    if type:
+    #        is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile_by_type, filename, type) )
+    #    else:
+    #        is_worker_locked = self.wait_for_worker_lock( threads.Worker(self.load_datafile, filename) )
+    #        
+    #    if is_worker_locked:
+    #        self.start_worker_thread(self.worker)
+    #
+    #        self.views.autoSelect()  # Unfocus the help file if we've done something here
 
-            self.views.autoSelect()  # Unfocus the help file if we've done something here
-
-    def prerender(self, output=None):
-        return {'View': {'dso': output}}
+    #def prerender(self, output=None):
+    #    return {'View': {'dso': output}}
 
     def onImportData(self):
-        """ Open a data file"""
+        """ Open a data file with a guided import wizard"""
         filename, _ = QFileDialog.getOpenFileName(self.w, self.import_description, '', self.import_filename_filter)
         if filename:
-            self.thread_load_datafile(filename)
-            self.file_watcher = QFileSystemWatcher()
-            self.file_watcher.fileChanged.connect(self.onFileChanged)
-            self.file_watcher.addPath(filename)
+            self.config.set('filename', filename)
+            self.autogenerate()
 
-            self.change_name.emit(os.path.basename(filename))
-
-        return False
 
     def getFileFormatParameters(self, filename):
         return {}
@@ -2042,7 +2077,7 @@ class ExportDataApp(GenericApp):
     def __init__(self, filename=None, **kwargs):
         super(ExportDataApp, self).__init__(**kwargs)
 
-        self.data.add_input('input')  # Add output slot
+        self.data.add_input('input_data')  # Add output slot
 
         self.addExportDataToolbar()
         #if filename:
@@ -2073,7 +2108,7 @@ class ExportDataApp(GenericApp):
         """ Open a data file"""
         filename, _ = QFileDialog.getSaveFileName(self.w, self.export_description, '', self.export_filename_filter)
         if filename:
-            self.thread_save_datafile(filename, self.data.get('input'))
+            self.thread_save_datafile(filename, self.data.get('input_data'))
             self.set_name(os.path.basename(filename))
 
         return False

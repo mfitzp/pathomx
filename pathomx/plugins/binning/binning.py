@@ -45,7 +45,10 @@ class BinningConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class BinningApp(ui.DataApp):
+class BinningApp(ui.IPythonApp):
+
+    notebook = 'binning.ipynb'
+
     def __init__(self, **kwargs):
         super(BinningApp, self).__init__(**kwargs)
 
@@ -54,7 +57,6 @@ class BinningApp(ui.DataApp):
 
         self.data.add_input('input')  # Add input slot
         self.data.add_output('output')
-        self.table.setModel(self.data.o['output'].as_table)
 
         #self.views.addTab(D3SpectraView(self), 'View')
         #self.views.addTab(D3DifferenceView(self), 'Difference')
@@ -79,53 +81,13 @@ class BinningApp(ui.DataApp):
 
         self.finalise()
 
-    def generate(self, input=None, **kwargs):
-        return {'output': self.binning(dsi=input), 'input': input}
 
-    def prerender(self, output=None, input=None):
+    def _prerender(self, output=None, input=None):
         return {
             'View': {'dso': output},
             'Difference': {'dso_a': input, 'dso_b': output}
             }
 
-    def generate(self, input=None):
-        dsi = input
-        ###### BINNING USING CONFI
-        # Generate bin values for range start_scale to end_scale
-        # Calculate the number of bins at binsize across range
-        dso = DataSet()
-        dso.import_data(dsi)
-        print dsi.scales, "?"
-        r = dsi.scales_r[1]
-        print dsi.scales_r
-        print r
-        self._bin_size, self._bin_offset = self.config.get('bin_size'), self.config.get('bin_offset')
-
-        bins = np.arange(r[0] + self._bin_offset, r[1] + self._bin_offset, self._bin_size)
-        number_of_bins = len(bins) - 1
-
-        # Can't increase the size of data, if bins > current size return the original
-        if number_of_bins >= len(dso.scales[1]):
-            return {'dso': dso}
-
-        # Resize (lossy) to the new shape
-        old_shape, new_shape = list(dsi.data.shape), list(dso.data.shape)
-        new_shape[1] = number_of_bins
-        dso.crop(new_shape)  # Lossy crop, but we'll be within the boundary below
-
-
-        for n, d in enumerate(dsi.data):
-            binned_data = np.histogram(dsi.scales[1], bins=bins, weights=d)
-            binned_num = np.histogram(dsi.scales[1], bins=bins)  # Number of data points that ended up contributing to each bin
-            dso.data[n, :] = binned_data[0] / binned_num[0]  # Mean
-
-        dso.scales[1] = [float(x) for x in binned_data[1][:-1]]
-        #dso.labels[1] = [str(x) for x in binned_data[1][:-1]]
-
-        # Remove any NaNs that have crept in (due to the histogram)
-        dso.remove_invalid_data()
-
-        return {'output': dso, 'input': input}  # Pass back input for difference plot
 
  
 class Binning(ProcessingPlugin):

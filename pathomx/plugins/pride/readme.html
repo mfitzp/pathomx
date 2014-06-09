@@ -1,0 +1,32 @@
+@extends("base.html")
+@require(htmlbase, view, pluginbase)
+
+@def content():
+    <div class="header">
+        <div class="header-icon"><img src="file:///@pluginbase/icon-64.png" style="width:64px; height:64px;"></div>
+        <div class="header-text"><h1>PRIDE data Import</h1>
+        <span>Import data from the PRIDE PRoteomics IDEntifications (PRIDE) database</span><br />
+        <span class="author_list">
+            <a href="http://martinfitzpatrick.name/">Martin A. Fitzpatrick</a>
+        </span>    
+        </div>
+    </div>
+    
+<h2>Introduction</h2>
+<p>The PRIDE PRoteomics IDEntifications (PRIDE) database is a centralized, standards compliant, public data repository 
+for proteomics data, including protein and peptide identifications, post-translational modifications and supporting 
+spectral evidence.</p>
+
+<h2>Quick start</h2>
+<p>This plugin supports the import of quantified protein data only. To import the data simply load the downloaded file. 
+Known proteins will be mapped to internal MetaCyc database.</p>
+<h2>References</h2>
+<ol>
+    <li id="ref-1">
+        Kenneth Haug, Reza M. Salek, Pablo Conesa, Janna Hastings, Paula de Matos, Mark Rijnbeek, Tejasvi Mahendrakar, Mark Williams, Steffen Neumann, Philippe Rocca-Serra, Eamonn Maguire, Alejandra González-Beltrán, Susanna-Assunta Sansone, Julian L. Griffin and Christoph Steinbeck.
+        <a href="http://nar.oxfordjournals.org/content/41/D1/D781" class="pubtitle">MetaboLights-- an open-access general-purpose repository for metabolomics studies and associated meta-data.</a>
+        Nucl. Acids Res. (2013) doi: 10.1093/nar/gks1004
+    </li>
+</ol>
+    
+@end

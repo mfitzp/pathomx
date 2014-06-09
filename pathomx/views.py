@@ -24,6 +24,7 @@ from collections import OrderedDict
 from . import utils, threads
 
 import numpy as np
+import pandas as pd
 
 from . import data, config, utils, db
 
@@ -41,6 +42,7 @@ from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
 from matplotlib.path import Path
 from matplotlib.patches import BoxStyle, Ellipse
+from matplotlib.transforms import Bbox, BboxBase
 
 import matplotlib.cm as cm
 
@@ -83,7 +85,7 @@ class ViewManager( QTabWidget ):
     style_updated = pyqtSignal()
     updated = pyqtSignal()
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
         self.w = parent
         self.m = parent.m
@@ -91,12 +93,14 @@ class ViewManager( QTabWidget ):
             
         self.setDocumentMode(True)
         self.setTabsClosable(False)
-        self.setTabPosition( QTabWidget.South )
+        self.setTabPosition( QTabWidget.West )
         self.setMovable(True)
             
-        self._unfocus_tabs_enabled = True
+        self._auto_unfocus_tabs = auto_unfocus_tabs
+        self._auto_delete_on_no_data = auto_delete_on_no_data
         
         self.data = dict() # Stores data from which figures are rendered
+        self.views = {}
     
         self.source_data_updated.connect(self.onRefreshAll)
         self.style_updated.connect(self.onRefreshAll)
@@ -119,21 +123,44 @@ class ViewManager( QTabWidget ):
         widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
         widget.name = name
-        t = super(ViewManager, self).addTab(widget, name, **kwargs)
+        widget.setParent(self)
+        
+        if name in self.views:
+            # Already exists; check if widget of same type
+            t = self.indexOf( self.views[name] )
+            ci = self.currentIndex()
+            cw = self.currentWidget()
+            if type(cw) == type(widget):
+                return t
+            else:
+                self.removeTab(t)
+                self.insertTab(t, widget, name, **kwargs)
+                self.setCurrentIndex(ci)
+        else:
+            t = super(ViewManager, self).addTab(widget, name, **kwargs)
+        self.views[name] = widget
         return t
     
     def onRefreshAll(self):
+        to_delete = []
         for w in range(0, self.count()):
             if hasattr(self.widget(w),'autogenerate') and self.widget(w).autogenerate:
                 try:
                     self.widget(w).autogenerate()
                 except:
                     traceback.print_exc()
-                    # Failure; disable the tab
-                    self.setTabEnabled( w, False)
+                    # Failure; disable the tab or delete
+                    if self._auto_delete_on_no_data:
+                        to_delete.append(w)
+                    else:
+                        self.setTabEnabled( w, False)
                 else:
                     # Success; enable the tab
                     self.setTabEnabled( w, True)
+
+        # Do after so don't upset ordering on loop
+        for w in to_delete:
+            self.removeTab(w)
 
         self.updated.emit()
         
@@ -150,7 +177,7 @@ class ViewManager( QTabWidget ):
         Iterates through all current views and selects the first that is not flagged `_unfocus_on_refresh`. 
         This is used primarily to unfocus the help tabs following successful data calculation.
         '''    
-        if self._unfocus_tabs_enabled:
+        if self._auto_unfocus_tabs:
             cw = self.currentWidget()
             if cw._unfocus_on_refresh:
                 for w in range(0, self.count()):
@@ -416,7 +443,6 @@ class HTMLView(WebView):
         self.setHtml(html, QUrl('file:///')) 
 
 class NotebookView(HTMLView):
-    autogenerate = False
     pass
         
 class StaticHTMLView(HTMLView):
@@ -543,6 +569,101 @@ class MplView(FigureCanvas, BaseView):
         ay[1] = by[1] if by[1] > ay[1] else ay[1]
                 
         return [ax,ay]
+ 
+ 
+class IPyMplView(MplView):
+    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+    def generate(self, fig=None):
+            
+        fc = fig.get_facecolor()
+        if fc == (1, 1, 1, 0): # Default non-background
+            fig.set_facecolor('white')
+
+
+        self.fig = fig
+        self.figure = fig
+        self.fig.set_canvas(self)
+
+        self.redraw()
+        self.draw()
+ 
+
+class DataFrameModel(QAbstractTableModel):
+    ''' data model for a DataFrame class '''
+    def __init__(self):
+        super(DataFrameModel, self).__init__()
+        self.df = pd.DataFrame()
+
+    def setDataFrame(self, dataFrame):
+        self.df = dataFrame
+
+    def signalUpdate(self):
+        ''' tell viewers to update their data (this is full update, not
+        efficient)'''
+        self.layoutChanged.emit()
+
+    #------------- table display functions -----------------
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return QVariant()
+
+        if orientation == Qt.Horizontal:
+            try:
+                return self.df.columns.tolist()[section]
+            except (IndexError, ):
+                return QVariant()
+        elif orientation == Qt.Vertical:
+            try:
+                # return self.df.index.tolist()
+                return self.df.index.tolist()[section]
+            except (IndexError, ):
+                return QVariant()
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return QVariant()
+
+        if not index.isValid():
+            return QVariant()
+
+        return QVariant(str(self.df.iloc[index.row(), index.column()]))
+
+    def flags(self, index):
+            flags = super(DataFrameModel, self).flags(index)
+            flags |= Qt.ItemIsEditable
+            return flags
+
+    def rowCount(self, index=QModelIndex()):
+        return self.df.shape[0]
+
+    def columnCount(self, index=QModelIndex()):
+        return self.df.shape[1]
+
+
+class DataFrameWidget(QWidget, BaseView):
+    ''' a simple widget for using DataFrames in a gui '''
+    def __init__(self, dataFrame, parent=None):
+        super(DataFrameWidget, self).__init__(parent.w)
+
+        self.dataModel = DataFrameModel()
+        self.dataTable = QTableView()
+        self.dataTable.setModel(self.dataModel)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.dataTable)
+        self.setLayout(layout)
+        # Set DataFrame
+        self.setDataFrame(dataFrame)
+
+    def setDataFrame(self, dataFrame):
+        self.dataModel.setDataFrame(dataFrame)
+        self.dataModel.signalUpdate()
+        #self.dataTable.resizeColumnsToContents()
+
+    def generate(self, data=None):
+        if data is not None:
+            self.setDataFrame(data)
+
     
 class D3PrerenderedView(D3View):
     

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 import logging
-logging.debug('Loading utils.py')
 
 import re
 import os
@@ -21,11 +20,18 @@ try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
+    
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
+from matplotlib.figure import Figure
+from matplotlib.axes import Subplot
 
 def _convert_list_type_from_XML(vs):
     '''

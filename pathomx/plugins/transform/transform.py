@@ -13,10 +13,13 @@ import pathomx.utils as utils
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
-from pathomx.views import MplSpectraView
+from pathomx.views import MplSpectraView, IPyMplView
 
 
-class TransformApp(ui.DataApp):
+class TransformApp(ui.IPythonApp):
+
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, **kwargs):
         super(TransformApp, self).__init__(**kwargs)
@@ -24,79 +27,42 @@ class TransformApp(ui.DataApp):
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')  # Add output slot
-        self.table.setModel(self.data.o['output'].as_table)
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')  # Add output slot
+        #self.table.setModel(self.data.o['output'].as_table)
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {  # Accept anything!
+            DataDefinition('input_data', {  # Accept anything!
             })
         )
 
-        self.views.addView(MplSpectraView(self), 'View')
-
         self.finalise()
-
-    def onChangeTransform(self):
-        self.change_name.emit(self.hm_control.currentText())
-
-        #self.config.set('apply_transform', self.hm_control.currentText())
-
-    # Data file import handlers (#FIXME probably shouldn't be here)
-    def generate(self, input=None):
-        #fn = self.transform_options[ self.config.get('apply_transform') ]
-        return {'output': self.fn(input)}
 
 
 class TransformMeanCenter(TransformApp):
     name = "Mean Center"
-
-    def fn(self, dso):
-        center = np.mean(dso.data, axis=0)  # Assume it
-        dso.data = dso.data - center
-        return dso
-
+    notebook = 'mean_center.ipynb'
 
 class TransformLog2(TransformApp):
     name = "Log2"
-
-    # Apply log2 transform to dataset
-    def fn(self, dso):
-        dso.data = np.log2(dso.data)
-        return dso
-
+    notebook = 'log2.ipynb'
 
 class TransformLog10(TransformApp):
     name = "Log10"
-
-    # Apply log10 transform to dataset
-    def fn(self, dso):
-        dso.data = np.log10(dso.data)
-        return dso
-
+    notebook = 'log10.ipynb'
 
 class TransformZeroBaseline(TransformApp):
     name = "Zero baseline"
-
-    def fn(self, dso):
-        minima = np.min(dso.data)
-        dso.data = dso.data + -minima
-        return dso
-
+    notebook = 'zero_baseline.ipynb'
 
 class TransformGlobalMinima(TransformApp):
     name = "Global minima"
-
-    def fn(self, dso):
-        minima = np.min(dso.data[dso.data > 0]) / 2  # Half the smallest value by default
-        # Get the dso filtered by class
-        dso.data[dso.data <= 0] = minima
-        return dso
-
+    notebook = 'global_minima.ipynb'
 
 class TransformLocalMinima(TransformApp):
     name = "Local minima"
+    notebook = 'local_minima.ipynb'
 
     # Minima on column by column basis (should have optional axis here)
     def fn(self, dso):
@@ -109,12 +75,7 @@ class TransformLocalMinima(TransformApp):
 
 class TransformRemoveInvalid(TransformApp):
     name = "Remove invalid data"
-
-    def fn(self, dso):
-        # Remove invalid data (Nan/inf) from the data
-        # and adjust rest of the data object to fit
-        dso.remove_invalid_data()
-        return dso
+    notebook = 'remove_invalid.ipynb'
 
 
 class Transform(ProcessingPlugin):

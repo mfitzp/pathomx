@@ -92,15 +92,18 @@ class ImportDataConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ImportTextApp(ui.ImportDataApp):
+class ImportTextApp(ui.ImportDataApp, ui.IPythonApp):
 
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)"
     import_description = "Open experimental data from text file data file"
+
+    notebook = 'import_text.ipynb'
 
     def __init__(self, *args, **kwargs):
         super(ImportTextApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
+            'filename': None,
             'autodetect_format': True,
             'delimiter': b',',
             'quotechar': b'"',
@@ -112,57 +115,11 @@ class ImportTextApp(ui.ImportDataApp):
 
         self.addConfigPanel(ImportDataConfigPanel, 'Settings')
 
-    def onImportData(self):
-        """ Open a data file with a guided import wizard"""
-        filename, _ = QFileDialog.getOpenFileName(self.w, self.import_description, '', self.import_filename_filter)
-        if filename:
-            if self.config.get('autodetect_format'):
-                try:
-                    f = open(filename, 'rb')
-                    dialect = csv.Sniffer().sniff(f.read(1024))
-                    f.close()
-                except:
-                    pass
-                else:
-                    # Re-read the dialect back into the config
-                    self.config.set_many({attr: dialect.__dict__[attr] for attr in ['delimiter', 'quotechar', 'escapechar', 'doublequote', 'quoting', 'skipinitialspace'] if attr in dialect.__dict__})
 
-            self.thread_load_datafile(filename)
-            self.file_watcher = QFileSystemWatcher()
-            self.file_watcher.fileChanged.connect(self.onFileChanged)
-            self.file_watcher.addPath(filename)
 
-            self.change_name.emit(os.path.basename(filename))
 
-        return False
 
-    def csv_format_kwargs(self):
-        return {k: str(self.config.get(k)) for k in ['delimiter', 'quotechar'] if self.config.get(k) != ''}
 
-    def load_datafile(self, filename):
-
-    # Determine if we've got a csv or peakml file (extension)
-        fn, fe = os.path.splitext(filename)
-        formats = {  # Run specific loading function for different source data types
-                '.csv': self.load_csv,
-                '.txt': self.load_csv,
-            }
-
-        if fe in list(formats.keys()):
-            print("Loading... %s" % fe)
-            dso = formats[fe](filename)
-            if dso == None:
-                raise PathomxIncorrectFileStructureException("Data not loaded, check file structure.")
-
-            dso.name = os.path.basename(filename)
-
-            self.change_name.emit(dso.name)
-            dso.description = 'Imported %s file' % fe
-
-            return {'output': dso}
-
-        else:
-            raise PathomxIncorrectFileFormatException("Unsupported file format.")
 ###### LOAD WRAPPERS; ANALYSE FILE TO LOAD WITH OTHER HANDLER
 
     def load_csv(self, filename):

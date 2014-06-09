@@ -217,19 +217,20 @@ class DataManager( QObject ):
     # Get a dataset through input interface id;
     # This provides indirect access to a copy of the object (local link in self.i = {})
     def get(self, interface):
-        if interface in self.i:
+        if interface in self.i and self.i[interface] is not None:
             # Add ourselves to the watcher for this interface
-            dso = self.i[interface]
+            source_manager, source_interface = self.i[interface]
+            data = source_manager.o[source_interface]
             #dso.log.append('Retrieved by %s on interface %s' % (self, interface) )
             #dso.manager.watchers[ dso.manager_interface ].add( self )
-            return deepcopy( dso )
+            return deepcopy( data )
                 
         return False
     
         
     def unget(self, interface):
         if interface in self.i:
-            self._unconsume( self.i[ interface ] )
+            self._unconsume( interface )
             self.i[ interface ] = None
             #dso = self.i[interface]
     
@@ -238,16 +239,24 @@ class DataManager( QObject ):
     # independent of the object itself (so can overwrite instead of warping)
     def put(self, interface, dso, update_consumers = True):
         if interface in self.o:
-            self.o[interface].import_data(dso)
-            #self.o[interface].log.append('Output by %s on interface %s' % (self, interface) )
-            self.o[interface].manager = self
-            self.o[interface].manager_interface = interface
-            # Update consumers / refresh views
-            self.o[interface].refresh_interfaces()    
-            self.o[interface].previously_managed_by.append(self)
-            self.notify_watchers(interface)
 
-            self.m.dataModel.refresh()
+            try:
+                self.o[interface] = dso
+                #self.o[interface].import_data(dso)
+
+                #self.o[interface].import_data(dso)
+                #self.o[interface].log.append('Output by %s on interface %s' % (self, interface) )
+                #self.o[interface].manager = self
+                #self.o[interface].manager_interface = interface
+                # Update consumers / refresh views
+                #self.o[interface].refresh_interfaces()    
+                #self.o[interface].previously_managed_by.append(self)
+                self.notify_watchers(interface)
+
+                #self.m.dataModel.refresh()
+            except:
+                pass
+
             return True
             
         return False
@@ -256,12 +265,13 @@ class DataManager( QObject ):
         logging.debug('Unputting data on interface %s' % interface)
         # Trigger _unconsume on all watchers
         for w in list( self.watchers[interface] ):
-            for i,d in list(w.i.items()):
-                w.unget( i )
+            for i,d in list(w.i.keys()):
+                if d is not None:
+                    w.unget( i )
         
         self.watchers[interface] = set()
-        self.m.datasets.remove( self.o[interface] )
-        self.o[interface] = DataSet(manager=self) # Empty dso (temp; replace with None later?)
+        #self.m.datasets.remove( self.o[interface] )
+        self.o[interface] = None #DataSet(manager=self) # Empty dso (temp; replace with None later?)
 
     # Get a dataset through output interface id;
     def geto(self, interface):
@@ -272,22 +282,16 @@ class DataManager( QObject ):
     
             
     def add_output(self, interface, dso=None, is_public=True):
-        if dso==None:
-            dso = DataSet(manager=self)
-        
-        self.o[interface] = dso
-        self.o[interface].manager = self
-        self.o[interface].manager_interface = interface
-        self.o[interface].is_public = is_public
+        self.o[interface] = None
         
         # If we're in a constructed view we will have a reference to the global data table
         # This feels a bit hacky
-        if is_public:
-            try:
-                self.m.datasets.append( dso )
-            except:
-                pass
-                
+        #if is_public:
+        #    try:
+        #        self.m.datasets.append( dso )
+        #    except:
+        #        pass
+        
         self.interfaces_changed.emit()
         
     def remove_output(self, interface):
@@ -311,7 +315,7 @@ class DataManager( QObject ):
                 
     def remove_input(self, interface):
         if interface in self.i:
-            self._unconsume( self.i[interface] )
+            self._unconsume( interface )
             del self.i[interface]
             self.interfaces_changed.emit()        
             return True
@@ -325,30 +329,30 @@ class DataManager( QObject ):
             
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
-    def can_consume(self, data, consumer_defs=None):
+    def can_consume(self, source_manager, source_interface, consumer_defs=None):
 
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
 
         # Don't add data from self manager (infinite loop trigger)
-        if data.manager == self:
+        if source_manager == self:
             return False
             
         # Don't add data which belongs to a child
-        if self in data.previously_managed_by:
-            print(data.previously_managed_by)
-            return False
-
+        #if self in data.previously_managed_by:
+        #    print(data.previously_managed_by)
+        #    return False
+        
         for consumer_def in consumer_defs:
-            if consumer_def.can_consume(data):
+            if consumer_def.can_consume(source_manager.o[source_interface]):
                 return True
         return False
         
-    def can_consume_which_of(self, datalist, consumer_defs=None):
+    def can_consume_which_of(self, molist, consumer_defs=None):
         which = []
-        for data in datalist:
-            if self.can_consume(data, consumer_defs):
-                which.append(data)
+        for source_manager, source_interface in molist:
+            if self.can_consume(source_manager, source_interface, consumer_defs):
+                which.append( (source_manager, source_interface) )
         return which
         
     # Check if a manager has a consumable data object
@@ -358,63 +362,57 @@ class DataManager( QObject ):
                 return True
         return False
         
-    def _unconsume(self, data):
-        if data and self in data.manager.watchers[ data.manager_interface ]:
-            data.manager.watchers[ data.manager_interface ].remove( self )
-            for interface, d in list(self.i.items()):
-                if d == data:
-                    self.unconsumed.emit( (data.manager, data.manager_interface), (self, interface) )
+    def _unconsume(self, interface):
+        if self.i[interface] is not None:
+            source_manager, source_interface = self.i[interface]
+            source_manager.watchers[ source_interface ].remove( self )
+            del self.i[interface]
+            self.unconsumed.emit( (source_manager, source_interface), (self, interface) )
 
             
     # This is an unchecked consume action; for loading mainly
-    def _consume_action(self, interface, data):
+    def _consume_action(self, source_manager, source_interface, interface):
+    
+        # Remove consumed data to update the source watchers
         if interface in self.i:
-            self._unconsume(self.i[interface]) 
+            self._unconsume(interface) 
+            
+        self.i[ interface ] = (source_manager, source_interface) # Store source as a tuple; we re-do the get rather than storing the actual data
+        source_manager.watchers[ source_interface ].add(self)
 
-        self.i[ interface ] = data
-        data.manager.watchers[ data.manager_interface ].add( self )
-
-        self.consumes.append( data )
-        data.consumers.append( self )
-
-        self.consumed.emit( (data.manager, data.manager_interface), (self, interface) )
+        self.consumed.emit( (source_manager, source_interface), (self, interface) )
 
     # Check if we can consume some data, then do it                      
-    def _consume(self, data, consumer_defs=None):
+    def _consume(self, source_manager, source_interface, consumer_defs=None):
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
-        
+
+    
         # Check whether this is allow (checks manager, checks hierarchy (infinite loopage) )
-        if not self.can_consume( data, consumer_defs):
+        if not self.can_consume( source_manager, source_interface, consumer_defs):
             return False
             
         for consumer_def in consumer_defs:
-            if consumer_def.can_consume(data):
+            if consumer_def.can_consume( source_manager.o[source_interface] ):
                 # Remove existing data object link (stop watching)
-                self._consume_action( consumer_def.target, data )
-                #self.i[ consumer_def.target ] = data
-                #data.manager.watchers[ data.manager_interface ].add( self )
-                #self.consumes.append( data )
-                #data.consumers.append( self )
-                
-                try: # Notify the mainview of the workspace change
-                    self.m.workspace_updated.emit()   
-                except:
-                    pass
+                self._consume_action( source_manager, source_interface, consumer_def.target )
                 return True    
         
-    def consume(self, data):
-        if self._consume(data):
+    def consume(self, source_manager, source_interface):
+        if self._consume(source_manager, source_interface):
             self.source_updated.emit()
             return True
         return False
-                
-    def consume_any_of(self, data_l):
-        for dso in data_l:
-            if self._consume(dso):
-                self.source_updated.emit()
-                return dso
+
+    def consume_any_app(self, app_l):
+        for a in app_l:
+            # Iterate all outputs for this app's data manager
+            for o in a.data.o.keys():
+                if self._consume(a.data, o):
+                    self.source_updated.emit()
+                    return a.data.o[o]
         return False
+
                 
     def consume_with(self, data, consumer_def):
         if self._consume(data, [consumer_def]):
@@ -427,13 +425,7 @@ class DataManager( QObject ):
                 
     def stop_consuming(self, target ):
         if target in self.i:
-            self.consumes.remove( self.i[ target ])
             del self.i[ target ]
-
-    def stop_providing(self, data):
-        data.remove_all_consumers()
-        self.provides.remove(data)
-        
 
     def refresh_consumed_data(self):
         self.source_updated.emit() # Trigger recalculation
@@ -489,6 +481,8 @@ class DataDefinition( QObject ):
         return self.cmp_map['='], s
         
     def can_consume(self, data):
+        # FIXME! Check for data types (DataFrame vs Series; dimensions; that's about it)
+        return True
         # Prevent self-consuming (inf. loop)
         #FIXME: Need a reference to the manager in self for this to work? Add to definition?
         #if data.manager == self:
@@ -498,8 +492,8 @@ class DataDefinition( QObject ):
         # if we fail at any point return False
         # self.interface holds the interface for this 
         # Test each option; if we get to the bottom we're alright!
-        logging.debug("CONSUME? [%s]" % data.name)
-        logging.debug(self.definition)
+        #logging.debug("CONSUME? [%s]" % data.name)
+        #logging.debug(self.definition)
         
         for k,v in list(self.definition.items()):
             t = getattr( data, k )
@@ -652,8 +646,6 @@ class DataSet( object ):
         
         Would work nicely with the previous plan to allow multi-entity and 'scoring' e.g. most-less likely
         '''
-        
-        
 
         o.labels = [x[:] for x in self.labels]
         o.entities = [x[:] for x in self.entities]

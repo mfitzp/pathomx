@@ -209,12 +209,13 @@ class ToolItem(BaseItem):
         pass
 
     def addDataLink(self, datao, datai):
+    
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
         # (data.manager, data.manager_interface), (self, interface)
 
         linker = LinkItem(o, i)  # , o.output.settings[1], i.input.settings[1])
-        linker.dso = datao[0].o[datao[1]]  # Get the dso from the interface
+        linker.data = (datao[0], datao[1])  # Get the dso from the interface
         linker.updateLine()
 
         self.scene.addItem(linker)
@@ -241,6 +242,7 @@ class ToolItem(BaseItem):
             del self._links[datai]
 
     def mouseDoubleClickEvent(self, e):
+        e.accept()
         self.onShow()
         
     #def mousePressEvent(self, e):
@@ -253,6 +255,7 @@ class ToolItem(BaseItem):
             return super(ToolItem, self).keyPressEvent(e)
 
     def contextMenuEvent(self, e):
+        e.accept()
 
         o = self.scene.parent()
         menu = QMenu(o)
@@ -284,6 +287,7 @@ class ToolItem(BaseItem):
     def onShow(self, v=None):
         if v:
             self.app.views.setCurrentWidget(v)
+
         self.app.show()
         self.app.raise_()
 
@@ -444,7 +448,7 @@ class ToolInterface(BaseInteractiveItem):
 
                 source = self._linkInProgress.source.app
                 dest = target.app
-                c = dest.data.consume_any_of(list(source.data.o.values()))
+                c = dest.data.consume_any_app([source])
 
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
@@ -467,7 +471,7 @@ class LinkItem(QGraphicsPathItem):
         super(LinkItem, self).__init__()
 
         # DataSet carried by this link (if any)
-        self.dso = None
+        self.data = None
 
         pen = QPen()
         pen.setColor(QColor(CONNECTOR_COLOR))
@@ -519,13 +523,17 @@ class LinkItem(QGraphicsPathItem):
 
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
-        if self.dso:
+        
+        
+        if self.data is not None:
+        
             # Determine maximum length of text by horribly kludge
             max_length = self.bezierPath.length() / 10
+            source_manager, source_interface = self.data
+            dataobj = source_manager.o[source_interface]
             strs = [
-                self.dso.manager_interface,
-                "(%s)" % "x".join([str(x) for x in self.dso.shape]),
-                self.dso.name,
+                source_interface,
+                "(%s)" % "x".join([str(x) for x in dataobj.shape]),
                 ]
 
             text = ''
