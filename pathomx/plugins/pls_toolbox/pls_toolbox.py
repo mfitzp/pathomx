@@ -9,7 +9,7 @@ import mlabwrap
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
-import pathomx.threads as threads
+
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView

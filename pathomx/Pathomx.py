@@ -78,11 +78,9 @@ from pyqtconfig import QSettingsManager
 from . import data
 from . import utils
 from . import ui
-from . import threads
 from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
-from . import resources
 from .editor.editor import WorkspaceEditorView, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
 
 from .globals import db, styles
@@ -153,10 +151,6 @@ class ToolBoxItemDelegate(QAbstractItemDelegate):
         self._font = None
 
     def paint(self, painter, option, index):
-        if not index.data(Qt.UserRole)['plugin'].has_resources:
-            painter.setOpacity(0.25)
-        else:
-            painter.setOpacity(1)
 
         # GET TITLE, DESCRIPTION AND ICON
         icon = index.data(Qt.DecorationRole)
@@ -237,14 +231,12 @@ class ToolPanel(QListWidget):
     def rowY(self, row):
         return row * self._tool_width
 
+class ToolTreeWidget(QTreeWidget):
+
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.LeftButton:  # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
             logging.debug('Starting drag-drop of workspace item.')
             item = self.currentItem()
-            if not item.data['plugin'].has_resources:
-                logging.debug('Cancelled drag drop: neccessary resources for plugin are missing.')
-                e.ignore()
-                return
 
             mimeData = QMimeData()
             mimeData.setData('application/x-pathomx-app', item.data['id'])
@@ -254,7 +246,7 @@ class ToolPanel(QListWidget):
             drag = QDrag(self)
             drag.setMimeData(mimeData)
             drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
-            drag.setHotSpot(e.pos() - self.visualItemRect(item).topLeft())
+            drag.setHotSpot(QPoint(32,32)) # - self.visualItemRect(item).top())
 
             dropAction = drag.exec_(Qt.CopyAction)
             logging.debug('Drag-drop complete.')
@@ -484,12 +476,6 @@ class MainWindow(QMainWindow):
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
 
-        resources.matlab.set_exec_path(self.settings.get('Resources/MATLAB_path'))
-
-        self.resources = {
-            'MATLAB': resources.matlab,
-            'R': resources.r,
-        }
 
         self.plugins = {}  # Dict of plugin shortnames to data
         self.plugins_obj = {}  # Dict of plugin name references to objs (for load/save)
@@ -524,12 +510,11 @@ class MainWindow(QMainWindow):
                "Analysis": plugins.AnalysisPlugin,
                "Visualisation": plugins.VisualisationPlugin,
                "Export": plugins.ExportPlugin,
-               "Scripting": plugins.ScriptingPlugin,
                }
         self.pluginManager.setCategoriesFilter(categories_filter)
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export", "Scripting"]  # categories_filter.keys()
+        plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export"]  # categories_filter.keys()
         apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
@@ -573,9 +558,6 @@ class MainWindow(QMainWindow):
 
                 apps[category].append(metadata)
 
-        self.threadpool = QThreadPool()
-        logging.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-
         self.workspace_count = 0  # Auto-increment
         self.workspace_parents = {}
         self.workspace_index = {}  # id -> obj
@@ -589,59 +571,47 @@ class MainWindow(QMainWindow):
         self.workspace.hideColumn(1)
 
         app_category_icons = {
-               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')),
+               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
                "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
                "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
                "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
                "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
                "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
                "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
-               "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')),
                }
 
         template = self.templateEngine.get_template('apps.html')
-        for category in plugin_categories:
-            self.addWorkspaceItem(None, None, category, app_category_icons[category])
 
-        self.workspace.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.workspace.currentItemChanged.connect(self.onWorkspaceItemChange)
+        self.toolbox = ToolTreeWidget(self) #QToolBox(self)
 
-        self.toolbox = QToolBox(self)
+        self.toolbox.setHeaderLabels(['Installed tools'])
+        self.toolbox.setUniformRowHeights(True)
+        
         for category in plugin_categories:
-            panel = ToolPanel(self, tools=self.tools[category])
-            self.toolbox.addItem(panel, app_category_icons[category], category)
+            item = QTreeWidgetItem()
+            item.setText(0, category)
+            item.setIcon(0, app_category_icons[category] )
+            self.toolbox.addTopLevelItem(item) 
+            for tool in self.tools[category]:
+                ti = QTreeWidgetItem()
+                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name)  )
+                ti.setIcon(0, tool['plugin'].icon)
+                ti.setToolTip( 0, tool['plugin'].metadata['description'] )
+                ti.data = tool
+                item.addChild(ti)
+            item.sortChildren(0, Qt.AscendingOrder)
+
+        self.toolbox.expandAll()
+            
 
         self.toolDock = QDockWidget(tr('Toolkit'))
         self.toolDock.setWidget(self.toolbox)
+        self.toolDock.setMinimumWidth(300)
 
-        self.workspaceDock = QDockWidget(tr('Workspace'))
-        self.workspaceDock.setWidget(self.workspace)
-        self.workspace.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.workspace.setColumnWidth(0, 298 - 25 * 2)
-        self.workspace.setColumnWidth(2, 24)
-        self.workspace.setColumnWidth(3, 24)
-        self.workspaceDock.setMinimumWidth(300)
-        self.workspaceDock.setMaximumWidth(300)
-
-        self.dataView = QTreeView(self)
-        self.dataModel = data.DataTreeModel(self.datasets)
-        self.dataView.setModel(self.dataModel)
-        self.dataView.hideColumn(0)
-
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.workspaceDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
-        self.tabifyDockWidget(self.toolDock, self.workspaceDock)
         self.toolDock.raise_()
 
-        #self.viewerDock = QDockWidget(tr('View'))
-        #self.viewerDock.setMinimumWidth(300)
-        #self.viewerDock.setMaximumWidth(300)
-
-        #self.addDockWidget(Qt.RightDockWidgetArea, self.viewerDock)
-
-        #self.configDock = QDockWidget(tr('Configuration'))
-        #self.addDockWidget(Qt.RightDockWidgetArea, self.configDock)
 
 
         self.dbtool = ui.DbApp(self)
@@ -663,7 +633,6 @@ class MainWindow(QMainWindow):
 
         self.central.addTab(self.editView, 'Editor')
         self.central.addTab(self.logView, 'Log')
-        self.central.addTab(self.dataView, 'Data')
 
         self.setCentralWidget(self.central)
 
@@ -1001,75 +970,6 @@ class MainWindow(QMainWindow):
         template = self.templateEngine.get_template(template)
         self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), QUrl("~"))
 
-    def onWorkspaceItemChange(self, item, previous):
-        widget = self.workspace_index[item.text(1)]
-        if widget:
-            widget.show()
-            widget.raise_()
-
-    def addWorkspaceItem(self, widget, section, title, icon=None):
-
-        tw = QTreeWidgetItem()
-        wid = str(id(tw))
-        tw.setText(0, tr(title))
-        tw.setText(1, wid)
-
-        if widget:
-            widget._workspace_index = wid
-
-        self.workspace_index[wid] = widget
-
-        if icon:
-            tw.setIcon(0, icon)
-
-        if section:
-            self.workspace_parents[section].addChild(tw)
-            widget._workspace_section = self.workspace_parents[section]
-            widget._workspace_tree_widget = tw
-        else:
-            self.workspace.addTopLevelItem(tw)
-            self.workspace_parents[title] = tw
-            tw.setExpanded(True)
-
-        return tw
-
-    def removeWorkspaceItem(self, widget):
-        del self.workspace_index[widget._workspace_index]
-        widget._workspace_section.removeChild(widget._workspace_tree_widget)
-
-    def setWorkspaceStatus(self, workspace_item, status):
-        status_icons = {
-            'active': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-green.png')),
-            'render': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-purple.png')),
-            'waiting': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-yellow.png')),
-            'error': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-red.png')),
-            'paused': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-white.png')),
-            'done': QIcon(os.path.join(utils.scriptdir, 'icons', 'flag-checker.png')),
-            'clear': QIcon(None)
-        }
-
-        if status not in list(status_icons.keys()):
-            status = 'clear'
-
-        workspace_item.setIcon(3, status_icons[status])
-        self.workspace.update(self.workspace.indexFromItem(workspace_item))
-
-        # Keep things ticking
-        QCoreApplication.processEvents()
-
-        if status == 'active':  # Starting
-            self.updateProgress(workspace_item, 0)
-
-        elif status == 'clear' or status == 'error':
-            self.updateProgress(workspace_item, None)
-
-        elif status == 'done':  # Flash done then clear in a bit
-            self.updateProgress(workspace_item, 1)
-            statusclearCallback = functools.partial(self.setWorkspaceStatus, workspace_item, 'clear')
-            workspace_item.status_timeout = QTimer.singleShot(1000, statusclearCallback)
-
-    def clearWorkspaceStatus(self, workspace_item):
-        self.setWorkspaceStatus(workspace_item, 'clear')
 
     def updateProgress(self, workspace_item, progress):
 

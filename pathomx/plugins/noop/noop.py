@@ -8,7 +8,14 @@ from pathomx.data import DataSet, DataDefinition
 from pathomx.qt import *
 
 
-class NOOPApp(ui.GenericApp):
+class NOOPApp(ui.IPythonApp):
+
+    name = "NOOP"
+    notebook = 'noop.ipynb'
+
+    legacy_loaders = ['NOOP.NOOPApp']
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, **kwargs):
         super(NOOPApp, self).__init__(**kwargs)

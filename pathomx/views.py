@@ -21,7 +21,7 @@ except ImportError:
 from collections import OrderedDict
 
 # Pathomx classes
-from . import utils, threads
+from . import utils
 
 import numpy as np
 import pandas as pd
@@ -106,7 +106,7 @@ class ViewManager( QTabWidget ):
         self.style_updated.connect(self.onRefreshAll)
     
     # A few wrappers to 
-    def addView(self, widget, name, focused=True, unfocus_on_refresh=False, **kwargs):
+    def addView(self, widget, name, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
         '''
         Add a view to this view manager.
 
@@ -123,23 +123,27 @@ class ViewManager( QTabWidget ):
         widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
         widget.name = name
-        widget.setParent(self)
-        
+
         if name in self.views:
-            # Already exists; check if widget of same type
+            # Already exists; we check if of the same type before calling this
+            # so here we just replace
             t = self.indexOf( self.views[name] )
-            ci = self.currentIndex()
-            cw = self.currentWidget()
-            if type(cw) == type(widget):
-                return t
-            else:
-                self.removeTab(t)
-                self.insertTab(t, widget, name, **kwargs)
-                self.setCurrentIndex(ci)
+            tw = self.widget(t)
+            self.widget(t).deleteLater()
+            self.removeTab(t)
+            self.insertTab(t, widget, name, **kwargs)
         else:
             t = super(ViewManager, self).addTab(widget, name, **kwargs)
         self.views[name] = widget
+        
         return t
+    
+    def get_type(self, name):
+        ''' Return the type of a current view (by name) used to check whether to re-add/replace widget '''
+        if name in self.views:
+            return type(self.views[name])
+        else:
+            return None
     
     def onRefreshAll(self):
         to_delete = []
@@ -160,6 +164,7 @@ class ViewManager( QTabWidget ):
 
         # Do after so don't upset ordering on loop
         for w in to_delete:
+            self.widget(w).deleteLater()
             self.removeTab(w)
 
         self.updated.emit()
@@ -499,6 +504,8 @@ class MplView(FigureCanvas, BaseView):
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.add_subplot(111)
+        
+        self.ax.plot([1,2,3,4])
 
         self.ax.spines['top'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
@@ -579,6 +586,9 @@ class IPyMplView(MplView):
         if fc == (1, 1, 1, 0): # Default non-background
             fig.set_facecolor('white')
 
+        self.ax = None
+        del self.fig
+        del self.figure
 
         self.fig = fig
         self.figure = fig

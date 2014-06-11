@@ -10,7 +10,6 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
 
-from pathomx.data import DataSet, DataDefinition, TableInterface
 from pathomx.views import TableView
 from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import IdentificationPlugin
@@ -78,7 +77,9 @@ class EntityItemDelegate(QStyledItemDelegate):
 
 # Table interface to a entity table. This is a simple multiple column/row view of the data
 # with information on mappings, targets and (later) the option to change these mappings
-class EntityTableInterface(TableInterface):
+class EntityTableInterface(QAbstractTableModel):
+
+
     def __init__(self, dso, *args, **kwargs):
         super(EntityTableInterface, self).__init__(dso, *args, **kwargs)
         self.dso = dso
@@ -132,6 +133,23 @@ class EntityTableInterface(TableInterface):
             return col + 1
 
         return None
+        
+    def refresh(self):
+        self.layoutAboutToBeChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
+        self.headerDataChanged.emit(Qt.Horizontal,0,self.columnCount(None))
+        self.headerDataChanged.emit(Qt.Vertical,0,self.rowCount(None))
+        self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint )
+        
+    def sort(self, col, order):
+        """sort table by given column number col"""
+        self.emit(SIGNAL("layoutAboutToBeChanged()"))
+        self.table = sorted(self.table,
+        key=operator.itemgetter(col))
+        if order == Qt.DescendingOrder:
+            self.table.reverse()
+            self.emit(SIGNAL("layoutChanged()"))
+
+        
 
 
 class MapEntityApp(ui.GenericApp):

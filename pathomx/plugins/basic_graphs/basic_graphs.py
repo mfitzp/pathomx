@@ -7,7 +7,7 @@ import numpy as np
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
-import pathomx.threads as threads
+
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition
@@ -54,22 +54,25 @@ class BarTool(ui.AnalysisApp):
 
 
 # Graph a spectra
-class SpectraTool(ui.DataApp):
-    name = "Spectra"
+class SpectraTool(ui.IPythonApp):
 
+    name = "Spectra"
+    notebook = 'basic_plot_spectra.ipynb'
+    
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+    
     def __init__(self, **kwargs):
         super(SpectraTool, self).__init__(**kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot        
-
-        self.views.addTab(MplSpectraView(self), 'View')
+        self.data.add_input('input_data')  # Add input slot        
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {
+            DataDefinition('input_data', {
             'labels_n': ('>0', None),
             'entities_t': (None, None),
             #'scales_t': (None, ['float']),
@@ -77,14 +80,6 @@ class SpectraTool(ui.DataApp):
         )
 
         self.finalise()
-
-    def generate(self, input=None):
-        return {'input': input}
-
-    def prerender(self, input=None):
-        return {
-            'View': {'dso': input},
-            }
 
     
 class BasicGraph(VisualisationPlugin):

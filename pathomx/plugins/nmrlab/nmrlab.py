@@ -9,17 +9,16 @@ import logging
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
-import pathomx.threads as threads
+
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
-from pathomx.resources import matlab, MATLABLock
 
 
-class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
+class NMRLabMetabolabTool(ui.DataApp):
     def __init__(self, **kwargs):
         super(NMRLabMetabolabTool, self).__init__(**kwargs)
 
@@ -31,9 +30,6 @@ class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
         self.table.setModel(self.data.o['output'].as_table)
 
         self.views.addTab(MplSpectraView(self), 'View')
-
-        # Start matlab interface
-        self.matlab = matlab.init()
 
         # Setup data consumer options
         self.data.consumer_defs.append(
@@ -48,9 +44,6 @@ class NMRLabMetabolabTool(MATLABLock, ui.DataApp):
             'bin_size': 0.01,
             'bin_offset': 0,
         })
-
-    def __exit__(self, ext_type, exc_value, traceback):
-        self.matlab.stop()
 
 
 # NMRLab BASELINE CORRECTION

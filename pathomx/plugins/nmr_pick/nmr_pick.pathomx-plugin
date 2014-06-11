@@ -1,9 +1,0 @@
-[Core]
-Name = Peak Picking
-Module = nmr_pick
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Convert loaded data to metabolite quantities via manual peak picking

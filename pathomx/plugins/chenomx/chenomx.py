@@ -8,7 +8,7 @@ from collections import defaultdict
 import numpy as np
 
 import pathomx.ui as ui
-import pathomx.threads as threads
+
 import pathomx.utils as utils
 
 from pathomx.plugins import ImportPlugin

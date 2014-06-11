@@ -14,7 +14,7 @@ from pathomx.qt import *
 
 import pathomx.ui as ui
 import pathomx.db as db
-import pathomx.threads as threads
+
 import pathomx.utils as utils
 
 from pathomx.data import DataSet

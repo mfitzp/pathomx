@@ -16,7 +16,7 @@ import scipy as sp
 import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
-import pathomx.threads as threads
+
 
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import MplScatterView, MplSpectraView

@@ -15,7 +15,7 @@ import operator
 import pathomx.ui as ui
 import pathomx.utils as utils
 import pathomx.db as db
-import pathomx.threads as threads
+
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataSet, DataDefinition

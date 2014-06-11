@@ -100,7 +100,7 @@ def spectra(data, figure=None, styles=None):
     #    # Add fake axis scale for plotting
     #    dso.scales[1] = list(range( len(dso.scales[1])))
 
-    if 'Class' in data.index.names:
+    if 'Class' in data.index.names and len( data.index.levels[ data.index.names.index( 'Class' ) ] ) > 1:
         class_idx = data.index.names.index('Class')
         classes = list( data.index.levels[ class_idx ] )
     else:
@@ -123,8 +123,16 @@ def spectra(data, figure=None, styles=None):
     data_headers = data_abs_max.index
 
     # Temporary scale
-    scale = np.arange(0, data.shape[1] )
-    
+    if type(data.columns[0]) == float:
+        scale = data.columns.values
+        is_scale_reversed = scale[0] > scale[-1]
+    else:
+        scale = np.arange(0, data.shape[1] )
+        is_scale_reversed = False
+        
+    if is_scale_reversed:
+        ax.invert_xaxis()
+        
     if classes:
     
         # More than one data row (class) so plot each class

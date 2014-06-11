@@ -12,7 +12,7 @@ import logging
 
 import pathomx.ui as ui
 import pathomx.utils as utils
-import pathomx.threads as threads
+
 from pathomx.globals import db
 
 from pathomx.plugins import IdentificationPlugin

@@ -1,9 +1,9 @@
 [Core]
-Name = Python
-Module = python
+Name = Spectra processing tools
+Module = spectra
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Python scripting
+Description = Tools for processing spectra (e.g. NMR)

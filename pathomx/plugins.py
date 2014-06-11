@@ -378,10 +378,6 @@ class BasePlugin(IPlugin):
         self.metadata = metadata
 
     @property
-    def has_resources(self):
-        return set([k for k, v in self.m.resources.items() if v.is_available]).issuperset(set(self.metadata['resources']))
-
-    @property
     def icon(self):
         '''
         Return the icon for this plugin.

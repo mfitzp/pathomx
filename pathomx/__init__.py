@@ -45,7 +45,7 @@ def pathomx_notebook_stop(fn, vars):
         StylesManager,
         ]
 
-    with open(fn, 'w') as f:
+    with open(fn, 'wb') as f:
         ovars = {}
         for k,v in vars.items():
             # Check it's an accepted type for passing; and not private (starts with _)
@@ -54,10 +54,11 @@ def pathomx_notebook_stop(fn, vars):
                type(v) in accepted_types:
                     
                 try:
-                    pickle.dumps(v)
+                    # Horrible hack to test picklability of each var before, er, pickling.
+                    pickle.dumps(v, -1)
                 except:
                     pass
                 else:
                     ovars[k] = v
 
-        pickle.dump(ovars, f)
+        pickle.dump(ovars, f, -1)
