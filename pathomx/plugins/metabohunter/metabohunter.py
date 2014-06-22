@@ -13,8 +13,6 @@ import logging
 import pathomx.ui as ui
 import pathomx.utils as utils
 
-from pathomx.globals import db
-
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import MplSpectraView
@@ -111,20 +109,23 @@ class MetaboHunterConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MetaboHunterApp(ui.DataApp):
+class MetaboHunterApp(ui.IPythonApp):
 
-    def __init__(self, **kwargs):
-        super(MetaboHunterApp, self).__init__(**kwargs)
+    name = "MetaboHunter"
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
+    notebook = "metabohunter.ipynb"
+
+    def __init__(self, *args, **kwargs):
+        super(MetaboHunterApp, self).__init__(*args, **kwargs)
         #Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
         self.addDataToolBar(default_pause_analysis=True)
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')
-        self.table.setModel(self.data.o['output'].as_table)
-
-        self.views.addView(MplSpectraView(self), 'View')
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')
 
         self.config.set_defaults({
             'Metabotype': 'All',
@@ -142,162 +143,13 @@ class MetaboHunterApp(ui.DataApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {
+            DataDefinition('input_data', {
             'scales_t': (None, ['float']),
             'entities_t': (None, None),
             })
         )
 
-        self.finalise()
-    #def onMetaboHunterSettings(self):
-    #    dialog = DialogMetabohunter(parent=self, view=self)
-    #    ok = dialog.exec_()
-    #    if ok:
-    #        # Extract the settings and from the dialog
-    #        for n, o in self.options.items():
-    #            self.config.set(n, dialog.lw_combos[n].currentText() )
-    #
-    #        for n in ['Noise Threshold','Hit Threshold','Tolerance']:
-    #            self.config.set(n, dialog.lw_spin[n].value() )#
-    #
-    #           self.autogenerate()
 
-    def generate(self, input=None):
-        return {'output': self.metabohunter(dso=input)}
-
-    def metabohunter(self, dso):
-
-        ### GLOBAL VARIABLES ###
-        samples = OrderedDict()
-        ppm_master = list()  # ppm masterlist
-        ppm_cleaned = list()  # ppm masterlist, no dups
-
-        splits = dict()  # Peak sets [full, class-split, loading-split, class & loading split]
-        annotate = dict()
-
-        remote_data = dict()  # Container for references to metabolite data on remote server
-
-        # Web service peak-list assignment (metabohunter)
-        logging.info("Sending peaklist to MetaboHunter...")
-
-        peaks_list = '\n'.join([' '.join([str(a), str(b)]) for a, b in zip(dso.scales[1], dso.data[0, :])])
-
-        url = 'http://www.nrcbioinformatics.ca/metabohunter/post_handler.php'
-
-        values = {  # 'file'          : open('metabid_peaklist.txt', 'rt'),
-                  'posturl': 'upload_file.php',
-                  'useall': 'yes',
-                  'peaks_list': peaks_list,
-                  'dbsource': self.config.get('Database Source'),
-                  'metabotype': self.config.get('Metabotype'),
-                  'sampleph': self.config.get('Sample pH'),
-                  'solvent': self.config.get('Solvent'),
-                  'freq': self.config.get('Frequency'),
-                  'method': self.config.get('Method'),
-                  'noise': self.config.get('Noise Threshold'),
-                  'thres': self.config.get('Confidence Threshold'),
-                  'neighbourhood': self.config.get('Tolerance'),  # tolerance, # Use same tolerance as for shift
-                  'submit': 'Find matches',
-                 }
-
-        self.status.emit('waiting')
-        self.progress.emit(0.2)
-
-        try:
-            r = requests.post(url, data=values)
-        except e:
-            return None
-
-        html = r.content
-
-        self.status.emit('active')
-        self.progress.emit(0.4)
-
-        m = re.search('name="hits" value="(.*?)\n(.*?)\n"', html, re.MULTILINE | re.DOTALL)
-        remote_data['metabolite_table'] = m.group(2)
-
-        m = re.search('name="sample_file" value="(.*?)"', html, re.MULTILINE | re.DOTALL)
-        remote_data['sample_file'] = m.group(1)
-
-        logging.info("Received analysis from MetaboHunter, interpreting...")
-
-        # Regexp out the matched peaks table from the hidden form field in response (easiest to parse)
-        metabolites = OrderedDict()
-
-        # Iterate line by line (skip first, header) building a table of the returned metabolites
-        for row in remote_data['metabolite_table'].split('\n'):
-
-            fields = row.split('\t')  # split row on tabs
-            m = re.match("(.*?) \((\d*?)/(\d*?)\)", fields[3])
-
-            metabolites[fields[1]] = {
-                'name': fields[2],
-                'score': float(m.group(1)),
-                'peaks': "%d/%d" % (int(m.group(2)), int(m.group(3))),
-                'taxnomic': fields[4],
-                'rank': fields[0],
-                }
-
-        logging.info("Retrieving matched peaks to metabolite relationships...")
-
-        values = {'sample_file': remote_data['sample_file'],
-                  'matched_peaks_file': remote_data['sample_file'] + "_matched_spectra.txt",
-                  'noise': 0.0,
-                  'hits': 'Rank\tID\tMetabolite name\tMatching peaks score\tTaxonomic origin\r\n' + remote_data['metabolite_table'] + '\r\n',
-         }
-
-        self.status.emit('active')
-        self.progress.emit(0.6)
-
-        # Create the Request object
-        url = 'http://www.nrcbioinformatics.ca/metabohunter/download_matched_peaks.php'
-        try:
-            r = requests.post(url, data=values, files={'foo': 'bar'})
-        except e:
-            logging.error(e)
-            return None
-
-        matched_peaks_text = r.content
-
-        self.progress.emit(0.8)
-
-        logging.info("Extracting data...")
-
-        # Need to do this in two steps, so they are in the correct order for output
-        metabolite_peaks = dict()
-        matched_peak_metabolites = dict()
-
-        for row in matched_peaks_text.split('\n'):
-            fields = row.split()
-            if fields:
-                # fields[0] contains the HMDBid plus a colon :(
-                fields[0] = fields[0].rstrip(':')
-                metabolite_peaks[fields[0]] = fields[1:]
-
-        for metabolite in metabolites:
-            if metabolite in metabolite_peaks:
-                # Save metabolite for each peak
-                for peak in metabolite_peaks[metabolite]:
-                    #if peak in matched_peak_metabolites:
-                    #    matched_peak_metabolites[ peak ].append(metabolite)
-                    #else:
-                    matched_peak_metabolites[peak] = metabolite
-
-
-        # Assign metabolite names to labels (for subsequent entity lookup)
-        # dso.import_data( dsi )
-        # Returned peaks are at 2dp so we need to check if we have a nearish match
-        for n, p in enumerate(dso.scales[1]):
-            sp2 = str(round(p, 2))
-            if sp2 in matched_peak_metabolites:
-                hmdbid = matched_peak_metabolites[sp2]
-                dso.labels[1][n] = hmdbid
-                # All in HMDBIDs; if we have it use the entity
-                dso.entities[1][n] = db.get_via_unification('HMDB', hmdbid)
-
-        return dso
-
-            
 class MetaboHunter(IdentificationPlugin):
 
     def __init__(self, **kwargs):

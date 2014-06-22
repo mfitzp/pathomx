@@ -1,9 +1,0 @@
-[Core]
-Name = PLS_Toolbox
-Module = pls_toolbox
-
-[Documentation]
-Author = Eigenvector Research
-Version = 1.0
-Website = http://www.eigenvector.com/software/pls_toolbox.htm
-Description = Powerful resources for intelligent data analysis

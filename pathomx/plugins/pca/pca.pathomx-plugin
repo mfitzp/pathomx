@@ -1,9 +1,0 @@
-[Core]
-Name = PCA
-Module = pca
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Principal components analysis using SVD

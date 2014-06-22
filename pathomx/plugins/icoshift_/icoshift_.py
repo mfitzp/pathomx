@@ -92,20 +92,20 @@ filling: NaN, previous point
 '''
 
 
-class IcoshiftApp(ui.DataApp):
+class IcoshiftApp(ui.IPythonApp):
 
-    def __init__(self, **kwargs):
-        super(IcoshiftApp, self).__init__(**kwargs)
+    notebook = 'icoshift_.ipynb'
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
+    def __init__(self, *args, **kwargs):
+        super(IcoshiftApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')
-        self.table.setModel(self.data.o['output'].as_table)
-
-        self.views.addView(MplSpectraView(self), 'Spectra')
-        self.views.addView(MplDifferenceView(self), 'Shift')
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')
 
         # Setup data consumer options
         self.data.consumer_defs.append(
@@ -123,26 +123,6 @@ class IcoshiftApp(ui.DataApp):
         })
 
         self.addConfigPanel(IcoshiftConfigPanel, 'Settings')
-
-        self.finalise()
-
-    def generate(self, input=None):
-        return {
-            'output': self.icoshift(self.data.get('input')),
-            'input': self.data.get('input')
-            }
-
-    def prerender(self, output=None, input=None):
-        return {'Spectra': {'dso': output}, 'Shift': {'dso_a': input, 'dso_b': output}}
-
-    def icoshift(self, dsi):
-        # Generate bin values for range start_scale to end_scale
-        # Calculate the number of bins at binsize across range
-        spectra = dsi.data
-        print(spectra)
-        xCS, ints, ind, target = icoshift.icoshift(self.config.get('target'), spectra, inter=self.config.get('alignment_mode'), n=self.config.get('maximum_shift'))
-        dsi.data = xCS
-        return dsi
 
 
 class Icoshift(ProcessingPlugin):

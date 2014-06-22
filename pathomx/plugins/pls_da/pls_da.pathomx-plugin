@@ -1,9 +1,0 @@
-[Core]
-Name = PLS-DA
-Module = pls_da
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Partial least squares discriminant analysis

@@ -41,6 +41,7 @@ import inspect
 import shutil
 from . import utils
 from . import ui
+from .globals import app_launchers, file_handlers, url_handlers
 
 from zipfile import ZipFile
 
@@ -362,19 +363,6 @@ class BasePlugin(IPlugin):
             self.name = "%s %s " % (self.default_workspace_category, "Plugin")
 
         self.name = name
-
-        # Plugin personal template engine
-        self.templateEngine = Engine(
-            loader=FileLoader([self.path, os.path.join(utils.scriptdir, 'html')]),
-            extensions=[CoreExtension(), CodeExtension()]
-        )
-
-        help_path = os.path.join(self.path, 'readme.html')
-        if os.path.exists(help_path):
-            self.help_tab_html_filename = 'readme.html'
-        else:
-            self.help_tab_html_filename = None
-
         self.metadata = metadata
 
     @property
@@ -413,7 +401,7 @@ class BasePlugin(IPlugin):
     def register_app_launcher(self, app, workspace_category=None):
         app.plugin = self
         key = "%s.%s" % (self.id, app.__name__)
-        self.m.app_launchers[key] = app
+        app_launchers[key] = app
 
         if workspace_category == None:
             workspace_category = self.default_workspace_category
@@ -426,13 +414,13 @@ class BasePlugin(IPlugin):
 
         # Support legacy app launchers (so moving apps between plugins doesn't kill them)
         for lkey in app.legacy_launchers:
-            self.m.app_launchers[lkey] = app
+            app_launchers[lkey] = app
 
     def register_file_handler(self, app, ext):
-        self.m.file_handlers[ext] = app
+        file_handlers[ext] = app
 
     def register_url_handler(self, url_handler):
-        self.m.register_url_handler(self.id, url_handler)
+        url_handlers[self.id].append(url_handler)
 
     def register_menus(self, menu, entries):
 

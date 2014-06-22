@@ -1,9 +1,0 @@
-[Core]
-Name = Annotations
-Module = annotate
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Load additional annotations (classes, labels, scales) from external files

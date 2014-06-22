@@ -21,15 +21,14 @@ class TransformApp(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(TransformApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(TransformApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')  # Add output slot
-        #self.table.setModel(self.data.o['output'].as_table)
 
         # Setup data consumer options
         self.data.consumer_defs.append(
@@ -37,28 +36,31 @@ class TransformApp(ui.IPythonApp):
             })
         )
 
-        self.finalise()
-
 
 class TransformMeanCenter(TransformApp):
     name = "Mean Center"
     notebook = 'mean_center.ipynb'
 
+
 class TransformLog2(TransformApp):
     name = "Log2"
     notebook = 'log2.ipynb'
+
 
 class TransformLog10(TransformApp):
     name = "Log10"
     notebook = 'log10.ipynb'
 
+
 class TransformZeroBaseline(TransformApp):
     name = "Zero baseline"
     notebook = 'zero_baseline.ipynb'
 
+
 class TransformGlobalMinima(TransformApp):
     name = "Global minima"
     notebook = 'global_minima.ipynb'
+
 
 class TransformLocalMinima(TransformApp):
     name = "Local minima"

@@ -1,0 +1,9 @@
+[Core]
+Name = Multivariate Analysis
+Module = multivariate
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Multivariate analysis plugins

@@ -10,7 +10,6 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
 
-
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
@@ -18,22 +17,23 @@ from pathomx.qt import *
 from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
 
 
-class NMRLabMetabolabTool(ui.DataApp):
+class NMRLabMetabolabTool(ui.IPythonApp):
+
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
     def __init__(self, **kwargs):
         super(NMRLabMetabolabTool, self).__init__(**kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')
-        self.table.setModel(self.data.o['output'].as_table)
-
-        self.views.addTab(MplSpectraView(self), 'View')
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {
+            DataDefinition('input_data', {
             'labels_n': ('>0', None),
             'entities_t': (None, None),
             'scales_t': (None, ['float']),
@@ -136,6 +136,7 @@ class BaselineConfigPanel(ui.ConfigPanel):
 
 class BaselineMetabolabTool(NMRLabMetabolabTool):
     name = "Baseline correction"
+    notebook = "nmrlab_baseline_correction.ipynb"
     # function mat_out = spcbaseline(mat_in,bs_mode,nopts)
     # spcbaseline - baseline correctino on matric
     #
@@ -161,7 +162,6 @@ class BaselineMetabolabTool(NMRLabMetabolabTool):
         })
 
         self.addConfigPanel(BaselineConfigPanel, 'Settings')
-        self.finalise()
 
     def generate(self, input):
         self.status.emit('active')
@@ -211,6 +211,7 @@ class TMSPAlignConfigPanel(ui.ConfigPanel):
  
 class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
     name = "Align NMR spectra (TMSP)"
+    notebook = "nmrlab_tmsp_align.ipynb"
     # function [mat_out,shift] = spcalign_tmsp(mat_in, refspc, maxshift, ref, SILENT)
     # spcalign_tmsp - Align spectra using TMSP signal, data must be in columns of mat_in
     #            refspc:   no of reference spectrum in matrix
@@ -225,7 +226,6 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
         })
 
         self.addConfigPanel(TMSPAlignConfigPanel, 'Settings')
-        self.finalise()
 
     def generate(self, input):
 
@@ -288,6 +288,7 @@ class SpectraAlignConfigPanel(ui.ConfigPanel):
  
 class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
     name = "Align NMR spectra (whole)"
+    notebook = "nmrlab_spectra_align.ipynb"
     # function [mat_out,shift] = spcalign(mat_in, refspc, maxshift, alg, SILENT)
     # spcalign - Align spectra, data must be in columns of mat_in
     #            refspc:   no of reference spectrum in matrix
@@ -305,7 +306,6 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
         })
 
         self.addConfigPanel(SpectraAlignConfigPanel, 'Settings')
-        self.finalise()
 
     def generate(self, input):
 
@@ -374,6 +374,7 @@ class VarianceStabilisationConfigPanel(ui.ConfigPanel):
  
 class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
     name = "Variance stabilisation"
+    notebook = "nmrlab_variance_stabilisation.ipynb"
     # function mat_out = glogtrans(mat_in,lambda,y0)
     # glogtrans - Modified log-transform with lambda scaling for high values
     #             and a y0 shift to reduce scaling in the noise region of signals.
@@ -388,7 +389,6 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
         })
 
         self.addConfigPanel(VarianceStabilisationConfigPanel, 'Settings')
-        self.finalise()
 
     def generate(self, input):
 
@@ -444,6 +444,7 @@ class BinningConfigPanel(ui.ConfigPanel):
  
 class BinningMetabolabTool(NMRLabMetabolabTool):
     name = "Bucket spectra"
+    notebook = "nmrlab_bucket_spectra.ipynb"
     # function mat_out=spcbucket(mat_in,bucketsize)
     # spcbucket - spectra binning for NMRLab
 
@@ -455,24 +456,6 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
         })
 
         self.addConfigPanel(BinningConfigPanel, 'Settings')
-        self.finalise()
-
-    def generate(self, input):
-        self.status.emit('active')
-        # Convert ppm size into number of points
-        # Get start-end range, divide by number of elements = ppm step size
-        # Divide ppm bin value by step size = number of steps (round to nearest)
-
-        step_size = (max(input.scales[1]) - min(input.scales[1])) / len(input.scales[1])
-        points = self.config.get('bin_size') / step_size
-        points = int(round(points / 2))
-        logging.debug("step_size %s, ppm %s = points %s" % (step_size, self.config.get('bin_size'), points))
-
-        mat_out = self.matlab.spcbucket(input.data.T,
-                        points,
-                        nout=1)
-
-        return {'output': input}
 
 
 class NMRLab(ProcessingPlugin):

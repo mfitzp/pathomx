@@ -13,7 +13,7 @@ class NOOPApp(ui.IPythonApp):
     name = "NOOP"
     notebook = 'noop.ipynb'
 
-    legacy_loaders = ['NOOP.NOOPApp']
+    legacy_launchers = ['NOOP.NOOPApp']
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
@@ -22,20 +22,15 @@ class NOOPApp(ui.IPythonApp):
 
         self.addDataToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')  # Add output slot
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')  # Add output slot
         # We need an input filter for this type; accepting *anything*
         self.data.consumer_defs.append(
-            DataDefinition('input', {
+            DataDefinition('input_data', {
                 'labels_n': ('>0', '>0')
             
             })
         )
-
-        self.finalise()
-
-    def generate(self, input=None):
-        return {'output': input}
 
 
 class NOOP(FilterPlugin):

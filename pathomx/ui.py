@@ -22,23 +22,23 @@ from . import utils
 from . import data
 from . import config
 from . import db
+from . import threads
+from . import displayobjects
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
-                    StyleDefinition, ClassMatchDefinition
+                    StyleDefinition, ClassMatchDefinition, notebook_queue, \
+                    current_tools, current_tools_by_id, installed_plugin_names, current_datasets
 
 import tempfile
 import traceback
+#from multiprocessing import Process, Pool, Queue
+#from . import threads
 
-from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView, IPyMplView, DataFrameWidget
+from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView, IPyMplView, DataFrameWidget, SVGView
 # Translation (@default context)
 from .translate import tr
 
-try:
-    from urllib.request import urlopen
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-    from urllib import urlopen
+import requests
 
 import cStringIO
 
@@ -51,17 +51,18 @@ from matplotlib import rcParams
 
 import logging
 
-from IPython.nbformat.current import reads, NotebookNode
+from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 from IPython.utils.ipstruct import Struct
-from runipy.notebook_runner import NotebookRunner
 
 try:
     import cPickle as pickle
 except:
     import pickle as pickle
+
+PX_INIT_SHOT = 50
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -247,24 +248,6 @@ class GenericDialog(QDialog):
                     control.Deselect(idx)
         except:
             pass
-
-
-class MATLABPathDialog(GenericDialog):
-    '''
-    Dialog for MATLAB exectuable path setting.
-    '''
-
-    def __init__(self, parent, path='matlab', **kwargs):
-        super(MATLABPathDialog, self).__init__(parent, **kwargs)
-        self.setWindowTitle('Set MATLAB Path')
-
-        self.path = QLineEdit()
-        self.path.setText(path)
-        self.layout.addWidget(self.path)
-        self.dialogFinalise()
-
-    def sizeHint(self):
-        return QSize(600, 100)
 
 
 class DialogAbout(QDialog):
@@ -1014,8 +997,6 @@ class MatchStyleManagerDialog(GenericDialog):
     def __init__(self, parent=None, **kwargs):
         super(MatchStyleManagerDialog, self).__init__(parent, **kwargs)
 
-        self.m = parent
-
         self.setWindowTitle("Line styles and markers")
 
         self.styles_tw = QTreeWidget()
@@ -1105,7 +1086,6 @@ class MatchStyleManagerDialog(GenericDialog):
                 else:
                     self.update_item(item, md, ls)
 
-                #self.m.onRefreshAllViews()
     def onMoveUp(self):
         item = self.styles_tw.currentItem()
         try:
@@ -1204,7 +1184,7 @@ class QWebViewExtend(QWebView):
         super(QWebViewExtend, self).__init__(parent, **kwargs)
 
         self.w = parent
-        self.setPage(QWebPageExtend(self.w))
+        #self.setPage(QWebPageExtend(self.w))
         self.setHtml(BLANK_DEFAULT_HTML, QUrl("~"))
 
         self.page().setContentEditable(False)
@@ -1247,7 +1227,6 @@ class DialogDataSource(GenericDialog):
         super(DialogDataSource, self).__init__(parent, **kwargs)
 
         self.v = view
-        self.m = view.m
 
         self.setWindowTitle(tr("Select Data Source(s)"))
 
@@ -1258,7 +1237,7 @@ class DialogDataSource(GenericDialog):
 
             self.lw_consumeri.append(QComboBox())
             cdw = self.lw_consumeri[n]  # Shorthand
-            datasets = self.v.data.can_consume_which_of(self.m.datasets, [cd])
+            datasets = self.v.data.can_consume_which_of(current_datasets, [cd])
 
             cdw.addItem('No input')
 
@@ -1295,9 +1274,6 @@ class DialogDataOutput(GenericDialog):
     def __init__(self, parent=None, view=None, **kwargs):
         super(DialogDataOutput, self).__init__(parent, buttons=['ok'], **kwargs)
 
-        self.v = view
-        self.m = view.m
-
         self.setWindowTitle("Data Output(s)")
 
         self.lw_sources = QTreeWidget()  # Use TreeWidget but flat; for multiple column view
@@ -1307,7 +1283,7 @@ class DialogDataOutput(GenericDialog):
         self.lw_sources.rootIsDecorated()
         self.lw_sources.hideColumn(0)
 
-        datasets = self.m.datasets  # Get a list of dataset objects to test
+        datasets = current_datasets  # Get a list of dataset objects to test
         self.datasets = []
 
         for k, dataset in list(self.v.data.o.items()):
@@ -1396,7 +1372,7 @@ class GenericApp(QObject):
     status = pyqtSignal(str)
     progress = pyqtSignal(float)
     complete = pyqtSignal()
-    
+
     nameChanged = pyqtSignal(str)
     change_name = pyqtSignal(str)
 
@@ -1404,18 +1380,20 @@ class GenericApp(QObject):
     legacy_inputs = {}
     legacy_outputs = {}
 
-    def __init__(self, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
-        super(GenericApp, self).__init__()
+    autoconfig_name = None
+
+    def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
+        super(GenericApp, self).__init__(parent)
         self.id = str(id(self))
 
         self.w = QMainWindow()
-
+        self.w.t = self # Pass through reference to self
+        
         self._lock = False
         self._previous_size = None
 
-        self.m = self.plugin.m
-        self.m.apps.append(self)
-        self.m.apps_dict[self.id] = self
+        current_tools.append(self)
+        current_tools_by_id[self.id] = self
 
         self._pause_analysis_flag = False
         self._latest_dock_widget = None
@@ -1423,142 +1401,202 @@ class GenericApp(QObject):
         self._auto_consume_data = auto_consume_data
 
         # Set this to true to auto-start a new calculation after current (block multi-runs)
+        self._is_job_active = False
         self._queued_start = False
-        
-        self.worker = None
-        self._worker_lock = None
+        #self._queue_start_timer = QTimer()
+        #self._queue_start_timer.timeout.connect(self.start_from_queue)
+        #self._queue_start_timer.start(1000)  # Attempt queue start every second
 
         self.logger = logging.getLogger(self.id)
-
 
         self.w.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         if name == None:
-            name = getattr(self, 'name', self.m.plugin_names[id(self.plugin)])
+            name = getattr(self, 'name', installed_plugin_names[id(self.plugin)])
         self.set_name(name)
 
-        logging.debug('Creating tool: %s' % name)
+        self.logger.debug('Creating tool: %s' % name)
 
-        logging.debug('Setting up data manager...')
-        self.data = data.DataManager(self.m, self)
+        self.logger.debug('Setting up data manager...')
+        self.data = data.DataManager(self.parent(), self)
 
-        logging.debug('Setting up view manager...')
+        self.logger.debug('Setting up view manager...')
         self.views = ViewManager(self)
 
-        logging.debug('Setting up file watcher manager...')
+        self.logger.debug('Setting up file watcher manager...')
         self.file_watcher = QFileSystemWatcher()
         self.file_watcher.fileChanged.connect(self.onFileChanged)
 
         self.toolbars = {}
 
-        logging.debug('Register internal url handler...')
+        self.logger.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
 
         self.w.setCentralWidget(self.views)
-
         #logging.debug('Connect event handlers...')
         #self.complete.connect(self.views.onRefreshAll)
 
-        logging.debug('Setup config manager...')
+        self.logger.debug('Setup config manager...')
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
 
-        logging.debug('Create editor icon...')
-        self.editorItem = self.m.editor.addApp(self, position=position)
-        logging.debug('Create workspace list entry...')
-        #self.workspace_item = self.m.addWorkspaceItem(self, self.plugin.default_workspace_category, self.name, icon=self.plugin.workspace_icon)  # , icon = None)
+        self.logger.debug('Create editor icon...')
+        self.editorItem = self.parent().editor.addApp(self, position=position)
 
-        logging.debug('Add default toolbar...')
+        self.logger.debug('Add default toolbar...')
         self.addSelfToolBar()  # Everything has one
 
-        self.change_name.connect( self.set_name )
+        self.change_name.connect(self.set_name)
+        self.progress.connect(self.update_progress)
 
-        logging.debug('Completed default tool (%s) setup.' % name)
-        
-    def finalise(self):
+        self.logger.debug('Setting up paths...')
+        self._working_path = os.path.join(tempfile.gettempdir(), str(id(self)))
+        utils.mkdir_p(self._working_path)
+
+        self._pathomx_pickle_in = os.path.join(self._working_path, 'in')
+        self._pathomx_pickle_out = os.path.join(self._working_path, 'out')
+
+        self.logger.debug('Completed default tool (%s) setup.' % name)
+
+        # Trigger finalise once we're back to the event loop
+        self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
+
+    def init_auto_consume_data(self):
+        self.logger.debug('Post-init: init_auto_consume_data')
+
+        self._is_autoconsume_success = False
+        if self._auto_consume_data:
+            self._is_autoconsume_success = self.data.consume_any_app(current_tools[::-1])  # Try consume from any app; work backwards
 
         self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
-        if self._auto_consume_data:
-            self.data.consume_any_app(self.m.apps[::-1])  # Try consume from any app; work backwards
-            # self.data.consume_any_of(self.m.datasets[::-1])  # Try consume any dataset; work backwards
         self.config.updated.connect(self.autoconfig)  # Auto-regenerate if the configuration changes
 
-    def register_url_handler(self, url_handler):
-        self.m.register_url_handler(self.id, url_handler)
+        if self.autoconfig_name:
+            self.config.updated.connect(self.autoconfig_rename)  # Auto-rename if it is set
 
-    def render(self, metadata):
-        return
+        self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_notebook)
 
-    def delete(self):
-        # Tear down the config and data objects
-        self.data.reset()
-        self.data.deleteLater()
+    def init_notebook(self):
+        self.logger.debug('Post-init: init_notebook')
 
-        self.config.reset()
-        self.config.deleteLater()
+        self.notebook_path = os.path.join(self.plugin.path, self.notebook)
 
-        # Close the window obj
-        self.m.editor.removeApp(self)
-       
-        self.m.apps.remove(self)
-        # Trigger notification for state change
-        self.w.close()
-        super(GenericApp, self).deleteLater()
+        self.load_notebook(self.notebook_path)
+        # Initial display of the notebook
+        output, resources = IPyexport(IPyexporter_map['html'], self.nb_source)
 
-    def autoconfig(self, signal):
-        if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:
-            self.autogenerate()
+        self.nbview = NotebookView(self, output)
+        self.views.addView(self.nbview, 'Notebook', unfocus_on_refresh=True)
 
-        elif signal == config.RECALCULATE_VIEW:
-            self.autoprerender(self._latest_generator_result)
+        if self._is_autoconsume_success is not False:
+            # This will fire after the notebook has completed above
+            self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
+
+    def reload(self):
+        self.load_notebook(self.notebook_path)
+
+    def load_notebook(self, notebook_path):
+        self.logger.debug('Loading notebook %s' % notebook_path)
+        with open(notebook_path, 'rU') as f:
+            self.nb_source = read_notebook(f, 'json')
+
+        self.nb = deepcopy(self.nb_source)
+        if len(self.nb['worksheets']) == 0:
+            self.nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
+
+        start = self.nb['worksheets'][0]['cells']
+        self.add_code_cell(start, 0, '''%%reset -f
+from pathomx import pathomx_notebook_start, pathomx_notebook_stop
+pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
+
+        self.add_code_cell(start, len(self.nb['worksheets'][0]['cells']), '''pathomx_notebook_stop('%s', vars());''' % (self._pathomx_pickle_out))
+
+    def add_code_cell(self, nb, index, code):
+        nb.insert(index, Struct(**{
+            'cell_type': 'code',
+            'language': 'python',
+            'outputs': [],
+            'collapsed': True,
+            'prompt_number': 0,
+            'input': code,
+            'metadata': {},
+        }))
 
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
         if self._pause_analysis_flag:
             self.status.emit('paused')
             return False
-        self.thread_generate()
+        self.generate()
 
     def start_from_queue(self):
         if self._queued_start:
-            self.logger.debug("start_from_queue triggered start %s" % self.name)
-            self._queued_start = False
-            self.thread_generate()
+            self.logger.debug("Attempting to start from queue for %s" % self.name)
+            if self._is_job_active == False:
+                self.generate()
 
-    def thread_generate(self):
-        self.logger.debug("thread_generate %s" % self.name)
-        # Automatically trigger generator using inputs
-        kwargs_dict = {}
+    def generate(self):
+        if self._is_job_active == False:
+            self._is_job_active = True
+        else:
+            self._queued_start = True
+            return False
+        self._queued_start = False
+        
+        self.logger.debug("Starting job %s" % self.name)
+
+        varsi = {}
         for i in list(self.data.i.keys()):
-            kwargs_dict[i] = self.data.get(i)  # Will be 'None' if not available
+            varsi[i] = self.data.get(i)  # Will be 'None' if not available
+
+        logging.debug('Notebook sent %d objects' % len(varsi.keys()))
 
         self.status.emit('active')
         self.progress.emit(0.)
 
-        kwargs_dict['config'] = self.config.as_dict()
-    
-        strip_rcParams = ['tk.pythoninspect','savefig.extension']
-        kwargs_dict['rcParams'] = {k:v for k,v in rcParams.items() if k not in strip_rcParams}
-        kwargs_dict['styles'] = styles
+        varsi['config'] = self.config.as_dict()
 
-       # Retrieve args/kwargs here; and fire processing using them
-        result, error = self.generate(**kwargs_dict)
+        strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
+        varsi['rcParams'] = {k: v for k, v in rcParams.items() if k not in strip_rcParams}
+        varsi['styles'] = styles
+
+        varsi['_pathomx_notebook_path'] = self.notebook_path
+
+        varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
+        varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out
+
+        logging.info("Running notebook %s for %s" % (self.notebook, self.name))
+
+        notebook_queue.add_job(self.nb, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback) #, error_callback=self._worker_error_callback)
+
+    def _worker_result_callback(self, output):
+        result, varso = output
         self.progress.emit(1.)
 
-        if error:
-            self.logger.debug("_worker_error_callback %s" % self.name)
-            self._latest_exception = error[1]
-            self.progress.emit(1.)
-            self.status.emit('error')
-            self.logger.error(error[1])
-        else:
-            self.progress.emit(1.)
+        if result['status'] == 0:
+            self.logger.debug("Notebook complete %s" % self.name)
             self.status.emit('done')
 
-        # FIXME: Return the result of the processing: we pass this even if there are 
-        # errors to get at the processed notebook. This may be a daft architecture due 
-        # to legacy. Easier to see once complete.
-        self._generate_worker_result_callback(result)  
+            if 'styles' in varso:
+                global styles
+                styles = varso['styles']
+        
+        elif result['status'] == -1:
+            self.logger.debug("Notebook error %s" % self.name)
+            self.status.emit('error')
+            self.logger.error( result['traceback'] )
+            varso = {}
+        
+        varso['_pathomx_rendered_notebook'] = result['notebook'][:]
 
+        self.worker_cleanup(varso)
+
+    def worker_cleanup(self, varso):
+        # Copy the data for the views here; or we're sending the same data to the get (main thread)
+        # as to the prerender loop (seperate thread) without a lock
+        self.generated(**varso)
+        self.autoprerender(varso)
+
+        self._is_job_active = False
 
     # Callback function for threaded generators; see _worker_result_callback and start_worker_thread
     def generated(self, **kwargs):
@@ -1569,32 +1607,80 @@ class GenericApp(QObject):
             if o in kwargs:
                 self.data.put(o, kwargs[o])
 
-    def prerender(self, output=None, **kwargs):
-        self.logger.debug("prerender %s" % self.name)
-        return {'View': dict(list({'dso': output}.items()) + list(kwargs.items()))}
-
-    def _generate_worker_result_callback(self, kwargs_dict):
-        self.logger.debug("_generate_worker_result_callback %s" % self.name)
-        self.__latest_generator_result = kwargs_dict
-        self.generated(**kwargs_dict)
-
-        # FIXME Should this be somewhere else?
-        # Handle the global vars pass-back
-        if 'styles' in kwargs_dict:
-            global styles
-            styles = kwargs_dict['styles']
-        
-        # Copy the data for the views here; or we're sending the same data to the get (main thread)
-        # as to the prerender loop (seperate thread) without a lock
-        # self.autoprerender({copy(k): deepcopy(v) for k,v in kwargs_dict.items()})
-        self.autoprerender(kwargs_dict)
-
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
         self.views.data = self.prerender(**kwargs_dict)
         self.views.source_data_updated.emit()
 
+    def prerender(self, *args, **kwargs):
 
+        result_dict = {
+            'Notebook': {'html': kwargs['_pathomx_rendered_notebook']}
+            }
+
+        for k, v in kwargs.items():
+            if type(v) == Figure:
+                if self.views.get_type(k) != IPyMplView:
+                    self.views.addView(IPyMplView(self), k)
+                result_dict[k] = {'fig': v}
+
+            elif type(v) == displayobjects.Svg:
+                if self.views.get_type(k) != SVGView:
+                    self.views.addView(SVGView(self), k)
+
+                result_dict[k] = {'svg': v}
+
+            elif type(v) == displayobjects.Html:
+                if self.views.get_type(k) != HTMLView:
+                    self.views.addView(HTMLView(self), k)
+
+                result_dict[k] = {'html': v}
+
+            elif type(v) == pd.DataFrame:
+                if self.views.get_type(k) != DataFrameWidget:
+                    self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k)
+
+                result_dict[k] = {'data': v}
+
+        return result_dict
+
+    def onReloadScript(self):
+        self.reload()
+
+    def register_url_handler(self, url_handler):
+        self.parent().register_url_handler(self.id, url_handler)
+
+    def delete(self):
+        # Tear down the config and data objects
+        self.data.reset()
+        self.data.deleteLater()
+
+        self.config.reset()
+        self.config.deleteLater()
+
+        # Close the window obj
+        self.parent().editor.removeApp(self)
+
+        current_tools.remove(self)
+        # Trigger notification for state change
+        self.w.close()
+        super(GenericApp, self).deleteLater()
+
+    def update_progress(self, progress):
+        #FIXME: Disabled for the time being til we have a proper global job queue
+        # rather the event driven mess we have now
+        pass
+        # self.parent().update_progress( id(self), progress)
+
+    def autoconfig(self, signal):
+        if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:
+            self.autogenerate()
+
+        elif signal == config.RECALCULATE_VIEW:
+            self.autoprerender(self._latest_generator_result)
+
+    def autoconfig_rename(self, signal):
+        self.set_name(self.autoconfig_name.format(**self.config.as_dict()))
 
     def store_views_data(self, kwargs_dict):
         self.views.source_data = kwargs_dict
@@ -1609,7 +1695,7 @@ class GenericApp(QObject):
 
     def raise_(self):
         self.w.raise_()
-        
+
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
 
@@ -1633,12 +1719,12 @@ class GenericApp(QObject):
         t = self.w.addToolBar('App')
         t.setIconSize(QSize(16, 16))
 
-        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cross.png')), tr('Delete this app…'), self.m)
+        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cross.png')), tr('Delete this app…'), self.w)
         delete_selfAction.setStatusTip('Delete this app')
         delete_selfAction.triggered.connect(self.onDelete)
         t.addAction(delete_selfAction)
 
-        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')), tr('Reload script'), self.m)
+        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')), tr('Reload script'), self.w)
         delete_selfAction.setStatusTip('Reload the IPython Notebook script')
         delete_selfAction.triggered.connect(self.onReloadScript)
         t.addAction(delete_selfAction)
@@ -1649,17 +1735,17 @@ class GenericApp(QObject):
         t = self.w.addToolBar('Data')
         t.setIconSize(QSize(16, 16))
 
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-source.png')), tr('Select a data source…'), self.m)
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-source.png')), tr('Select a data source…'), self.w)
         select_dataAction.setStatusTip('Select a compatible data source')
         select_dataAction.triggered.connect(self.onSelectDataSource)
         t.addAction(select_dataAction)
 
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'play.png')), tr('Calculate'), self.m)
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'play.png')), tr('Calculate'), self.w)
         select_dataAction.setStatusTip('Recalculate')
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
 
-        pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.m)
+        pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.w)
         pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
         pause_analysisAction.setCheckable(True)
         pause_analysisAction.setChecked(default_pause_analysis)
@@ -1667,7 +1753,7 @@ class GenericApp(QObject):
         t.addAction(pause_analysisAction)
         self._pause_analysis_flag = default_pause_analysis
 
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self.m)
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self.w)
         select_dataAction.setStatusTip('View resulting data output from this plugin')
         select_dataAction.triggered.connect(self.onViewDataOutput)
         t.addAction(select_dataAction)
@@ -1690,10 +1776,6 @@ class GenericApp(QObject):
 
                 else:  # Stop consuming through this interface
                     self.data.unget(consumer_def.target)
-            # Trigger notification for data source change; re-render inheritance map
-            #self.m.onDataInheritanceChanged()
-
-            #self.generate() automatic
 
     def onViewDataOutput(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.
@@ -1715,7 +1797,7 @@ class GenericApp(QObject):
     def addFigureToolBar(self):
         t = self.getCreatedToolbar(tr('Figures'), 'figure')
 
-        export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self.m)
+        export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self.w)
         export_imageAction.setStatusTip(tr('Export figure to image'))
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
@@ -1730,7 +1812,7 @@ class GenericApp(QObject):
     def addExternalDataToolbar(self):
         t = self.getCreatedToolbar(tr('External Data'), 'external-data')
 
-        watch_fileAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'eye--exclamation.png')), tr('Watch data file(s) for changes…'), self.m)
+        watch_fileAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'eye--exclamation.png')), tr('Watch data file(s) for changes…'), self.w)
         watch_fileAction.setStatusTip(tr('Watch external data file(s) for changes and automatically refresh'))
         watch_fileAction.triggered.connect(self.onWatchSourceDataToggle)
         watch_fileAction.setCheckable(True)
@@ -1817,10 +1899,10 @@ class GenericApp(QObject):
             cw.saveAsImage(sizedialog)
 
     def onRecalculate(self):
-        self.thread_generate() # Bypass
+        self.generate()  # Bypass
 
     def onBrowserNav(self, url):
-        self.m.onBrowserNav(url)
+        self.parent().onBrowserNav(url)
 
     # Url handler for all default plugin-related actions; making these accessible to all plugins
     # from a predefined url structure: pathomx://<view.id>/default_actions/data_source/add
@@ -1842,157 +1924,21 @@ class GenericApp(QObject):
         return QSize(600 + 300, 400 + 100)
 
 
-
-class IPythonNotebook(QObject):
-  
-    def __init__(self, filename, **kwargs):
-        super(IPythonNotebook, self).__init__(**kwargs)
-  
-        self._working_path = os.path.join( tempfile.gettempdir(), str( id(self) ) )
-        utils.mkdir_p(self._working_path)
-    
-        self._pathomx_pickle_in = os.path.join(self._working_path, 'in')
-        self._pathomx_pickle_out =  os.path.join(self._working_path, 'out')
-  
-        self.runner = NotebookRunner(None, pylab=True, mpl_inline=True)
-        if filename:
-            self.notebook_path = filename
-            self.load_notebook(filename )
-    
-    def reload(self):
-        self.load_notebook( self.notebook_path )
-
-    def load_notebook(self, notebook_path):
-        logging.info('Loading notebook %s' % notebook_path)
-        with open(notebook_path,  'r') as f:
-            self.nb_source = reads(f.read(), 'json')
-
-        # Store unmodified version before we mangle it
-        self.nb = deepcopy(self.nb_source)
-        
-        if len(self.nb['worksheets']) == 0:
-            self.nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
-            
-        start = self.nb['worksheets'][0]['cells']
-        self.add_code_cell(start, 0, '''
-from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start('%s', vars())
-''' % (self._pathomx_pickle_in) )
-
-        self.add_code_cell(start, len(self.nb['worksheets'][0]['cells']), '''pathomx_notebook_stop('%s', vars());''' % (self._pathomx_pickle_out) )
-    
-  
-    def add_code_cell(self, nb, index, code):
-        nb.insert(index, Struct(**{
-            'cell_type': 'code',
-            'language': 'python',
-            'outputs': [],
-            'collapsed': True,
-            'prompt_number': 0,
-            'input': code,
-            'metadata': {},
-        }))    
-                
-    def run_notebook(self, varsi={}):
-        
-
-        # Pickle all variables and import to the notebook (depickler)
-        with open(self._pathomx_pickle_in, 'wb') as f:
-            pickle.dump(varsi, f, -1) # Highest protocol for speed
-
-        varso = {}
-        errors = None
-
-        self.runner.nb = self.nb
-        try:
-            self.runner.run_notebook()
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            errors = (exctype, value, traceback.format_exc())
-        else:
-            # Return input; temp
-            try:
-                with open(self._pathomx_pickle_out,'rb') as f:
-                    varso = pickle.load(f)
-            except:
-                pass
-        
-        output, resources = IPyexport(IPyexporter_map['html'], self.runner.nb)
-        varso['_pathomx_rendered_notebook'] = output
-
-        return varso, errors
-
-
-
 class IPythonApp(GenericApp):
-    # Needs work for the communication (passing variables in (HDF5 files?) and getting out (publish_data)) 
-    # We want access to both the processed data and also graphics e.g. plots, etc.
-    # without that there is not much point
-    def __init__(self, **kwargs):
-        super(IPythonApp, self).__init__(**kwargs)
-    
-        if self.notebook:
-            self.nb = IPythonNotebook( os.path.join(self.plugin.path, self.notebook) )
-            # Initial display of the notebook
-            output, resources = IPyexport(IPyexporter_map['html'], self.nb.nb_source)
+    pass
 
-            self.nbview = NotebookView(self, output)
-            self.views.addView(self.nbview, 'Notebook', unfocus_on_refresh=True)
- 
-    def onReloadScript(self):
-        self.nb.reload()
- 
-    def generate(self, *args, **kwargs):
-        return self.nb.run_notebook(kwargs)
-
-    def prerender(self, *args, **kwargs):
-
-        result_dict = {
-            'Notebook':{'html': kwargs['_pathomx_rendered_notebook']}
-            }
-
-        for k,v in kwargs.items():
-
-            if type(v) == Figure:
-                if self.views.get_type(k) != IPyMplView:
-                    self.views.addView( IPyMplView(self), k)
-                    
-                result_dict[k] = {'fig':v}
-                
-            elif type(v) == pd.DataFrame:
-                if self.views.get_type(k) != DataFrameWidget:
-                    self.views.addView( DataFrameWidget( pd.DataFrame({}), parent=self), k)
-                    
-                result_dict[k] = {'data':v}
-
-        return result_dict
-
-            
-
-# Data view prototypes
-
-class DataApp(GenericApp):
-    def __init__(self, **kwargs):
-        super(DataApp, self).__init__(**kwargs)
-
-        self.table = TableView()
-        self.views.addView(self.table, tr('Table'), unfocus_on_refresh=True)
 
 # Import Data viewer
-
 class ImportDataApp(IPythonApp):
 
     import_type = tr('Data')
     import_filename_filter = tr("All Files") + " (*.*);;"
     import_description = tr("Open experimental data from file")
 
-    def __init__(self, filename=None, **kwargs):
-        super(ImportDataApp, self).__init__(**kwargs)
+    autoconfig_name = "{filename}"
 
-        self.data.add_output('output_data')  # Add output slot
-        #self.table.setModel(self.data.o['output'].as_table)
-        self.views.addView(MplSpectraView(self), 'View')
+    def __init__(self, parent, filename=None, **kwargs):
+        super(ImportDataApp, self).__init__(parent, **kwargs)
 
         self.addImportDataToolbar()
         self.addFigureToolBar()
@@ -2007,9 +1953,11 @@ class ImportDataApp(IPythonApp):
             self.config.set('filename', filename)
             self.autogenerate()
 
-
     def getFileFormatParameters(self, filename):
         return {}
+
+    def autoconfig(self):
+        pass
 
     def onFileChanged(self, file):
         self.load_datafile(file)
@@ -2018,25 +1966,12 @@ class ImportDataApp(IPythonApp):
     def addImportDataToolbar(self):
         t = self.getCreatedToolbar(tr('External Data'), 'external-data')
 
-        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Import %s file…' % self.import_type, self.m)
+        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Import %s file…' % self.import_type, self.w)
         import_dataAction.setStatusTip(self.import_description)
         import_dataAction.triggered.connect(self.onImportData)
         t.addAction(import_dataAction)
 
         self.addExternalDataToolbar()
-
-
-class CodeEditorTool(GenericApp):
-
-    def addCodeEditorToolbar(self):
-        t = self.getCreatedToolbar(tr('Code Editor'), 'code-editor')
-
-        codeedit_applyAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'script-apply.png')), 'Apply changes', self.m)
-        codeedit_applyAction.triggered.connect(self.onCodeEditApply)
-        t.addAction(codeedit_applyAction)
-
-    def onCodeEditApply(self):
-        self.editor.sourceChangesApplied.emit(self.editor.document().toPlainText())
 
 
 class ExportDataApp(GenericApp):
@@ -2052,14 +1987,13 @@ class ExportDataApp(GenericApp):
     def addExportDataToolbar(self):
         t = self.getCreatedToolbar(tr('Export Data'), 'export-data')
 
-        export_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), 'Export %s file…' % self.export_type, self.m)
+        export_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), 'Export %s file…' % self.export_type, self.w)
         export_dataAction.setStatusTip(self.export_description)
         export_dataAction.triggered.connect(self.onExportData)
         t.addAction(export_dataAction)
 
     def thread_generate(self, *args, **kwargs):
         return False
-
 
     def onExportData(self):
         """ Open a data file"""
@@ -2074,21 +2008,17 @@ class ExportDataApp(GenericApp):
 # Analysis/Visualisation view prototypes
 # Class for analysis views, using graph-based visualisations of defined datasets
 # associated layout and/or analysis
-class AnalysisApp(GenericApp):
-    def __init__(self, **kwargs):
-        super(AnalysisApp, self).__init__(**kwargs)
+class AnalysisApp(IPythonApp):
+    def __init__(self, *args, **kwargs):
+        super(AnalysisApp, self).__init__(*args, **kwargs)
+        self.config.defaults['experiment_control'] = None
+        self.config.defaults['experiment_test'] = None
 
     # Build change table
     def build_change_table_of_classes(self, dso, objs, classes):
 
         # Reduce dimensionality; combine all class/entity objects via np.mean()
         dso = dso.as_summary()
-
-        #FIXME: Need to allow entities to be passed in and use entity / labels
-        #entities = []
-        #for o in objs:
-        #    entities.extend( [ self.m.db.index[id] for id in o if id in self.m.db.index] )
-
 
         # Filter for the things we're displaying
         dso = dso.as_filtered(labels=objs)
@@ -2098,7 +2028,6 @@ class AnalysisApp(GenericApp):
 
         for x, l in enumerate(objs):  # [u'PYRUVATE', u'PHOSPHO-ENOL-PYRUVATE']
             for y, c in enumerate(classes):
-                #e = self.m.db.index[o] # Get entity for lookup
                 data[y, x] = dso.data[dso.classes[0].index(c), dso.labels[1].index(l)]
 
         return data.T
@@ -2236,7 +2165,10 @@ class AnalysisApp(GenericApp):
         _control = self.config.get('experiment_control')
         _test = self.config.get('experiment_test')
 
-        classes = self.data.i['input'].classes_l[0]
+        data = self.data.get('input_data')
+        class_idx = data.index.names.index('Class')
+        classes = list(data.index.levels[class_idx])
+
 
         if _control not in classes or _test not in classes:
             # Block signals so no trigger of update
@@ -2246,9 +2178,9 @@ class AnalysisApp(GenericApp):
             self.toolbars['experiment'].cb_control.clear()
             self.toolbars['experiment'].cb_test.clear()
             # Data source change; update the experimental control with the data input source
-            self.toolbars['experiment'].cb_control.addItems([i for i in self.data.i['input'].classes_l[0]])
+            self.toolbars['experiment'].cb_control.addItems(classes)
             self.toolbars['experiment'].cb_test.addItem("*")
-            self.toolbars['experiment'].cb_test.addItems([i for i in self.data.i['input'].classes_l[0]])
+            self.toolbars['experiment'].cb_test.addItems(classes)
             # Reset to previous values (-if possible)
             self.toolbars['experiment'].cb_control.setCurrentText(_control)
             self.toolbars['experiment'].cb_test.setCurrentText(_test)
@@ -2256,8 +2188,8 @@ class AnalysisApp(GenericApp):
             self.toolbars['experiment'].cb_control.blockSignals(False)
             self.toolbars['experiment'].cb_test.blockSignals(False)
             # If previously nothing set; now set it to something
-            _control = _control if _control in self.data.i['input'].classes_l[0] else self.data.i['input'].classes_l[0][0]
-            _test = _test if _test in self.data.i['input'].classes_l[0] else '*'
+            _control = _control if _control in classes else classes[0]
+            _test = _test if _test in classes else '*'
 
             is_updated = self.config.set_many({
                 'experiment_control': _control,
@@ -2265,7 +2197,7 @@ class AnalysisApp(GenericApp):
             }, trigger_update=False)
 
             logging.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
-            
+
     def onDataChanged(self):
         self.repopulate_experiment_classes()
 
@@ -2275,23 +2207,22 @@ class AnalysisApp(GenericApp):
 
 class remoteQueryDialog(GenericDialog):
 
+    request_key = 'v'
+
     def parse(self, data):
         # Parse incoming data and return a dict mapping the displayed values to the internal value
         l = data.split('\n')
         return dict(list(zip(l, l)))
 
     def do_query(self):
-        f = urllib.request.urlopen(self.query_target % urllib.parse.quote(self.textbox.text()))
-        query_result = f.read()
-        f.close()
-
-        self.data = self.parse(query_result)
         self.select.clear()
-        self.select.addItems(list(self.data.keys()))
+        r = requests.get(self.request_url, params={self.request_key: self.textbox.text()})
+        if r.status_code == 200:
+            self.data = self.parse(r.text)
+            self.select.addItems(list(self.data.keys()))
 
-    def __init__(self, parent, query_target=None, **kwargs):
+    def __init__(self, parent, request_url=None, request_key=None, **kwargs):
         super(remoteQueryDialog, self).__init__(parent, **kwargs)
-
         self.textbox = QLineEdit()
         querybutton = QPushButton('↺')
         querybutton.clicked.connect(self.do_query)
@@ -2303,7 +2234,8 @@ class remoteQueryDialog(GenericDialog):
         self.data = None  # Deprecated
 
         self.select = QListWidget()
-        self.query_target = query_target
+        self.request_url = request_url
+        self.request_key = request_key
 
         self.layout.addLayout(queryboxh)
         self.layout.addWidget(self.select)
@@ -2316,10 +2248,7 @@ class ConfigPanel(QWidget):
     def __init__(self, parent, *args, **kwargs):
         super(ConfigPanel, self).__init__(parent.w, *args, **kwargs)
 
-        self.v = parent
-        self.m = parent.m
         self.config = parent.config
-
         self.layout = QVBoxLayout()
 
     def finalise(self):
@@ -2345,11 +2274,7 @@ class ConfigTablePanel(QTableWidget):
 
     def __init__(self, parent, *args, **kwargs):
         super(ConfigTablePanel, self).__init__(parent.w, *args, **kwargs)
-
-        self.v = parent
-        self.m = parent.m
         self.config = parent.config
-
 
 
 class WebPanel(QWebView):
@@ -2461,14 +2386,12 @@ class DbApp(QMainWindow):
         self.id = str(id(self))
 
         self._previous_size = None
-        self.m = parent
-        self.views = ViewManager(self)
 
         self.setDockOptions(QMainWindow.ForceTabbedDocks)
         self.toolbars = {}
         #self.register_url_handler(self.default_url_handler)
 
-        self.setCentralWidget(self.views)
+        #self.setCentralWidget(self.views)
 
-        self.dbBrowser = HTMLView(self)
-        self.views.addView(self.dbBrowser, tr('Database'), unfocus_on_refresh=False)
+        #self.dbBrowser = HTMLView(self)
+        #self.views.addView(self.dbBrowser, tr('Database'), unfocus_on_refresh=False)

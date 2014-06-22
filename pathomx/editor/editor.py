@@ -11,6 +11,7 @@ from PyQt5.QtPrintSupport import *
 
 from .items import *
 from .. import config
+from ..globals import settings, app_launchers, file_handlers
 
 try:
     import xml.etree.cElementTree as et
@@ -48,7 +49,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.config.set('color-background', '#5555ff')
 
         self.background_image = QImage(os.path.join(utils.scriptdir, 'icons', 'grid100.png'))
-        if self.m.settings.get('Editor/Show_grid'):
+        if settings.get('Editor/Show_grid'):
             self.showGrid()
         else:
             self.hideGrid()
@@ -57,7 +58,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.mode_current_object = None
 
         self.annotations = []
-                    
+
     def mousePressEvent(self, e):
         if self.config.get('mode') != EDITOR_MODE_NORMAL:
 
@@ -152,7 +153,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
                 app_id = str(e.mimeData().data('application/x-pathomx-app'))  # Python 2
 
             e.setDropAction(Qt.CopyAction)
-            a = self.m.app_launchers[app_id](position=scenePos, auto_focus=False)
+            a = app_launchers[app_id](self.m, position=scenePos, auto_focus=False)
             #self.centerOn(a.editorItem)
             e.accept()
 
@@ -161,8 +162,8 @@ class QGraphicsSceneExtend(QGraphicsScene):
                 fn = ufn.path()
                 fnn, ext = os.path.splitext(fn)
                 ext = ext.strip('.')
-                if ext in self.m.file_handlers:
-                    a = self.m.file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
+                if ext in file_handlers:
+                    a = file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
                     self.centerOn(a.editorItem)
                     e.accept()
 

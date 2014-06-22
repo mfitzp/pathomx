@@ -16,11 +16,6 @@ from matplotlib.transforms import Affine2D, Bbox, BboxBase
 
 import matplotlib.cm as cm
 
-def get_figure(width=5, height=4, dpi=100):
-    fig = Figure(figsize=(width, height), dpi=dpi) 
-    ax = fig.add_subplot( 111 )
-    return fig
-
 
 class EntityBoxStyle(BoxStyle._Base):
     """
@@ -80,11 +75,15 @@ class EntityBoxStyle(BoxStyle._Base):
 # register the custom style
 BoxStyle._style_list["entity-tip"] = EntityBoxStyle
         
-
-def spectra(data, figure=None, styles=None):
-    if figure is None:
-        figure = get_figure()
         
+
+def spectra(data, figure=None, ax=None, styles=None):
+    if figure is None:
+        figure = Figure(figsize=(5, 4), dpi=100) 
+        
+    if ax is None:
+        ax = figure.add_subplot( 111 )
+    
     ax = figure.axes[0]
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -123,7 +122,7 @@ def spectra(data, figure=None, styles=None):
     data_headers = data_abs_max.index
 
     # Temporary scale
-    if type(data.columns[0]) == float:
+    if not np.array([x != float for x in data.columns.values]).any():
         scale = data.columns.values
         is_scale_reversed = scale[0] > scale[-1]
     else:
@@ -201,8 +200,11 @@ def spectra(data, figure=None, styles=None):
     
  
 def category_bar(data, figure=None, styles=None):
-    if figure == None:
-        figure = get_figure()
+    if figure is None:
+        figure = Figure(figsize=(5, 4), dpi=100) 
+        
+    if ax is None:
+        ax = figure.add_subplot( 111 )
         
     ax = figure.axes[0]
     ax.spines['top'].set_visible(False)
@@ -287,4 +289,135 @@ def category_bar(data, figure=None, styles=None):
     # Add some padding either side of graphs
     #plt.xlim( ind[0]-1, ind[-1]+1)
 
+    return figure
+
+
+
+# Add ellipses for confidence intervals, with thanks to Joe Kington    
+# http://stackoverflow.com/questions/12301071/multidimensional-confidence-intervals
+def plot_point_cov(points, nstd=2, **kwargs):
+    """
+    Plots an `nstd` sigma ellipse based on the mean and covariance of a point
+    "cloud" (points, an Nx2 array).
+
+    Parameters
+    ----------
+        points : An Nx2 array of the data points.
+        nstd : The radius of the ellipse in numbers of standard deviations.
+            Defaults to 2 standard deviations.
+        Additional keyword arguments are pass on to the ellipse patch.
+
+    Returns
+    -------
+        A matplotlib ellipse artist
+    """
+    pos = points.mean(axis=0)
+    cov = np.cov(points, rowvar=False)
+    return plot_cov_ellipse(cov, pos, nstd, **kwargs)        
+    
+def plot_cov_ellipse(cov, pos, nstd=2, **kwargs):
+    """
+    Plots an `nstd` sigma error ellipse based on the specified covariance
+    matrix (`cov`). Additional keyword arguments are passed on to the 
+    ellipse patch artist.
+
+    Parameters
+    ----------
+        cov : The 2x2 covariance matrix to base the ellipse on
+        pos : The location of the center of the ellipse. Expects a 2-element
+            sequence of [x0, y0].
+        nstd : The radius of the ellipse in numbers of standard deviations.
+            Defaults to 2 standard deviations.
+        Additional keyword arguments are pass on to the ellipse patch.
+
+    Returns
+    -------
+        A matplotlib ellipse artist
+    """
+    def eigsorted(cov):
+        vals, vecs = np.linalg.eigh(cov)
+        order = vals.argsort()[::-1]
+        return vals[order], vecs[:,order]
+
+    vals, vecs = eigsorted(cov)
+    theta = np.degrees(np.arctan2(*vecs[:,0][::-1]))
+
+    # Width and height are "full" widths, not radius
+    width, height = 2 * nstd * np.sqrt(vals)
+    ellip = Ellipse(xy=pos, width=width, height=height, angle=theta, fill=False, **kwargs)
+
+    return ellip
+
+
+def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
+    if figure is None:
+        figure = Figure(figsize=(5, 4), dpi=100) 
+        
+    if ax is None:
+        ax = figure.add_subplot( 111 )
+        
+    ax = figure.axes[0]
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+    
+    ax.cla()
+
+    if data is None:
+        assert False
+
+
+    if 'Class' in data.index.names and len( data.index.levels[ data.index.names.index( 'Class' ) ] ) > 1:
+        class_idx = data.index.names.index('Class')
+        classes = list( data.index.levels[ class_idx ] )
+    else:
+        class_idx = None
+        classes = [None]
+        
+    
+
+    plots = OrderedDict()
+    for c in classes:
+        if styles:
+            ls = styles.get_style_for_class( c )
+        else:
+            ls = None
+        
+        if c is not None:
+            df = data.xs(c, level=class_idx)
+        else:
+            df = data
+
+        s = ls.markersize**2 if ls.markersize != None else 20 #default
+        plots[c] = ax.scatter(df.iloc[:,0], df.iloc[:,1], color=ls.markerfacecolor, marker=ls.marker, s=s)
+
+
+        # Calculate 95% confidence interval for data
+        ellip = plot_point_cov(df.values, nstd=2, linestyle='dashed', linewidth=0.5, edgecolor=ls.color, alpha=0.5) #**kwargs for ellipse styling
+        ax.add_artist(ellip)
+
+    # If overlay lines are defined; plot + annotation           
+    for x, y, label in lines:
+        ls = styles.get_style_for_class(None) # Blank for now; need to replace with general 'info lines' settings
+        ax.plot(x, y, **ls.line_kwargs)
+        ax.annotate(label, xy=(x[-1], y[-1]))
+
+    if len(plots.keys()) > 1:
+        # Only show a legend if there is >1 class (?)
+        legend = ax.legend(list(plots.values()),
+           list(plots.keys()),
+           scatterpoints=1,
+           loc='upper left', bbox_to_anchor=(1, 1))
+        legend.get_frame().set_facecolor('k')                      
+        legend.get_frame().set_alpha(0.05)        
+       
+    #ax.set_xlabel(dso.labels[1][0])
+    #ax.set_ylabel(dso.labels[1][1])
+
+    # Square the plot
+    x0,x1 = ax.get_xlim()
+    y0,y1 = ax.get_ylim()           
+    ax.set_aspect((x1-x0)/(y1-y0))
+                
     return figure

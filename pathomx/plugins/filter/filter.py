@@ -17,133 +17,61 @@ from pathomx.plugins import FilterPlugin
 from pathomx.qt import *
 
 
-# Source data selection dialog
-# Present a list of widgets (drop-downs) for each of the interfaces available on this plugin
-# in each list show the data sources that can potentially file that slot.
-# Select the currently used
-class DialogDefineFilter(ui.GenericDialog):
-    def __init__(self, parent=None, view=None, auto_consume_data=True, **kwargs):
-        super(DialogDefineFilter, self).__init__(parent, **kwargs)
+class FilterConfigPanel(ui.ConfigPanel):
 
-        self.v = view
-        self.m = view.m
+    def __init__(self, *args, **kwargs):
+        super(FilterConfigPanel, self).__init__(*args, **kwargs)
 
-        self.setWindowTitle("Define filters targets(s)")
+        # Correlation variables
+        gb = QGroupBox('Regexp search and replace')
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.lw_regexp = QLineEdit()
+        vbox.addWidget(QLabel('Search:'))
 
-        # Build a list of dicts containing the widget
-        # with target data in there
-        self.lw_filteri = list()
-        self.lw_filtert = list()
-        dsi = self.v.data.get('input')
+        self.lw_matchfield = QComboBox()
+        self.lw_matchfield.addItems(['Class', 'Sample'])  # FIXME: Should auto-populate by source indexes
+        vbox.addWidget(self.lw_matchfield)
+        self.config.add_handler('target', self.lw_matchfield)
 
-        
-        for k, t in list(self.v.config.get('filters').items()):
+        vbox.addWidget(self.lw_regexp)
+        self.config.add_handler('match', self.lw_regexp)
 
-            self.lw_filteri.append(QComboBox())
-            cdw = self.lw_filteri[-1]  # Shorthand
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
 
-            self.lw_filtert.append(QLineEdit())
-            ctw = self.lw_filtert[-1]
-            ctw.setText(t)
-
-            selected_index = None
-            idx = 0
-            for n, i in enumerate(dsi.scales):
-                for target in ['labels', 'classes', 'scales']:
-                    s = '%s/%s' % (n, target)
-                    cdw.addItem(s)
-                    if s == k:
-                        selected_index = idx
-                    idx += 1
-
-            if selected_index:
-                cdw.setCurrentIndex(selected_index)
-
-            self.layout.addWidget(cdw)
-            self.layout.addWidget(ctw)
-
-        self.setMinimumSize(QSize(600, 100))
-        self.layout.setSizeConstraint(QLayout.SetMinimumSize)
-
-        # Build dialog layout
         self.dialogFinalise()
 
 
-class FilterApp(ui.DataApp):
+class FilterApp(ui.IPythonApp):
 
-    def __init__(self, **kwargs):
-        super(FilterApp, self).__init__(**kwargs)
+    name = "Filter"
+    notebook = 'filter.ipynb'
+
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
+    def __init__(self, *args, **kwargs):
+        super(FilterApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
 
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')  # Add output slot
-        self.table.setModel(self.data.o['output'].as_table)
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')  # Add output slot
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {  # Accept anything!
+            DataDefinition('input_data', {  # Accept anything!
             })
         )
 
-        th = self.addToolBar('Filter')
+        self.config.set_defaults({
+            'target': 'Class',
+            'match': '.*',
+        })
 
-        filterAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel--plus.png')), '&Define filter(s)…', self)
-        filterAction.setStatusTip('Define filter(s) for dataset')
-        filterAction.triggered.connect(self.onDefineFilter)
-        th.addAction(filterAction)
-
-        self.config.set_default('filters', {'': ''})
-
-        self.finalise()
-
-    def onDefineFilter(self):
-        """ Open a data file"""
-        dialog = DialogDefineFilter(parent=self.w, view=self)
-        ok = dialog.exec_()
-        if ok:
-            # Extract the settings and store in the _annotations_targets settings
-            # then run the annotation process
-            filters = {}
-            # dict of source = (target, axis)
-
-            for n, cb in enumerate(dialog.lw_filteri):  # Get list of comboboxes
-                target = cb.currentText()
-                text = dialog.lw_filtert[n].text()
-
-                filters[target] = text
-
-            self.config.set('filters', filters)
-            # Annotation name
-            self.change_name.emit(','.join(['%s:%s' % (k, v) for k, v in list(filters.items())]))
-            self.generate()
-
-    def apply_filters(self, dso):
-
-        for target, text in list(self.config.get('filters').items()):
-            axis, field = target.split('/')
-            axis = int(axis)  # index to apply
-
-            textre = re.compile(text)
-
-            matches = []
-            # field, axis, text
-            for o in dso.__dict__[field][axis]:
-                match = textre.search(o)
-                if match:
-                    matches.append(o)
-
-            matches = set(matches)
-
-            kwargs = {field: matches}
-            # Apply the filter to regexp to get a filtered list
-            dso = dso.as_filtered(dim=axis, **kwargs)
-
-        return dso
-
-    def generate(self, input=None):
-        return {'output': self.apply_filters(input)}
+        self.addConfigPanel(FilterConfigPanel, 'Settings')
 
 
 # Dialog box for Metabohunter search options
@@ -160,9 +88,9 @@ class ReclassifyDialog(ui.GenericDialog):
         # Populate the list boxes
         self.lw_regexp = QLineEdit()
         vbox.addWidget(QLabel('Search:'))
-        
+
         self.lw_matchfield = QComboBox()
-        self.lw_matchfield.addItems(['classes','labels'])
+        self.lw_matchfield.addItems(['Class', 'Sample'])  # FIXME: Should auto-populate by source indexes
         vbox.addWidget(self.lw_matchfield)
         vbox.addWidget(self.lw_regexp)
 
@@ -170,6 +98,26 @@ class ReclassifyDialog(ui.GenericDialog):
         vbox.addWidget(QLabel('Replace:'))
         vbox.addWidget(self.lw_replace)
 
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
+
+        self.dialogFinalise()
+
+
+# Dialog box for Metabohunter search options
+class ReclassifyImportDialog(ui.GenericDialog):
+
+    def __init__(self, parent=None, view=None, *args, **kwargs):
+        super(ReclassifyImportDialog, self).__init__(parent=parent, *args, **kwargs)
+
+        self.v = view
+
+        # Correlation variables
+        gb = QGroupBox('Match on field')
+        vbox = QVBoxLayout()
+        self.lw_matchfield = QComboBox()
+        self.lw_matchfield.addItems(['Class', 'Sample'])  # FIXME: Should auto-populate by source indexes
+        vbox.addWidget(self.lw_matchfield)
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
 
@@ -197,14 +145,19 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
         remfr = QPushButton('Add')
         remfr.clicked.connect(self.onFilterAdd)
 
+        loadr = QPushButton()
+        loadr.setIcon(QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')))
+        loadr.clicked.connect(self.onFilterImport)
+
         vboxh.addWidget(addfr)
         vboxh.addWidget(remfr)
+        vboxh.addWidget(loadr)
         vbox.addLayout(vboxh)
 
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
 
-        self.config.add_handler('filters', self.lw_filters, (self.v.map_list_fwd, self.v.map_list_rev))
+        self.config.add_handler('filters', self.lw_filters, (self.map_list_fwd, self.map_list_rev))
         self.finalise()
 
     def onFilterAdd(self):
@@ -213,7 +166,7 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
         if dlg.exec_():
             l = self.config.get('filters')[:]  # Copy
             if dlg.lw_regexp.text() != '' and dlg.lw_replace.text() != '':
-                l.append((dlg.lw_regexp.text(), dlg.lw_replace.text(), dlg.lw_matchfield.currentText() ))
+                l.append((dlg.lw_regexp.text(), dlg.lw_replace.text(), dlg.lw_matchfield.currentText()))
             self.config.set('filters', l)
 
     def onFilterRemove(self):
@@ -223,60 +176,21 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
 
         self.config.set('filters', [(k, v, m) for k, v, m in l if v is not None])
 
-        
-class ReclassifyTool(ui.DataApp):
+    def onFilterImport(self):
+        filename, _ = QFileDialog.getOpenFileName(self.m, 'Load reclassifications from file', '', "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)")
+        if filename:
 
-    name = "Reclassify"
+            with open(filename, 'rU') as f:
+                dlg = ReclassifyImportDialog(parent=self.v.w, view=self.v)
 
-    def __init__(self, **kwargs):
-        super(ReclassifyTool, self).__init__(**kwargs)
+                if dlg.exec_():
+                    match_field = dlg.lw_matchfield.currentText()
+                    reader = csv.reader(f, delimiter=',', dialect='excel')
+                    l = []
+                    for row in reader:
+                        l.append((row[0], row[1], match_field))
+                    self.config.set('filters', l)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
-        self.data.add_input('input')  # Add input slot
-        self.data.add_output('output')  # Add output slot
-        self.table.setModel(self.data.o['output'].as_table)
-
-        # Setup data consumer options
-        self.data.consumer_defs.append(
-            DataDefinition('input', {  # Accept anything!
-            })
-        )
-
-        self.config.set_default('filters', [])
-
-        self.addConfigPanel(ReclassifyConfigPanel, 'Settings')
-        self.finalise()
-
-    def apply_filters(self, dso):
-
-        for search, replace, match in self.config.get('filters'):
-            classes_f = []
-
-            if match == 'classes' or match == 'None':
-                for c in dso.classes[0]:
-                    match = re.search(search, c)
-                    if match:
-                        classes_f.append(replace)
-                    else:
-                        classes_f.append(c)
-                        
-            elif match == 'labels':
-                for n, l in enumerate(dso.labels[0]):
-                    match = re.search(search, l)
-                    if match:
-                        classes_f.append(replace)
-                    else:
-                        classes_f.append(dso.classes[0][n])
-
-            dso.classes[0] = classes_f
-
-        return dso
-
-    def generate(self, input=None):
-        return {'output': self.apply_filters(input)}
-        
     def map_list_fwd(self, s):
         " Receive text label, return the filter"
         return tuple(s.split('\t'))
@@ -287,6 +201,34 @@ class ReclassifyTool(ui.DataApp):
             return '\t'.join(f)
         else:
             return "\t\t"
+
+        
+class ReclassifyTool(ui.IPythonApp):
+
+    name = "Reclassify"
+    notebook = 'reclassify.ipynb'
+
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
+    def __init__(self, **kwargs):
+        super(ReclassifyTool, self).__init__(**kwargs)
+
+        self.addDataToolBar()
+        self.addFigureToolBar()
+
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')  # Add output slot
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input_data', {  # Accept anything!
+            })
+        )
+
+        self.config.set_default('filters', [])
+
+        self.addConfigPanel(ReclassifyConfigPanel, 'Settings')
 
 
 class Filter(FilterPlugin):

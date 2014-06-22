@@ -24,19 +24,17 @@ class BMLNMRApp(ui.ImportDataApp):
     import_description = "Open BML-NMR FIMA .zip output"
 
     notebook = 'bml_nmr.ipynb'
-        
+
     def __init__(self, **kwargs):
         super(BMLNMRApp, self).__init__(**kwargs)
 
         self.config.set_defaults({
             'filename': None,
         })
-        
+
         self.data.add_output('Raw')  # Add output slot
         self.data.add_output('PQN')  # Add output slot
         self.data.add_output('TSA')  # Add output slot
-
-        self.finalise()
 
 
 class BMLNMR(ImportPlugin):

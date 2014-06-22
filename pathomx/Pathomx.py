@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import gc
 import sys
 import logging
 
@@ -18,6 +18,7 @@ import locale
 import json
 import importlib
 import functools
+from copy import copy
 
 sys.setcheckinterval(1000)
 
@@ -38,12 +39,11 @@ try:
 except ImportError:
     from IPython.zmq.blockingkernelmanager import BlockingKernelManager as KernelManager
 
-from IPython.nbformat.current import reads, NotebookNode
+from IPython.nbformat.current import write as write_notebook, NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 from IPython.utils.ipstruct import Struct
-from runipy.notebook_runner import NotebookRunner
 
 
 try:
@@ -58,22 +58,18 @@ from collections import defaultdict
 
 import numpy as np
 
-from yapsy.PluginManager import PluginManager, PluginManagerSingleton
+from biocyc import biocyc
 
-# wheezy templating engine
-from wheezy.template.engine import Engine
-from wheezy.template.ext.core import CoreExtension
-from wheezy.template.ext.code import CodeExtension
-from wheezy.template.loader import FileLoader
+from yapsy.PluginManager import PluginManager, PluginManagerSingleton
 
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
-import matplotlib as mpl
-
-from pyqtconfig import QSettingsManager
+from .globals import app, styles, notebook_queue, \
+                     current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
+                     settings, url_handlers, app_launchers
 
 from . import data
 from . import utils
@@ -81,17 +77,79 @@ from . import ui
 from . import views
 from . import custom_exceptions
 from . import plugins  # plugin helper/manager
+from . import threads
 from .editor.editor import WorkspaceEditorView, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
 
-from .globals import db, styles
-
+#from multiprocessing import Process, Pool, Queue
 
 # Translation (@default context)
 from .translate import tr
 
 from distutils.version import StrictVersion
+from runipy.notebook_runner import NotebookRunner
 
 VERSION_STRING = '2.5.2'
+
+DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
+        "SER-GLYSYN-PWY-1", "PWY-4983", "ASPARAGINE-BIOSYNTHESIS", "ASPARTATESYN-PWY",
+        "PWY-3982", "PWY-6292", "HOMOCYSDEGR-PWY", "GLUTAMATE-SYN2-PWY", "PWY-5921",
+        "GLNSYN-PWY", "GLYSYN-PWY", "GLYSYN-ALA-PWY", "ADENOSYLHOMOCYSCAT-PWY",
+        "PWY-6755", "ARGININE-SYN4-PWY", "PWY-5331", "PWY-4921", "PROSYN-PWY",
+        "SERSYN-PWY", "PWY-6281", "TRNA-CHARGING-PWY", "PWY66-399", "PWY-6138",
+        "PWY-5659", "PWY-66", "PWY-6", "PWY-5661-1", "PWY-4821",
+        "MANNOSYL-CHITO-DOLICHOL-BIOSYNTHESIS", "PWY-5067", "PWY-6564", "PWY-6568",
+        "PWY-6558", "PWY-6567", "PWY-6571", "PWY-6557", "PWY-6566", "PWY-6569",
+        "PWY-5512", "PWY-5514", "PWY-5963", "PWY-6012-1", "PWY-7250", "SAM-PWY",
+        "COA-PWY-1", "PWY0-522", "PWY0-1275", "PWY-6823", "NADPHOS-DEPHOS-PWY-1",
+        "NADSYN-PWY", "NAD-BIOSYNTHESIS-III", "PWY-5653", "PWY-5123", "PWY-5910",
+        "PWY-5120", "PWY-5920", "HEME-BIOSYNTHESIS-II", "PWY-5872", "PWY-4041",
+        "GLUTATHIONESYN-PWY", "THIOREDOX-PWY", "GLUT-REDOX-PWY", "PWY-4081", "PWY-5663",
+        "PWY-5189", "PWY-6076", "PWY-2161", "PWY-2161B", "PWY-2201", "PWY-6613",
+        "PWY-6872", "PWY-6857", "PWY-6875", "PWY-6861", "PWY66-366", "PWY-6898",
+        "PLPSAL-PWY", "PWY-6030", "PWY-6241", "PWY-7299", "PWY-7305", "PWY-7306",
+        "PWY66-301", "PWY66-374", "PWY66-375", "PWY66-377", "PWY66-378", "PWY66-380",
+        "PWY66-381", "PWY66-382", "PWY66-392", "PWY66-393", "PWY66-394", "PWY66-395",
+        "PWY66-397", "PWY-5148", "PWY-6129", "PWY0-1264", "PWY3DJ-11281", "TRIGLSYN-PWY",
+        "FASYN-ELONG-PWY", "PWY-5966-1", "PWY-6000", "PWY-5996", "PWY-5994", "PWY-5972",
+        "PWY-7049", "PWY-6352", "PWY-6367", "PWY-6371", "PWY-7501", "PWY-5667",
+        "PWY-5269", "PWY3O-450", "PWY4FS-6", "PWY3DJ-12", "PWY-6061", "PWY-6074",
+        "PWY-6132", "PWY-7455", "PWY66-3", "PWY66-341", "PWY66-4", "PWY66-5",
+        "PWY-6158", "PWY-6100", "PWY-6405", "PWY66-420", "PWY66-423", "PWY66-421",
+        "PWY66-385", "PWY-7227", "PWY-7226", "PWY-7184", "PWY-7211", "PWY-6689",
+        "PWY-7375-1", "PWY-7286", "PWY-7283", "PWY-6121", "PWY-7228", "PWY-841",
+        "PWY-7219", "PWY-7221", "PWY-6124", "PWY-7224", "PWY66-409", "P121-PWY",
+        "PWY-6619", "PWY-6609", "PWY-6620", "PWY-7176", "PWY-5686", "PWY0-162",
+        "PWY-7210", "PWY-7197", "PWY-7199", "PWY-7205", "PWY-7193", "PWY-7200",
+        "PWY-5389", "PWY-5670", "PWY-6481", "PWY-6498", "PWY66-425", "PWY66-426",
+        "PWY0-662", "PWY-5695", "ARGSPECAT-PWY", "GLYCGREAT-PWY", "PWY-6173",
+        "CHOLINE-BETAINE-ANA-PWY", "PWY-40", "PWY-46", "BSUBPOLYAMSYN-PWY",
+        "UDPNACETYLGALSYN-PWY", "PWY-5270", "PWY-6133", "PWY-6358", "PWY-6365",
+        "PWY-6369", "PWY-6351", "PWY-6364", "PWY-6363", "PWY-6366", "PWY-2301",
+        "PWY-6554", "PWY-6362", "PWY-922", "2PHENDEG-PWY", "PWY-6181", "PWY66-414",
+        "PWY6666-2", "GLUDEG-I-PWY", "PWY-6535", "PWY-3661-1", "GLUAMCAT-PWY",
+        "PWY-6517", "PWY-0", "PWY-6117", "PWY66-389", "PWY66-21", "PWY66-162",
+        "PWY66-161", "PWY-4261", "PWY-5453", "PWY-5386", "MGLDLCTANA-PWY", "PWY-5046",
+        "PWY-5084", "PWY-6334", "HYDROXYPRODEG-PWY", "ALANINE-DEG3-PWY",
+        "ASPARAGINE-DEG1-PWY", "MALATE-ASPARTATE-SHUTTLE-PWY", "BETA-ALA-DEGRADATION-I-PWY",
+        "PWY-5329", "CYSTEINE-DEG-PWY", "GLUTAMINDEG-PWY", "GLYCLEAV-PWY", "PWY-5030",
+        "ILEUDEG-PWY", "LEU-DEG2-PWY", "LYSINE-DEG1-PWY", "PWY-5328", "METHIONINE-DEG1-PWY",
+        "PHENYLALANINE-DEG1-PWY", "PROUT-PWY", "SERDEG-PWY", "PWY66-428", "PWY66-401",
+        "TRYPTOPHAN-DEGRADATION-1", "PWY-6309", "PWY-5651", "PWY-6307", "TYRFUMCAT-PWY",
+        "VALDEG-PWY", "PWY-1801", "PWY-5177", "PWY-5652", "PWY0-1313", "PYRUVDEHYD-PWY",
+        "PWY-5130", "PROPIONMET-PWY", "PWY-5525", "PWY-6370", "PWY-5874", "MANNCAT-PWY",
+        "PWY-7180", "PWY66-422", "BGALACT-PWY", "PWY66-373", "PWY0-1182", "PWY-6576",
+        "PWY-6573", "PWY-5941-1", "LIPAS-PWY", "LIPASYN-PWY", "PWY-6111", "PWY-6368",
+        "PWY3DJ-11470", "PWY6666-1", "PWY-5451", "PWY-5137", "PWY66-391", "FAO-PWY",
+        "PWY66-388", "PWY66-387", "PWY-6313", "PWY-6342", "PWY-6688", "PWY-6398",
+        "PWY-6402", "PWY-6400", "PWY-6399", "PWY-6261", "PWY-6260", "PWY-6756",
+        "PWY-6353", "PWY-7179-1", "PWY0-1296", "SALVADEHYPOX-PWY", "PWY-6608",
+        "PWY-7209", "PWY-6430", "PWY-7181", "PWY-7177", "PWY0-1295", "PWY-7185",
+        "PWY-4984", "PWY-5326", "PWY-5350", "PWY-4061", "PWY-7112", "PWY-6377",
+        "PWY66-241", "PWY66-201", "PWY66-221", "PWY-4101", "DETOX1-PWY", "PWY-6502",
+        "PWY0-1305", "PWY-4202", "PWY-6938", "PWY66-407", "PWY-5172", "PWY-5481",
+        "PWY66-400", "PWY66-368", "PWY66-367", "PWY-6118", "PENTOSE-P-PWY",
+        "OXIDATIVEPENT-PWY-1", "NONOXIPENT-PWY", "PWY66-398", "PWY-7437", "PWY-7434",
+        "PWY-7433", "PWY66-14", "PWY66-11", "PYRUVDEH-RXN"]
 
 
 class Logger(logging.Handler):
@@ -127,9 +185,9 @@ class Logger(logging.Handler):
             for c in range(3):
                 item.setBackground(c, QBrush(bg))
 
-        if record.name in self.m.apps_dict:
+        if record.name in current_tools_by_id:
             # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
-            item.tool = self.m.apps_dict[record.name]
+            item.tool = current_tools_by_id[record.name]
             item.setIcon(1, item.tool.plugin.workspace_icon)
         else:
             i = QPixmap(16, 16)
@@ -142,94 +200,6 @@ class Logger(logging.Handler):
     def write(self, m):
         pass
 
-
-class ToolBoxItemDelegate(QAbstractItemDelegate):
-
-    def __init__(self, parent=None, **kwargs):
-        super(ToolBoxItemDelegate, self).__init__(parent, **kwargs)
-        self._elidedwrappedtitle = {}  # Cache
-        self._font = None
-
-    def paint(self, painter, option, index):
-
-        # GET TITLE, DESCRIPTION AND ICON
-        icon = index.data(Qt.DecorationRole)
-        title = index.data(Qt.DisplayRole)  # .toString()
-        #description = index.data(Qt.UserRole) #.toString()
-        #notice = index.data(Qt.UserRole+1) #.toString()
-
-        if option.state & QStyle.State_Selected:
-            painter.setPen(QPalette().highlightedText().color())
-            painter.fillRect(option.rect, QBrush(QPalette().highlight().color()))
-        else:
-            painter.setPen(QPalette().text().color())
-
-        icon.paint(painter, option.rect.adjusted(2, 2, -2, -34), Qt.AlignVCenter | Qt.AlignLeft)
-
-        text_rect = option.rect.adjusted(0, 64, 0, 0)
-
-        # Hacky adjustment of font, how to get the default font for this widget and shrink it?
-        # avoids setting manually, so hopefully will look better on Windows/Linux
-        if self._font == None:
-            self._font = painter.font()
-            self._font.setPointSize(self._font.pointSize() - 2)
-        painter.setFont(self._font)
-
-        if title not in self._elidedwrappedtitle:
-            self._elidedwrappedtitle[title] = self.elideWrapText(painter, title, text_rect)
-
-        painter.drawText(text_rect, Qt.AlignTop | Qt.AlignHCenter | Qt.TextWordWrap, self._elidedwrappedtitle[title])
-        #painter.drawText(text_rect.x(), text_rect.y(), text_rect.width(), text_rect.height(),, 'Hello this is a long title', boundingRect=text_rect)
-
-    def elideWrapText(self, painter, text, text_rect):
-        text = textwrap.wrap(text, 10, break_long_words=False)
-        wrapped_text = []
-        for l in text[:2]:  # Max 2 lines
-            l = painter.fontMetrics().elidedText(l, Qt.ElideRight, text_rect.width())
-            wrapped_text.append(l)
-        wrapped_text = '\n'.join(wrapped_text)
-        return wrapped_text
-
-    def sizeHint(self, option, index):
-        return QSize(64, 96)
-
-
-class ToolBoxItem(QListWidgetItem):
-    def __init__(self, data=None, parent=None, **kwargs):
-        super(ToolBoxItem, self).__init__(parent, **kwargs)
-        self.data = data
-
-
-class ToolPanel(QListWidget):
-
-    def __init__(self, parent, tools=[], **kwargs):
-        super(ToolPanel, self).__init__(parent, **kwargs)
-
-        self.setViewMode(QListView.IconMode)
-        self.setGridSize(QSize(64, 96))
-        self.setItemDelegate(ToolBoxItemDelegate())
-
-        self.tools = tools
-        self.addTools()
-
-    def addTools(self):
-
-        for n, tool in enumerate(self.tools):
-            t = ToolBoxItem(data=tool)
-
-            t.setIcon(tool['plugin'].icon)
-            t.setText(getattr(tool['app'], 'name', tool['plugin'].name))
-            t.setData(Qt.UserRole, tool)
-
-            self.addItem(t)
-
-        self.sortItems()
-
-    def colX(self, col):
-        return col * self._tool_width
-
-    def rowY(self, row):
-        return row * self._tool_width
 
 class ToolTreeWidget(QTreeWidget):
 
@@ -246,7 +216,7 @@ class ToolTreeWidget(QTreeWidget):
             drag = QDrag(self)
             drag.setMimeData(mimeData)
             drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
-            drag.setHotSpot(QPoint(32,32)) # - self.visualItemRect(item).top())
+            drag.setHotSpot(QPoint(32, 32))  # - self.visualItemRect(item).top())
 
             dropAction = drag.exec_(Qt.CopyAction)
             logging.debug('Drag-drop complete.')
@@ -261,10 +231,6 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-
-        #self.app = app
-        self.apps = []
-        self.apps_dict = {}
 
         # Initiate logging
         self.logView = QTreeWidget()
@@ -282,58 +248,27 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
 
         # Central variable for storing application configuration (load/save from file?
-        self.settings = QSettingsManager()  # QSettings('Pathomx', 'Pathomx')
-        self.settings.set_defaults({
-            'Pathomx/Is_setup': False,
-            'Pathomx/Current_version': '0.0.1',
-            'Pathomx/Update/Latest_version': '0.0.1',
-            'Pathomx/Update/Last_checked': None,
-            'Pathomx/Offered_registration': False,
 
-            'Plugins/Active': [],
-            'Plugins/Disabled': [],
-            'Plugins/Available': [],
-            'Plugins/Paths': [],
-
-            'Resources/MATLAB_path': 'matlab',
-
-            'Editor/Snap_to_grid': False,
-            'Editor/Show_grid': True,
-        })
-
-        if self.settings.get('Pathomx/Is_setup') == False:
+        if settings.get('Pathomx/Is_setup') == False:
             logging.info("Setting up initial configuration...")
             #self.onResetConfig()
             logging.info('Done')
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(self.settings.get('Pathomx/Update/Latest_version')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(VERSION_STRING):
             # We've got an upgrade
-            logging.warning('A new version (v%s) is available' % self.settings.get('Pathomx/Update/Latest_version'))
+            logging.warning('A new version (v%s) is available' % settings.get('Pathomx/Update/Latest_version'))
 
         self.fonts = QFontDatabase()
-
-        # Create database accessor
-        #self.db = db.dbm # FIXME: Remove this eventually
-        # Initialise data (load from disk)
-        db.populate()
 
         self.datasets = []  # List of instances of data.datasets() // No data loaded by default
 
         self.layout = None  # No map by default
 
         self.url_handlers = defaultdict(list)
-        self.app_launchers = {}
         self.app_launcher_categories = defaultdict(list)
         self.file_handlers = {}
-
-        # Create templating engine
-        self.templateEngine = Engine(
-            loader=FileLoader([os.path.join(utils.scriptdir, 'html')]),
-            extensions=[CoreExtension(), CodeExtension()]
-        )
-        self.templateEngine.global_vars.update({'tr': tr})
 
         self.update_view_callback_enabled = True
         #self.printer = QPrinter()
@@ -406,20 +341,14 @@ class MainWindow(QMainWindow):
         explore_dbAction.setStatusTip('Explore database')
         explore_dbAction.triggered.connect(self.onDBExplore)
         self.menuBars['database'].addAction(explore_dbAction)
-
-        load_identitiesAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
-        load_identitiesAction.setStatusTip('Load additional unification mappings into database')
-        load_identitiesAction.triggered.connect(self.onLoadIdentities)
-        self.menuBars['database'].addAction(load_identitiesAction)
+        #load_identitiesAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
+        #load_identitiesAction.setStatusTip('Load additional unification mappings into database')
+        #load_identitiesAction.triggered.connect(self.onLoadIdentities)
+        #self.menuBars['database'].addAction(load_identitiesAction)
 
         self.menuBars['database'].addSeparator()
 
-        reload_databaseAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'exclamation-red.png')), tr('&Reload database'), self)
-        reload_databaseAction.setStatusTip('Reload pathway & metabolite database')
-        reload_databaseAction.triggered.connect(self.onReloadDB)
-        self.menuBars['database'].addAction(reload_databaseAction)
         # PLUGINS MENU
-
         change_pluginsAction = QAction(tr('&Manage plugins…'), self)
         change_pluginsAction.setStatusTip('Find, activate, deactivate and remove plugins')
         change_pluginsAction.triggered.connect(self.onChangePlugins)
@@ -434,11 +363,6 @@ class MainWindow(QMainWindow):
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
         linemarkerstyleAction.triggered.connect(self.onDefineClassStyles)
         self.menuBars['appearance'].addAction(linemarkerstyleAction)
-
-        matlabpathAction = QAction('Edit MATLAB path…', self)
-        matlabpathAction.setStatusTip(tr('Set MATLAB path'))
-        matlabpathAction.triggered.connect(self.onMATLABPathEdit)
-        self.menuBars['resources'].addAction(matlabpathAction)
 
         aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
@@ -475,7 +399,6 @@ class MainWindow(QMainWindow):
         QWebSettings.setMaximumPagesInCache(0)
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
-
 
         self.plugins = {}  # Dict of plugin shortnames to data
         self.plugins_obj = {}  # Dict of plugin name references to objs (for load/save)
@@ -552,7 +475,7 @@ class MainWindow(QMainWindow):
                 }
 
                 self.plugins[metadata['shortname']] = metadata
-                self.plugin_names[id(plugin.plugin_object)] = plugin.name
+                installed_plugin_names[id(plugin.plugin_object)] = plugin.name
 
                 plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
 
@@ -580,29 +503,25 @@ class MainWindow(QMainWindow):
                "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
                }
 
-        template = self.templateEngine.get_template('apps.html')
-
-        self.toolbox = ToolTreeWidget(self) #QToolBox(self)
-
+        self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
         self.toolbox.setHeaderLabels(['Installed tools'])
         self.toolbox.setUniformRowHeights(True)
-        
+
         for category in plugin_categories:
             item = QTreeWidgetItem()
             item.setText(0, category)
-            item.setIcon(0, app_category_icons[category] )
-            self.toolbox.addTopLevelItem(item) 
+            item.setIcon(0, app_category_icons[category])
+            self.toolbox.addTopLevelItem(item)
             for tool in self.tools[category]:
                 ti = QTreeWidgetItem()
-                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name)  )
+                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
                 ti.setIcon(0, tool['plugin'].icon)
-                ti.setToolTip( 0, tool['plugin'].metadata['description'] )
+                ti.setToolTip(0, tool['plugin'].metadata['description'])
                 ti.data = tool
                 item.addChild(ti)
             item.sortChildren(0, Qt.AscendingOrder)
 
         self.toolbox.expandAll()
-            
 
         self.toolDock = QDockWidget(tr('Toolkit'))
         self.toolDock.setWidget(self.toolbox)
@@ -611,18 +530,33 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.toolDock.raise_()
-
-
-
-        self.dbtool = ui.DbApp(self)
-        self.dbBrowser = self.dbtool.dbBrowser
+        #self.dbtool = ui.DbApp(self)
+        #self.dbBrowser = self.dbtool.dbBrowser
 
         self.setWindowTitle(tr('Pathomx'))
+
+        self.threadCount = QLabel(self.statusBar())
+        font = self.threadCount.font()
+        font.setPointSize(8)
+        self.threadCount.setFont(font)
+        self.statusBar().addPermanentWidget(self.threadCount)
+
+        self.jobQueue = QLabel(self.statusBar())
+        font = self.jobQueue.font()
+        font.setPointSize(8)
+        self.jobQueue.setFont(font)
+        self.statusBar().addPermanentWidget(self.jobQueue)
 
         self.progressBar = QProgressBar(self.statusBar())
         self.progressBar.setMaximumSize(QSize(170, 19))
         self.progressBar.setRange(0, 100)
+
         self.statusBar().addPermanentWidget(self.progressBar)
+
+        self._progressBar_timer = QTimer()
+        self._progressBar_timer.timeout.connect(self.updateProgressBar)
+        self._progressBar_timer.start(5000)  # Attempt queue start every 5 seconds
+
         self.progressTracker = {}  # Dict storing values for each view/object
 
         self.editView = WorkspaceEditorView(self)
@@ -644,14 +578,14 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(self.settings.get('Pathomx/Current_version')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(VERSION_STRING):
             # We've got an upgrade
             logging.info('Upgrade to %s' % VERSION_STRING)
             self.onAbout()
-            self.settings.set('Pathomx/Current_version', VERSION_STRING)
-        #if self.settings.value('/Pathomx/Offered_registration', False) != True:
+            settings.set('Pathomx/Current_version', VERSION_STRING)
+        #if settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
-        #    self.settings.setValue('/Pathomx/Offered_registration', True)
+        #    settings.setValue('/Pathomx/Offered_registration', True)
 
         self.statusBar().showMessage(tr('Ready'))
 
@@ -674,6 +608,18 @@ class MainWindow(QMainWindow):
         save_workflowAction.triggered.connect(self.onSaveWorkflowAs)
         t.addAction(save_workflowAction)
 
+        export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export IPython notebook…', self)
+        export_ipythonnbAction.setStatusTip('Export workflow as IPython notebook')
+        export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
+        t.addAction(export_ipythonnbAction)
+
+        restart_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart kernels…', self)
+        restart_kernelsAction.setStatusTip('Restart kernel runners')
+        restart_kernelsAction.triggered.connect(self.onRestartKernels)
+        t.addAction(restart_kernelsAction)
+        
+       
+
     def addEditorToolBar(self):
         t = self.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
@@ -686,13 +632,13 @@ class MainWindow(QMainWindow):
         snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid'), self)
         snap_gridAction.setStatusTip('Snap tools to grid')
         snap_gridAction.setCheckable(True)
-        self.settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
+        settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
         t.addAction(snap_gridAction)
 
         show_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid.png')), tr('Show grid'), self)
         show_gridAction.setStatusTip('Show grid in workspace editor')
         show_gridAction.setCheckable(True)
-        self.settings.add_handler('Editor/Show_grid', show_gridAction)
+        settings.add_handler('Editor/Show_grid', show_gridAction)
         show_gridAction.triggered.connect(self.onGridToggle)
         t.addAction(show_gridAction)
 
@@ -784,7 +730,7 @@ class MainWindow(QMainWindow):
         self.styletoolbarwidgets['color-background'] = background_colorcb
 
     def onGridToggle(self):
-        if self.settings.get('Editor/Show_grid'):
+        if settings.get('Editor/Show_grid'):
             self.editor.showGrid()
         else:
             self.editor.hideGrid()
@@ -805,14 +751,6 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-    def onMATLABPathEdit(self):
-
-        dialog = ui.MATLABPathDialog(self, path=self.settings.get('/Resources/MATLAB_path'))
-        if dialog.exec_():
-            path = dialog.path.text()
-            resources.matlab.set_exec_path(path)
-            self.settings.set('/Resources/MATLAB_path', path)
-
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
         if dialog.exec_():
@@ -827,8 +765,12 @@ class MainWindow(QMainWindow):
     # Init application configuration
     def onResetConfig(self):
         # Reset the QSettings object on the QSettings Manager (will auto-fallback to defined defaults)
-        self.settings.settings.clear()
+        settings.settings.clear()
     # UI Events
+
+    def updateProgressBar(self):
+        self.threadCount.setText('%d/%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
+        self.jobQueue.setText('%d' % len(notebook_queue.jobs))
 
     def onGoToPathomxWeb(self):
         QDesktopServices.openUrl(QUrl('http://pathomx.org'))
@@ -863,7 +805,7 @@ class MainWindow(QMainWindow):
             self.onRefreshAllViews()
 
     def onRefreshAllViews(self):
-        for t in self.apps:
+        for t in current_tools:
             t.views.style_updated.emit()
 
     def onBrowserNav(self, url):
@@ -879,7 +821,7 @@ class MainWindow(QMainWindow):
             if app == 'app-manager':
                 app, action = url.path().strip('/').split('/')
                 if action == 'add':
-                    a = self.app_launchers[app]()
+                    a = app_launchers[app]()
 
                 # Update workspace viewer
                 self.workspace_updated.emit()  # Notify change to workspace layout
@@ -934,16 +876,6 @@ class MainWindow(QMainWindow):
             # It's an URL open in default browser
             QDesktopServices.openUrl(url)
 
-    def onLoadIdentities(self):
-        """ Open a data file"""
-        filename, _ = QFileDialog.getOpenFileName(self, 'Load compound identities file', '')
-        if filename:
-            db.dbm.load_synonyms(filename)
-            # Re-translate the datafile if there is one and refresh
-            if self.data:
-                self.data.translate(self.db)
-                self.generateGraphView(regenerate_analysis=True)
-
     def onAbout(self):
         dlg = ui.DialogAbout(self)
         dlg.exec_()
@@ -951,12 +883,10 @@ class MainWindow(QMainWindow):
     def onExit(self):
         self.Close(True)  # Close the frame.
 
-    def onReloadDB(self):
-        db.dbm.populate()
-
     def onRefresh(self):
         self.generateGraphView()
 
+    '''
     def generatedbBrowserView(self, template='base.html', data={'title': '', 'object': {}, 'data': {}}):
         metadata = {
             'htmlbase': os.path.join(utils.scriptdir, 'html'),
@@ -968,28 +898,11 @@ class MainWindow(QMainWindow):
         }
 
         template = self.templateEngine.get_template(template)
-        self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), QUrl("~"))
-
-
-    def updateProgress(self, workspace_item, progress):
-
-        if progress == None:
-            if id(workspace_item) in self.progressTracker:
-                del(self.progressTracker[id(workspace_item)])
-            if len(self.progressTracker) == 0:
-                self.progressBar.reset()
-                return
-        else:
-            self.progressTracker[id(workspace_item)] = progress
-
-        m = 100.0 / len(self.progressTracker)
-        pt = sum([n * m for n in list(self.progressTracker.values())])
-
-        if self.progressBar.value() < pt:  # Don't go backwards it's annoying FIXME: once hierarchical prediction; stack all things that 'will' start
-            self.progressBar.setValue(pt)
+        #self.dbBrowser.setHtml(template.render(dict(list(data.items()) + list(metadata.items()))), QUrl("~"))
+    '''
 
     def register_url_handler(self, identifier, url_handler):
-        self.url_handlers[identifier].append(url_handler)
+        url_handlers[identifier].append(url_handler)
 
     ### OPEN/SAVE WORKSPACE
     def onOpenWorkspace(self):
@@ -1015,8 +928,8 @@ class MainWindow(QMainWindow):
             self.clearWorkspace()
 
     def clearWorkspace(self):
-        for v in self.apps[:]:  # Copy as v.delete modifies the self.apps list
-            v.delete()
+        for t in current_tools[:]:
+            t.deleteLater()
 
         for i in self.editor.items()[:]:  # Copy as i.delete modifies the list
             try:
@@ -1052,7 +965,7 @@ class MainWindow(QMainWindow):
         s = self.editor.getXMLAnnotations(s)
 
         # Build a JSONable object representing the entire current workspace and write it to file
-        for v in self.apps:
+        for v in current_tools:
             app = et.SubElement(root, "App")
             app.set("id", v.id)
 
@@ -1112,14 +1025,10 @@ class MainWindow(QMainWindow):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
             logging.info(('- %s' % xapp.find('Name').text))
-            app = self.app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](auto_consume_data=False, name=xapp.find('Name').text)
+            app = app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](self, auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
-            #app = self.app_launchers[ item.find("launcher").text ]()
-            #app.set_name(  )
             appref[xapp.get('id')] = app
-
-            app.config.setXMLConfig(xapp)
 
         logging.info("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present
@@ -1127,27 +1036,94 @@ class MainWindow(QMainWindow):
             app = appref[xapp.get('id')]
 
             for idef in xapp.findall('DataInputs/Input'):
-                source = appref[idef.get('manager')].data.o[idef.get('interface')]
-                sink = idef.get('id')
+                source_app = appref[idef.get('manager')]
+                source = idef.get('interface')
+                if source in source_app.legacy_outputs.keys():
+                    source = source_app.legacy_outputs[source]
 
+                sink = idef.get('id')
                 if sink in app.legacy_inputs.keys():
                     sink = app.legacy_inputs[sink]
 
-                if source in app.legacy_outputs.keys():
-                    source = app.legacy_outputs[source]
-
-                app.data._consume_action(sink, source)
+                app.data._consume_action(source_app.data, source, sink)
 
         logging.info("Load complete.")
         # Focus the home tab & refresh the view
         self.workspace_updated.emit()
+        
+    def onExportIPyNotebook(self):
+        '''
+        Export an IPython notebook representing the entire workflow
+        '''
+        
+        # Start by finding tools with no inputs; these are the 'origins' of analysis
+        # either by importing from files, or being standalone
+        # We generate the remainder of the tree from these items
+        workbook_cells = []
+        process_queue = []
+        tools_output_done = []
+
+        for t in current_tools:
+            # The following will give an empty list if there are no inputs, or they're all unassigned
+            tw = [v for k,v in t.data.i.items() if v is not None]
+            if not tw:
+                # Empty
+                process_queue.append( (0,t) ) # Depth 0
+                
+        '''
+        The process is to iterate down all the watchers from the origin tools. At each point
+        get the watchers and put them on a stack, with level+1. On each output check if 
+        all the watchers have been 'done' (on the output stack) and if not, continue on.
+        ''' 
+        logging.debug("Starting export with %d origins" % len(process_queue) )       
+        
+        while len(process_queue) > 0:
+            lvl, tool = process_queue.pop(0) # From front
+            # Check for what that this tool depends on
+            parents = [s[0].v for i,s in tool.data.i.items() if s is not None]
+            
+            if len(parents) > 0 and len( set(parents) - set(tools_output_done) ) > 0:
+                # We're waiting on something here, push to the back of the list
+                process_queue.append( (lvl, tool) )
+            
+            # We're good to go! Use the source Luke; not the mangled version
+            for ws in tool.nb_source.worksheets:
+                for cell in ws.cells:
+                    # Output variables of each script are shim-suffixed with the id of the tool (unique)
+                    # e.g. output_data_123 = output_data 
+                    # input_data = output_data_123
+                    # We can skip this step if the following tool is the target of the data, but this 
+                    # will need the generator to be more intelligent
+                    workbook_cells.append(cell)
+            
+            tools_output_done.append(tool)
+            
+            # Add watchers to the list
+            watchers = [w.v for k,v in tool.data.watchers.items() for w in v]
+            for w in watchers:
+                if w not in tools_output_done:
+                    process_queue.append( (lvl+1, w) )
+
+            logging.debug("- %d queued; %d done; %d cells" % ( len(process_queue), len(tools_output_done), len(workbook_cells) ) )       
+        
+        logging.debug("Finished: %d cells" % len(workbook_cells) )
+        # The resulting workbook in workbook_cells
+        # Build an output one using an available structure; then re-json to save
+        notebook = copy(tool.nb)
+        notebook.worksheets[0].cells = workbook_cells
+        with open('/Users/mxf793/Notebooks/test-auto-output.ipynb', 'w') as f:
+            write_notebook(notebook, f, 'json')
+    
+    def onRestartKernels(self):
+        notebook_queue.restart()
+        
 
 #class QApplicationExtend(QApplication):
     #def event(self, e):
     #    if e.type() == QEvent.FileOpen:
     #        fn, fe = os.path.splitext(e.file())
     #        formats = {  # Run specific loading function for different source data types
-    #                '.mpf': self.openWorkflow,
+    #                '.ipynb': self.openIPythonNotebook,
     #            }
     #        if fe in list(formats.keys()):
     #            formats[fe](e.file())
@@ -1158,55 +1134,6 @@ class MainWindow(QMainWindow):
     #        return super(QApplicationExtend, self).event(e)
 
 def main():
-    # Create a Qt application
-    app = QApplication(sys.argv)
-    app.setStyle('fusion')
-
-    app.setOrganizationName("Pathomx")
-    app.setOrganizationDomain("pathomx.org")
-    app.setApplicationName("Pathomx")
-
-    locale = QLocale.system().name()
-    #locale = 'nl'
-
-    #sys.path.append(utils.scriptdir)
-
-    # Load base QT translations from the normal place (does not include _nl, or _it)
-    translator_qt = QTranslator()
-    if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
-        logging.debug(("Loaded Qt translations for locale: %s" % locale))
-        app.installTranslator(translator_qt)
-
-    # See if we've got a default copy for _nl, _it or others
-    elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        logging.debug(("Loaded Qt (self) translations for locale: %s" % locale))
-        app.installTranslator(translator_qt)
-
-    # Load Pathomx specific translations
-    translator_mp = QTranslator()
-    if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-        logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
-    app.installTranslator(translator_mp)
-
-    # Set Matplotlib defaults for nice looking charts
-    mpl.rcParams['figure.facecolor'] = 'white'
-    mpl.rcParams['figure.autolayout'] = True
-    mpl.rcParams['lines.linewidth'] = 0.25
-    mpl.rcParams['lines.color'] = 'black'
-    mpl.rcParams['lines.markersize'] = 10
-    mpl.rcParams['axes.linewidth'] = 0.5
-    mpl.rcParams['axes.labelsize'] = 9
-    mpl.rcParams['xtick.labelsize'] = 9
-    mpl.rcParams['ytick.labelsize'] = 9
-
-    mpl.rcParams['legend.fontsize'] = 9
-
-    mpl.rcParams['axes.color_cycle'] = utils.category10
-    mpl.rcParams['font.size'] = 9
-    mpl.rcParams['font.family'] = 'sans-serif'
-    mpl.rcParams['font.serif'] = ['Computer Modern Roman', 'Times New Roman']
-    mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
-    mpl.rcParams['patch.linewidth'] = 0
 
     MainWindow()
     logging.info('Ready.')

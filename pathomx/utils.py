@@ -20,7 +20,7 @@ try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
-    
+
 try:
     import cPickle as pickle
 except:
@@ -32,6 +32,7 @@ category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', 
 
 from matplotlib.figure import Figure
 from matplotlib.axes import Subplot
+
 
 def _convert_list_type_from_XML(vs):
     '''
@@ -252,11 +253,11 @@ else:
 
 
 class MutexDict(dict):
-    
+
     def __init__(self, *args, **kwargs):
         self.mutex = QMutex()
         return super(MutexDict, self).__init__(*args, **kwargs)
-    
+
     def __getattribute__(self, attr):
         if attr == 'mutex':
             return super(MutexDict, self).__getattribute__(attr)

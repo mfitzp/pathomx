@@ -87,8 +87,7 @@ class ViewManager( QTabWidget ):
 
     def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
-        self.w = parent
-        self.m = parent.m
+        
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
             
         self.setDocumentMode(True)
@@ -356,20 +355,20 @@ class WebView(QWebView, BaseView):
     def __init__(self, parent, **kwargs):
         super(WebView, self).__init__(None, **kwargs)        
         
-        self.w = parent
-        self.m = parent.m
-        self.setPage( WebPageJSLog(self.w) )
+        #self.setPage( WebPageJSLog(self.w) )
         self.setHtml(BLANK_DEFAULT_HTML,QUrl("~"))
 
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        self.loadFinished.connect(self._loadFinished)
+        #self.loadFinished.connect(self._loadFinished)
         
         # Override links for internal link cleverness
-        if hasattr(self.w,'onBrowserNav'):
-            self.onNavEvent = self.w.onBrowserNav
-            self.linkClicked.connect( self.delegateUrlWrapper )
+        #if hasattr(self.w,'onBrowserNav'):
+        #    self.onNavEvent = self.w.onBrowserNav
+        #    self.linkClicked.connect( self.delegateUrlWrapper )
 
         self.setContextMenuPolicy(Qt.CustomContextMenu) # Disable right-click
 
@@ -382,11 +381,13 @@ class WebView(QWebView, BaseView):
         
        
     def _loadFinished(self, ok):
+        # FIXME for ref to parent; will need to pass something as obj parent
+        '''
         sizer = self.w.views.size()
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
         self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
         self.page().currentFrame().evaluateJavaScript( "_pathomx_render_trigger();" )
-
+        '''
  
     def saveAsImage(self,settings): # Size, dots per metre (for print), resample (redraw) image
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
@@ -412,7 +413,8 @@ class WebView(QWebView, BaseView):
         
     def generate(self):
         pass
-
+        
+    
 
 class D3View(WebView):
 
@@ -431,8 +433,14 @@ class D3View(WebView):
 
     def generate_d3(self, metadata):
         metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-        template = self.m.templateEngine.get_template(self.d3_template)
-        self.setSVG(template.render( metadata ))
+
+# D3 legacy figure views (single js/svg; needs extracting)
+class D3LegacyView(D3View):
+
+    d3_template = 'figure.svg'
+
+    def generate(self, metadata):
+        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
 
 
 class HTMLView(WebView):
@@ -445,10 +453,22 @@ class HTMLView(WebView):
             self.generate(html)
     
     def generate(self, html):
-        self.setHtml(html, QUrl('file:///')) 
+        self.setHtml(unicode(html), QUrl('file:///')) 
 
-class NotebookView(HTMLView):
-    pass
+class NotebookView(QWebView, BaseView):
+    def __init__(self, parent, html=None, **kwargs):
+        super(NotebookView, self).__init__(None, html=html, **kwargs)        
+
+        self.page().setContentEditable(False)
+        self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
+        self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+
+        if html:
+            self.generate(html)
+            
+    def generate(self, html):
+        self.setHtml(unicode(html), QUrl('file:///')) 
+
         
 class StaticHTMLView(HTMLView):
     """
@@ -462,7 +482,7 @@ class StaticHTMLView(HTMLView):
 class SVGView(D3View):
     
     def generate(self, svg):
-        self.setSVG(svg)
+        self.setSVG( unicode(svg) )
 
 class WheezyView(WebView):
     
@@ -717,9 +737,6 @@ class D3ForceView(D3View):
                      'metabolite_pathway_groups':metabolite_pathway_groups, 
                      'reactions':reactions,
                      }
-        template = self.parent.templateEngine.get_template(self.d3_template)
-
-        self.setSVG(template.render( metadata ))
 
 
 # D3 Based bargraph view
@@ -756,8 +773,6 @@ class D3SpectraView(D3View):
             'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
         }
 
-        template = self.m.templateEngine.get_template(self.d3_template)
-        self.setSVG(template.render( metadata ))
         
         
 class EntityBoxStyle(BoxStyle._Base):
@@ -957,9 +972,6 @@ class D3DifferenceView(D3View):
             'data':list(zip( dso_a.scales[1], datai.T, datao.T )), # (ppm, [dataa,datab])
         }
         
-        template = self.m.templateEngine.get_template(self.d3_template)
-        self.setSVG(template.render( metadata ))
-        
         
 class MplDifferenceView(MplSpectraView):
 
@@ -987,20 +999,6 @@ class MplDifferenceView(MplSpectraView):
         
         self.draw()
         
-# D3 legacy figure views (single js/svg; needs extracting)
-class D3LegacyView(D3View):
-
-    d3_template = 'figure.svg'
-
-    def generate(self, metadata):
-
-        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-
-        template = self.m.templateEngine.get_template(self.d3_template)
-        self.setSVG(template.render( metadata ))
-
-
-
 
 class MplScatterView(MplView):
     """

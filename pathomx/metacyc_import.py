@@ -82,10 +82,11 @@ secondary_metabolites = [
                     'UV-Light', 'Light',
                     ]
 
+
 def main():
 
     global total_connections
-    
+
     parser = OptionParser()
 
     parser.add_option("-p", "--pathways", dest="pathways", default='',
@@ -102,8 +103,6 @@ def main():
 
     (options, args) = parser.parse_args()
 
-
-
     # Create database accessor, to add things, save etc.
     mdb = db.dbm
     mdb.populate()
@@ -113,14 +112,12 @@ def main():
     exclusions = list()
     synonyms = defaultdict(list)
 
-
     def get_db_unification(xmliters):
         # Extract database unification links and store to db
         databases = dict()
         for xdb in xmliters:
             databases[xdb.find('dblink-db').text] = xdb.find('dblink-oid').text
         return databases
-
 
     def get_names(xml, types, default):
         names = list()
@@ -139,11 +136,9 @@ def main():
     if options.search:
         search_re = re.compile(options.search, flags=re.IGNORECASE)
 
-
     def strip_html(data):
         p = re.compile(r'<.*?>')
         return p.sub('', data)
-
 
     def get_xml_for_id(id):
         global total_connections
@@ -152,7 +147,6 @@ def main():
         f.close()
         total_connections += 1
         return xml
-
 
     def download_reaction_data(reactions_get):
 

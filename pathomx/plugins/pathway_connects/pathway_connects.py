@@ -55,7 +55,7 @@ class PathwayConnectsApp(ui.AnalysisApp):
 
     def generate(self, input=None):
 
-        pathways = [k for k,v in db.dbm.get_pathways()]
+        pathways = [k for k, v in db.dbm.get_pathways()]
         pathway_compounds = dict()
 
         for k, p in db.dbm.get_pathways():

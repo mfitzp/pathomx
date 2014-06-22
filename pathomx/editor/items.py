@@ -3,6 +3,7 @@ import copy
 import math
 from .. import utils
 from .. import config
+from ..globals import settings
 
 # Import PyQt5 classes
 from PyQt5.QtGui import *
@@ -175,7 +176,6 @@ class ToolItem(BaseItem):
 
         self.app.progress.connect(self.progressBar.updateProgress)
         self.app.status.connect(self.progressBar.updateStatus)
-        self.app.status.connect(self.updateTip)
 
         if position:
             self.setPos(position)
@@ -191,12 +191,6 @@ class ToolItem(BaseItem):
         for v in self.scene.views():
             v.centerOn(self)
 
-    def updateTip(self, status):
-        if status == 'error':
-            self.setToolTip('Error: %s' % self.app._latest_exception)
-        else:
-            self.setToolTip('')
-
     def getName(self):
         # FIXME: This feels a bit hacky
         if self.label.toPlainText() != self.name:  # Prevent infinite loop get/set
@@ -209,7 +203,7 @@ class ToolItem(BaseItem):
         pass
 
     def addDataLink(self, datao, datai):
-    
+
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
         # (data.manager, data.manager_interface), (self, interface)
@@ -244,7 +238,6 @@ class ToolItem(BaseItem):
     def mouseDoubleClickEvent(self, e):
         e.accept()
         self.onShow()
-        
     #def mousePressEvent(self, e):
     #    self.app.showDock()
 
@@ -296,7 +289,7 @@ class ToolItem(BaseItem):
 
     def itemChange(self, change, value):
         # Snap to grid in QGraphicsView (if enabled)
-        if change == QGraphicsItem.ItemPositionChange and self.app.m.settings.get('Editor/Snap_to_grid'):
+        if change == QGraphicsItem.ItemPositionChange and settings.get('Editor/Snap_to_grid'):
             newPos = value  # .toPointF()
             snap = 100
             snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
@@ -354,7 +347,7 @@ class ToolInterfaceHandler(BaseItem):
             'output': (0, QPointF(44, 44), (+32, -12), 0),
         }
 
-        self.settings = self.defaults[interface_type]
+        self.setup = self.defaults[interface_type]
         self.interface_type = interface_type
 
         self.interfaces = {'input': app.data.i, 'output': app.data.o, 'views': app.views}[interface_type]
@@ -363,20 +356,20 @@ class ToolInterfaceHandler(BaseItem):
         app.data.interfaces_changed.connect(self.update_interfaces)
 
         transform = QTransform()
-        transform.translate(*self.settings[2])
+        transform.translate(*self.setup[2])
         self.setTransform(transform)
 
         self._linkInProgress = None
 
     def update_interfaces(self):
 
-        x0, y0 = self.settings[3], 44
+        x0, y0 = self.setup[3], 44
         r = 44
 
         items = len(self.interfaces.keys())
 
         angle_increment = 15.
-        angle_start = self.settings[0] - (items - 1) * (angle_increment / 2)
+        angle_start = self.setup[0] - (items - 1) * (angle_increment / 2)
 
         for n, interface in enumerate(self.interfaces.keys()):
             angle = angle_start + (n * angle_increment)
@@ -403,6 +396,7 @@ class ToolInterface(BaseInteractiveItem):
         self.app = app
 
         self.interface = interface
+        self.interface_name = interface_name
 
         self.parent = parent
         self.size = QSize(8, 8)
@@ -446,9 +440,17 @@ class ToolInterface(BaseInteractiveItem):
             if targets:
                 target = targets[0]
 
-                source = self._linkInProgress.source.app
-                dest = target.app
-                c = dest.data.consume_any_app([source])
+                source_manager = self._linkInProgress.source.app.data
+                source_interface = self._linkInProgress.source.interface_name
+
+                dest_manager = target.app.data
+                dest_interface = target.interface_name
+
+                print source_manager, source_interface
+                print dest_manager, dest_interface
+
+                # FIXME: This is horrible; simplify the data manager
+                c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
 
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
@@ -523,23 +525,26 @@ class LinkItem(QGraphicsPathItem):
 
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
-        
+
         
         if self.data is not None:
-        
-            # Determine maximum length of text by horribly kludge
+
+        # Determine maximum length of text by horribly kludge
             max_length = self.bezierPath.length() / 10
             source_manager, source_interface = self.data
             dataobj = source_manager.o[source_interface]
-            strs = [
-                source_interface,
-                "(%s)" % "x".join([str(x) for x in dataobj.shape]),
-                ]
+            if dataobj is not None:
+                strs = [
+                    source_interface,
+                    "(%s)" % "x".join([str(x) for x in dataobj.shape]),
+                    ]
 
-            text = ''
-            for s in strs:
-                if len(text + s) < max_length:
-                    text += ' ' + s
+                text = ''
+                for s in strs:
+                    if len(text + s) < max_length:
+                        text += ' ' + s
+            else:
+                text = "empty"
 
             self.textLabelItem.setPlainText(text)
 

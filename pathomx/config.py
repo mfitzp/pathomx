@@ -426,14 +426,14 @@ class ConfigManager(QObject):
                 return self.config[key]
             except:
                 return None
-                
+
     def _get_default(self, key):
         with QMutexLocker(self.mutex):
             try:
                 return self.defaults[key]
             except:
                 return None
-    
+
     # Get config
     def get(self, key):
         """ 
