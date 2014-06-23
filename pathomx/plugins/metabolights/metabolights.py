@@ -34,6 +34,6 @@ class ImportMetabolightsApp(ui.ImportDataApp):
 
 class ImportMetabolights(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(ImportMetabolights, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ImportMetabolights, self).__init__(*args, **kwargs)
         self.register_app_launcher(ImportMetabolightsApp)

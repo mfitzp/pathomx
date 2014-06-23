@@ -211,8 +211,8 @@ class ReclassifyTool(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(ReclassifyTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ReclassifyTool, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -233,7 +233,7 @@ class ReclassifyTool(ui.IPythonApp):
 
 class Filter(FilterPlugin):
 
-    def __init__(self, **kwargs):
-        super(Filter, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Filter, self).__init__(*args, **kwargs)
         self.register_app_launcher(FilterApp)
         self.register_app_launcher(ReclassifyTool)

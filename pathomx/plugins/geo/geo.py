@@ -25,8 +25,8 @@ class GEOApp(ui.ImportDataApp):
     import_description = "Open experimental data from downloaded data"
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(GEOApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(GEOApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'filename': None,
@@ -37,7 +37,7 @@ class GEOApp(ui.ImportDataApp):
 
 class GEO(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(GEO, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(GEO, self).__init__(*args, **kwargs)
         self.register_app_launcher(GEOApp)
         self.register_file_handler(GEOApp, 'soft')

@@ -8,7 +8,6 @@ import os
 import pathomx.ui as ui
 import pathomx.utils as utils
 
-from pathomx.db import Compound, Gene, Protein
 from pathomx.data import DataSet, DataDefinition
 from pathomx.views import TableView
 from pathomx.qt import *
@@ -113,6 +112,6 @@ class PathwayMiningApp(ui.AnalysisApp):
         
 class PathwayMining(AnalysisPlugin):
 
-    def __init__(self, **kwargs):
-        super(PathwayMining, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PathwayMining, self).__init__(*args, **kwargs)
         self.register_app_launcher(PathwayMiningApp)

@@ -127,7 +127,7 @@ class IcoshiftApp(ui.IPythonApp):
 
 class Icoshift(ProcessingPlugin):
 
-    def __init__(self, **kwargs):
-        super(Icoshift, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Icoshift, self).__init__(*args, **kwargs)
         IcoshiftApp.plugin = self
         self.register_app_launcher(IcoshiftApp)

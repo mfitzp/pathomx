@@ -134,7 +134,7 @@ class PCATool(ui.IPythonApp):
 
 class Multivariate(AnalysisPlugin):
 
-    def __init__(self, **kwargs):
-        super(Multivariate, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Multivariate, self).__init__(*args, **kwargs)
         self.register_app_launcher(PLSDATool)
         self.register_app_launcher(PCATool)

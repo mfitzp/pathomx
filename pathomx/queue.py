@@ -19,8 +19,11 @@ try:
 except:
     import pickle as pickle
 
-MAX_RUNNER_QUEUE = 1 #threads.threadpool.maxThreadCount()
-
+ENABLE_THREADING = False
+if ENABLE_THREADING:
+    MAX_RUNNER_QUEUE = threads.threadpool.maxThreadCount()
+else:
+    MAX_RUNNER_QUEUE = 2 # Keep a spare
 
 class NotebookRunnerQueue(object):
     '''
@@ -37,7 +40,7 @@ class NotebookRunnerQueue(object):
         
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
 
-        if MAX_RUNNER_QUEUE > 1:
+        if ENABLE_THREADING:
             self._create_runners_timer = QTimer()
             self._create_runners_timer.timeout.connect(self.topup_runners)
             self._create_runners_timer.start(1000)  # Repopulate queue every 1 second
@@ -74,13 +77,13 @@ class NotebookRunnerQueue(object):
            return lambda: self.dec_active_runners()
 
         self.inc_active_runners()
-        if MAX_RUNNER_QUEUE > 1:
+        if ENABLE_THREADING:
             # Run in a thread
             threads.run(self.run_notebook, runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback, success_callback=result_callback, finished_callback=make_callback(r))
         else:
             result_callback( self.run_notebook( runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback) )
             self.dec_active_runners()
-            self.runners.append(r)
+            self.runners.append(r) # If not multi-threading re-use the runners
             
 
     def inc_active_runners(self):

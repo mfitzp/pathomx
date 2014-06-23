@@ -37,6 +37,6 @@ class ImportPRIDETool(ui.ImportDataApp):
         
 class ImportPRIDE(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(ImportPRIDE, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ImportPRIDE, self).__init__(*args, **kwargs)
         self.register_app_launcher(ImportPRIDETool)

@@ -20,8 +20,8 @@ class BarTool(ui.AnalysisApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(BarTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BarTool, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -48,8 +48,8 @@ class SpectraTool(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(SpectraTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SpectraTool, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -68,7 +68,7 @@ class SpectraTool(ui.IPythonApp):
     
 class BasicGraph(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(BasicGraph, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BasicGraph, self).__init__(*args, **kwargs)
         self.register_app_launcher(BarTool)
         self.register_app_launcher(SpectraTool)

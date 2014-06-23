@@ -28,8 +28,8 @@ class NMRApp(ui.ImportDataApp):
     notebook = 'nmr_import.ipynb'
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(NMRApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NMRApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'datatype': 'bruker',
@@ -62,6 +62,6 @@ class NMRApp(ui.ImportDataApp):
 
 class NMRGlue(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(NMRGlue, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NMRGlue, self).__init__(*args, **kwargs)
         self.register_app_launcher(NMRApp)

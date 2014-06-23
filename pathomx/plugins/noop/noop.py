@@ -17,8 +17,8 @@ class NOOPApp(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(NOOPApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NOOPApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
 
@@ -35,7 +35,7 @@ class NOOPApp(ui.IPythonApp):
 
 class NOOP(FilterPlugin):
 
-    def __init__(self, **kwargs):
-        super(NOOP, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NOOP, self).__init__(*args, **kwargs)
         NOOPApp.plugin = self
         self.register_app_launcher(NOOPApp)

@@ -41,7 +41,7 @@ class MergeApp(ui.IPythonApp):
 
 class Merge(FilterPlugin):
 
-    def __init__(self, **kwargs):
-        super(Merge, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Merge, self).__init__(*args, **kwargs)
         MergeApp.plugin = self
         self.register_app_launcher(MergeApp)

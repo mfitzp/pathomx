@@ -29,8 +29,8 @@ class KEGGPathwayApp(ui.AnalysisApp):
     notebook = 'kegg_pathway.ipynb'
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, gpml=None, svg=None, **kwargs):
-        super(KEGGPathwayApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(KEGGPathwayApp, self).__init__(*args, **kwargs)
 
         self.svg = None  # Rendered GPML file as SVG
         self.metadata = {}
@@ -79,7 +79,7 @@ class dialogWikiPathways(ui.remoteQueryDialog):
 
 class KEGG(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(KEGG, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(KEGG, self).__init__(*args, **kwargs)
         KEGGPathwayApp.plugin = self
         self.register_app_launcher(KEGGPathwayApp)

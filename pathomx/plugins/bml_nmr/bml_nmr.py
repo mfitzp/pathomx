@@ -25,8 +25,8 @@ class BMLNMRApp(ui.ImportDataApp):
 
     notebook = 'bml_nmr.ipynb'
 
-    def __init__(self, **kwargs):
-        super(BMLNMRApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BMLNMRApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'filename': None,
@@ -39,6 +39,6 @@ class BMLNMRApp(ui.ImportDataApp):
 
 class BMLNMR(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(BMLNMR, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BMLNMR, self).__init__(*args, **kwargs)
         self.register_app_launcher(BMLNMRApp)

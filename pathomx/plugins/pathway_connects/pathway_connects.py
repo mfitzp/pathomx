@@ -12,8 +12,8 @@ from pathomx.views import D3CircosView
 
 class PathwayConnectsApp(ui.AnalysisApp):
 
-    def __init__(self, **kwargs):
-        super(PathwayConnectsApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PathwayConnectsApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
 
@@ -101,7 +101,7 @@ class PathwayConnectsApp(ui.AnalysisApp):
 
 class PathwayConnects(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(PathwayConnects, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PathwayConnects, self).__init__(*args, **kwargs)
         PathwayConnectsApp.plugin = self
         self.register_app_launcher(PathwayConnectsApp)

@@ -260,7 +260,7 @@ class MetaVizApp(ui.AnalysisApp):
 
 class MetaViz(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(MetaViz, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(MetaViz, self).__init__(*args, **kwargs)
         MetaVizApp.plugin = self
         self.register_app_launcher(MetaVizApp)

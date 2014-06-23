@@ -155,8 +155,8 @@ class dialogWikiPathways(ui.remoteQueryDialog):
 
 class GPML(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(GPML, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(GPML, self).__init__(*args, **kwargs)
         GPMLPathwayApp.plugin = self
         self.register_app_launcher(GPMLPathwayApp)
         self.register_file_handler(GPMLPathwayApp, 'gpml')

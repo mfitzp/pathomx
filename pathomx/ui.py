@@ -1382,7 +1382,7 @@ class GenericApp(QObject):
 
     autoconfig_name = None
 
-    def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, **kwargs):
+    def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
         self.id = str(id(self))
 
@@ -1937,8 +1937,8 @@ class ImportDataApp(IPythonApp):
 
     autoconfig_name = "{filename}"
 
-    def __init__(self, parent, filename=None, **kwargs):
-        super(ImportDataApp, self).__init__(parent, **kwargs)
+    def __init__(self, parent, filename=None, *args, **kwargs):
+        super(ImportDataApp, self).__init__(parent, *args, **kwargs)
 
         self.addImportDataToolbar()
         self.addFigureToolBar()
@@ -1975,8 +1975,8 @@ class ImportDataApp(IPythonApp):
 
 
 class ExportDataApp(GenericApp):
-    def __init__(self, filename=None, **kwargs):
-        super(ExportDataApp, self).__init__(**kwargs)
+    def __init__(self, filename=None, *args, **kwargs):
+        super(ExportDataApp, self).__init__(*args, **kwargs)
 
         self.data.add_input('input_data')  # Add output slot
 

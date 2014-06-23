@@ -82,8 +82,8 @@ class TransformRemoveInvalid(TransformApp):
 
 class Transform(ProcessingPlugin):
 
-    def __init__(self, **kwargs):
-        super(Transform, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Transform, self).__init__(*args, **kwargs)
         self.register_app_launcher(TransformMeanCenter)
         self.register_app_launcher(TransformLog2)
         self.register_app_launcher(TransformLog10)

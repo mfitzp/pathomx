@@ -29,11 +29,13 @@ from pathomx.qt import *
 # Dialog box for Metabohunter search options
 class SpectraNormConfigPanel(ui.ConfigPanel):
 
+    algorithms = ['PQN', 'TSA']
+
     def __init__(self, *args, **kwargs):
         super(SpectraNormConfigPanel, self).__init__(*args, **kwargs)
 
         self.algorithm_cb = QComboBox()
-        self.algorithm_cb.addItems(self.v.algorithms)
+        self.algorithm_cb.addItems(self.algorithms)
         self.config.add_handler('algorithm', self.algorithm_cb)
 
         tl = QLabel('Scaling algorithm')
@@ -48,8 +50,6 @@ class SpectraNormApp(ui.IPythonApp):
 
     name = "Spectra normalisation"
     notebook = 'spectra_norm.ipynb'
-
-    algorithms = ['PQN', 'TSA']
 
     legacy_launchers = ['SpectraNorm.SpectraNormApp']
     legacy_inputs = {'input': 'input_data'}
@@ -511,8 +511,8 @@ class BaselineCorrectionTool(ui.IPythonApp):
 
 class Spectra(ProcessingPlugin):
 
-    def __init__(self, **kwargs):
-        super(Spectra, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Spectra, self).__init__(*args, **kwargs)
         self.register_app_launcher(SpectraNormApp)
         self.register_app_launcher(PeakAdjApp)
         self.register_app_launcher(PeakPickingApp)

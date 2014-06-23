@@ -17,16 +17,16 @@ default_build_options=dict(
         'scipy',
         'nmrglue',
         'gpml2svg',
-        'poster.encode',
-        'wheezy.template',
         'sklearn',
         'sklearn.decomposition',
-        'icoshift',
+#        'icoshift',
         'nmrglue.fileio.fileiobase',
         'matplotlib',
         'dateutil',
         'mplstyler',
         'pyqtconfig',
+        'pandas',
+        'IPython',
 #        'mlabwrap', mlabwrap doesn't currently work on Windows x64
         ],
     includes=[
@@ -35,7 +35,6 @@ default_build_options=dict(
         ],
     excludes=[
         '_xmlplus',
-        'IPython',
         'test',
         'networkx',
         'wx',

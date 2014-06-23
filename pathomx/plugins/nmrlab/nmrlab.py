@@ -22,8 +22,8 @@ class NMRLabMetabolabTool(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    def __init__(self, **kwargs):
-        super(NMRLabMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NMRLabMetabolabTool, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -149,8 +149,8 @@ class BaselineMetabolabTool(NMRLabMetabolabTool):
     #               nopts: length of ends for mode 1, can be a number of a
     #               range [start:stop]
 
-    def __init__(self, **kwargs):
-        super(BaselineMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BaselineMetabolabTool, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'baseline_alg': 1,
@@ -217,8 +217,8 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
     #            refspc:   no of reference spectrum in matrix
     #            maxshift: the largest possible shift in either direction
 
-    def __init__(self, **kwargs):
-        super(TMSPAlignMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(TMSPAlignMetabolabTool, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'reference_spectra_n': 1,
@@ -296,8 +296,8 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
     #            alg: 1:   min of differences
     #                 2:   max correlation functions
 
-    def __init__(self, **kwargs):
-        super(SpectraAlignMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SpectraAlignMetabolabTool, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'reference_spectra_n': 1,
@@ -379,8 +379,8 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
     # glogtrans - Modified log-transform with lambda scaling for high values
     #             and a y0 shift to reduce scaling in the noise region of signals.
 
-    def __init__(self, **kwargs):
-        super(VarianceStabilisationMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VarianceStabilisationMetabolabTool, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'algorithm': 'glog',
@@ -448,8 +448,8 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
     # function mat_out=spcbucket(mat_in,bucketsize)
     # spcbucket - spectra binning for NMRLab
 
-    def __init__(self, **kwargs):
-        super(BinningMetabolabTool, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BinningMetabolabTool, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'bin_size': 0.006,
@@ -460,8 +460,8 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
 
 class NMRLab(ProcessingPlugin):
 
-    def __init__(self, **kwargs):
-        super(NMRLab, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(NMRLab, self).__init__(*args, **kwargs)
         self.register_app_launcher(BaselineMetabolabTool)
         self.register_app_launcher(TMSPAlignMetabolabTool)
         self.register_app_launcher(SpectraAlignMetabolabTool)

@@ -37,6 +37,6 @@ class ImportPeakMLApp(ui.ImportDataApp):
 
 class ImportPeakML(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(ImportPeakML, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ImportPeakML, self).__init__(*args, **kwargs)
         self.register_app_launcher(ImportPeakMLApp)

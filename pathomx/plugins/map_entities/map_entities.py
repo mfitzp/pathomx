@@ -120,7 +120,7 @@ class MapEntityApp(ui.IPythonApp):
 
 class MapEntity(IdentificationPlugin):
 
-    def __init__(self, **kwargs):
-        super(MapEntity, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(MapEntity, self).__init__(*args, **kwargs)
         #MapEntityApp.plugin = self
         self.register_app_launcher(MapEntityApp)

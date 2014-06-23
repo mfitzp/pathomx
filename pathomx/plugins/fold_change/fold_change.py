@@ -55,6 +55,6 @@ class FoldChangeApp(ui.AnalysisApp):
 
 class FoldChange(AnalysisPlugin):
 
-    def __init__(self, **kwargs):
-        super(FoldChange, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(FoldChange, self).__init__(*args, **kwargs)
         self.register_app_launcher(FoldChangeApp)

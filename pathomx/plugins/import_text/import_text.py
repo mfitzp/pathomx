@@ -121,7 +121,7 @@ class ImportTextApp(ui.ImportDataApp, ui.IPythonApp):
 
 class ImportText(ImportPlugin):
 
-    def __init__(self, **kwargs):
-        super(ImportText, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ImportText, self).__init__(*args, **kwargs)
         self.register_app_launcher(ImportTextApp)
         self.register_file_handler(ImportTextApp, 'csv')

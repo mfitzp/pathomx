@@ -16,12 +16,6 @@ from PyQt5.QtPrintSupport import *
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManager import PluginManagerSingleton
 
-# wheezy templating engine
-from wheezy.template.engine import Engine
-from wheezy.template.ext.core import CoreExtension
-from wheezy.template.ext.code import CodeExtension
-from wheezy.template.loader import FileLoader
-
 from distutils.version import StrictVersion
 
 from collections import defaultdict

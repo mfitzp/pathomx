@@ -21,8 +21,8 @@ from pathomx.qt import *
 # Supports loading from local file and WikiPathways
 class HeatmapApp(ui.AnalysisApp):
 
-    def __init__(self, **kwargs):
-        super(HeatmapApp, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(HeatmapApp, self).__init__(*args, **kwargs)
 
         self.addDataToolBar()
         self.addFigureToolBar()
@@ -259,7 +259,7 @@ class HeatmapApp(ui.AnalysisApp):
 
 class Heatmap(VisualisationPlugin):
 
-    def __init__(self, **kwargs):
-        super(Heatmap, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Heatmap, self).__init__(*args, **kwargs)
         HeatmapApp.plugin = self
         self.register_app_launcher(HeatmapApp)

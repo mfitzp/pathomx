@@ -152,7 +152,7 @@ class MetaboHunterApp(ui.IPythonApp):
 
 class MetaboHunter(IdentificationPlugin):
 
-    def __init__(self, **kwargs):
-        super(MetaboHunter, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(MetaboHunter, self).__init__(*args, **kwargs)
         MetaboHunterApp.plugin = self
         self.register_app_launcher(MetaboHunterApp)

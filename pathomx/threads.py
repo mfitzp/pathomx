@@ -13,15 +13,13 @@ threadpool = QThreadPool()
 threadpool.setExpiryTimeout(1000)
 
 
-def run(fn, success_callback=None, error_callback=None, finished_callback=None, *args, **kwargs):
+def run(fn, success_callback=None, error_callback=None, *args, **kwargs):
 
     worker = Worker(fn, *args, **kwargs)
     if success_callback:
         worker.signals.success.connect(success_callback, Qt.QueuedConnection)
     if error_callback:
         worker.signals.error.connect(error_callback, Qt.QueuedConnection)
-    if finished_callback:
-        worker.signals.finished.connect(finished_callback, Qt.QueuedConnection)
 
     threadpool.start(worker)
     logging.info("Started new thread (current %d/%d active threads)" % (threadpool.activeThreadCount(), threadpool.maxThreadCount()))
@@ -45,8 +43,7 @@ class WorkerSignals(QObject):
         `str` one of standard status flag message types
         
     '''
-    success = pyqtSignal(tuple)
-    finished = pyqtSignal()
+    success = pyqtSignal()
     error = pyqtSignal(tuple)
 
 
@@ -88,6 +85,4 @@ class Worker(QRunnable):
             self.signals.error.emit( (value, traceback.format_exc()) )
         else:
             # Success callback; deepcopy so we're not keeping a ref
-            self.signals.success.emit(result)
-
-        self.signals.finished.emit()
+            self.signals.success.emit()

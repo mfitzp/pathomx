@@ -146,25 +146,27 @@ class ViewManager( QTabWidget ):
     
     def onRefreshAll(self):
         to_delete = []
-        for w in range(0, self.count()):
-            if hasattr(self.widget(w),'autogenerate') and self.widget(w).autogenerate:
+        for n in range(self.count()):
+            if hasattr(self.widget(n),'autogenerate') and self.widget(n).autogenerate:
                 try:
-                    self.widget(w).autogenerate()
+                    self.widget(n).autogenerate()
                 except:
-                    traceback.print_exc()
                     # Failure; disable the tab or delete
                     if self._auto_delete_on_no_data:
-                        to_delete.append(w)
+                        to_delete.append( self.widget(n) )
                     else:
-                        self.setTabEnabled( w, False)
+                        self.setTabEnabled( n, False)
                 else:
                     # Success; enable the tab
-                    self.setTabEnabled( w, True)
+                    self.setTabEnabled( n, True)
 
         # Do after so don't upset ordering on loop
         for w in to_delete:
-            self.widget(w).deleteLater()
-            self.removeTab(w)
+            k = self.views.keys()[ list( self.views.values() ).index( w ) ]
+            del self.views[k]
+            w.deleteLater()
+            self.removeTab( self.indexOf(w) )
+
 
         self.updated.emit()
         
