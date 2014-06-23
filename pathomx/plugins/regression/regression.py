@@ -184,7 +184,7 @@ class RegressionConfigPanel(ui.ConfigPanel):
 
         self.fwd_map_cache = {}
         self.config.set('variables', v)
-        
+
     def map_list_fwd(self, s):
         " Receive text name, return the indexes "
         return self.fwd_map_cache[s]

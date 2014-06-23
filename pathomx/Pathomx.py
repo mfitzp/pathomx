@@ -616,7 +616,7 @@ class MainWindow(QMainWindow):
         restart_kernelsAction.setStatusTip('Restart kernel runners')
         restart_kernelsAction.triggered.connect(self.onRestartKernels)
         t.addAction(restart_kernelsAction)
-       
+
     def addEditorToolBar(self):
         t = self.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
