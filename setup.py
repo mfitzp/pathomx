@@ -218,16 +218,18 @@ setup(
             'nmrglue',
             'nmrglue.fileio.fileiobase',
 
-            'gpml2svg',
-            'icoshift',
             'mplstyler',
             'pyqtconfig',
+            ],
 
+    install_recommends = [
+            'gpml2svg',
+            'icoshift',
             ],
 
     keywords='bioinformatics data analysis metabolomics research science',
     license='GPL',
-    classifiers=['Development Status :: 5 - Production/Stable',
+    classifiers=['Development Status :: 3 - Alpha',
                'Natural Language :: English',
                'Operating System :: OS Independent',
                'Programming Language :: Python :: 2',

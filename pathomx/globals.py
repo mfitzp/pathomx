@@ -7,7 +7,7 @@ import sys
 from collections import defaultdict
 
 from .qt import QApplication, QLocale, QTranslator, QThreadPool, QObject, QTimer, QLibraryInfo
-from .runner_queue import NotebookRunnerQueue
+from .queue import NotebookRunnerQueue
 from pyqtconfig import QSettingsManager
 from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import sys
 import logging
 
-VERSION_STRING = '3.0.0a1'
+VERSION_STRING = '3.0.0a2'
 
 frozen = getattr(sys, 'frozen', None)
 if frozen:
@@ -1045,6 +1045,11 @@ class MainWindow(QMainWindow):
         self.workspace_updated.emit()
 
     def onExportIPyNotebook(self):
+        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook ', '', "Pathomx Workflow Format (*.ipynb)")
+        if filename:
+            self.export_to_notebook(filename)
+
+    def export_to_notebook(self, filename):
         '''
         Export an IPython notebook representing the entire workflow
         '''
@@ -1133,7 +1138,7 @@ class MainWindow(QMainWindow):
         # Build an output one using an available structure; then re-json to save
         notebook = copy(tool.nb)
         notebook.worksheets[0].cells = workbook_cells
-        with open('/Users/mxf793/Notebooks/test-auto-output.ipynb', 'w') as f:
+        with open(filename, 'w') as f:
             write_notebook(notebook, f, 'json')
 
     def onRestartKernels(self):
@@ -1155,6 +1160,8 @@ class MainWindow(QMainWindow):
     #        return super(QApplicationExtend, self).event(e)
 
 def main():
+
+
 
     # Create a Qt application
     app = QApplication(sys.argv)
@@ -1185,6 +1192,9 @@ def main():
     if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
         logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
     app.installTranslator(translator_mp)
+
+    # We've got a qApp instance going, set up timers
+    notebook_queue.start_timers()
 
     MainWindow()
     logging.info('Ready.')
