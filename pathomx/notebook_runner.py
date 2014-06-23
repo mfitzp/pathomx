@@ -35,8 +35,7 @@ class NotebookRunner(object):
         'image/svg+xml': 'svg',
     }
 
-
-    def __init__(self, nb, pylab=False, mpl_inline=False, working_dir = None):
+    def __init__(self, nb, pylab=False, mpl_inline=False, working_dir=None):
         self.km = KernelManager()
 
         args = []
@@ -53,8 +52,8 @@ class NotebookRunner(object):
         if working_dir:
             os.chdir(working_dir)
 
-        self.km.start_kernel(extra_arguments = args)
-        
+        self.km.start_kernel(extra_arguments=args)
+
         os.chdir(cwd)
 
         if platform.system() == 'Darwin':
@@ -70,14 +69,12 @@ class NotebookRunner(object):
 
         self.shell = self.kc.shell_channel
         self.iopub = self.kc.iopub_channel
-        
+
         self.nb = nb
-        
 
     def __del__(self):
         self.kc.stop_channels()
         self.km.shutdown_kernel(now=True)
-
 
     def run_cell(self, cell):
         '''
@@ -156,7 +153,6 @@ class NotebookRunner(object):
         if status == 'error':
             raise NotebookError(traceback_text)
 
-
     def iter_code_cells(self):
         '''
         Iterate over the notebook cells containing code.
@@ -166,7 +162,6 @@ class NotebookRunner(object):
                 if cell.cell_type == 'code':
                     yield cell
 
-
     def run_notebook(self, skip_exceptions=False, execute_cell_no_callback=None):
         '''
         Run all the cells of a notebook in order and update
@@ -175,7 +170,7 @@ class NotebookRunner(object):
         If ``skip_exceptions`` is set, then if exceptions occur in a cell, the
         subsequent cells are run (by default, the notebook execution stops).
         '''
-        for n, cell in enumerate( self.iter_code_cells() ):
+        for n, cell in enumerate(self.iter_code_cells()):
             try:
                 self.run_cell(cell)
             except NotebookError:
@@ -184,12 +179,10 @@ class NotebookRunner(object):
             if execute_cell_no_callback:
                 execute_cell_no_callback(n)
 
-
     def count_code_cells(self):
         '''
         Return the number of code cells in the notebook
         '''
-        for n, cell in enumerate( self.iter_code_cells() ):
+        for n, cell in enumerate(self.iter_code_cells()):
             pass
         return n
-        

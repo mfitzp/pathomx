@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import gc
 import sys
 import logging
+
+VERSION_STRING = '3.0.0a'
 
 frozen = getattr(sys, 'frozen', None)
 if frozen:
@@ -87,8 +88,6 @@ from .translate import tr
 
 from distutils.version import StrictVersion
 from runipy.notebook_runner import NotebookRunner
-
-VERSION_STRING = '2.5.2'
 
 DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "SER-GLYSYN-PWY-1", "PWY-4983", "ASPARAGINE-BIOSYNTHESIS", "ASPARTATESYN-PWY",
@@ -617,9 +616,7 @@ class MainWindow(QMainWindow):
         restart_kernelsAction.setStatusTip('Restart kernel runners')
         restart_kernelsAction.triggered.connect(self.onRestartKernels)
         t.addAction(restart_kernelsAction)
-        
        
-
     def addEditorToolBar(self):
         t = self.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
@@ -1050,12 +1047,12 @@ class MainWindow(QMainWindow):
         logging.info("Load complete.")
         # Focus the home tab & refresh the view
         self.workspace_updated.emit()
-        
+
     def onExportIPyNotebook(self):
         '''
         Export an IPython notebook representing the entire workflow
         '''
-        
+
         # Start by finding tools with no inputs; these are the 'origins' of analysis
         # either by importing from files, or being standalone
         # We generate the remainder of the tree from these items
@@ -1065,58 +1062,57 @@ class MainWindow(QMainWindow):
 
         for t in current_tools:
             # The following will give an empty list if there are no inputs, or they're all unassigned
-            tw = [v for k,v in t.data.i.items() if v is not None]
+            tw = [v for k, v in t.data.i.items() if v is not None]
             if not tw:
                 # Empty
-                process_queue.append( (0,t) ) # Depth 0
-                
+                process_queue.append((0, t))  # Depth 0
+
         '''
         The process is to iterate down all the watchers from the origin tools. At each point
         get the watchers and put them on a stack, with level+1. On each output check if 
         all the watchers have been 'done' (on the output stack) and if not, continue on.
-        ''' 
-        logging.debug("Starting export with %d origins" % len(process_queue) )       
-        
+        '''
+        logging.debug("Starting export with %d origins" % len(process_queue))
+
         while len(process_queue) > 0:
-            lvl, tool = process_queue.pop(0) # From front
+            lvl, tool = process_queue.pop(0)  # From front
             # Check for what that this tool depends on
-            parents = [s[0].v for i,s in tool.data.i.items() if s is not None]
-            
-            if len(parents) > 0 and len( set(parents) - set(tools_output_done) ) > 0:
+            parents = [s[0].v for i, s in tool.data.i.items() if s is not None]
+
+            if len(parents) > 0 and len(set(parents) - set(tools_output_done)) > 0:
                 # We're waiting on something here, push to the back of the list
-                process_queue.append( (lvl, tool) )
-            
+                process_queue.append((lvl, tool))
+
             # We're good to go! Use the source Luke; not the mangled version
             for ws in tool.nb_source.worksheets:
                 for cell in ws.cells:
                     # Output variables of each script are shim-suffixed with the id of the tool (unique)
-                    # e.g. output_data_123 = output_data 
+                    # e.g. output_data_123 = output_data
                     # input_data = output_data_123
-                    # We can skip this step if the following tool is the target of the data, but this 
+                    # We can skip this step if the following tool is the target of the data, but this
                     # will need the generator to be more intelligent
                     workbook_cells.append(cell)
-            
+
             tools_output_done.append(tool)
-            
+
             # Add watchers to the list
-            watchers = [w.v for k,v in tool.data.watchers.items() for w in v]
+            watchers = [w.v for k, v in tool.data.watchers.items() for w in v]
             for w in watchers:
                 if w not in tools_output_done:
-                    process_queue.append( (lvl+1, w) )
+                    process_queue.append((lvl + 1, w))
 
-            logging.debug("- %d queued; %d done; %d cells" % ( len(process_queue), len(tools_output_done), len(workbook_cells) ) )       
-        
-        logging.debug("Finished: %d cells" % len(workbook_cells) )
+            logging.debug("- %d queued; %d done; %d cells" % (len(process_queue), len(tools_output_done), len(workbook_cells)))
+
+        logging.debug("Finished: %d cells" % len(workbook_cells))
         # The resulting workbook in workbook_cells
         # Build an output one using an available structure; then re-json to save
         notebook = copy(tool.nb)
         notebook.worksheets[0].cells = workbook_cells
         with open('/Users/mxf793/Notebooks/test-auto-output.ipynb', 'w') as f:
             write_notebook(notebook, f, 'json')
-    
+
     def onRestartKernels(self):
         notebook_queue.restart()
-        
 
 #class QApplicationExtend(QApplication):
     #def event(self, e):

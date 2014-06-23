@@ -1387,8 +1387,8 @@ class GenericApp(QObject):
         self.id = str(id(self))
 
         self.w = QMainWindow()
-        self.w.t = self # Pass through reference to self
-        
+        self.w.t = self  # Pass through reference to self
+
         self._lock = False
         self._previous_size = None
 
@@ -1541,7 +1541,7 @@ pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
             self._queued_start = True
             return False
         self._queued_start = False
-        
+
         self.logger.debug("Starting job %s" % self.name)
 
         varsi = {}
@@ -1566,7 +1566,7 @@ pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
 
         logging.info("Running notebook %s for %s" % (self.notebook, self.name))
 
-        notebook_queue.add_job(self.nb, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback) #, error_callback=self._worker_error_callback)
+        notebook_queue.add_job(self.nb, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, output):
         result, varso = output
@@ -1579,13 +1579,13 @@ pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
             if 'styles' in varso:
                 global styles
                 styles = varso['styles']
-        
+
         elif result['status'] == -1:
             self.logger.debug("Notebook error %s" % self.name)
             self.status.emit('error')
-            self.logger.error( result['traceback'] )
+            self.logger.error(result['traceback'])
             varso = {}
-        
+
         varso['_pathomx_rendered_notebook'] = result['notebook'][:]
 
         self.worker_cleanup(varso)

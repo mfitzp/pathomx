@@ -23,7 +23,8 @@ ENABLE_THREADING = False
 if ENABLE_THREADING:
     MAX_RUNNER_QUEUE = threads.threadpool.maxThreadCount()
 else:
-    MAX_RUNNER_QUEUE = 2 # Keep a spare
+    MAX_RUNNER_QUEUE = 2  # Keep a spare
+
 
 class NotebookRunnerQueue(object):
     '''
@@ -37,7 +38,7 @@ class NotebookRunnerQueue(object):
         self.no_of_runners = no_of_runners
         self.runners = []
         self.no_of_active_runners = 0
-        
+
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
 
         if ENABLE_THREADING:
@@ -51,7 +52,7 @@ class NotebookRunnerQueue(object):
         self._run_timer.timeout.connect(self.run)
         self._run_timer.start(250)  # Auto-start every 1/4 second
 
-    def add_job(self, nb,  varsi, progress_callback=None, result_callback=None):
+    def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
         self.jobs.append((nb, varsi, progress_callback, result_callback))
 
     def run(self):
@@ -74,21 +75,20 @@ class NotebookRunnerQueue(object):
         # Recreating is actually pretty quick anyway
         # Would be nicer to do that in another thread, but it also causes crashes. Oh well.
         def make_callback(r):
-           return lambda: self.dec_active_runners()
+            return lambda: self.dec_active_runners()
 
         self.inc_active_runners()
         if ENABLE_THREADING:
             # Run in a thread
             threads.run(self.run_notebook, runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback, success_callback=result_callback, finished_callback=make_callback(r))
         else:
-            result_callback( self.run_notebook( runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback) )
+            result_callback(self.run_notebook(runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback))
             self.dec_active_runners()
-            self.runners.append(r) # If not multi-threading re-use the runners
-            
+            self.runners.append(r)  # If not multi-threading re-use the runners
 
     def inc_active_runners(self):
         self.no_of_active_runners += 1
-    
+
     def dec_active_runners(self):
         self.no_of_active_runners -= 1
 
@@ -96,20 +96,20 @@ class NotebookRunnerQueue(object):
     def run_notebook(runner, notebook, varsi, progress_callback=None):
         runner.nb = notebook
         result = {}
-        
+
         # Pickle all variables and import to the notebook (depickler)
         with open(varsi['_pathomx_pickle_in'], 'wb') as f:
             pickle.dump(varsi, f, -1)  # Highest protocol for speed
 
-        def callback_fn(cb,n,m):
+        def callback_fn(cb, n, m):
             QApplication.processEvents()
-            cb( float(n)/m )
+            cb(float(n) / m)
 
-        def make_callback(cb,m):
-           return lambda n: callback_fn(cb,n,m)
-        
+        def make_callback(cb, m):
+            return lambda n: callback_fn(cb, n, m)
+
         try:
-            runner.run_notebook(execute_cell_no_callback=make_callback( progress_callback, runner.count_code_cells() ) )
+            runner.run_notebook(execute_cell_no_callback=make_callback(progress_callback, runner.count_code_cells()))
         except:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -124,7 +124,7 @@ class NotebookRunnerQueue(object):
 
         result['notebook'], resources = IPyexport(IPyexporter_map['html'], runner.nb)
         return (result, varso)
-        
+
     def create_runner(self):
         self.runners.append(NotebookRunner(None, pylab=True, mpl_inline=True))
 
@@ -135,7 +135,7 @@ class NotebookRunnerQueue(object):
     def create_runners(self):
         for n in range(self.no_of_runners):
             self.create_runner()
-            
+
     def restart(self):
         self.runners = []
         self.no_of_active_runners = 0

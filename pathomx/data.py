@@ -183,7 +183,7 @@ class DataTreeModel(QAbstractItemModel):
         for dso in outs:
             newItem = DataTreeItem(dso, "", self.rootItem)
             self.rootItem.appendChild(newItem)
-            
+
         self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint)
 
 
@@ -227,7 +227,7 @@ class DataManager(QObject):
             return deepcopy(data)
 
         return None
-        
+
     def unget(self, interface):
         if interface in self.i:
             self._unconsume(interface)
@@ -269,7 +269,7 @@ class DataManager(QObject):
             dso = self.o[interface]
             return dso
         return False
-            
+
     def add_output(self, interface, dso=None, is_public=True):
         self.o[interface] = None
         self.interfaces_changed.emit()
@@ -299,7 +299,7 @@ class DataManager(QObject):
             self.interfaces_changed.emit()
             return True
         return False
-            
+
     def notify_watchers(self, interface):
         for manager in self.watchers[interface]:
             manager.source_updated.emit()
@@ -384,12 +384,12 @@ class DataManager(QObject):
                     self.source_updated.emit()
                     return a.data.o[o]
         return False
-                
+
     def consume_with(self, data, consumer_def):
         if self._consume(data, [consumer_def]):
             self.source_updated.emit()
             return True
-            
+
     def provide(self, target):
         self.provides.append(self.o[target])
 

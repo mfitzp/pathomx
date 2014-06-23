@@ -3,9 +3,6 @@ logging.debug('Loading globals.py')
 
 import os
 import sys
-import gc
-# Disable the default Garbage Collector because of issues with PyQt QThreads
-gc.disable()
 
 from collections import defaultdict
 

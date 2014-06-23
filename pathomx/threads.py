@@ -24,6 +24,7 @@ def run(fn, success_callback=None, error_callback=None, *args, **kwargs):
     threadpool.start(worker)
     logging.info("Started new thread (current %d/%d active threads)" % (threadpool.activeThreadCount(), threadpool.maxThreadCount()))
 
+
 class WorkerSignals(QObject):
     '''
     Defines the signals available from a running worker thread.
@@ -82,7 +83,7 @@ class Worker(QRunnable):
             # Error callback
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit( (value, traceback.format_exc()) )
+            self.signals.error.emit((value, traceback.format_exc()))
         else:
             # Success callback; deepcopy so we're not keeping a ref
             self.signals.success.emit()

@@ -62,7 +62,7 @@ class MapEntityConfigPanel(ui.ConfigPanel):
         self.cb_mapping_type = QComboBox()
         self.cb_mapping_type.addItems(MAP_TYPE_TABLE)
         self.cb_mapping_type.insertSeparator(4)
-        
+
         self.config.add_handler('map_object_type', self.cb_mapping_type, (legacy_map_fwd, legacy_map_rev))
 
         self.layout.addWidget(self.cb_mapping_type)
