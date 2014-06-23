@@ -187,8 +187,6 @@ class DataTreeModel(QAbstractItemModel):
         self.layoutChanged.emit([], QAbstractItemModel.NoLayoutChangeHint)
 
 
-#from lxml import etree as et
-
 # DataManager allows a view/analysis class to handle control of consumable data sources
 class DataManager(QObject):
 

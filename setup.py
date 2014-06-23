@@ -15,19 +15,22 @@ default_build_options=dict(
         'PyQt5',
         'numpy',
         'scipy',
-        'nmrglue',
-        'gpml2svg',
-        'sklearn',
-        'sklearn.decomposition',
-#        'icoshift',
-        'nmrglue.fileio.fileiobase',
-        'matplotlib',
-        'dateutil',
-        'mplstyler',
-        'pyqtconfig',
         'pandas',
         'IPython',
-#        'mlabwrap', mlabwrap doesn't currently work on Windows x64
+        'matplotlib',
+        'dateutil',
+        'zmq',
+
+        'sklearn',
+        'sklearn.decomposition',
+
+        'nmrglue',
+        'nmrglue.fileio.fileiobase',
+
+        'gpml2svg',
+        'icoshift',
+        'mplstyler',
+        'pyqtconfig',
         ],
     includes=[
         'sip',
@@ -40,8 +43,6 @@ default_build_options=dict(
         'wx',
         'mpl-data',
         'Tkinter',
-        # FIXME: Segmentation faults in rpy2 packaged on cx_Freeze
-        'rpy2',
         ],
     )
 
@@ -176,12 +177,13 @@ setup(
     url='https://github.com/pathomx/pathomx',
     download_url='https://github.com/pathomx/pathomx/zipball/master',
     description='Metabolic pathway visualisation and analysis.',
-    long_description='Pathomx is a tool for the analysis of metabolic pathway and \
-        associated visualisation of experimental data. Built on the MetaCyc database it \
-        provides an interactive map in which multiple pathways can be simultaneously \
-        visualised. Multiple annotations from the MetaCyc database are available including \
-        synonyms, associated reactions and pathways and database unification links.',
-
+    long_description='Pathomx is workflow-based scientific data processing, analysis and \
+        visualisation too. Built on IPython notebooks it allows rapid prototyping of \
+        analysis approaches, sharing of workflows and export of generated IPython notebooks \
+        that capture the approach. The included notebook tools are aimed towards the analysis of \
+        metabolomic data inlucindg: NMR data processing, integration with the BioCyc database, \
+        dynamic metabolic pathway drawing and support for GPML/KEGG.',
+        
     packages = find_packages(),
     include_package_data = True,
     package_data = {
@@ -191,19 +193,39 @@ setup(
 
     executables = executables,
 
-    entry_points = {
+    entry_points={
         'gui_scripts': [
-            'Pathomx = Pathomx',
+            'Pathomx = pathomx.Pathomx:main',
         ]
     },
 
     install_requires = [
+            #'PyQt5',
             'numpy>=1.5.0',
             'wheezy.template>=0.1.135',
             'gpml2svg>=0.1.0',
+            'numpy>=1.8.0',
+            'scipy>=0.14.0',
+            'pandas>=0.14.0',
+            'IPython>=2.0.0',
+            'matplotlib>=1.4.0',
+            'dateutil',
+            'zmq',
+
+            'sklearn',
+            'sklearn.decomposition',
+
+            'nmrglue',
+            'nmrglue.fileio.fileiobase',
+
+            'gpml2svg',
+            'icoshift',
+            'mplstyler',
+            'pyqtconfig',
+
             ],
 
-    keywords='bioinformatics metabolomics research analysis science',
+    keywords='bioinformatics data analysis metabolomics research science',
     license='GPL',
     classifiers=['Development Status :: 5 - Production/Stable',
                'Natural Language :: English',

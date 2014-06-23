@@ -15,7 +15,7 @@ from matplotlib.patches import BoxStyle, Ellipse
 from matplotlib.transforms import Affine2D, Bbox, BboxBase
 
 import matplotlib.cm as cm
-
+import matplotlib.pyplot as plt
 
 class EntityBoxStyle(BoxStyle._Base):
     """
@@ -121,9 +121,21 @@ def spectra(data, figure=None, ax=None, styles=None):
 
     data_headers = data_abs_max.index
 
+  
+    linear_scale = True
+    scale = []
+    for x in data.columns.values:
+        try:
+            scale.append( float(x) )
+        except:
+            linear_scale = False
+            break
+            
+    print linear_scale
+
     # Temporary scale
-    if not np.array([x != float for x in data.columns.values]).any():
-        scale = data.columns.values
+    if linear_scale:
+        scale = np.array( scale )
         is_scale_reversed = scale[0] > scale[-1]
     else:
         scale = np.arange(0, data.shape[1] )
@@ -186,7 +198,7 @@ def spectra(data, figure=None, ax=None, styles=None):
         else:
             r = '-60'
          
-        print x, y, l   
+        #print x, y, l   
         #annotate = ax.text(x, y, l, rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="round,pad=0.1", fc="#eeeeee") )
         #axlimits = self.extend_limits( axlimits, self.get_text_bbox_data_coords(t) )
 

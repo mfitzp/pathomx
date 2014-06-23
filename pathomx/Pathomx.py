@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import sys
 import logging
 
-VERSION_STRING = '3.0.0a'
+VERSION_STRING = '3.0.0a1'
 
 frozen = getattr(sys, 'frozen', None)
 if frozen:
@@ -35,16 +35,12 @@ from .qt import *
 
 import textwrap
 
-try:
-    from IPython.kernel import KernelManager
-except ImportError:
-    from IPython.zmq.blockingkernelmanager import BlockingKernelManager as KernelManager
-
 from IPython.nbformat.current import write as write_notebook, NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 from IPython.utils.ipstruct import Struct
+from IPython.nbformat.v3 import new_code_cell
 
 
 try:
@@ -68,7 +64,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-from .globals import app, styles, notebook_queue, \
+from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
                      settings, url_handlers, app_launchers
 
@@ -1052,7 +1048,9 @@ class MainWindow(QMainWindow):
         '''
         Export an IPython notebook representing the entire workflow
         '''
-
+        if len(current_tools) == 0:
+            return False
+            
         # Start by finding tools with no inputs; these are the 'origins' of analysis
         # either by importing from files, or being standalone
         # We generate the remainder of the tree from these items
@@ -1083,7 +1081,23 @@ class MainWindow(QMainWindow):
                 # We're waiting on something here, push to the back of the list
                 process_queue.append((lvl, tool))
 
-            # We're good to go! Use the source Luke; not the mangled version
+            # We're good to go! 
+            # First add the input-shims from any sources.
+            input_shim = []
+            for i,sm in tool.data.i.items():
+                if sm:
+                    mo, mi = sm
+                    input_shim.append( "%s = %s_%s;" % ( i, mi, id(mo.v) ) )
+
+            if input_shim:
+                c = new_code_cell(  ';\n'.join(input_shim) )
+                workbook_cells.append( c )
+            
+            # Now add the config as a dict definition
+            c = new_code_cell( "config = %s;" % tool.config.as_dict() )
+            workbook_cells.append( c )
+            
+            # Output the notebook itself. Use the source Luke; not the mangled version
             for ws in tool.nb_source.worksheets:
                 for cell in ws.cells:
                     # Output variables of each script are shim-suffixed with the id of the tool (unique)
@@ -1092,6 +1106,17 @@ class MainWindow(QMainWindow):
                     # We can skip this step if the following tool is the target of the data, but this
                     # will need the generator to be more intelligent
                     workbook_cells.append(cell)
+                    
+            # Now add the output-shims from any sources.
+            output_shim = []
+            for o,d in tool.data.o.items():
+                if d is not None:
+                    output_shim.append( "%s_%s = %s;" % ( o, id(tool), o ) )
+
+            if output_shim:
+                c = new_code_cell( ';\n'.join(output_shim) )
+                workbook_cells.append( c )
+                    
 
             tools_output_done.append(tool)
 
@@ -1131,11 +1156,38 @@ class MainWindow(QMainWindow):
 
 def main():
 
+    # Create a Qt application
+    app = QApplication(sys.argv)
+    app.setStyle('fusion')
+
+    app.setOrganizationName("Pathomx")
+    app.setOrganizationDomain("pathomx.org")
+    app.setApplicationName("Pathomx")
+
+    logging.debug('Setting up localisation...')
+
+    locale = QLocale.system().name()
+    #locale = 'nl'
+
+    # Load base QT translations from the normal place (does not include _nl, or _it)
+    translator_qt = QTranslator()
+    if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
+        logging.debug(("Loaded Qt translations for locale: %s" % locale))
+        app.installTranslator(translator_qt)
+
+    # See if we've got a default copy for _nl, _it or others
+    elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
+        logging.debug(("Loaded Qt (self) translations for locale: %s" % locale))
+        app.installTranslator(translator_qt)
+
+    # Load Pathomx specific translations
+    translator_mp = QTranslator()
+    if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
+        logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
+    app.installTranslator(translator_mp)
+
     MainWindow()
     logging.info('Ready.')
     app.exec_()  # Enter Qt application main loop
     logging.info('Exiting.')
     sys.exit()
-
-if __name__ == "__main__":
-    main()

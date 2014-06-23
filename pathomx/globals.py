@@ -7,7 +7,7 @@ import sys
 from collections import defaultdict
 
 from .qt import QApplication, QLocale, QTranslator, QThreadPool, QObject, QTimer, QLibraryInfo
-from .queue import NotebookRunnerQueue
+from .runner_queue import NotebookRunnerQueue
 from pyqtconfig import QSettingsManager
 from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
@@ -15,38 +15,6 @@ from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, M
 
 import matplotlib as mpl
 from . import utils
-
-logging.debug('Initialising application...')
-
-# Create a Qt application
-app = QApplication(sys.argv)
-app.setStyle('fusion')
-
-app.setOrganizationName("Pathomx")
-app.setOrganizationDomain("pathomx.org")
-app.setApplicationName("Pathomx")
-
-logging.debug('Setting up localisation...')
-
-locale = QLocale.system().name()
-#locale = 'nl'
-
-# Load base QT translations from the normal place (does not include _nl, or _it)
-translator_qt = QTranslator()
-if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
-    logging.debug(("Loaded Qt translations for locale: %s" % locale))
-    app.installTranslator(translator_qt)
-
-# See if we've got a default copy for _nl, _it or others
-elif translator_qt.load("qt_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-    logging.debug(("Loaded Qt (self) translations for locale: %s" % locale))
-    app.installTranslator(translator_qt)
-
-# Load Pathomx specific translations
-translator_mp = QTranslator()
-if translator_mp.load("pathomx_%s" % locale, os.path.join(utils.scriptdir, 'translations')):
-    logging.debug(("Loaded Pathomx translations for locale: %s" % locale))
-app.installTranslator(translator_mp)
 
 logging.debug('Setting up Matplotlib defaults...')
 

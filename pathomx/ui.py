@@ -57,6 +57,8 @@ from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 from IPython.utils.ipstruct import Struct
 
+from IPython.nbconvert.filters.markdown import markdown2html
+
 try:
     import cPickle as pickle
 except:
@@ -256,11 +258,17 @@ class DialogAbout(QDialog):
 
         self.setWindowTitle('About Pathomx')
         self.help = QWebView(self)  # , parent.onBrowserNav)
-        template = parent.templateEngine.get_template('about.html')
-        self.help.setHtml(template.render({
-                    'htmlbase': os.path.join(utils.scriptdir, 'html'),
-                    }), QUrl("~")
-                    )
+        with open(os.path.join(utils.scriptdir, '..', 'README.md'), 'rU') as f:
+            md = f.read()
+            
+        html = '''<html>
+        <head>
+        <link href="{baseurl}/html/css/base.css" rel="stylesheet">
+        </head>
+        <body style="margin:1em;">{html}</body>
+        </html>'''.format(**{'baseurl':'file://' + os.path.join(utils.scriptdir), 'html': markdown2html(md)}) 
+        
+        self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir) ))
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
 
@@ -1966,7 +1974,7 @@ class ImportDataApp(IPythonApp):
     def addImportDataToolbar(self):
         t = self.getCreatedToolbar(tr('External Data'), 'external-data')
 
-        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Import %s file…' % self.import_type, self.w)
+        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), 'Import %s file…' % self.import_type, self.w)
         import_dataAction.setStatusTip(self.import_description)
         import_dataAction.triggered.connect(self.onImportData)
         t.addAction(import_dataAction)
