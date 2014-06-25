@@ -43,7 +43,6 @@ import cStringIO
 
 from numpy import arange, sin, pi
 from matplotlib.backend_bases import NavigationToolbar2
-from .backend_qt5agg import NavigationToolbar2QTAgg
 from matplotlib.axes._subplots import Subplot
 from matplotlib.figure import Figure
 from matplotlib import rcParams
@@ -259,15 +258,15 @@ class DialogAbout(QDialog):
         self.help = QWebView(self)  # , parent.onBrowserNav)
         with open(os.path.join(utils.scriptdir, '..', 'README.md'), 'rU') as f:
             md = f.read()
-            
+
         html = '''<html>
         <head>
         <link href="{baseurl}/html/css/base.css" rel="stylesheet">
         </head>
         <body style="margin:1em;">{html}</body>
-        </html>'''.format(**{'baseurl':'file://' + os.path.join(utils.scriptdir), 'html': markdown2html(md)}) 
-        
-        self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir) ))
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'html': markdown2html(md)})
+
+        self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
 

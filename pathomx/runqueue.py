@@ -73,6 +73,7 @@ class NotebookRunnerQueue(object):
         self.inc_active_runners()
 
         if ENABLE_THREADING:
+
             # FIXME: Or not?
             # Note the runner will be discarded after the thread is up; a new one will be recreated
             # Not doing this leads to a Python thread pegged at 100% CPU for unknown reasons

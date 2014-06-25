@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 logging.debug('Loading plugins.py')
 
-from .qt import * 
+from .qt import *
 
 # Yapsy classes
 from yapsy.IPlugin import IPlugin

@@ -46,7 +46,6 @@ class ExportDataframe(ui.ExportDataApp):
         )
 
 
-
 class PasteToClipboard(ui.ExportDataApp):
 
     name = "Paste to clipboard"
@@ -67,7 +66,7 @@ class PasteToClipboard(ui.ExportDataApp):
 
     def addExportDataToolbar(self):
         pass
-        
+
     def onExportData(self):
         pass
 

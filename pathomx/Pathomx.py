@@ -399,13 +399,12 @@ class MainWindow(QMainWindow):
         self.plugin_places = []
         self.core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
         self.plugin_places.append(self.core_plugin_path)
-
         #user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
         #if user_application_data_paths:
         #    self.user_plugin_path = os.path.join( unicode(user_application_data_paths[0]), 'plugins')
         #    utils.mkdir_p(self.user_plugin_path)
         #    self.plugin_places.append(self.user_plugin_path)
-        #    
+        #
         #    self.application_data_path = os.path.join( unicode(user_application_data_paths[1]) )
 
         logging.info("Searching for plugins...")
@@ -1051,7 +1050,7 @@ class MainWindow(QMainWindow):
         '''
         if len(current_tools) == 0:
             return False
-            
+
         # Start by finding tools with no inputs; these are the 'origins' of analysis
         # either by importing from files, or being standalone
         # We generate the remainder of the tree from these items
@@ -1082,22 +1081,22 @@ class MainWindow(QMainWindow):
                 # We're waiting on something here, push to the back of the list
                 process_queue.append((lvl, tool))
 
-            # We're good to go! 
+            # We're good to go!
             # First add the input-shims from any sources.
             input_shim = []
-            for i,sm in tool.data.i.items():
+            for i, sm in tool.data.i.items():
                 if sm:
                     mo, mi = sm
-                    input_shim.append( "%s = %s_%s;" % ( i, mi, id(mo.v) ) )
+                    input_shim.append("%s = %s_%s;" % (i, mi, id(mo.v)))
 
             if input_shim:
-                c = new_code_cell(  ';\n'.join(input_shim) )
-                workbook_cells.append( c )
-            
+                c = new_code_cell(';\n'.join(input_shim))
+                workbook_cells.append(c)
+
             # Now add the config as a dict definition
-            c = new_code_cell( "config = %s;" % tool.config.as_dict() )
-            workbook_cells.append( c )
-            
+            c = new_code_cell("config = %s;" % tool.config.as_dict())
+            workbook_cells.append(c)
+
             # Output the notebook itself. Use the source Luke; not the mangled version
             for ws in tool.nb_source.worksheets:
                 for cell in ws.cells:
@@ -1107,17 +1106,16 @@ class MainWindow(QMainWindow):
                     # We can skip this step if the following tool is the target of the data, but this
                     # will need the generator to be more intelligent
                     workbook_cells.append(cell)
-                    
+
             # Now add the output-shims from any sources.
             output_shim = []
-            for o,d in tool.data.o.items():
+            for o, d in tool.data.o.items():
                 if d is not None:
-                    output_shim.append( "%s_%s = %s;" % ( o, id(tool), o ) )
+                    output_shim.append("%s_%s = %s;" % (o, id(tool), o))
 
             if output_shim:
-                c = new_code_cell( ';\n'.join(output_shim) )
-                workbook_cells.append( c )
-                    
+                c = new_code_cell(';\n'.join(output_shim))
+                workbook_cells.append(c)
 
             tools_output_done.append(tool)
 

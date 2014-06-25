@@ -14,6 +14,7 @@ import os
 
 from IPython.nbformat.current import NotebookNode
 from IPython.kernel import KernelManager
+
 # FIXME: This needs work to handle the InProcessKernelManager
 # e.g. the async message handling
 #from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
