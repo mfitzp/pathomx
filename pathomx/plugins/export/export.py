@@ -23,6 +23,7 @@ class ExportDataframe(ui.ExportDataApp):
     name = "Export dataframe"
     export_filename_filter = "Comma separated values (*.csv);;Hierarchical Data Format (*.hdf);;Pickle (*.pickle);;JavaScript Object Notation (*.json)"
     export_description = "Export data frame"
+    export_type = "data"
     icon = 'export.png'
 
     notebook = 'export_dataframe.ipynb'

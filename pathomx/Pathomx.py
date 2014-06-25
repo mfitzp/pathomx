@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import sys
 import logging
 
-VERSION_STRING = '3.0.0a2'
+from .version import VERSION_STRING
 
 frozen = getattr(sys, 'frozen', None)
 if frozen:
@@ -1156,8 +1156,6 @@ class MainWindow(QMainWindow):
     #        return super(QApplicationExtend, self).event(e)
 
 def main():
-
-
 
     # Create a Qt application
     app = QApplication(sys.argv)

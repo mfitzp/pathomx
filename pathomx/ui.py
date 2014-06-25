@@ -17,7 +17,7 @@ import sys
 import time
 import numpy as np
 import pandas as pd
-from pyqtconfig import ConfigManager
+from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
 from . import db
@@ -1680,10 +1680,10 @@ pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
         # self.parent().update_progress( id(self), progress)
 
     def autoconfig(self, signal):
-        if signal == config.RECALCULATE_ALL or self._latest_generator_result == None:
+        if signal == RECALCULATE_ALL or self._latest_generator_result == None:
             self.autogenerate()
 
-        elif signal == config.RECALCULATE_VIEW:
+        elif signal == RECALCULATE_VIEW:
             self.autoprerender(self._latest_generator_result)
 
     def autoconfig_rename(self, signal):

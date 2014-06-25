@@ -30,13 +30,19 @@ from . import data, utils, db
 
 from .globals import styles
 
+from numpy import arange, sin, pi
 
 # Translation (@default context)
 from .translate import tr
 
+from .qt import USE_QT_PY, PYSIDE, PYQT4, PYQT5
 
-from numpy import arange, sin, pi
-from .backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+if USE_QT_PY == PYQT5:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+elif USE_QT_PY == PYQT4:
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+
+
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
@@ -637,28 +643,28 @@ class DataFrameModel(QAbstractTableModel):
     #------------- table display functions -----------------
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
-            return QVariant()
+            return None #QVariant()
 
         if orientation == Qt.Horizontal:
             try:
                 return self.df.columns.tolist()[section]
             except (IndexError, ):
-                return QVariant()
+                return None #QVariant()
         elif orientation == Qt.Vertical:
             try:
                 # return self.df.index.tolist()
                 return self.df.index.tolist()[section]
             except (IndexError, ):
-                return QVariant()
+                return None #QVariant()
 
     def data(self, index, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
-            return QVariant()
+            return None #QVariant()
 
         if not index.isValid():
-            return QVariant()
+            return None #QVariant()
 
-        return QVariant(str(self.df.iloc[index.row(), index.column()]))
+        return str(self.df.iloc[index.row(), index.column()])
 
     def flags(self, index):
             flags = super(DataFrameModel, self).flags(index)

@@ -64,9 +64,13 @@ elif USE_QT_PY == PYQT4:
     from PyQt4.QtNetwork import *
     
     QFileDialog.getOpenFileName_ = QFileDialog.getOpenFileName
+    QFileDialog.getSaveFileName_ = QFileDialog.getSaveFileName
         
     class QFileDialog(QFileDialog):
         @staticmethod
         def getOpenFileName(*args, **kwargs):
             return QFileDialog.getOpenFileName_(*args, **kwargs), None
             
+        @staticmethod
+        def getSaveFileName(*args, **kwargs):
+            return QFileDialog.getSaveFileName_(*args, **kwargs), None   
