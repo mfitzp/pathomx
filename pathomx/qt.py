@@ -55,7 +55,18 @@ elif USE_QT_PY == PYSIDE:
 
 
 elif USE_QT_PY == PYQT4:  
+    import sip
+    sip.setapi('QString', 2)
+    sip.setapi('QVariant', 2)
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
     from PyQt4.QtWebKit import *
     from PyQt4.QtNetwork import *
+    
+    QFileDialog.getOpenFileName_ = QFileDialog.getOpenFileName
+        
+    class QFileDialog(QFileDialog):
+        @staticmethod
+        def getOpenFileName(*args, **kwargs):
+            return QFileDialog.getOpenFileName_(*args, **kwargs), None
+            

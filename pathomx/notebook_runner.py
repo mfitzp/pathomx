@@ -14,7 +14,7 @@ import os
 
 from IPython.nbformat.current import NotebookNode
 from IPython.kernel import KernelManager
-
+#from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 
 class NotebookError(Exception):
     pass

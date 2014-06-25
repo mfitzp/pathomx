@@ -1,0 +1,9 @@
+[Core]
+Name = Pathway Connects
+Module = pathway_connects
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Visualise data in pathway context, identify locales of regulation

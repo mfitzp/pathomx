@@ -459,7 +459,7 @@ class HTMLView(WebView):
 
 class NotebookView(QWebView, BaseView):
     def __init__(self, parent, html=None, **kwargs):
-        super(NotebookView, self).__init__(None, html=html, **kwargs)        
+        super(NotebookView, self).__init__(None, **kwargs)        
 
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
