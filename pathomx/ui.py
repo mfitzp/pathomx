@@ -20,7 +20,6 @@ import pandas as pd
 from pyqtconfig import ConfigManager
 from . import utils
 from . import data
-from . import config
 from . import db
 from . import threads
 from . import displayobjects

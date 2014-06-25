@@ -26,7 +26,7 @@ from . import utils
 import numpy as np
 import pandas as pd
 
-from . import data, config, utils, db
+from . import data, utils, db
 
 from .globals import styles
 

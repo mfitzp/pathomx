@@ -35,6 +35,9 @@ default_build_options=dict(
     includes=[
         'sip',
         'pydot',
+        "zmq",
+        "zmq.utils.garbage",
+        "zmq.backend.cython",
         ],
     excludes=[
         '_xmlplus',

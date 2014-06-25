@@ -1,17 +1,10 @@
 import os
 from .. import utils
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
+from ..qt import *
 
 from .items import *
-from .. import config
 from ..globals import settings, app_launchers, file_handlers
+from pyqtconfig import ConfigManager
 
 try:
     import xml.etree.cElementTree as et
@@ -31,7 +24,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
 
         self.m = parent.m
 
-        self.config = config.ConfigManager()
+        self.config = ConfigManager()
         # These config settings are transient (ie. not stored between sessions)
         self.config.set_defaults({
             'mode': EDITOR_MODE_NORMAL,

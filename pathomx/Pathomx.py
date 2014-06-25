@@ -336,10 +336,6 @@ class MainWindow(QMainWindow):
         explore_dbAction.setStatusTip('Explore database')
         explore_dbAction.triggered.connect(self.onDBExplore)
         self.menuBars['database'].addAction(explore_dbAction)
-        #load_identitiesAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-import.png')), tr('&Load database unification…'), self)
-        #load_identitiesAction.setStatusTip('Load additional unification mappings into database')
-        #load_identitiesAction.triggered.connect(self.onLoadIdentities)
-        #self.menuBars['database'].addAction(load_identitiesAction)
 
         self.menuBars['database'].addSeparator()
 
@@ -404,13 +400,13 @@ class MainWindow(QMainWindow):
         self.core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
         self.plugin_places.append(self.core_plugin_path)
 
-        user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
-        if user_application_data_paths:
-            self.user_plugin_path = os.path.join(user_application_data_paths[0], 'plugins')
-            utils.mkdir_p(self.user_plugin_path)
-            self.plugin_places.append(self.user_plugin_path)
-
-            self.application_data_path = os.path.join(user_application_data_paths[1])
+        #user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
+        #if user_application_data_paths:
+        #    self.user_plugin_path = os.path.join( unicode(user_application_data_paths[0]), 'plugins')
+        #    utils.mkdir_p(self.user_plugin_path)
+        #    self.plugin_places.append(self.user_plugin_path)
+        #    
+        #    self.application_data_path = os.path.join( unicode(user_application_data_paths[1]) )
 
         logging.info("Searching for plugins...")
         for place in self.plugin_places:

@@ -2,17 +2,8 @@ import os
 import copy
 import math
 from .. import utils
-from .. import config
 from ..globals import settings
-
-# Import PyQt5 classes
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWebKit import *
-from PyQt5.QtNetwork import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtPrintSupport import *
+from ..qt import *
 
 TEXT_COLOR = "#000000"
 SHADOW_COLOR = QColor(63, 63, 63, 180)
