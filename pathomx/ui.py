@@ -1982,7 +1982,7 @@ class ImportDataApp(IPythonApp):
 
 
 class ExportDataApp(GenericApp):
-    def __init__(self, filename=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ExportDataApp, self).__init__(*args, **kwargs)
 
         self.data.add_input('input_data')  # Add output slot
@@ -1999,17 +1999,12 @@ class ExportDataApp(GenericApp):
         export_dataAction.triggered.connect(self.onExportData)
         t.addAction(export_dataAction)
 
-    def thread_generate(self, *args, **kwargs):
-        return False
-
     def onExportData(self):
         """ Open a data file"""
         filename, _ = QFileDialog.getSaveFileName(self.w, self.export_description, '', self.export_filename_filter)
         if filename:
-            self.thread_save_datafile(filename, self.data.get('input_data'))
-            self.set_name(os.path.basename(filename))
-
-        return False
+            self.config.set('filename', filename)
+            self.autogenerate()
 
 
 # Analysis/Visualisation view prototypes

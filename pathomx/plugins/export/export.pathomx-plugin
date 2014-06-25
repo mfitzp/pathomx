@@ -1,0 +1,9 @@
+[Core]
+Name = Export
+Module = export
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Export data frames
