@@ -9,7 +9,7 @@ from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 from IPython.utils.ipstruct import Struct
-from .notebook_runner import NotebookRunner
+from runipy.notebook_runner import NotebookRunner
 
 from .qt import *
 from . import threads
@@ -84,6 +84,8 @@ class NotebookRunnerQueue(object):
             # Run in a thread
             threads.run(self.run_notebook, runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback, success_callback=result_callback, finished_callback=make_callback(r))
         else:
+            print "WAHT"
+            
             result_callback(self.run_notebook(runner=r, varsi=varsi, notebook=notebook_source, progress_callback=progress_callback))
             self.dec_active_runners()
             self.runners.append(r)  # If not multi-threading re-use the runners
@@ -111,7 +113,7 @@ class NotebookRunnerQueue(object):
             return lambda n: callback_fn(cb, n, m)
 
         try:
-            runner.run_notebook(execute_cell_no_callback=make_callback(progress_callback, runner.count_code_cells()))
+            runner.run_notebook(progress_callback=make_callback(progress_callback, runner.count_code_cells()))
         except:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -128,7 +130,7 @@ class NotebookRunnerQueue(object):
         return (result, varso)
 
     def create_runner(self):
-        self.runners.append(NotebookRunner(None, pylab=True, mpl_inline=True))
+        self.runners.append(NotebookRunner(None))
 
     def topup_runners(self):
         if len(self.runners) < self.no_of_runners:
