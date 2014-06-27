@@ -66,18 +66,15 @@ class TransformLocalMinima(TransformApp):
     name = "Local minima"
     notebook = 'local_minima.ipynb'
 
-    # Minima on column by column basis (should have optional axis here)
-    def fn(self, dso):
-        #dso.data[dso.data==0] = np.nan
-        dmin = np.ma.masked_less_equal(dso.data, 0).min(0) / 2
-        inds = np.where(np.logical_and(dso.data == 0, np.logical_not(np.ma.getmask(dmin))))
-        dso.data[inds] = np.take(dmin, inds[1])
-        return dso
-
 
 class TransformRemoveInvalid(TransformApp):
     name = "Remove invalid data"
     notebook = 'remove_invalid.ipynb'
+
+
+class TransformTranspose(TransformApp):
+    name = "Transpose"
+    notebook = 'transpose.ipynb'
 
 
 class Transform(ProcessingPlugin):
@@ -91,3 +88,4 @@ class Transform(ProcessingPlugin):
         self.register_app_launcher(TransformGlobalMinima)
         self.register_app_launcher(TransformLocalMinima)
         self.register_app_launcher(TransformRemoveInvalid)
+        self.register_app_launcher(TransformTranspose)

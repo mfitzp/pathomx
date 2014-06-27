@@ -65,6 +65,30 @@ class SpectraTool(ui.IPythonApp):
             })
         )
 
+
+# Heatmap
+class HeatmapTool(ui.IPythonApp):
+
+    name = "Heatmap"
+    notebook = 'basic_plot_heatmap.ipynb'
+
+    def __init__(self, *args, **kwargs):
+        super(HeatmapTool, self).__init__(*args, **kwargs)
+
+        self.addDataToolBar()
+        self.addFigureToolBar()
+
+        self.data.add_input('input_data')  # Add input slot        
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input_data', {
+            'labels_n': ('>0', None),
+            'entities_t': (None, None),
+            #'scales_t': (None, ['float']),
+            })
+        )
+
     
 class BasicGraph(VisualisationPlugin):
 
@@ -72,3 +96,4 @@ class BasicGraph(VisualisationPlugin):
         super(BasicGraph, self).__init__(*args, **kwargs)
         self.register_app_launcher(BarTool)
         self.register_app_launcher(SpectraTool)
+        self.register_app_launcher(HeatmapTool)

@@ -1,0 +1,1 @@
+VERSION_STRING = '3.0.0a2'

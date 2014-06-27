@@ -210,8 +210,10 @@ class MetaVizApp(ui.AnalysisApp):
 
         # Define default settings for pathway rendering
         self.config.set_defaults({
-            'show_pathways': ['PWY66-400'],
-            'hide_pathways': [],
+            'show_pathways': [],
+            # The following pathways are auto-hidden as they are nonsensical with current display
+            # e.g. only contain a single metabolite or contain non-metabolite breaks
+            'hide_pathways': ['TRNA-CHARGING-PWY', 'PWY-6689', 'PWY-7434'],
             
             'cluster_by': 'pathway',
             'show_enzymes': True,

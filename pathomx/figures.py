@@ -433,3 +433,53 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
     ax.set_aspect((x1-x0)/(y1-y0))
                 
     return figure
+    
+    
+def heatmap(data, figure=None, ax=None, styles=None):
+    if figure is None:
+        figure = Figure(figsize=(5, 4), dpi=100) 
+        
+    if ax is None:
+        ax = figure.add_subplot( 111 )
+        
+    ylim = np.abs( data.max().max() )
+    
+    # Plot it out
+    
+    
+    ax.imshow(np.log2(data.values.T), interpolation='none', aspect='auto', cmap=cm.RdBu_r) #vmin=-ylim, vmax=+ylim, )
+    # turn off the frame
+    ax.set_frame_on(False)
+
+
+    labels_x = [ v[ data.index.names.index('Class') ] for v in data.index.values ]
+    # print labels_x
+    ax.set_xticklabels(labels_x, minor=False)
+    ax.set_xticks(np.arange(len(labels_x)), minor=False)
+    ax.xaxis.tick_top()
+
+    '''
+    # put the major ticks at the middle of each cell
+    ax.set_yticks(np.arange(data.values.shape[0])+0.5, minor=False)
+
+    # want a more natural, table-like display
+    
+    # Set the labels
+
+    # note I could have used nba_sort.columns but made "labels" instead
+    labels_x = [ v[ data.columns.names.index('Label') ] for v in data.columns.values]
+    ax.set_xticklabels(labels_x, minor=False) 
+
+    # rotate the 
+    plt.xticks(rotation=90)
+
+    for t in ax.xaxis.get_major_ticks(): 
+        t.tick1On = False 
+        t.tick2On = False 
+    for t in ax.yaxis.get_major_ticks(): 
+        t.tick1On = False 
+        t.tick2On = False    
+    '''
+    ax.grid(False)
+
+    return figure  

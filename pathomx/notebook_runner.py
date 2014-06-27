@@ -17,6 +17,8 @@ import os
 from IPython.nbformat.current import NotebookNode
 from IPython.kernel import KernelManager
 
+from IPython.qt.base_frontend_mixin import BaseFrontendMixin
+
 # FIXME: This needs work to handle the InProcessKernelManager
 # e.g. the async message handling
 from IPython.qt.inprocess import QtInProcessKernelManager
@@ -25,7 +27,7 @@ class NotebookError(Exception):
     pass
 
 
-class NotebookRunner(object):
+class NotebookRunner(BaseFrontendMixin):
     # The kernel communicates with mime-types while the notebook
     # uses short labels for different cell types. We'll use this to
     # map from kernel types to notebook format types.
