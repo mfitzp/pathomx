@@ -7,22 +7,11 @@ logging.debug('Loading data.py')
 
 # Import PyQt5 classes
 from .qt import *
-import os
-import sys
-import re
-import base64
-import numpy as np
 
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
+from copy import deepcopy
+
 import operator
-
-from copy import copy, deepcopy
-
-try:
-    import xml.etree.cElementTree as et
-except ImportError:
-    import xml.etree.ElementTree as et
-
 import logging
 
 
@@ -274,7 +263,7 @@ class DataManager(QObject):
 
     def remove_output(self, interface):
         if interface in self.o:
-            watchers = self.watchers[interface]
+            #self.watchers[interface]
             del self.o[interface]
             self.notify_watchers(interface)
             del self.watchers[interface]

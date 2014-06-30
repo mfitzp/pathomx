@@ -21,7 +21,6 @@ from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
 from . import db
-from . import threads
 from . import displayobjects
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
@@ -30,8 +29,6 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
 
 import tempfile
 import traceback
-#from multiprocessing import Process, Pool, Queue
-#from . import threads
 
 from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView, IPyMplView, DataFrameWidget, SVGView
 # Translation (@default context)

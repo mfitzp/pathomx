@@ -10,15 +10,7 @@ from yapsy.IPlugin import IPlugin
 from yapsy.PluginManager import PluginManagerSingleton
 
 from distutils.version import StrictVersion
-
 from collections import defaultdict
-
-try:
-    from urllib.request import urlopen
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-    from urllib import urlopen
 
 import re
 import requests

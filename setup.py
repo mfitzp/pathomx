@@ -3,6 +3,7 @@
 import sys
 from copy import copy
 
+import collections
 from setuptools import setup, find_packages
 
 from pathomx.version import VERSION_STRING
@@ -19,7 +20,6 @@ default_build_options=dict(
         'IPython',
         'matplotlib',
         'dateutil',
-        'zmq',
 
         'sklearn',
         'sklearn.decomposition',
@@ -31,13 +31,15 @@ default_build_options=dict(
         'icoshift',
         'mplstyler',
         'pyqtconfig',
+        
+        "zmq",
+        "zmq.utils.garbage",
+        "zmq.backend.cython",
+        "cython"
         ],
     includes=[
         'sip',
         'pydot',
-        "zmq",
-        "zmq.utils.garbage",
-        "zmq.backend.cython",
         ],
     excludes=[
         '_xmlplus',
@@ -46,6 +48,7 @@ default_build_options=dict(
         'wx',
         'mpl-data',
         'Tkinter',
+        "collections.abc",
         ],
     )
 
@@ -174,7 +177,7 @@ else:
 setup(
 
     name='Pathomx',
-    version=VERSION_STRING,
+    version=open('VERSION').read().strip(),
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/pathomx/pathomx',
@@ -213,7 +216,6 @@ setup(
             'IPython>=2.0.0',
             'matplotlib>=1.4.0',
             'dateutil',
-            'zmq',
 
             'sklearn',
             'sklearn.decomposition',
@@ -248,9 +250,5 @@ setup(
         "build_exe": build_exe,
         "build_mac": build_mac,
         "bdist_msi": bdist_msi,
-        #"py2app": build_py2app
     },
-    app=[ 'Pathomx.py' ],
-    #setup_requires=["py2app"],
-
     )

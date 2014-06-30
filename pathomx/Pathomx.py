@@ -12,13 +12,7 @@ else:
     logging.basicConfig(level=logging.DEBUG)
 
 import os
-import re
-import math
 import codecs
-import locale
-import json
-import importlib
-import functools
 from copy import copy
 
 sys.setcheckinterval(1000)
@@ -29,35 +23,15 @@ if sys.version_info < (3, 0):  # Python 2 only
     reload(sys).setdefaultencoding('utf8')
 
 from .qt import *
-# pyqtSignal, Qt, QTreeWidgetItem, QIcon, QColor, QBrush, QObject, \
-# QPixmap, QComboBox, QLineEdit, QLabel, QAbstractItemDelegate, QStyle, \
-# QPalette, QListView, QDrag, QMimeData, QSettings, QSize,
 
-import textwrap
-
-from IPython.nbformat.current import write as write_notebook, NotebookNode
+from IPython.nbformat.current import write as write_notebook
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
-
-from IPython.utils.ipstruct import Struct
 from IPython.nbformat.v3 import new_code_cell
 
-
-try:
-    from urllib.request import urlopen
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-    from urllib import urlopen
-
-from optparse import Values
 from collections import defaultdict
 
-import numpy as np
-
-from biocyc import biocyc
-
-from yapsy.PluginManager import PluginManager, PluginManagerSingleton
+from yapsy.PluginManager import PluginManagerSingleton
 
 try:
     import xml.etree.cElementTree as et
@@ -68,22 +42,15 @@ from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
                      settings, url_handlers, app_launchers
 
-from . import data
 from . import utils
 from . import ui
-from . import views
-from . import custom_exceptions
 from . import plugins  # plugin helper/manager
-from . import threads
-from .editor.editor import WorkspaceEditorView, EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
-
-#from multiprocessing import Process, Pool, Queue
+from .editor.editor import WorkspaceEditorView  # EDITOR_MODE_NORMAL, EDITOR_MODE_TEXT, EDITOR_MODE_REGION
 
 # Translation (@default context)
 from .translate import tr
 
 from distutils.version import StrictVersion
-from runipy.notebook_runner import NotebookRunner
 
 DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "SER-GLYSYN-PWY-1", "PWY-4983", "ASPARAGINE-BIOSYNTHESIS", "ASPARTATESYN-PWY",
@@ -213,7 +180,7 @@ class ToolTreeWidget(QTreeWidget):
             drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
             drag.setHotSpot(QPoint(32, 32))  # - self.visualItemRect(item).top())
 
-            dropAction = drag.exec_(Qt.CopyAction)
+            drag.exec_(Qt.CopyAction)
             logging.debug('Drag-drop complete.')
 
         else:
@@ -641,25 +608,21 @@ class MainWindow(QMainWindow):
         normalAction.setChecked(True)
         normalAction.setStatusTip('Default edit mode')
         normalAction.setActionGroup(editormodeag)
-        #normalAction._px_value = EDITOR_MODE_NORMAL
         t.addAction(normalAction)
 
         add_textAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layer-shape-text.png')), tr('Add text annotation…'), self)
         add_textAction.setCheckable(True)
         add_textAction.setStatusTip('Add text annotations to workflow')
         add_textAction.setActionGroup(editormodeag)
-        #add_textAction._px_value = EDITOR_MODE_TEXT
         t.addAction(add_textAction)
 
         add_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone.png')), tr('Add region annotation…'), self)
         add_regionAction.setCheckable(True)
         add_regionAction.setStatusTip('Add region annotations to workflow')
         add_regionAction.setActionGroup(editormodeag)
-        #add_regionAction._px_value = EDITOR_MODE_REGION
         t.addAction(add_regionAction)
 
         self.editor.config.add_handler('mode', editormodeag)
-        #self.editormodeag.triggered.connect( self.onEditorModeToggle )
 
     def addEditStyleToolBar(self):
     # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
@@ -809,7 +772,7 @@ class MainWindow(QMainWindow):
             if app == 'app-manager':
                 app, action = url.path().strip('/').split('/')
                 if action == 'add':
-                    a = app_launchers[app]()
+                    app_launchers[app]()
 
                 # Update workspace viewer
                 self.workspace_updated.emit()  # Notify change to workspace layout

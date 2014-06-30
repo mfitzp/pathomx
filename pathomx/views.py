@@ -7,35 +7,22 @@ logging.debug('Loading views.py')
 # Import PyQt5 classes
 from .qt import *
 
-from collections import defaultdict
-
-import os, copy, re, json, importlib, sys, traceback, logging
-
-try:
-    from urllib.request import urlopen
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-    from urllib import urlopen
-
+import os, re, sys, logging
 from collections import OrderedDict
 
 # Pathomx classes
 from . import utils
+from . import db
 
 import numpy as np
 import pandas as pd
 
-from . import data, utils, db
-
 from .globals import styles
-
-from numpy import arange, sin, pi
 
 # Translation (@default context)
 from .translate import tr
 
-from .qt import USE_QT_PY, PYSIDE, PYQT4, PYQT5
+from .qt import USE_QT_PY, PYQT4, PYQT5
 
 if USE_QT_PY == PYQT5:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -45,10 +32,8 @@ elif USE_QT_PY == PYQT4:
 
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
-from matplotlib.colors import Colormap
 from matplotlib.path import Path
 from matplotlib.patches import BoxStyle, Ellipse
-from matplotlib.transforms import Bbox, BboxBase
 
 import matplotlib.cm as cm
 
@@ -133,7 +118,6 @@ class ViewManager( QTabWidget ):
             # Already exists; we check if of the same type before calling this
             # so here we just replace
             t = self.indexOf( self.views[name] )
-            tw = self.widget(t)
             self.widget(t).deleteLater()
             self.removeTab(t)
             self.insertTab(t, widget, name, **kwargs)

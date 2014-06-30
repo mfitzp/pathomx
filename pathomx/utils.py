@@ -1,18 +1,11 @@
 from __future__ import unicode_literals
-import logging
-
-import re
 import os
 import sys
 import errno
 import csv
 import codecs
-import io
-from collections import defaultdict
 
 import cStringIO
-
-import numpy as np
 
 from .qt import *
 
@@ -21,17 +14,9 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
-
 rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-
-from matplotlib.figure import Figure
-from matplotlib.axes import Subplot
 
 
 def _convert_list_type_from_XML(vs):
@@ -134,40 +119,6 @@ def sigstars(p):
     else:
         s = 'ns'
     return s
-
-
-def calculate_scale(range, output, out=float):
-# Calculate a scale using equally input points (min,max) or (min, 0, max)
-# mapped to the output range; returns a lambda function to perform the conversion
-
-    if len(range) == 3:  # Have midpoint
-        intersect_in = range[1]
-    else:
-        intersect_in = range[0]
-
-    maxi = max([abs(x) for x in range])
-    mini = -maxi
-
-    # Calculate slope in = x, out = y
-    # slope = y2-y1/x2-x1
-    m = (output[1] - output[0]) / (maxi - mini)
-    x1 = range[0]
-    y1 = output[0]
-    mino = min(output)
-    maxo = max(output)
-
-    scale = lambda x: np.clip(out((m * x) - (m * x1) + y1), mino, maxo)
-    print("Scale generator...")
-    return scale
-
-
-def calculate_rdbu9_color(scale, value):
-    # Rescale minima-maxima to range of rdbu9 (9)
-    try:
-        rdbu9col = int(scale(value))
-    except:
-        return None  # Fill zero nothing if not known
-    return (rdbu9[rdbu9col], rdbu9c[rdbu9col], rdbu9col)
 
 
 def invert_direction(direction):

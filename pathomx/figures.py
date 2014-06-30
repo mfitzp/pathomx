@@ -5,17 +5,11 @@ from collections import OrderedDict
 
 from . import utils
 
-
 from matplotlib.figure import Figure
-from matplotlib.backend_bases import NavigationToolbar2
-from matplotlib.figure import Figure
-from matplotlib.colors import Colormap
 from matplotlib.path import Path
 from matplotlib.patches import BoxStyle, Ellipse
 from matplotlib.transforms import Affine2D, Bbox, BboxBase
-
 import matplotlib.cm as cm
-import matplotlib.pyplot as plt
 
 class EntityBoxStyle(BoxStyle._Base):
     """
