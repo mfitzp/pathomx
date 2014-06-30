@@ -1574,13 +1574,13 @@ pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
 
         notebook_queue.add_job(self.nb, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
-    def _worker_result_callback(self, output):
-        result, varso = output
+    def _worker_result_callback(self, result):
         self.progress.emit(1.)
 
         if result['status'] == 0:
             self.logger.debug("Notebook complete %s" % self.name)
             self.status.emit('done')
+            varso = result['varso']
 
             if 'styles' in varso:
                 global styles

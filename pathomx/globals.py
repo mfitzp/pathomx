@@ -6,9 +6,6 @@ import sys
 
 from collections import defaultdict
 
-import zmq
-print "ZMQ", zmq.__version__
-
 from .qt import QApplication, QLocale, QTranslator, QThreadPool, QObject, QTimer, QLibraryInfo
 from .runqueue import NotebookRunnerQueue
 from pyqtconfig import QSettingsManager
