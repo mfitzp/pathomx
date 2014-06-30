@@ -208,21 +208,11 @@ setup(
     install_requires = [
             #'PyQt5',
             'numpy>=1.5.0',
-            'wheezy.template>=0.1.135',
-            'gpml2svg>=0.1.0',
-            'numpy>=1.8.0',
             'scipy>=0.14.0',
             'pandas>=0.14.0',
             'IPython>=2.0.0',
             'matplotlib>=1.4.0',
             'dateutil',
-
-            'sklearn',
-            'sklearn.decomposition',
-
-            'nmrglue',
-            'nmrglue.fileio.fileiobase',
-
             'mplstyler',
             'pyqtconfig',
             ],
@@ -230,6 +220,12 @@ setup(
     install_recommends = [
             'gpml2svg',
             'icoshift',
+            'nmrglue',
+            'pydot',
+            'sklearn',
+            'sklearn.decomposition',
+            'nmrglue',
+            'nmrglue.fileio.fileiobase',
             ],
 
     keywords='bioinformatics data analysis metabolomics research science',

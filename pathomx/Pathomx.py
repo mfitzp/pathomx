@@ -1003,11 +1003,24 @@ class MainWindow(QMainWindow):
         self.workspace_updated.emit()
 
     def onExportIPyNotebook(self):
-        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook ', '', "Pathomx Workflow Format (*.ipynb)")
+        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook report', '', "Portable Document Format (*.pdf);; Hypertext Markup Language (*.html);; ReStructured Text (*.rst);; Markdown (*.md);; Python script (*.py);; IPython Notebook (*.ipynb)")
         if filename:
-            self.export_to_notebook(filename)
+            name, ext = os.path.splitext(filename) 
+            
+            if ext == '.ipynb':
+                notebook = self.export_to_notebook()
+                with open(filename, 'w') as f:
+                    write_notebook(notebook, f, 'json')            
 
-    def export_to_notebook(self, filename):
+            elif ext in ['.pdf','.rst','.md','.html','.py']:
+                
+                output, resources = IPyexport(IPyexporter_map['pdf'], self.nb)
+                with open(filename, 'w') as f:
+                    f.write(output)
+                
+                
+
+    def export_to_notebook(self):
         '''
         Export an IPython notebook representing the entire workflow
         '''
@@ -1095,8 +1108,7 @@ class MainWindow(QMainWindow):
         # Build an output one using an available structure; then re-json to save
         notebook = copy(tool.nb)
         notebook.worksheets[0].cells = workbook_cells
-        with open(filename, 'w') as f:
-            write_notebook(notebook, f, 'json')
+        return notebook
 
     def onRestartKernels(self):
         notebook_queue.restart()
