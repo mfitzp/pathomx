@@ -5,18 +5,23 @@ from collections import namedtuple
 from IPython.nbformat.current import NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
-from IPython.qt.inprocess import QtInProcessKernelManager
 from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 
 from .qt import *
+
+if USE_QT_PY == PYQT5:
+    # The normal ZMQ kernel doesn't work in PyQt5 so use in the in-process one
+    from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+else:
+    # In PyQt4 we can use the ZMQ kernel and avoid blocking
+    from IPython.qt.manager import QtKernelManager as KernelManager
 
 try:
     import cPickle as pickle
 except:
     import pickle as pickle
-
-MAX_RUNNER_QUEUE = 1  # In process; can only have one
-
+    
+MAX_RUNNER_QUEUE = 1 # In process; can only have one
 
 class NotebookRunner(BaseFrontendMixin, QObject):
     '''
@@ -38,11 +43,11 @@ class NotebookRunner(BaseFrontendMixin, QObject):
 
     # Execute next cell
     execute_next = pyqtSignal()
-
+    
     # Emitted when all cells a notebook have been run
     notebook_completed = pyqtSignal()
     notebook_result = pyqtSignal(object)
-
+    
     # Emit current cell number
     progress = pyqtSignal(object)
 
@@ -51,7 +56,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
     _ExecutionRequest = namedtuple('_ExecutionRequest', ['id', 'kind'])
     _local_kernel = False
     _hidden = False
-
+    
     MIME_MAP = {
         'image/jpeg': 'jpeg',
         'image/png': 'png',
@@ -60,7 +65,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         'text/latex': 'latex',
         'application/javascript': 'html',
         'image/svg+xml': 'svg',
-    }
+    }    
+
     #---------------------------------------------------------------------------
     # 'object' interface
     #---------------------------------------------------------------------------
@@ -71,27 +77,28 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._kernel_manager = None
         self._kernel_client = None
         self._request_info = {}
-        self._request_info['execute'] = {}
-        
+        self._request_info['execute'] = {};
         self._callback_dict = {}
-
+        
         self._current_cell = None
         self._current_cell_counter = None
         self._is_active = False
-
+        self._executing = False
+        
         # Set flag for whether we are connected via localhost.
         self._local_kernel = kwargs.get('local_kernel',
                                     NotebookRunner._local_kernel)
 
-        self.kernel_manager = QtInProcessKernelManager()
+
+        self.kernel_manager = KernelManager()
         self.kernel_manager.start_kernel()
         #self.kernel = kernel_manager.kernel
         #kernel.shell.push({'foo': 43, 'print_process_id': print_process_id})
 
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels()
-
-        self.execute_next.connect(self.run_next_cell)
+        
+        self.execute_next.connect( self.run_next_cell )
 
     def __del__(self):
         if self.kernel_client:
@@ -124,13 +131,13 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         If ``skip_exceptions`` is set, then if exceptions occur in a cell, the
         subsequent cells are run (by default, the notebook execution stops).
         '''
-
+        
         self.nb = notebook
         self.varsi = varsi
         # Pickle all variables and import to the notebook (depickler)
         with open(self.varsi['_pathomx_pickle_in'], 'wb') as f:
             pickle.dump(self.varsi, f, -1)  # Highest protocol for speed
-
+        
         self._progress_callback = progress_callback
         self._result_callback = result_callback
         self._notebook_generator = self.iter_code_cells()
@@ -138,24 +145,24 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._current_code_cell_number = 0
         self._total_code_cell_number = self.count_code_cells()
         self._is_active = True
-        self.run_next_cell()
+        self.run_next_cell()        
 
     def run_next_cell(self):
-
+    
         try:
-            self._current_cell = next(self._notebook_generator)
+            self._current_cell = next( self._notebook_generator )
         except StopIteration:
             self.run_notebook_completed()
             return
-
+        
         self._current_code_cell_number += 1
-
-        self.progress.emit(self._current_code_cell_number / self._total_code_cell_number)
+        
+        self.progress.emit( self._current_code_cell_number / self._total_code_cell_number )
         if self._progress_callback:
-            self._progress_callback(self._current_code_cell_number / self._total_code_cell_number)
+            self._progress_callback( self._current_code_cell_number / self._total_code_cell_number )
 
         logging.info('Running cell:\n%s\n', self._current_cell.input)
-        self._current_cell['outputs'] = []  # Init to empty
+        self._current_cell['outputs'] = [] # Init to empty
         self._execute(self._current_cell.input)
 
     def run_notebook_completed(self, error=False, traceback=None):
@@ -176,6 +183,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self.notebook_result.emit(result)
         if self._result_callback:
             self._result_callback(result)
+    
 
     def _execute(self, source, hidden=False):
         """ Execute 'source'. If 'hidden', do not show any output.
@@ -228,7 +236,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         # not the unique request originated from here (can use msg id ?)
         local_uuid = str(uuid.uuid1())
         msg_id = self.kernel_client.execute('',
-            silent=True, user_expressions={local_uuid: expr})
+            silent=True, user_expressions={ local_uuid:expr })
         self._callback_dict[local_uuid] = callback
         self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'silent_exec_callback')
 
@@ -271,6 +279,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             # Make sure that all output from the SUB channel has been processed
             # before writing a new prompt.
             self.kernel_client.iopub_channel.flush()
+
             # Reset the ANSI style information to prevent bad text in stdout
             # from messing up our colors. We're not a true terminal so we're
             # allowed to do this.
@@ -294,7 +303,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             self._request_info['execute'].pop(msg_id)
         else:
             super(FrontendWidget, self)._handle_execute_reply(msg)
-
+    
     def _process_execute_abort(self, msg):
         """ Process a reply for an aborted execution request.
         """
@@ -308,8 +317,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         # If a SystemExit is passed along, this means exit() was called - also
         # all the ipython %exit magic syntax of '-k' to be used to keep
         # the kernel running
-        if content['ename'] == 'SystemExit':
-            keepkernel = content['evalue'] == '-k' or content['evalue'] == 'True'
+        if content['ename']=='SystemExit':
+            keepkernel = content['evalue']=='-k' or content['evalue']=='True'
             self._keep_kernel_on_exit = keepkernel
             self.exit_requested.emit(self)
         else:
@@ -329,8 +338,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         for item in payload:
             if not self._process_execute_payload(item):
                 warning = 'Warning: received unknown payload of type %s'
-                print(warning % repr(item['source']))
-
+                print(warning % repr(item['source']))    
+    
         content = msg['content']
         msg_type = msg['msg_type']
 
@@ -368,12 +377,12 @@ class NotebookRunner(BaseFrontendMixin, QObject):
 
         elif msg_type == 'pyerr':
             print "_process_execute_error_pyerr***********************************"
-
+        
             # Is this handled in _handle_execute_errror?
             out.ename = content['ename']
             out.evalue = content['evalue']
             out.traceback = content['traceback']
-            return
+            return 
 
         elif msg_type == 'clear_output':
             self._current_cell['outputs'] = []
@@ -413,8 +422,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
                 except KeyError:
                     raise NotImplementedError('unhandled mime type: %s' % mime)
 
-                setattr(out, attr, data)
-
+                setattr(out, attr, data)            
+            
             self._current_cell['outputs'].append(out)
 
     def _handle_stream(self, msg):
@@ -451,6 +460,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             pass
         elif state == 'busy':
             pass
+
     #---------------------------------------------------------------------------
     # 'FrontendWidget' public interface
     #---------------------------------------------------------------------------
@@ -521,6 +531,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             )
 
 
+
 class NotebookRunnerQueue(object):
     '''
     Auto-creating and managing distribution of notebook runners for notebooks.
@@ -572,11 +583,11 @@ class NotebookRunnerQueue(object):
                 self.active_runners.remove(r)
                 self.runners.append(r)
                 self.no_of_active_runners -= 1
-
+                
     def create_runner(self):
         r = NotebookRunner()
-        r.notebook_completed.connect(self.done)
-        self.runners.append(r)
+        r.notebook_completed.connect( self.done )
+        self.runners.append( r )
 
     def topup_runners(self):
         if len(self.runners) < self.no_of_runners:

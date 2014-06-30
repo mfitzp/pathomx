@@ -14,6 +14,8 @@ from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, M
                     StyleDefinition, ClassMatchDefinition
 
 import matplotlib as mpl
+
+
 from . import utils
 
 logging.debug('Setting up Matplotlib defaults...')
@@ -72,4 +74,4 @@ settings.set_defaults({
     'Editor/Show_grid': True,
 })
 
-logging.debug('Setting up templates...')
+
