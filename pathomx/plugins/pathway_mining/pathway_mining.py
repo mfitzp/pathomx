@@ -16,9 +16,9 @@ import numpy as np
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
-    'Compound change scores': 'c',
-    'Compound up-regulation scores': 'u',
-    'Compound down-regulation scores': 'd',
+    'Change scores': 'c',
+    'Up-regulation scores': 'u',
+    'Down-regulation scores': 'd',
     'Number compounds with data': 'm',
     'Overall tendency': 't',
 }

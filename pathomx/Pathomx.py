@@ -15,8 +15,6 @@ import os
 import codecs
 from copy import copy
 
-sys.setcheckinterval(1000)
-
 if sys.version_info < (3, 0):  # Python 2 only
     UTF8Writer = codecs.getwriter('utf8')
     sys.stdout = UTF8Writer(sys.stdout)
@@ -276,13 +274,11 @@ class MainWindow(QMainWindow):
         saveAction.setShortcut('Ctrl+S')
         saveAction.setStatusTip(tr('Save current workspace for future use'))
         saveAction.triggered.connect(self.onSaveWorkspace)
-        #self.menuBars['file'].addAction(saveAction)
 
         saveAsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save &As…'), self)
         saveAsAction.setShortcut('Ctrl+A')
         saveAsAction.setStatusTip(tr('Save current workspace for future use'))
         saveAsAction.triggered.connect(self.onSaveWorkspaceAs)
-        #self.menuBars['file'].addAction(saveAsAction)
 
         saveAsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), tr('Save Workflow As…'), self)
         saveAsAction.setStatusTip(tr('Save current workflow for future use'))

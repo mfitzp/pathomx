@@ -162,9 +162,9 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         
             self._current_code_cell_number += 1
         
-            self.progress.emit( self._current_code_cell_number / self._total_code_cell_number )
+            self.progress.emit( self._current_code_cell_number / float(self._total_code_cell_number) )
             if self._progress_callback:
-                self._progress_callback( self._current_code_cell_number / self._total_code_cell_number )
+                self._progress_callback( self._current_code_cell_number / float(self._total_code_cell_number) )
 
             logging.info('Running cell:\n%s\n', self._current_cell.input)
             self._current_cell['outputs'] = [] # Init to empty
@@ -520,7 +520,7 @@ class NotebookRunnerQueue(object):
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
-        self._run_timer.start(250)  # Auto-start every 1/4 second
+        self._run_timer.start(500)  # Auto-start every 1/2 second
 
     def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
         self.jobs.append((nb, varsi, progress_callback, result_callback))

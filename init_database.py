@@ -1,3 +1,8 @@
+'''
+Initialise the biocyc database interface with the standard set of human metabolic
+pathways. Should find somewhere better to put this (distribute with biocyc itself?)
+'''
+
 from biocyc import biocyc
 biocyc.set_organism('HUMAN')
 DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",

@@ -7,8 +7,6 @@ import codecs
 
 import cStringIO
 
-from .qt import *
-
 try:
     import xml.etree.cElementTree as et
 except ImportError:
@@ -17,6 +15,14 @@ except ImportError:
 rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac']
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+def luminahex(hex):
+    hex = hex.strip('#')
+    R, G, B = int( hex[0:2], 16) / 255., int( hex[2:4], 16) / 255., int( hex[4:6], 16 ) / 255.
+    return lumina(R, G, B)
+    
+def lumina(R, G, B):
+    return (R+R+B+G+G+G)/6
 
 
 def _convert_list_type_from_XML(vs):
@@ -203,19 +209,6 @@ else:
     from csv import writer as UnicodeWriter
 
 
-class MutexDict(dict):
-
-    def __init__(self, *args, **kwargs):
-        self.mutex = QMutex()
-        return super(MutexDict, self).__init__(*args, **kwargs)
-
-    def __getattribute__(self, attr):
-        if attr == 'mutex':
-            return super(MutexDict, self).__getattribute__(attr)
-        else:
-            # Lock all other attributes with the mutex
-            with QMutexLocker(self.mutex):
-                return super(MutexDict, self).__getattribute__(attr)
 
 
 def mkdir_p(path):
