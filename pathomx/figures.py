@@ -15,6 +15,9 @@ import matplotlib.pyplot as plt
 
 Figure = plt.figure
 
+FIGURE_SIZE = (6, 6)
+FIGURE_DPI = 200
+
 class EntityBoxStyle(BoxStyle._Base):
     """
     A simple box.
@@ -77,7 +80,7 @@ BoxStyle._style_list["entity-tip"] = EntityBoxStyle
 
 def spectra(data, figure=None, ax=None, styles=None):
     if figure is None:
-        figure = Figure(figsize=(5, 4), dpi=100) 
+        figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI) 
         
     if ax is None:
         ax = figure.add_subplot( 111 )
@@ -211,7 +214,7 @@ def spectra(data, figure=None, ax=None, styles=None):
  
 def category_bar(data, figure=None, styles=None):
     if figure is None:
-        figure = Figure(figsize=(5, 4), dpi=100) 
+        figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI) 
         
     if ax is None:
         ax = figure.add_subplot( 111 )
@@ -361,7 +364,7 @@ def plot_cov_ellipse(cov, pos, nstd=2, **kwargs):
 
 def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
     if figure is None:
-        figure = Figure(figsize=(5, 4), dpi=100) 
+        figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI) 
         
     if ax is None:
         ax = figure.add_subplot( 111 )
@@ -435,7 +438,7 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
     
 def heatmap(data, figure=None, ax=None, styles=None):
     if figure is None:
-        figure = Figure(figsize=(5, 4), dpi=100) 
+        figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI) 
         
     if ax is None:
         ax = figure.add_subplot( 111 )

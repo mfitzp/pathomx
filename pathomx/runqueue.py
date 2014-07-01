@@ -158,6 +158,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
                 self._current_cell = next( self._notebook_generator )
             except StopIteration:
                 self.notebook_stop()
+                return
         
             self._current_code_cell_number += 1
         
@@ -175,7 +176,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
     def notebook_start(self):
         self._execute('''%%reset -f
 from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start('%s', vars())''' % (self.varsi['_pathomx_pickle_in'])
+pathomx_notebook_start('%s', vars());
+%%matplotlib inline''' % (self.varsi['_pathomx_pickle_in'])
 )       
         self._current_code_cell_number = 0
         

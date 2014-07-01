@@ -594,9 +594,14 @@ class IPyMplView(MplView):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def generate(self, fig=None):
             
+        if fig is None:
+            return
+        
         fc = fig.get_facecolor()
         if fc == (1, 1, 1, 0): # Default non-background
             fig.set_facecolor('white')
+
+        fig.set_dpi(100)
 
         self.ax = None
         del self.fig

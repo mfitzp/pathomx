@@ -40,6 +40,10 @@ mpl.rcParams['font.serif'] = ['Computer Modern Roman', 'Times New Roman']
 mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
 mpl.rcParams['patch.linewidth'] = 0
 
+mpl.rcParams['savefig.dpi'] = 200
+
+
+
 # Manager objects
 logging.debug('Setting up managers...')
 styles = StylesManager()

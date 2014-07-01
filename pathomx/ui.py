@@ -7,14 +7,9 @@ logging.debug('Loading ui.py')
 # Import PyQt5 classes
 from .qt import *
 
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 import os
-from copy import copy, deepcopy
-import re
-import json
-import importlib
-import sys
-import time
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
@@ -28,19 +23,13 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
                     current_tools, current_tools_by_id, installed_plugin_names, current_datasets
 
 import tempfile
-import traceback
 
-from .views import HTMLView, StaticHTMLView, ViewManager, MplSpectraView, TableView, NotebookView, IPyMplView, DataFrameWidget, SVGView
+from .views import HTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView
 # Translation (@default context)
 from .translate import tr
 
 import requests
 
-import cStringIO
-
-from numpy import arange, sin, pi
-from matplotlib.backend_bases import NavigationToolbar2
-from matplotlib.axes._subplots import Subplot
 from matplotlib.figure import Figure
 from matplotlib import rcParams
 
@@ -49,15 +38,8 @@ import logging
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
-
 from IPython.utils.ipstruct import Struct
-
 from IPython.nbconvert.filters.markdown import markdown2html
-
-try:
-    import cPickle as pickle
-except:
-    import pickle as pickle
 
 PX_INIT_SHOT = 50
 
@@ -1048,7 +1030,6 @@ class MatchStyleManagerDialog(GenericDialog):
         self.dialogFinalise()
 
     def onNew(self):
-        item = QTreeWidgetItem()
         dlg = MatchStyleDialog(self)
         if dlg.exec_():
             md = ClassMatchDefinition()
