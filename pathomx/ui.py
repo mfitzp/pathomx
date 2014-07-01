@@ -1506,13 +1506,6 @@ class GenericApp(QObject):
         if len(self.nb['worksheets']) == 0:
             self.nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
 
-        start = self.nb['worksheets'][0]['cells']
-        self.add_code_cell(start, 0, '''%%reset -f
-from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start('%s', vars())''' % (self._pathomx_pickle_in))
-
-        self.add_code_cell(start, len(self.nb['worksheets'][0]['cells']), '''pathomx_notebook_stop('%s', vars());''' % (self._pathomx_pickle_out))
-
     def add_code_cell(self, nb, index, code):
         nb.insert(index, Struct(**{
             'cell_type': 'code',

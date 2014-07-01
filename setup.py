@@ -20,6 +20,7 @@ default_build_options=dict(
         'IPython',
         'matplotlib',
         'dateutil',
+        'dill',
 
         'sklearn',
         'sklearn.decomposition',
@@ -215,6 +216,7 @@ setup(
             'dateutil',
             'mplstyler',
             'pyqtconfig',
+            'dill',
             ],
 
     install_recommends = [

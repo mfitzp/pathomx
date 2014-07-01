@@ -570,6 +570,11 @@ class MainWindow(QMainWindow):
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
         t.addAction(export_ipythonnbAction)
 
+        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export report…', self)
+        export_reportAction.setStatusTip('Export workflow as report')
+        export_reportAction.triggered.connect(self.onExportReport)
+        t.addAction(export_reportAction)
+
         restart_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart kernels…', self)
         restart_kernelsAction.setStatusTip('Restart kernel runners')
         restart_kernelsAction.triggered.connect(self.onRestartKernels)
@@ -1003,24 +1008,27 @@ class MainWindow(QMainWindow):
         self.workspace_updated.emit()
 
     def onExportIPyNotebook(self):
-        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook report', '', "Portable Document Format (*.pdf);; Hypertext Markup Language (*.html);; ReStructured Text (*.rst);; Markdown (*.md);; Python script (*.py);; IPython Notebook (*.ipynb)")
+        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook', '', "IPython Notebook (*.ipynb)")
         if filename:
-            name, ext = os.path.splitext(filename) 
-            
-            if ext == '.ipynb':
                 notebook = self.export_to_notebook()
                 with open(filename, 'w') as f:
                     write_notebook(notebook, f, 'json')            
-
-            elif ext in ['.pdf','.rst','.md','.html','.py']:
                 
-                output, resources = IPyexport(IPyexporter_map['pdf'], self.nb)
+    def onExportReport(self):
+        filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow report', '', "Portable Document Format (*.pdf);; Hypertext Markup Language (*.html);; ReStructured Text (*.rst);; Markdown (*.md);; Python script (*.py)")
+        if filename:
+            name, ext = os.path.splitext(filename) 
+            export_format = ext.strip('.')
+            if export_format in ['pdf','rst','md','html','py']:
+
+                notebook = self.export_to_notebook()
+                output, resources = IPyexport(IPyexporter_map[export_format], notebook)
                 with open(filename, 'w') as f:
                     f.write(output)
-                
+
                 
 
-    def export_to_notebook(self):
+    def export_to_notebook(self, include_outputs=True):
         '''
         Export an IPython notebook representing the entire workflow
         '''
@@ -1073,8 +1081,13 @@ class MainWindow(QMainWindow):
             c = new_code_cell("config = %s;" % tool.config.as_dict())
             workbook_cells.append(c)
 
+            if include_outputs:
+                worksheets = tool.nb.worksheets
+            else:
+                worksheets = tool.nb_source.worksheets
+
             # Output the notebook itself. Use the source Luke; not the mangled version
-            for ws in tool.nb_source.worksheets:
+            for ws in worksheets:
                 for cell in ws.cells:
                     # Output variables of each script are shim-suffixed with the id of the tool (unique)
                     # e.g. output_data_123 = output_data

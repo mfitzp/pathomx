@@ -16,11 +16,9 @@ else:
     # In PyQt4 we can use the ZMQ kernel and avoid blocking
     from IPython.qt.manager import QtKernelManager as KernelManager
 
-try:
-    import cPickle as pickle
-except:
-    import pickle as pickle
-    
+import pickle, dill
+import uuid
+
 MAX_RUNNER_QUEUE = 1 # In process; can only have one
 
 class NotebookRunner(BaseFrontendMixin, QObject):
@@ -142,28 +140,49 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._result_callback = result_callback
         self._notebook_generator = self.iter_code_cells()
 
-        self._current_code_cell_number = 0
+        self._current_code_cell_number = None
         self._total_code_cell_number = self.count_code_cells()
         self._is_active = True
-        self.run_next_cell()        
+        self._current_cell = None
 
+        self.run_next_cell()
+        
     def run_next_cell(self):
-    
-        try:
-            self._current_cell = next( self._notebook_generator )
-        except StopIteration:
-            self.run_notebook_completed()
-            return
-        
-        self._current_code_cell_number += 1
-        
-        self.progress.emit( self._current_code_cell_number / self._total_code_cell_number )
-        if self._progress_callback:
-            self._progress_callback( self._current_code_cell_number / self._total_code_cell_number )
 
-        logging.info('Running cell:\n%s\n', self._current_cell.input)
-        self._current_cell['outputs'] = [] # Init to empty
-        self._execute(self._current_cell.input)
+        if self._is_active and self._current_code_cell_number is None: # Starting up
+            self.notebook_start()
+                   
+        elif self._is_active: # Running
+
+            try:
+                self._current_cell = next( self._notebook_generator )
+            except StopIteration:
+                self.notebook_stop()
+        
+            self._current_code_cell_number += 1
+        
+            self.progress.emit( self._current_code_cell_number / self._total_code_cell_number )
+            if self._progress_callback:
+                self._progress_callback( self._current_code_cell_number / self._total_code_cell_number )
+
+            logging.info('Running cell:\n%s\n', self._current_cell.input)
+            self._current_cell['outputs'] = [] # Init to empty
+            self._execute(self._current_cell.input)
+    
+        else: # Shutting down
+            self.run_notebook_completed()
+            
+    def notebook_start(self):
+        self._execute('''%%reset -f
+from pathomx import pathomx_notebook_start, pathomx_notebook_stop
+pathomx_notebook_start('%s', vars())''' % (self.varsi['_pathomx_pickle_in'])
+)       
+        self._current_code_cell_number = 0
+        
+    def notebook_stop(self):
+        self._is_active = False
+        self._current_code_cell_number = None    
+        self._execute('''pathomx_notebook_stop('%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
 
     def run_notebook_completed(self, error=False, traceback=None):
         result = {}
@@ -208,63 +227,6 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             else:
                 self.clear_output()
 
-    def _silent_exec_callback(self, expr, callback):
-        """Silently execute `expr` in the kernel and call `callback` with reply
-
-        the `expr` is evaluated silently in the kernel (without) output in
-        the frontend. Call `callback` with the
-        `repr <http://docs.python.org/library/functions.html#repr> `_ as first argument
-
-        Parameters
-        ----------
-        expr : string
-            valid string to be executed by the kernel.
-        callback : function
-            function accepting one argument, as a string. The string will be
-            the `repr` of the result of evaluating `expr`
-
-        The `callback` is called with the `repr()` of the result of `expr` as
-        first argument. To get the object, do `eval()` on the passed value.
-
-        See Also
-        --------
-        _handle_exec_callback : private method, deal with calling callback with reply
-
-        """
-
-        # generate uuid, which would be used as an indication of whether or
-        # not the unique request originated from here (can use msg id ?)
-        local_uuid = str(uuid.uuid1())
-        msg_id = self.kernel_client.execute('',
-            silent=True, user_expressions={ local_uuid:expr })
-        self._callback_dict[local_uuid] = callback
-        self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'silent_exec_callback')
-
-    def _handle_exec_callback(self, msg):
-        """Execute `callback` corresponding to `msg` reply, after ``_silent_exec_callback``
-
-        Parameters
-        ----------
-        msg : raw message send by the kernel containing an `user_expressions`
-                and having a 'silent_exec_callback' kind.
-
-        Notes
-        -----
-        This function will look for a `callback` associated with the
-        corresponding message id. Association has been made by
-        `_silent_exec_callback`. `callback` is then called with the `repr()`
-        of the value of corresponding `user_expressions` as argument.
-        `callback` is then removed from the known list so that any message
-        coming again with the same id won't trigger it.
-
-        """
-
-        user_exp = msg['content'].get('user_expressions')
-        if not user_exp:
-            return
-        for expression in user_exp:
-            if expression in self._callback_dict:
-                self._callback_dict.pop(expression)(user_exp[expression])
 
     def _handle_execute_reply(self, msg):
         """ Handles replies for code execution.
@@ -275,7 +237,10 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         # unset reading flag, because if execute finished, raw_input can't
         # still be pending.
         self._reading = False
-        if info and info.kind == 'user' and not self._hidden:
+        if self._current_cell is None: # A pre- or post- run execution; ignore result
+            self.execute_next.emit()  
+            
+        elif info and info.kind == 'user' and not self._hidden:
             # Make sure that all output from the SUB channel has been processed
             # before writing a new prompt.
             self.kernel_client.iopub_channel.flush()

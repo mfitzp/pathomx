@@ -2,12 +2,9 @@ import os
 import numpy as np
 import pandas as pd
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
+import pickle, dill
 
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure, AxesStack
 from matplotlib.axes import Subplot
 
 from mplstyler import StylesManager
@@ -55,9 +52,19 @@ def pathomx_notebook_start(fn, vars):
             rcParams[k] = v
 
     
+def figure_prepickle_handler(v):
+    v._cachedRenderer = None
+    for ax in v._axstack.as_list():
+        for axi in ax.images:
+            axi._imcache = None
+        ax._cachedRenderer = None
+
+    return v
+    
+    
+    
 def pathomx_notebook_stop(fn, vars):
     # Export known variable types from globals
-
 
     with open(fn, 'wb') as f:
         ovars = {}
@@ -66,14 +73,11 @@ def pathomx_notebook_stop(fn, vars):
             if not k.startswith('_') and \
                not k in vars['_pathomx_exlude_input_vars'] and \
                type(v) in MAGIC_TYPES:
+                
+                if type(v) == Figure:
+                    v = figure_prepickle_handler(v)
 
-                #try:
-                #    # Horrible hack to test picklability of each var before, er, pickling.
-                #    pickle.dumps(v, -1)
-                #except:
-                #    pass
-                #else:
-                #
                 ovars[k] = v
-        del k, v
+                        
+
         pickle.dump(ovars, f, -1)
