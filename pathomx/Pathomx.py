@@ -947,8 +947,8 @@ class MainWindow(QMainWindow):
                 if si:  # Something on this interface
                     cs = et.SubElement(datasources, "Input")
                     cs.set("id", sk)
-                    cs.set("manager", si.manager.id)
-                    cs.set("interface", si.manager_interface)
+                    cs.set("manager", si[0].id)
+                    cs.set("interface", si[1])
 
         tree = et.ElementTree(root)
         tree.write(fn)  # , pretty_print=True)
