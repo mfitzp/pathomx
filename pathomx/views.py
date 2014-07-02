@@ -37,7 +37,8 @@ from matplotlib.patches import BoxStyle, Ellipse
 
 import matplotlib.cm as cm
 
-#import seaborn
+from IPython.nbconvert.exporters import export as IPyexport
+from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
@@ -448,18 +449,19 @@ class HTMLView(WebView):
         self.setHtml(unicode(html), QUrl('file:///')) 
 
 class NotebookView(QWebView, BaseView):
-    def __init__(self, parent, html=None, **kwargs):
+    def __init__(self, parent, notebook, **kwargs):
         super(NotebookView, self).__init__(None, **kwargs)        
 
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
         self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
 
-        if html:
-            self.generate(html)
+        if notebook:
+            self.generate(notebook)
             
-    def generate(self, html):
-        self.setHtml(unicode(html), QUrl('file:///')) 
+    def generate(self, notebook):
+      html, resources = IPyexport(IPyexporter_map['html'], notebook)  
+      self.setHtml(unicode(html), QUrl('file:///')) 
 
         
 class StaticHTMLView(HTMLView):

@@ -36,8 +36,6 @@ from matplotlib import rcParams
 import logging
 
 from IPython.nbformat.current import read as read_notebook, NotebookNode
-from IPython.nbconvert.exporters import export as IPyexport
-from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 from IPython.utils.ipstruct import Struct
 from IPython.nbconvert.filters.markdown import markdown2html
 
@@ -1465,10 +1463,9 @@ class GenericApp(QObject):
         self.notebook_path = os.path.join(self.plugin.path, self.notebook)
 
         self.load_notebook(self.notebook_path)
-        # Initial display of the notebook
-        output, resources = IPyexport(IPyexporter_map['html'], self.nb_source)
 
-        self.nbview = NotebookView(self, output)
+        # Initial display of the notebook
+        self.nbview = NotebookView(self, self.nb)
         self.views.addView(self.nbview, 'Notebook', unfocus_on_refresh=True)
 
         if self._is_autoconsume_success is not False:
@@ -1484,19 +1481,6 @@ class GenericApp(QObject):
             self.nb_source = read_notebook(f, 'json')
 
         self.nb = deepcopy(self.nb_source)
-        if len(self.nb['worksheets']) == 0:
-            self.nb['worksheets'] = [NotebookNode({'cells': [], 'metadata': {}})]
-
-    def add_code_cell(self, nb, index, code):
-        nb.insert(index, Struct(**{
-            'cell_type': 'code',
-            'language': 'python',
-            'outputs': [],
-            'collapsed': True,
-            'prompt_number': 0,
-            'input': code,
-            'metadata': {},
-        }))
 
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
@@ -1563,7 +1547,7 @@ class GenericApp(QObject):
             self.logger.error(result['traceback'])
             varso = {}
 
-        varso['_pathomx_rendered_notebook'] = result['notebook'][:]
+        varso['_pathomx_result_notebook'] = result['notebook']
 
         self.worker_cleanup(varso)
 
@@ -1592,7 +1576,7 @@ class GenericApp(QObject):
     def prerender(self, *args, **kwargs):
 
         result_dict = {
-            'Notebook': {'html': kwargs['_pathomx_rendered_notebook']}
+            'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
             }
 
         for k, v in kwargs.items():
@@ -2367,3 +2351,104 @@ class DbApp(QMainWindow):
 
         #self.dbBrowser = HTMLView(self)
         #self.views.addView(self.dbBrowser, tr('Database'), unfocus_on_refresh=False)
+
+
+class QCheckTreeWidget(QTreeWidget):
+
+    itemCheckedChanged = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super(QCheckTreeWidget, self).__init__(*args, **kwargs)
+        self.itemChanged.connect( self.updateChecks )
+        self._checked_item_cache = set()
+        
+    def updateCheckCache(self, item, checkstate):
+        # Only count items without children (leaf nodes)
+        if item.childCount() != 0:
+            return
+            
+        if checkstate == Qt.Checked:
+            self._checked_item_cache.add( item.text(0) )
+        else:
+            self._checked_item_cache.discard( item.text(0) )
+        
+    def updateChecks(self, item, column, recursing = False):
+        self.blockSignals(True)
+        diff = False
+        if column != 0 and column != -1:
+            return
+            
+        checkState = item.checkState(0)
+        self.updateCheckCache(item, checkState)
+            
+        if item.childCount() !=0 and item.checkState(0) != Qt.PartiallyChecked and column != -1:
+            for i in range( item.childCount() ):
+                if item.child(i).checkState != checkState:
+                    item.child(i).setCheckState(0, checkState)
+                    self.updateCheckCache( item.child(i), checkState )
+                    self.updateChecks( item.child(i), column, recursing=True )
+
+        elif item.childCount() == 0 or column == -1:
+            if item.parent() is None:
+                return
+                
+            for j in range(item.parent().childCount()):
+                if j != item.parent().indexOfChild(item) and item.checkState(0) != item.parent().child(j).checkState(0):
+                    diff = True
+
+            if diff:
+                item.parent().setCheckState(0, Qt.PartiallyChecked)
+                self.updateCheckCache( item.parent(),  Qt.PartiallyChecked )
+            else:
+                item.parent().setCheckState(0, checkState)
+                self.updateCheckCache( item.parent(), checkState )
+                
+            if item.parent() is not None:
+                self.updateChecks(item.parent(),-1, recursing=True)
+                
+        if recursing == False:
+            self.blockSignals(False)
+            self.itemCheckedChanged.emit()
+            
+            
+class QBioCycPathwayTreeWidget(QCheckTreeWidget):
+    
+    def __init__(self, pathways, *args, **kwargs):
+        super(QBioCycPathwayTreeWidget, self).__init__(*args, **kwargs)
+        from biocyc import biocyc
+        
+        top_level_items = []
+        for p in pathways:
+            o = biocyc.get(p)
+            i = QTreeWidgetItem()
+            i.setCheckState(0, Qt.Unchecked)
+            i.setText(0, str(o))
+            i.biocyc = o
+            top_level_items.append(i)
+    
+        self.addTopLevelItems(top_level_items)
+        self.setHeaderLabels(['Pathway'])
+
+        current_queue = top_level_items
+        items_added_this_loop = None
+        while len(current_queue) > 0:
+    
+            items_added_this_loop = 0
+            next_queue = []
+            for i in current_queue[:]:
+                o = i.biocyc
+                p = o.instances + o.subclasses
+                cl = []
+                for pw in p:
+                    c = QTreeWidgetItem()
+                    c.setCheckState(0, Qt.Unchecked)
+                    c.setText(0, str(pw))
+                    c.biocyc = pw
+                    cl.append(c)
+            
+                i.addChildren(cl)
+                next_queue.extend(cl)
+            current_queue = next_queue
+
+        self.sortItems(0, Qt.AscendingOrder)
+            

@@ -30,7 +30,7 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
         #all_pathways = parent.db.dbm.pathways.keys()
         #self.all_pathways = sorted([p.name for id, p in db.dbm.get_pathways()])
-        self.all_pathways = [p.name for p in biocyc.known_pathways]
+        #self.all_pathways = [p.name for p in biocyc.known_pathways]
 
         self.label = defaultdict(dict)
         #selected_pathways = str(  ).split(',')
@@ -42,19 +42,19 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
     def onRegexpAdd(self):
         label = self.sender().objectName()
-        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains)
+        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains | Qt.MatchRecursive)
         block = self.label[label]['lw_pathways'].blockSignals(True)
         for i in items:
-            i.setSelected(True)
+            i.setCheckState(0, Qt.Checked)
         self.label[label]['lw_pathways'].blockSignals(block)
         self.label[label]['lw_pathways'].itemSelectionChanged.emit()
 
     def onRegexpRemove(self):
         label = self.sender().objectName()
-        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains)
+        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains | Qt.MatchRecursive)
         block = self.label[label]['lw_pathways'].blockSignals(True)
         for i in items:
-            i.setSelected(False)
+            i.setCheckState(0, Qt.Unchecked)
         self.label[label]['lw_pathways'].blockSignals(block)
         self.label[label]['lw_pathways'].itemSelectionChanged.emit()
 
@@ -63,17 +63,17 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         gb = QGroupBox(label)
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.label[label]['lw_pathways'] = QListWidget()
-        self.label[label]['lw_pathways'].setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.label[label]['lw_pathways'].addItems(self.all_pathways)
-        self.label[label]['lw_pathways'].sortItems(Qt.AscendingOrder)
+        self.label[label]['lw_pathways'] = ui.QBioCycPathwayTreeWidget([
+            'Biosynthesis',
+            'Degradation',
+            'Energy-Metabolism',
+            ])
 
         fwd_map = lambda x: biocyc.find_pathway_by_name(x).id
         rev_map = lambda x: biocyc.get(x).name
-
+        
+        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget'] # Works the same
         self.config.add_handler(pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map))
-        #for p in selected_pathways:
-        #    self.label[label]['lw_pathways'].findItems(p, Qt.MatchExactly)[0].setSelected(True)
 
         self.label[label]['lw_regExp'] = QLineEdit()
 

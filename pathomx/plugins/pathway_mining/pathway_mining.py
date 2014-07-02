@@ -13,6 +13,7 @@ from pathomx.views import TableView
 from pathomx.qt import *
 
 import numpy as np
+from biocyc import biocyc
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
@@ -29,6 +30,78 @@ METAPATH_MINING_TARGETS = {
     # 'Compartments':2,
 }
 
+
+# Dialog box for Metabohunter search options
+class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, *args, **kwargs):
+        super(PathwayMiningInExPathwayConfigPanel, self).__init__(*args, **kwargs)
+
+        self.label = defaultdict(dict)
+        self.setupSection('Include', 'include_pathways')
+        self.setupSection('Exclude', 'exclude_pathways')
+
+        self.finalise()
+
+    def onRegexpAdd(self):
+        label = self.sender().objectName()
+        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains | Qt.MatchRecursive)
+        block = self.label[label]['lw_pathways'].blockSignals(True)
+        for i in items:
+            i.setCheckState(0, Qt.Checked)
+        self.label[label]['lw_pathways'].blockSignals(block)
+        self.label[label]['lw_pathways'].itemSelectionChanged.emit()
+
+    def onRegexpRemove(self):
+        label = self.sender().objectName()
+        items = self.label[label]['lw_pathways'].findItems(self.label[label]['lw_regExp'].text(), Qt.MatchContains | Qt.MatchRecursive)
+        block = self.label[label]['lw_pathways'].blockSignals(True)
+        for i in items:
+            i.setCheckState(0, Qt.Unchecked)
+        self.label[label]['lw_pathways'].blockSignals(block)
+        self.label[label]['lw_pathways'].itemSelectionChanged.emit()
+
+    def setupSection(self, label, pathway_config):
+        # SHOW PATHWAYS
+        gb = QGroupBox(label)
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.label[label]['lw_pathways'] = ui.QBioCycPathwayTreeWidget([
+            'Biosynthesis',
+            'Degradation',
+            'Energy-Metabolism',
+            ])
+
+        fwd_map = lambda x: biocyc.find_pathway_by_name(x).id
+        rev_map = lambda x: biocyc.get(x).name
+        
+        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget'] # Works the same
+        self.config.add_handler(pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map))
+
+        self.label[label]['lw_regExp'] = QLineEdit()
+
+        vbox.addWidget(self.label[label]['lw_pathways'])
+        vbox.addWidget(QLabel('Select/deselect matching pathways by name:'))
+        vboxh = QHBoxLayout()
+
+        vboxh.addWidget(self.label[label]['lw_regExp'])
+
+        addfr = QPushButton('-')
+        addfr.clicked.connect(self.onRegexpRemove)
+        addfr.setObjectName(label)
+        addfr.setFixedWidth(24)
+
+        remfr = QPushButton('+')
+        remfr.clicked.connect(self.onRegexpAdd)
+        remfr.setObjectName(label)
+        remfr.setFixedWidth(24)
+
+        vboxh.addWidget(addfr)
+        vboxh.addWidget(remfr)
+        vbox.addLayout(vboxh)
+
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
 
 # Dialog box for Metabohunter search options
 class PathwayMiningConfigPanel(ui.ConfigPanel):
@@ -83,6 +156,8 @@ class PathwayMiningApp(ui.AnalysisApp):
             '/Data/MiningType': 'c',
             '/Data/MiningRelative': False,
             '/Data/MiningShared': True,
+            'include_pathways': [],
+            'exclude_pathways': [],
         })
 
         self.data.add_input('input_1')  # Add input slot
@@ -107,7 +182,9 @@ class PathwayMiningApp(ui.AnalysisApp):
             }, title='Source compound, gene or protein data'),
         ])
 
+        self.addConfigPanel(PathwayMiningInExPathwayConfigPanel, 'Include/Exclude')
         self.addConfigPanel(PathwayMiningConfigPanel, 'Pathway Mining')
+
 
         
 class PathwayMining(AnalysisPlugin):

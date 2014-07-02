@@ -65,10 +65,37 @@ DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "PWY66-400", "PWY66-368", "PWY66-367", "PWY-6118", "PENTOSE-P-PWY",
         "OXIDATIVEPENT-PWY-1", "NONOXIPENT-PWY", "PWY66-398", "PWY-7437", "PWY-7434",
         "PWY-7433", "PWY66-14", "PWY66-11"]
+
+
+fetch_queue = pathways = [
+            'Biosynthesis',
+            'Degradation',
+            'Energy-Metabolism',
+            ]
+
+fetched = []
+added_this_loop = None
+
+while len(fetch_queue) > 0:
+    added_this_loop = 0
+    to_add = []
+    for p in fetch_queue:
+        print p
+        pw = biocyc.get(p)
+        to_add.extend(pw._super_pathways)
+        to_add.extend(pw._subclasses)
+        to_add.extend(pw._instances)
         
-for p in DEFAULT_PATHWAYS:
+    to_add = [p for p in to_add if p not in fetched]
+    fetch_queue = to_add
+    fetched.extend(to_add)    
+    
+DEFAULT_PATHWAYS = fetched
+
+total_n = len(DEFAULT_PATHWAYS)
+for n, p in enumerate(DEFAULT_PATHWAYS):
     pw = biocyc.get(p)
-    print "P", pw, pw.id
+    print "P", pw, pw.id, "(%d/%d)" % (n, total_n)
     for r in pw.reactions:
         print "R.", r, r.id
         for er in r.enzymatic_reactions:

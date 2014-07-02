@@ -10,16 +10,18 @@ from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 from .qt import *
 
 if USE_QT_PY == PYQT5:
-    # The normal ZMQ kernel doesn't work in PyQt5 so use in the in-process one
+    # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
     from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+    MAX_RUNNER_QUEUE = 1 # In process; can only have one
+
 else:
     # In PyQt4 we can use the ZMQ kernel and avoid blocking
     from IPython.qt.manager import QtKernelManager as KernelManager
+    MAX_RUNNER_QUEUE = 3 # Multi-threaded; but most processing is linear 3-5 good max
 
 import pickle, dill
 import uuid
 
-MAX_RUNNER_QUEUE = 1 # In process; can only have one
 
 class NotebookRunner(BaseFrontendMixin, QObject):
     '''
@@ -94,7 +96,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         #kernel.shell.push({'foo': 43, 'print_process_id': print_process_id})
 
         self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels()
+        self.kernel_client.start_channels(stdin=False, hb=False)
         
         self.execute_next.connect( self.run_next_cell )
 
@@ -197,7 +199,7 @@ pathomx_notebook_start('%s', vars());
             with open(self.varsi['_pathomx_pickle_out'], 'rb') as f:
                 result['varso'] = pickle.load(f)
 
-        result['notebook'], resources = IPyexport(IPyexporter_map['html'], self.nb)
+        result['notebook'] = self.nb
 
         self._is_active = False
         self.notebook_completed.emit()
@@ -514,8 +516,6 @@ class NotebookRunnerQueue(object):
         self.no_of_active_runners = 0
 
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
-
-        self.create_runners()
 
     def start_timers(self):
         self._run_timer = QTimer()

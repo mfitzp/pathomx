@@ -111,6 +111,7 @@ DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "OXIDATIVEPENT-PWY-1", "NONOXIPENT-PWY", "PWY66-398", "PWY-7437", "PWY-7434",
         "PWY-7433", "PWY66-14", "PWY66-11", "PYRUVDEH-RXN"]
 
+PATHWAY_ROOTS = ['Activation-Inactivation-Interconversion','Biosynthesis','Degradation','Detoxification','Energy-Metabolism','Macromolecule-Modification','Metabolic-Clusters','Signaling-Pathways','Super-Pathways']
 
 class Logger(logging.Handler):
     def __init__(self, parent, widget, out=None, color=None):
@@ -1130,6 +1131,18 @@ class MainWindow(QMainWindow):
         notebook = copy(tool.nb)
         notebook.worksheets[0].cells = workbook_cells
         return notebook
+        
+
+    def add_code_cell(self, nb, index, code):
+        nb.insert(index, Struct(**{
+            'cell_type': 'code',
+            'language': 'python',
+            'outputs': [],
+            'collapsed': True,
+            'prompt_number': 0,
+            'input': code,
+            'metadata': {},
+        }))        
 
     def onRestartKernels(self):
         notebook_queue.restart()
@@ -1182,6 +1195,7 @@ def main():
     app.installTranslator(translator_mp)
 
     # We've got a qApp instance going, set up timers
+    notebook_queue.create_runners()
     notebook_queue.start_timers()
 
     MainWindow()
