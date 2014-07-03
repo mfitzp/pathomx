@@ -3,10 +3,10 @@
 class BaseObj(object):
 
     def __unicode__(self):
-        return self.text
+        return self.data
 
-    def __init__(self, text, **kwargs):
-        self.text = text
+    def __init__(self, data, **kwargs):
+        self.data = data
 
 
 class Svg(BaseObj):

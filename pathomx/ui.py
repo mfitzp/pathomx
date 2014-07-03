@@ -38,6 +38,7 @@ import logging
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.utils.ipstruct import Struct
 from IPython.nbconvert.filters.markdown import markdown2html
+from IPython.core import display
 
 PX_INIT_SHOT = 50
 
@@ -636,8 +637,8 @@ class ExportImageDialog(GenericDialog):
         w.addWidget(self.height_p, r, 1)
 
         self.print_units = QComboBox()
-        self.print_units.addItems(list(self.print_u.keys()))
-        self.print_units.setCurrentText(self.default_print_units)
+        self.print_units.addItems( list(self.print_u.keys()) )
+        self.print_units.setCurrentIndex( self.print_units.findText( self.default_print_units ) )
 
         w.addWidget(self.print_units, r, 2)
         r += 1
@@ -649,7 +650,7 @@ class ExportImageDialog(GenericDialog):
 
         self.resolution_units = QComboBox()
         self.resolution_units.addItems(list(self.resolution_u.keys()))
-        self.resolution_units.setCurrentText(self.default_resolution_units)
+        self.resolution_units.setCurrentIndex( self.resolution_units.findText( self.default_resolution_units ) )
 
         w.addWidget(QLabel('Resolution'), r, 0)
         w.addWidget(self.resolution, r, 1)
@@ -663,7 +664,7 @@ class ExportImageDialog(GenericDialog):
             r += 1
             self.scaling = QComboBox()
             self.scaling.addItems(['Resample', 'Resize'])
-            self.scaling.setCurrentText('Resample')
+            self.scaling.setCurrentIndex( self.scaling.findText('Resample') )
             w.addWidget(QLabel('Scaling method'), r, 0)
             w.addWidget(self.scaling, r, 1)
             r += 1
@@ -747,7 +748,6 @@ class ExportImageDialog(GenericDialog):
         self._h = self.height.value()
 
         print_units = self.print_units.currentText()
-
         w_p = self.get_as_print_size(self._w, print_units)
         h_p = self.get_as_print_size(self._h, print_units)
 
@@ -1585,7 +1585,7 @@ class GenericApp(QObject):
                     self.views.addView(IPyMplView(self), k)
                 result_dict[k] = {'fig': v}
 
-            elif type(v) == displayobjects.Svg:
+            elif type(v) == displayobjects.Svg or type(v) == display.SVG:
                 if self.views.get_type(k) != SVGView:
                     self.views.addView(SVGView(self), k)
 
@@ -2094,13 +2094,6 @@ class AnalysisApp(IPythonApp):
 
         t = self.w.addToolBar(tr('Experiment'))
         t.setIconSize(QSize(16, 16))
-        # DATA MENU
-        #define_experimentAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layout-design.png')), tr('Define experiment…'), self)
-        #define_experimentAction.setShortcut('Ctrl+Q')
-        #define_experimentAction.setStatusTip(tr('Define experiment control, test and timecourse settings'))
-        #define_experimentAction.triggered.connect(self.onDefineExperiment)
-
-        #t.addAction(define_experimentAction)
 
         t.cb_control = QComboBox()
         t.cb_control.addItems(['Control'])
@@ -2125,7 +2118,6 @@ class AnalysisApp(IPythonApp):
         class_idx = data.index.names.index('Class')
         classes = list(data.index.levels[class_idx])
 
-
         if _control not in classes or _test not in classes:
             # Block signals so no trigger of update
             self.toolbars['experiment'].cb_control.blockSignals(True)
@@ -2138,8 +2130,8 @@ class AnalysisApp(IPythonApp):
             self.toolbars['experiment'].cb_test.addItem("*")
             self.toolbars['experiment'].cb_test.addItems(classes)
             # Reset to previous values (-if possible)
-            self.toolbars['experiment'].cb_control.setCurrentText(_control)
-            self.toolbars['experiment'].cb_test.setCurrentText(_test)
+            self.toolbars['experiment'].cb_control.setCurrentIndex( self.toolbars['experiment'].cb_control.findText( _control ) ) #PyQt4 compat
+            self.toolbars['experiment'].cb_test.setCurrentIndex( self.toolbars['experiment'].cb_test.findText( _test ) ) #PyQt4 compat
             # Unblock
             self.toolbars['experiment'].cb_control.blockSignals(False)
             self.toolbars['experiment'].cb_test.blockSignals(False)

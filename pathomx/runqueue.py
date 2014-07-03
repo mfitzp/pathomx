@@ -19,7 +19,12 @@ else:
     from IPython.qt.manager import QtKernelManager as KernelManager
     MAX_RUNNER_QUEUE = 3 # Multi-threaded; but most processing is linear 3-5 good max
 
-import pickle, dill
+try:
+    # For depickling we can use cPickle even if pickled with dill
+    import cPickle as pickle
+except:
+    import pickle
+    
 import uuid
 
 
@@ -80,8 +85,9 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._request_info['execute'] = {};
         self._callback_dict = {}
         
-        self._current_cell = None
-        self._current_cell_counter = None
+        self._result_queue = []
+        self._final_msg_id = None
+        
         self._is_active = False
         self._executing = False
         
@@ -89,16 +95,11 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._local_kernel = kwargs.get('local_kernel',
                                     NotebookRunner._local_kernel)
 
-
         self.kernel_manager = KernelManager()
         self.kernel_manager.start_kernel()
-        #self.kernel = kernel_manager.kernel
-        #kernel.shell.push({'foo': 43, 'print_process_id': print_process_id})
 
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels(stdin=False, hb=False)
-        
-        self.execute_next.connect( self.run_next_cell )
 
     def __del__(self):
         if self.kernel_client:
@@ -121,15 +122,12 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         '''
         for n, cell in enumerate(self.iter_code_cells()):
             pass
-        return n
+        return n+1
 
     def run_notebook(self, notebook, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
         the outputs in-place.
-
-        If ``skip_exceptions`` is set, then if exceptions occur in a cell, the
-        subsequent cells are run (by default, the notebook execution stops).
         '''
         
         self.nb = notebook
@@ -142,51 +140,26 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._result_callback = result_callback
         self._notebook_generator = self.iter_code_cells()
 
-        self._current_code_cell_number = None
         self._total_code_cell_number = self.count_code_cells()
         self._is_active = True
-        self._current_cell = None
 
-        self.run_next_cell()
-        
-    def run_next_cell(self):
+        self._result_queue = [] # Cache for unhandled messages
+        self._cell_execute_ids = dict()
 
-        if self._is_active and self._current_code_cell_number is None: # Starting up
-            self.notebook_start()
-                   
-        elif self._is_active: # Running
-
-            try:
-                self._current_cell = next( self._notebook_generator )
-            except StopIteration:
-                self.notebook_stop()
-                return
-        
-            self._current_code_cell_number += 1
-        
-            self.progress.emit( self._current_code_cell_number / float(self._total_code_cell_number) )
-            if self._progress_callback:
-                self._progress_callback( self._current_code_cell_number / float(self._total_code_cell_number) )
-
-            logging.info('Running cell:\n%s\n', self._current_cell.input)
-            self._current_cell['outputs'] = [] # Init to empty
-            self._execute(self._current_cell.input)
-    
-        else: # Shutting down
-            self.run_notebook_completed()
-            
-    def notebook_start(self):
-        self._execute('''%%reset -f
+        msg_id = self._execute('''%%reset -f
 from pathomx import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start('%s', vars());
 %%matplotlib inline''' % (self.varsi['_pathomx_pickle_in'])
 )       
-        self._current_code_cell_number = 0
-        
-    def notebook_stop(self):
-        self._is_active = False
-        self._current_code_cell_number = None    
-        self._execute('''pathomx_notebook_stop('%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
+        logging.debug("Runing notebook; startup message: %s" % msg_id)
+        for n, cell in enumerate(self.iter_code_cells()):
+            msg_id = self._execute(cell.input)
+            logging.debug('Cell number %d; %s' % ( n, msg_id) )
+            progress = n / float(self._total_code_cell_number)            
+            self._cell_execute_ids[ msg_id ] = (cell, progress) # Store cell and progress
+
+        self._final_msg_id = self._execute('''pathomx_notebook_stop('%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
+        logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
 
     def run_notebook_completed(self, error=False, traceback=None):
         result = {}
@@ -194,6 +167,10 @@ pathomx_notebook_start('%s', vars());
             result['status'] = -1
             result['traceback'] = traceback
         else:
+            # Apply unhandled results
+            for msg in self._result_queue:
+                self._handle_execute_result(msg)
+        
             result['status'] = 0
             # Return input; temp
             with open(self.varsi['_pathomx_pickle_out'], 'rb') as f:
@@ -216,8 +193,9 @@ pathomx_notebook_start('%s', vars());
         msg_id = self.kernel_client.execute(source, hidden)
         self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'user')
         self._hidden = hidden
-        if not hidden:
-            self.executing.emit(source)
+        #if not hidden:
+        #    self.executing.emit(source)
+        return msg_id
 
     #---------------------------------------------------------------------------
     # 'BaseFrontendMixin' abstract interface
@@ -237,14 +215,25 @@ pathomx_notebook_start('%s', vars());
         """
         logging.debug("execute: %s", msg.get('content', ''))
         msg_id = msg['parent_header']['msg_id']
+        
+        if msg_id == self._final_msg_id:
+            return self.run_notebook_completed()
+            
+        if msg_id not in self._cell_execute_ids:
+            return
+            
+        (self._current_cell, pc) = self._cell_execute_ids[msg_id]
+        
+        self.progress.emit( pc )
+        if self._progress_callback:
+            self._progress_callback( pc )
+    
         info = self._request_info['execute'].get(msg_id)
         # unset reading flag, because if execute finished, raw_input can't
         # still be pending.
         self._reading = False
-        if self._current_cell is None: # A pre- or post- run execution; ignore result
-            self.execute_next.emit()  
-            
-        elif info and info.kind == 'user' and not self._hidden:
+
+        if info and info.kind == 'user' and not self._hidden:
             # Make sure that all output from the SUB channel has been processed
             # before writing a new prompt.
             self.kernel_client.iopub_channel.flush()
@@ -281,7 +270,6 @@ pathomx_notebook_start('%s', vars());
     def _process_execute_error(self, msg):
         """ Process a reply for an execution request that resulted in an error.
         """
-        print "_process_execute_error***********************************"
         content = msg['content']
         # If a SystemExit is passed along, this means exit() was called - also
         # all the ipython %exit magic syntax of '-k' to be used to keep
@@ -345,8 +333,6 @@ pathomx_notebook_start('%s', vars());
             return
 
         elif msg_type == 'pyerr':
-            print "_process_execute_error_pyerr***********************************"
-        
             # Is this handled in _handle_execute_errror?
             out.ename = content['ename']
             out.evalue = content['evalue']
@@ -382,8 +368,17 @@ pathomx_notebook_start('%s', vars());
     def _handle_execute_result(self, msg):
         """ Handle display hook output.
         """
+
         logging.debug("execute_result: %s", msg.get('content', ''))
         if not self._hidden and self._is_from_this_session(msg):
+            msg_id = msg['parent_header']['msg_id']
+
+            if msg_id not in self._cell_execute_ids: # Only on the in-process kernel can this happen
+                self._result_queue.append(msg)
+                return
+                 
+            (cell, pc) = self._cell_execute_ids[msg_id]
+
             out = NotebookNode(output_type='display_data')
             for mime, data in msg['content']['data'].items():
                 try:
@@ -393,7 +388,7 @@ pathomx_notebook_start('%s', vars());
 
                 setattr(out, attr, data)            
             
-            self._current_cell['outputs'].append(out)
+            cell['outputs'].append(out)
 
     def _handle_stream(self, msg):
         """ Handle stdout, stderr, and stdin.
@@ -501,14 +496,16 @@ pathomx_notebook_start('%s', vars());
 
 
 
-class NotebookRunnerQueue(object):
+class NotebookRunnerQueue(QObject):
     '''
     Auto-creating and managing distribution of notebook runners for notebooks.
     Re-population handled on timer. Keeping a maximum N available at all times.
     '''
 
-    def __init__(self, no_of_runners=MAX_RUNNER_QUEUE):
+    start = pyqtSignal()
 
+    def __init__(self, no_of_runners=MAX_RUNNER_QUEUE):
+        super(NotebookRunnerQueue, self).__init__() 
     # If we fall beneath the minimum top it up
         self.no_of_runners = no_of_runners
         self.runners = []
@@ -517,13 +514,16 @@ class NotebookRunnerQueue(object):
 
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
 
+        self.start.connect(self.run)
+
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
-        self._run_timer.start(500)  # Auto-start every 1/2 second
+        self._run_timer.start(500)  # Auto-check for pending jobs every 5 seconds; this shouldn't be needed but some jobs get stuck(?)
 
     def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
         self.jobs.append((nb, varsi, progress_callback, result_callback))
+        self.start.emit() # Auto-start on every add job
 
     def run(self):
         # Check for jobs

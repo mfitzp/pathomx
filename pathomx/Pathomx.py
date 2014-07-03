@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 import sys
 import logging
 
-from .version import VERSION_STRING
-
-frozen = getattr(sys, 'frozen', None)
+frozen = getattr(sys, 'frozen', False)
 if frozen:
     logging.basicConfig(level=logging.INFO)
 else:
     logging.basicConfig(level=logging.DEBUG)
+
+from .version import VERSION_STRING
 
 import os
 import codecs
@@ -293,7 +293,7 @@ class MainWindow(QMainWindow):
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
         self.menuBars['file'].addAction(export_ipythonnbAction)
 
-        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export workflow report…', self)
+        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export workflow report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
         self.menuBars['file'].addAction(export_reportAction)
@@ -579,7 +579,7 @@ class MainWindow(QMainWindow):
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
         t.addAction(export_ipythonnbAction)
 
-        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export report…', self)
+        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
         t.addAction(export_reportAction)

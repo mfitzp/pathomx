@@ -107,3 +107,4 @@ for n, p in enumerate(DEFAULT_PATHWAYS):
                 print "C....", c, c.id
                 if c.gene:
                     print "G.....", c.gene, c.gene.id
+                    c.gene.pathways # Force check all are in

@@ -442,7 +442,8 @@ class ToolInterface(BaseInteractiveItem):
 
                 # FIXME: This is horrible; simplify the data manager
                 c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
-
+                dest_manager.source_updated.emit()
+                
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
 

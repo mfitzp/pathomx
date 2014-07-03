@@ -11,6 +11,7 @@ from mplstyler import StylesManager
 
 import warnings
 from . import displayobjects
+from IPython.core import display
 
 MAGIC_TYPES = [
         np.array, np.ndarray,
@@ -18,6 +19,7 @@ MAGIC_TYPES = [
         Figure, Subplot,
         StylesManager,
         displayobjects.Svg, displayobjects.Html,
+        display.SVG
         ]
 
 

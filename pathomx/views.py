@@ -77,6 +77,8 @@ class ViewManager( QTabWidget ):
     style_updated = pyqtSignal()
     updated = pyqtSignal()
 
+    #postponed_refresh = pyqtSignal()
+
     def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
         
@@ -92,9 +94,13 @@ class ViewManager( QTabWidget ):
         
         self.data = dict() # Stores data from which figures are rendered
         self.views = {}
+        
+        self._refresh_later = set() # Indexes of views to update at some future point
     
         self.source_data_updated.connect(self.onRefreshAll)
         self.style_updated.connect(self.onRefreshAll)
+        
+        #self.postponed_refresh.connect(self.onRefreshLater)
     
     # A few wrappers to 
     def addView(self, widget, name, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
@@ -135,9 +141,17 @@ class ViewManager( QTabWidget ):
         else:
             return None
     
-    def onRefreshAll(self):
+    def onRefreshAll(self): #, to_refresh=None):
         to_delete = []
-        for n in range(self.count()):
+        
+        #if to_refresh == None:
+        #    others = set( range(self.count()) )
+        #    others.discard(self.currentIndex())
+        #    self._refresh_later.update( others )
+        #    self.postponed_refresh.emit()
+        #    to_refresh = [self.currentIndex()]
+        
+        for n in range(self.count()): #to_refresh:
             if hasattr(self.widget(n),'autogenerate') and self.widget(n).autogenerate:
                 try:
                     self.widget(n).autogenerate()
@@ -160,6 +174,10 @@ class ViewManager( QTabWidget ):
 
 
         self.updated.emit()
+        
+    #def onRefreshLater(self):
+    #    self.onRefreshAll( to_refresh=self._refresh_later )
+    #    self._refresh_later.clear()
         
     def addTab(self, widget, name, **kwargs):
         '''
@@ -476,7 +494,7 @@ class StaticHTMLView(HTMLView):
 class SVGView(D3View):
     
     def generate(self, svg):
-        self.setSVG( unicode(svg) )
+        self.setSVG( svg.data )
 
 class WheezyView(WebView):
     
