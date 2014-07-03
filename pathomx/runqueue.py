@@ -26,6 +26,7 @@ except:
     import pickle
     
 import uuid
+from copy import deepcopy
 
 
 class NotebookRunner(BaseFrontendMixin, QObject):
@@ -522,7 +523,9 @@ class NotebookRunnerQueue(QObject):
         self._run_timer.start(500)  # Auto-check for pending jobs every 5 seconds; this shouldn't be needed but some jobs get stuck(?)
 
     def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
-        self.jobs.append((nb, varsi, progress_callback, result_callback))
+        # We take a copy of the notebook, so changes aren't applied back to the source
+        # ensuring each run starts with blank slate
+        self.jobs.append(( deepcopy(nb), varsi, progress_callback, result_callback))
         self.start.emit() # Auto-start on every add job
 
     def run(self):

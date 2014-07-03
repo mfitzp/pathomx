@@ -1527,7 +1527,7 @@ class GenericApp(QObject):
 
         logging.info("Running notebook %s for %s" % (self.notebook, self.name))
 
-        notebook_queue.add_job(self.nb, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
+        notebook_queue.add_job(self.nb_source, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)
