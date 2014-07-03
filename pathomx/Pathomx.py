@@ -4,6 +4,7 @@ import sys
 import logging
 
 frozen = getattr(sys, 'frozen', False)
+frozen = True
 if frozen:
     logging.basicConfig(level=logging.INFO)
 else:
@@ -1196,7 +1197,7 @@ def main():
 
     # We've got a qApp instance going, set up timers
     notebook_queue.create_runners()
-    notebook_queue.start_timers()
+    #notebook_queue.start_timers()
 
     MainWindow()
     logging.info('Ready.')

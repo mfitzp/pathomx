@@ -27,6 +27,7 @@ except:
     
 import uuid
 from copy import deepcopy
+from datetime import datetime
 
 
 class NotebookRunner(BaseFrontendMixin, QObject):
@@ -88,6 +89,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         
         self._result_queue = []
         self._final_msg_id = None
+        self._cell_execute_ids = {}
         
         self._is_active = False
         self._executing = False
@@ -145,24 +147,25 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._is_active = True
 
         self._result_queue = [] # Cache for unhandled messages
-        self._cell_execute_ids = dict()
+        self._cell_execute_ids = {}
+        self._execute_start = datetime.now()
 
         msg_id = self._execute('''%%reset -f
 from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start('%s', vars());
-%%matplotlib inline''' % (self.varsi['_pathomx_pickle_in'])
+pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 )       
         logging.debug("Runing notebook; startup message: %s" % msg_id)
         for n, cell in enumerate(self.iter_code_cells()):
             msg_id = self._execute(cell.input)
             logging.debug('Cell number %d; %s' % ( n, msg_id) )
             progress = n / float(self._total_code_cell_number)            
-            self._cell_execute_ids[ msg_id ] = (cell, progress) # Store cell and progress
+            self._cell_execute_ids[ msg_id ] = (cell, n+1, progress) # Store cell and progress
 
         self._final_msg_id = self._execute('''pathomx_notebook_stop('%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
         logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
 
     def run_notebook_completed(self, error=False, traceback=None):
+        logging.info("Notebook run took %s" % ( datetime.now() - self._execute_start ) )
         result = {}
         if error:
             result['status'] = -1
@@ -222,8 +225,12 @@ pathomx_notebook_start('%s', vars());
             
         if msg_id not in self._cell_execute_ids:
             return
-            
-        (self._current_cell, pc) = self._cell_execute_ids[msg_id]
+
+        
+        (self._current_cell, n, pc) = self._cell_execute_ids[msg_id]
+
+        logging.info("Execute cell %d complete in %s" % (n, datetime.now() - self._execute_start) )
+               
         
         self.progress.emit( pc )
         if self._progress_callback:
@@ -378,7 +385,7 @@ pathomx_notebook_start('%s', vars());
                 self._result_queue.append(msg)
                 return
                  
-            (cell, pc) = self._cell_execute_ids[msg_id]
+            (cell, n, pc) = self._cell_execute_ids[msg_id]
 
             out = NotebookNode(output_type='display_data')
             for mime, data in msg['content']['data'].items():
@@ -520,7 +527,7 @@ class NotebookRunnerQueue(QObject):
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
-        self._run_timer.start(500)  # Auto-check for pending jobs every 5 seconds; this shouldn't be needed but some jobs get stuck(?)
+        self._run_timer.start(5000)  # Auto-check for pending jobs every 5 seconds; this shouldn't be needed but some jobs get stuck(?)
 
     def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
         # We take a copy of the notebook, so changes aren't applied back to the source
@@ -556,6 +563,7 @@ class NotebookRunnerQueue(QObject):
                 
     def create_runner(self):
         r = NotebookRunner()
+        r._execute('%matplotlib inline')               
         r.notebook_completed.connect( self.done )
         self.runners.append( r )
 

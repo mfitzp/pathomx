@@ -34,13 +34,13 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 
 import logging
-
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.utils.ipstruct import Struct
 from IPython.nbconvert.filters.markdown import markdown2html
 from IPython.core import display
 
 PX_INIT_SHOT = 50
+PX_RENDER_SHOT = 500
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -1548,6 +1548,7 @@ class GenericApp(QObject):
             varso = {}
 
         varso['_pathomx_result_notebook'] = result['notebook']
+        self.nb = result['notebook']
 
         self.worker_cleanup(varso)
 
@@ -1571,7 +1572,10 @@ class GenericApp(QObject):
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
         self.views.data = self.prerender(**kwargs_dict)
-        self.views.source_data_updated.emit()
+        # Delay this 1/2 second so next processing gets underway
+        # FIXME: when we've got a better runner system
+        QTimer.singleShot( PX_RENDER_SHOT, self.views.source_data_updated.emit )
+        #self.views.source_data_updated.emit()
 
     def prerender(self, *args, **kwargs):
 

@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 Figure = plt.figure
 
-FIGURE_SIZE = (6, 6)
-FIGURE_DPI = 200
+FIGURE_SIZE = (5, 5)
+FIGURE_DPI = 300
 
 class EntityBoxStyle(BoxStyle._Base):
     """
