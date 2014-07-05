@@ -60,12 +60,22 @@ Install Homebrew as follows::
 
     ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
-Once that is in place use brew install to install python, PyQt5 (which will 
-automatically install Qt5) and graphviz. Install pip for Python and add the packages 
-numpy, scipy, pydot, nmrglue, gpml2svg, poster, wheezy, sklearn, icoshift, matplotlib. 
-This can be done in a one liner with pip::
+Once that is in place use brew install to install python, PyQt4 (which will 
+automatically install Qt4) and graphviz. From the command line enter:
 
-    pip install numpy scipy pydot nmrglue gpml2svg poster wheezy sklearn icoshift matplotlib
+    brew install python pyqt graphviz 
+    
+You can opt to install pyqt5 instead, however currently this offers lower performance and requires
+bleeding-edge matplotlib/IPython to function.
+Next use pip to install Python packages numpy, scipy, pydot, nmrglue, gpml2svg, 
+poster, wheezy, sklearn, icoshift, matplotlib. This can be done in a one liner with pip:
+
+    pip install numpy scipy poster matplotlib scikit-learn
+    pip install ipython[all]
+    
+You can also optionally install the following for some data analysis notebooks:
+
+    pip install pydot nmrglue gpml2svg icoshift
 
 That should be enough to get Pathomx up and running from the command line. For development a
 useful tool to install is `Total Terminal`_, which gets you access to the command line

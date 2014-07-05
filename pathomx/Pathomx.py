@@ -4,7 +4,6 @@ import sys
 import logging
 
 frozen = getattr(sys, 'frozen', False)
-frozen = True
 if frozen:
     logging.basicConfig(level=logging.INFO)
 else:
@@ -585,10 +584,10 @@ class MainWindow(QMainWindow):
         export_reportAction.triggered.connect(self.onExportReport)
         t.addAction(export_reportAction)
 
-        restart_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart kernels…', self)
-        restart_kernelsAction.setStatusTip('Restart kernel runners')
-        restart_kernelsAction.triggered.connect(self.onRestartKernels)
-        t.addAction(restart_kernelsAction)
+        interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Interrupt kernels…', self)
+        interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing')
+        interrupt_kernelsAction.triggered.connect(self.onInterruptKernels)
+        t.addAction(interrupt_kernelsAction)
 
     def addEditorToolBar(self):
         t = self.addToolBar('Editor')
@@ -1145,8 +1144,8 @@ class MainWindow(QMainWindow):
             'metadata': {},
         }))        
 
-    def onRestartKernels(self):
-        notebook_queue.restart()
+    def onInterruptKernels(self):
+        notebook_queue.interrupt()
 
 #class QApplicationExtend(QApplication):
     #def event(self, e):

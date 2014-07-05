@@ -443,65 +443,20 @@ pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
         Also unsets _reading flag, to avoid runtime errors
         if raw_input is called again.
         """
-        if self.custom_interrupt:
-            self._reading = False
-            self.custom_interrupt_requested.emit()
-        elif self.kernel_manager:
-            self._reading = False
-            self.kernel_manager.interrupt_kernel()
-        else:
-            self._append_plain_text('Cannot interrupt a kernel I did not start.\n')
+        self._reading = False
+        self.kernel_manager.interrupt_kernel()
 
     def restart_kernel(self, message, now=False):
         """ Attempts to restart the running kernel.
         """
-        # FIXME: now should be configurable via a checkbox in the dialog.  Right
-        # now at least the heartbeat path sets it to True and the manual restart
-        # to False.  But those should just be the pre-selected states of a
-        # checkbox that the user could override if so desired.  But I don't know
-        # enough Qt to go implementing the checkbox now.
-
-        if self.custom_restart:
-            self.custom_restart_requested.emit()
-            return
-
-        if self.kernel_manager:
-            # Pause the heart beat channel to prevent further warnings.
-            self.kernel_client.hb_channel.pause()
-
-            # Prompt the user to restart the kernel. Un-pause the heartbeat if
-            # they decline. (If they accept, the heartbeat will be un-paused
-            # automatically when the kernel is restarted.)
-            if self.confirm_restart:
-                buttons = QtGui.QMessageBox.Yes | QtGui.QMessageBox.No
-                result = QtGui.QMessageBox.question(self, 'Restart kernel?',
-                                                    message, buttons)
-                do_restart = result == QtGui.QMessageBox.Yes
-            else:
-                # confirm_restart is False, so we don't need to ask user
-                # anything, just do the restart
-                do_restart = True
-            if do_restart:
-                try:
-                    self.kernel_manager.restart_kernel(now=now)
-                except RuntimeError as e:
-                    self._append_plain_text(
-                        'Error restarting kernel: %s\n' % e,
-                        before_prompt=True
-                    )
-                else:
-                    self._append_html("<br>Restarting kernel...\n<hr><br>",
-                        before_prompt=True,
-                    )
-            else:
-                self.kernel_client.hb_channel.unpause()
-
+        # Pause the heart beat channel to prevent further warnings.
+        self.kernel_client.hb_channel.pause()
+        try:
+            self.kernel_manager.restart_kernel(now=now)
+        except RuntimeError as e:
+            logging.error('Error restarting kernel: %s\n' % e)
         else:
-            self._append_plain_text(
-                'Cannot restart a Kernel I did not start\n',
-                before_prompt=True
-            )
-
+            logging.info("Restarting kernel...\n")
 
 
 class NotebookRunnerQueue(QObject):
@@ -514,7 +469,7 @@ class NotebookRunnerQueue(QObject):
 
     def __init__(self, no_of_runners=MAX_RUNNER_QUEUE):
         super(NotebookRunnerQueue, self).__init__() 
-    # If we fall beneath the minimum top it up
+        # If we fall beneath the minimum top it up
         self.no_of_runners = no_of_runners
         self.runners = []
         self.active_runners = []
@@ -549,12 +504,14 @@ class NotebookRunnerQueue(QObject):
         # We have a notebook runner, and a job, get the job
         notebook, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
 
+        logging.info("Starting job....")
         # Result callback gets the varso dict
         runner.run_notebook(notebook, varsi, progress_callback=progress_callback, result_callback=result_callback)
         self.no_of_active_runners += 1
         self.active_runners.append(runner)
 
     def done(self):
+        logging.info("...job complete.")
         for r in self.active_runners[:]:
             if r._is_active == False:
                 self.active_runners.remove(r)
@@ -576,6 +533,21 @@ class NotebookRunnerQueue(QObject):
             self.create_runner()
 
     def restart(self):
-        self.runners = []
-        self.no_of_active_runners = 0
-        self.create_runners()
+        for r in self.runners:
+            r.restart_kernel('Restarting...', now=True)
+        
+        for r in self.active_runners:
+            r.run_notebook_completed(True, "Aborted")
+            r.restart_kernel('Restarting...', now=True)
+            self.runners.append(r)
+        self.active_runners = []
+        
+    def interrupt(self):
+        for r in self.runners:
+            r.interrupt_kernel()
+        
+        for r in self.active_runners:
+            r.run_notebook_completed(True, "Aborted")
+            r.interrupt_kernel()
+            self.runners.append(r)
+        self.active_runners = []
