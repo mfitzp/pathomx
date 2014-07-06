@@ -67,8 +67,7 @@ automatically install Qt4). From the command line enter::
 
 You can opt to install pyqt5 instead, however currently this offers lower performance and requires
 bleeding-edge matplotlib/IPython to function.
-Next use pip to install Python packages numpy, scipy, pydot, nmrglue, gpml2svg, 
-poster, wheezy, sklearn, icoshift, matplotlib. This can be done in a one liner with pip::
+Next use pip to install all required Python packages. This can be done in a one liner with pip::
 
     pip install numpy scipy pandas matplotlib scikit-learn poster yapsy dill pyqtconfig mplstyler
     pip install ipython[all]
