@@ -60,8 +60,8 @@ Install Homebrew as follows::
 
     ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
-Once that is in place use brew install to install python, PyQt4 (which will 
-automatically install Qt4) and graphviz. From the command line enter::
+Once that is in place use brew install to install python and PyQt4 (which will 
+automatically install Qt4). From the command line enter::
 
     brew install python pyqt
 
