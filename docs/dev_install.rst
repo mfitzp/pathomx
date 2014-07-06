@@ -70,7 +70,7 @@ bleeding-edge matplotlib/IPython to function.
 Next use pip to install Python packages numpy, scipy, pydot, nmrglue, gpml2svg, 
 poster, wheezy, sklearn, icoshift, matplotlib. This can be done in a one liner with pip::
 
-    pip install numpy scipy pandas poster matplotlib scikit-learn dill pyqtconfig
+    pip install numpy scipy pandas matplotlib scikit-learn poster yapsy dill pyqtconfig
     pip install ipython[all]
 
 You can also optionally install the following for some data analysis notebooks::
