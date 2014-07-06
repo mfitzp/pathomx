@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import os
+os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements
+
 import sys
 import logging
 
@@ -11,7 +14,6 @@ else:
 
 from .version import VERSION_STRING
 
-import os
 import codecs
 from copy import copy
 

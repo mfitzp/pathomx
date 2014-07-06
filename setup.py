@@ -213,10 +213,12 @@ setup(
             'pandas>=0.14.0',
             'IPython>=2.0.0',
             'matplotlib>=1.4.0',
-            'dateutil',
             'mplstyler',
             'pyqtconfig',
             'dill',
+            'scikit-learn',
+            'poster',
+            'yapsy',
             ],
 
     install_recommends = [
@@ -224,8 +226,6 @@ setup(
             'icoshift',
             'nmrglue',
             'pydot',
-            'sklearn',
-            'sklearn.decomposition',
             'nmrglue',
             'nmrglue.fileio.fileiobase',
             ],
