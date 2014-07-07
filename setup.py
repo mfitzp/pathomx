@@ -6,7 +6,7 @@ from copy import copy
 import collections
 from setuptools import setup, find_packages
 
-from pathomx.version import VERSION_STRING
+from pathomx import __version__
 
 sys.path.insert(0,'pathomx')
 
@@ -178,7 +178,7 @@ else:
 setup(
 
     name='Pathomx',
-    version=open('VERSION').read().strip(),
+    version=__version__,
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/pathomx/pathomx',

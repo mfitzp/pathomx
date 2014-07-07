@@ -13,6 +13,8 @@ import warnings
 from . import displayobjects
 from IPython.core import display
 
+__version__ = '3.0.0a4'
+
 MAGIC_TYPES = [
         np.array, np.ndarray,
         pd.Series, pd.DataFrame,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements
+os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements until IPython fully supports PyQt5
 
 import sys
 import logging
@@ -12,7 +12,7 @@ if frozen:
 else:
     logging.basicConfig(level=logging.DEBUG)
 
-from .version import VERSION_STRING
+from . import __version__
 
 import codecs
 from copy import copy
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
 
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
-        logging.info('Welcome to Pathomx v%s' % (VERSION_STRING))
+        logging.info('Welcome to Pathomx v%s' % (__version__))
 
         # Central variable for storing application configuration (load/save from file?
 
@@ -219,7 +219,7 @@ class MainWindow(QMainWindow):
 
         # Do version upgrade availability check
         # FIXME: Do check here; if not done > 2 weeks
-        if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(VERSION_STRING):
+        if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(__version__):
             # We've got an upgrade
             logging.warning('A new version (v%s) is available' % settings.get('Pathomx/Update/Latest_version'))
 
@@ -546,11 +546,11 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(VERSION_STRING):
+        if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(__version__):
             # We've got an upgrade
-            logging.info('Upgrade to %s' % VERSION_STRING)
+            logging.info('Upgrade to %s' % __version__)
             self.onAbout()
-            settings.set('Pathomx/Current_version', VERSION_STRING)
+            settings.set('Pathomx/Current_version', __version__)
         #if settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    settings.setValue('/Pathomx/Offered_registration', True)
