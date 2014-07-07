@@ -69,10 +69,10 @@ You can opt to install pyqt5 instead, however currently this offers lower perfor
 bleeding-edge matplotlib/IPython to function.
 Next use pip to install all required Python packages. This can be done in a one liner with pip::
 
-    pip install numpy scipy pandas matplotlib scikit-learn poster yapsy dill pyqtconfig mplstyler
+    pip install numpy scipy pandas matplotlib scikit-learn poster yapsy dill pyqtconfig mplstyler 
     pip install ipython[all]
 
-You can also optionally install the following for some data analysis notebooks::
+You can also optionally install the following for some biological data analysis notebooks::
 
     brew install graphviz
     pip install pydot nmrglue gpml2svg icoshift biocyc metaviz
