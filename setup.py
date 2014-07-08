@@ -53,9 +53,12 @@ default_build_options=dict(
         ],
     )
 
-build_mac = None
-build_exe = None
-build_py2app = None
+build_all = dict()
+
+build_mac = dict()
+build_exe = dict()
+build_py2app = dict()
+bdist_msi = dict()
 
 executables = []
 
@@ -63,16 +66,11 @@ executables = []
 try:
     from cx_Freeze import setup, Executable
 except:
-    build_exe = None
-    build_mac = None
     excutables = None
 else:
     # cx_Freeze setup
     base = None
     exceutables = None
-
-    build_all = dict()
-    bdist_msi = dict()
 
     build_all['include_files']=[
         ('pathomx/static', 'static'),
