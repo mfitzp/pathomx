@@ -225,12 +225,10 @@ pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
             
         if msg_id not in self._cell_execute_ids:
             return
-
         
         (self._current_cell, n, pc) = self._cell_execute_ids[msg_id]
 
         logging.info("Execute cell %d complete in %s" % (n, datetime.now() - self._execute_start) )
-               
         
         self.progress.emit( pc )
         if self._progress_callback:
@@ -288,7 +286,7 @@ pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
             self.exit_requested.emit(self)
         else:
             traceback = ''.join(content['traceback'])
-            logging.info(traceback)
+            logging.error(traceback)
             out = NotebookNode(output_type='pyerr')
             out.ename = content['ename']
             out.evalue = content['evalue']
