@@ -21,6 +21,7 @@ default_build_options=dict(
         'matplotlib',
         'dateutil',
         'dill',
+        'requests',
 
         'sklearn',
         'sklearn.decomposition',
@@ -215,7 +216,7 @@ setup(
             'pyqtconfig',
             'dill',
             'scikit-learn',
-            'poster',
+            'requests',
             'yapsy',
             ],
 

@@ -5,7 +5,10 @@ import errno
 import csv
 import codecs
 
-import cStringIO
+try:
+    from cStringIO import StringIO
+except:
+    from io import StringIO
 
 try:
     import xml.etree.cElementTree as et
@@ -182,7 +185,7 @@ if sys.version_info < (3, 0):  # Python 2 only
 
         def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwargs):
             # Redirect output to a queue
-            self.queue = cStringIO.StringIO()
+            self.queue = StringIO()
             self.writer = csv.writer(self.queue, dialect=dialect, **kwargs)
             self.stream = f
             self.encoder = codecs.getincrementalencoder(encoding)()

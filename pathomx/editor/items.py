@@ -437,8 +437,7 @@ class ToolInterface(BaseInteractiveItem):
                 dest_manager = target.app.data
                 dest_interface = target.interface_name
 
-                print source_manager, source_interface
-                print dest_manager, dest_interface
+                logging.debug("Data link", source_manager, source_interface, dest_manager, dest_interface)
 
                 # FIXME: This is horrible; simplify the data manager
                 c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
