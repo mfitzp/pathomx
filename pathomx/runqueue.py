@@ -8,7 +8,7 @@ from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 
 from .qt import *
-
+USE_QT_PY = None
 if USE_QT_PY == PYQT5:
     # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
     from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager

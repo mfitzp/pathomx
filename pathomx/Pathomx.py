@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements until IPython fully supports PyQt5
+#os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements until IPython fully supports PyQt5
 
 import sys
 import logging
