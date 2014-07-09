@@ -93,11 +93,29 @@ The development version (available via git) supports Python 3 and so can now be 
 Linux (tested on Ubuntu Saucy Salamander). Note: Python 3 PyQt5 is only available from 13.10.
 To install on earlier releases of Ubuntu you will need to install from source.
 
-There are a number of packages that need to be installed first::
+Install prerequisites::
 
-    sudo apt-get install python3-pyqt5 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
+    sudo apt-get install g++ python3 python3-dev python3-pip git gfortran libzmq-dev
+    sudo apt-get install python3-pyqt5 python3-pyqt4 python3-matplotlib python3-requests python3-numpy python3-scipy python3-yapsy
+    sudo apt-get install libblas3gf libblas-dev liblapack3gf liblapack-dev libatlas3gf-base
 
-    pip3 install scikit-learn
+Build and install latest matplotlib::
+
+    # Ensure that you have source code repositories enabled
+    sudo apt-get build-dep python-matplotlib
+
+    git clone git://github.com/matplotlib/matplotlib.git
+    cd matplotlib
+    sudo python3 setup.py install
+    cd -
+    rm -r matplotlib
+
+Finally, let's install your develop version of Pantomx::
+
+    sudo pip3 install openpyxl==1.8.6 pyzmq scikit-learn
+    cd pantomx
+    sudo python3 setup.py develop
+    cd -
 
 Note that aside from python3-pyqt5 you can also install the other packages using pip3 (the names on PyPi are
 the same as for the packages minus the python3- prefix). Once installation of the above has completed you're ready to go.
