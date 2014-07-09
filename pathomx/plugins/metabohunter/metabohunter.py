@@ -19,12 +19,7 @@ from pathomx.views import MplSpectraView
 from pathomx.qt import *
 
 from collections import OrderedDict
-
 import csv
-import poster
-#import urllib, urllib2, cookielib
-import requests
-
 
 # Dialog box for Metabohunter search options
 class MetaboHunterConfigPanel(ui.ConfigPanel):

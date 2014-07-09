@@ -66,7 +66,7 @@ class ImportDataConfigPanel(ui.ConfigPanel):
         grid = QGridLayout()
 
         self.cb_quoting = QComboBox()
-        self.cb_quoting.addItems(self.config_quote_types.keys())
+        self.cb_quoting.addItems(list(self.config_quote_types.keys()))
         grid.addWidget(QLabel('Quote style'), 2, 0)
         grid.addWidget(self.cb_quoting, 2, 1)
         self.config.add_handler('quoting', self.cb_quoting, self.config_quote_types)

@@ -1,4 +1,4 @@
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 
@@ -31,19 +31,17 @@ def pathomx_notebook_start(fn, vars):
 
     '''
     # Wipeout variables possibly hang around from previous runs
-    # NB: Not a problem as we're no longer re-using runners
     for k in list( vars.keys() ):
         if type(vars[k]) in MAGIC_TYPES:
             del vars[k]
     '''
-
-    with open(fn, 'r') as f:
+    with open(fn, 'rb') as f:
         ivars = pickle.load(f)
 
         for k, v in ivars.items():
             vars[k] = v
 
-    vars['_pathomx_exlude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
+    vars['_pathomx_exclude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
     vars['_pathomx_tempdir'] = os.path.dirname(fn)
 
     global rcParams
@@ -75,7 +73,7 @@ def pathomx_notebook_stop(fn, vars):
         for k, v in vars.items():
             # Check it's an accepted type for passing; and not private (starts with _)
             if not k.startswith('_') and \
-               not k in vars['_pathomx_exlude_input_vars'] and \
+               not k in vars['_pathomx_exclude_input_vars'] and \
                type(v) in MAGIC_TYPES:
                 
                 if type(v) == Figure:

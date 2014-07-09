@@ -29,6 +29,8 @@ if USE_QT_PY == PYQT5:
 elif USE_QT_PY == PYQT4:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
+if sys.version_info >= (3,0):
+    unicode = str
 
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.figure import Figure
