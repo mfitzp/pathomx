@@ -31,18 +31,20 @@ command line using::
 Windows
 =======
 
-Install Qt5_ (Qt5.2) for Windows. Make the decision at this point whether you're installing
-64bit or 32bit and stick to it.
+Install Qt4_ or Qt5_ for Windows. Currently Qt4 is recommended due to a bug with IPython with PyQt5.
+Make the decision at this point whether to use 64bit or 32bit versions and stick to it.
 
 Install Python 2.7.6 Windows installer from the `Python download site`_.
 
-You can get Windows binaries for all required Python libraries from `the Pythonlibs library`_. 
-At a minimum you will need to install NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_. Make sure that the installed
-binaries match the architecture (32bit/64bit) of the installed Python.
+Install PyQt4_ or PyQt5_ (depending on whether you have Qt4 or Qt5 installed)
 
-For NMR data processing, you will need to install NMRGlue_ binaries.
+You can get Windows binaries for most required Python libraries from `the Pythonlibs library`_. 
+At a minimum you will need to install Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, IPython_, pyzmq_.
+Make sure that the installed binaries match the architecture (32bit/64bit) and the installed Python version.
 
-For the dynamic pathway drawing plugin MetaViz you will also need to install Graphviz_.
+With pip installed you can now add the final dependencies:
+
+    pip install dill, mplstyler, pyqtconfig
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
@@ -127,7 +129,11 @@ To run Pathomx from the command line, change to the cloned git folder and then e
 .. _Github: http://github.com/pathomx/pathomx
 .. _useful guide: https://help.github.com/articles/set-up-git
 
+.. _Qt4: https://qt-project.org/downloads
 .. _Qt5: https://qt-project.org/downloads
+
+.. PyQt4_: http://www.riverbankcomputing.co.uk/software/pyqt/download
+.. PyQt5_: http://www.riverbankcomputing.co.uk/software/pyqt/download5
 
 .. _NMRGlue: http://code.google.com/p/nmrglue/downloads/list?q=label:Type-Installer
 .. _Graphviz: http://graphviz.org/
@@ -137,6 +143,9 @@ To run Pathomx from the command line, change to the cloned git folder and then e
 .. _SciPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 .. _Scikit-Learn: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn
 .. _Matplotlib: http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib
+.. _Pip: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pip
+.. _IPython: http://www.lfd.uci.edu/~gohlke/pythonlibs/#ipython
+.. _pyzmq: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyzmq
 
 .. _Homebrew: http://brew.sh/
 
