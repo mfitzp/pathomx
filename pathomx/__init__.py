@@ -11,9 +11,11 @@ from mplstyler import StylesManager
 
 import warnings
 from . import displayobjects
+from .utils import scriptdir
 from IPython.core import display
 
-__version__ = '3.0.0a4'
+
+__version__ = open(os.path.join(scriptdir,'..','VERSION'),'rU').read()
 
 MAGIC_TYPES = [
         np.array, np.ndarray,

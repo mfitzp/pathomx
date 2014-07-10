@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-import sys
+import os, sys
 from copy import copy
 
 import collections
 from setuptools import setup, find_packages
 
-from pathomx import __version__
+__version__ = open(os.path.join('VERSION'),'rU').read()
 
 sys.path.insert(0,'pathomx')
 
@@ -65,7 +65,7 @@ executables = []
 
 
 try:
-    from cx_Freeze import setup, Executable
+    from cx_Freeze import Executable
 except:
     excutables = None
 else:
