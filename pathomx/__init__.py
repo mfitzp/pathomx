@@ -15,7 +15,7 @@ from .utils import scriptdir
 from IPython.core import display
 
 
-__version__ = open(os.path.join(scriptdir,'..','VERSION'),'rU').read()
+__version__ = open(os.path.join(scriptdir,'VERSION'),'rU').read()
 
 MAGIC_TYPES = [
         np.array, np.ndarray,
