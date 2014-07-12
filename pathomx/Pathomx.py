@@ -1165,7 +1165,7 @@ class MainWindow(QMainWindow):
     #        return super(QApplicationExtend, self).event(e)
 
 def main():
-
+    
     # Create a Qt application
     app = QApplication(sys.argv)
     app.setStyle('fusion')
@@ -1205,3 +1205,7 @@ def main():
     app.exec_()  # Enter Qt application main loop
     logging.info('Exiting.')
     sys.exit()
+    
+    
+if __name__ == "__main__":
+    main()

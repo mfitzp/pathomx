@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-import sys
+import os, sys
 from copy import copy
 
 import collections
 from setuptools import setup, find_packages
 
-from pathomx import __version__
+__version__ = open(os.path.join('pathomx','VERSION'),'rU').read()
+print __version__
 
 sys.path.insert(0,'pathomx')
 
@@ -37,7 +38,8 @@ default_build_options=dict(
         "zmq",
         "zmq.utils.garbage",
         "zmq.backend.cython",
-        "cython"
+        
+        "pygments",
         ],
     includes=[
         'sip',
@@ -86,7 +88,6 @@ else:
     build_mac = copy(build_all)
     
     build_mac['iconfile'] = 'pathomx/static/icon.icns'
-    
     base = None
     if sys.platform == "win32":
         base = "Win32GUI"

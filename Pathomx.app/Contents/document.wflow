@@ -60,11 +60,12 @@
 				<dict>
 					<key>COMMAND_STRING</key>
 					<string>source ~/.bash_profile
-python -m pathomx.Pathomx</string>
+export QT_API=pyqt
+Pathomx</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
-					<integer>1</integer>
+					<integer>0</integer>
 					<key>shell</key>
 					<string>/bin/bash</string>
 					<key>source</key>
@@ -85,7 +86,7 @@ python -m pathomx.Pathomx</string>
 				<key>Class Name</key>
 				<string>RunShellScriptAction</string>
 				<key>InputUUID</key>
-				<string>98F5EBD3-2BF8-43F8-8264-FDA1B3A9DF6B</string>
+				<string>8D7C6429-2B7B-438A-A289-32CF7100E981</string>
 				<key>Keywords</key>
 				<array>
 					<string>Shell</string>
@@ -95,9 +96,9 @@ python -m pathomx.Pathomx</string>
 					<string>Unix</string>
 				</array>
 				<key>OutputUUID</key>
-				<string>E7B4B880-C472-47A4-8A8F-E51A0CA5E3C1</string>
+				<string>06CA1E75-D41A-44A2-A928-3185AFF29B06</string>
 				<key>UUID</key>
-				<string>F4B3C3C7-0D9D-4EEE-A882-2313861904D3</string>
+				<string>28C91EFF-0396-4D6B-9A21-C12A51BBBFF5</string>
 				<key>UnlocalizedApplications</key>
 				<array>
 					<string>Automator</string>
@@ -170,8 +171,6 @@ python -m pathomx.Pathomx</string>
 						<string>4</string>
 					</dict>
 				</dict>
-				<key>conversionLabel</key>
-				<integer>0</integer>
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>

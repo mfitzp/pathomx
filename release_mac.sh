@@ -1,5 +1,5 @@
 #!/bin/sh
-python setup.py bdist_mac --qt-menu-nib=/usr/local/Cellar/qt5/5.2.1/plugins/platforms/
+python setup.installers.py bdist_mac --qt-menu-nib=/usr/local/Cellar/qt5/5.2.1/plugins/platforms/
 value=`cat VERSION`
 echo "$value"
 
