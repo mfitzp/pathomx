@@ -234,7 +234,7 @@ class DialogAbout(QDialog):
 
         self.setWindowTitle('About Pathomx')
         self.help = QWebView(self)  # , parent.onBrowserNav)
-        with open(os.path.join(utils.scriptdir, 'static', 'README.md'), 'rU') as f:
+        with open(os.path.join(utils.basedir, 'README.md'), 'rU') as f:
             md = f.read()
 
         html = '''<html>

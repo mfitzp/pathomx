@@ -272,10 +272,14 @@ def find_packager():
 pkg = find_packager()
 if pkg == None:
     scriptdir = os.path.dirname(os.path.realpath(__file__))  # .rpartition('/')[0]
+    basedir = os.path.join(scriptdir,'..')
 elif pkg == True:
     scriptdir = os.path.dirname(sys.executable)
+    basedir = scriptdir
 elif pkg == 'py2app':
     #'/Applications/Pathomx.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']
+    basedir = scriptdir    
 elif pkg == 'py2exe':
     scriptdir = os.path.dirname(str(sys.executable, sys.getfilesystemencoding()))
+    basedir = scriptdir
