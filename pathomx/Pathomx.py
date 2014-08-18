@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-#os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements until IPython fully supports PyQt5
 
 from .qt import *
 
@@ -10,6 +9,7 @@ import logging
 
 frozen = getattr(sys, 'frozen', False)
 if frozen:
+    os.environ['QT_API'] = 'pyqt' # Force v4 for release; threading requirements until IPython fully supports PyQt5
     logging.basicConfig(level=logging.INFO)
 else:
     logging.basicConfig(level=logging.DEBUG)
