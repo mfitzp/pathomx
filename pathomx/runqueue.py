@@ -150,9 +150,9 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._cell_execute_ids = {}
         self._execute_start = datetime.now()
         # %%reset -f
-        msg_id = self._execute('''
+        msg_id = self._execute(r'''
 from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
+pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 )       
         logging.debug("Runing notebook; startup message: %s" % msg_id)
         for n, cell in enumerate(self.iter_code_cells()):
@@ -161,7 +161,7 @@ pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
             progress = n / float(self._total_code_cell_number)            
             self._cell_execute_ids[ msg_id ] = (cell, n+1, progress) # Store cell and progress
 
-        self._final_msg_id = self._execute('''pathomx_notebook_stop('%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
+        self._final_msg_id = self._execute(r'''pathomx_notebook_stop(r'%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
         logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
 
     def run_notebook_completed(self, error=False, traceback=None):

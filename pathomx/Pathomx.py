@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import os
 #os.environ['QT_API'] = 'pyqt' # Force v4; threading requirements until IPython fully supports PyQt5
 
+from .qt import *
+
 import sys
 import logging
 
@@ -21,7 +23,7 @@ if sys.version_info < (3, 0):  # Python 2 only
     sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
 
-from .qt import *
+
 
 from IPython.nbformat.current import write as write_notebook
 from IPython.nbconvert.exporters import export as IPyexport
@@ -547,6 +549,7 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
+        print settings.get('Pathomx/Current_version')
         if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(__version__):
             # We've got an upgrade
             logging.info('Upgrade to %s' % __version__)
@@ -1167,14 +1170,6 @@ class MainWindow(QMainWindow):
 
 def main():
     
-    # Create a Qt application
-    app = QApplication(sys.argv)
-    app.setStyle('fusion')
-
-    app.setOrganizationName("Pathomx")
-    app.setOrganizationDomain("pathomx.org")
-    app.setApplicationName("Pathomx")
-
     logging.debug('Setting up localisation...')
 
     locale = QLocale.system().name()

@@ -76,3 +76,13 @@ elif USE_QT_PY == PYQT4:
         @staticmethod
         def getSaveFileName(*args, **kwargs):
             return QFileDialog.getSaveFileName_(*args, **kwargs), None
+
+            
+# Create a Qt application
+app = QApplication(sys.argv)
+app.setStyle('fusion')
+
+app.setOrganizationName("Pathomx")
+app.setOrganizationDomain("pathomx.org")
+app.setApplicationName("Pathomx")
+            
