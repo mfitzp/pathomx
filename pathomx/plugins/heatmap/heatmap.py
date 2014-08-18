@@ -2,9 +2,6 @@
 
 import numpy as np
 
-# Renderer for GPML as SVG
-from gpml2svg import gpml2svg
-
 import os
 
 import pathomx.ui as ui

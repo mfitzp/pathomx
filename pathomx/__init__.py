@@ -15,7 +15,7 @@ from .utils import scriptdir
 from IPython.core import display
 
 
-__version__ = open(os.path.join(scriptdir,'VERSION'),'rU').read()
+__version__ = open(os.path.join(scriptdir,'static','VERSION'),'rU').read()
 
 MAGIC_TYPES = [
         np.array, np.ndarray,
@@ -28,15 +28,14 @@ MAGIC_TYPES = [
 
 
 def pathomx_notebook_start(fn, vars):
-
+    
     _keep_input_vars = ['styles']
-
-    '''
     # Wipeout variables possibly hang around from previous runs
     for k in list( vars.keys() ):
-        if type(vars[k]) in MAGIC_TYPES:
-            del vars[k]
-    '''
+        if type(vars[k]) in MAGIC_TYPES and \
+            not k.startswith('_'):
+                del vars[k]
+
     with open(fn, 'rb') as f:
         ivars = pickle.load(f)
 
@@ -45,6 +44,13 @@ def pathomx_notebook_start(fn, vars):
 
     vars['_pathomx_exclude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
     vars['_pathomx_tempdir'] = os.path.dirname(fn)
+
+    # Handle IO magic
+    for k,v in vars['_io']['input'].items():
+        if v in vars:
+            vars[k] = vars[v]
+        else:
+            vars[k] = None
 
     global rcParams
     from matplotlib import rcParams
@@ -69,6 +75,13 @@ def figure_prepickle_handler(v):
     
 def pathomx_notebook_stop(fn, vars):
     # Export known variable types from globals
+    
+    # Handle IO magic
+    for k,v in vars['_io']['output'].items():
+        if k in vars:
+            vars[v] = vars[k]
+        else:
+            vars[v] = None
 
     with open(fn, 'wb') as f:
         ovars = {}
@@ -82,6 +95,6 @@ def pathomx_notebook_stop(fn, vars):
                     v = figure_prepickle_handler(v)
 
                 ovars[k] = v
-                        
-
+        
         pickle.dump(ovars, f, -1)
+

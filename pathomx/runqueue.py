@@ -9,15 +9,15 @@ from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 
 from .qt import *
 
+MAX_RUNNER_QUEUE = 1 # In process; can only have one
+
 if USE_QT_PY == PYQT5:
     # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
     from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
-    MAX_RUNNER_QUEUE = 1 # In process; can only have one
 
 else:
     # In PyQt4 we can use the ZMQ kernel and avoid blocking
     from IPython.qt.manager import QtKernelManager as KernelManager
-    MAX_RUNNER_QUEUE = 3 # Multi-threaded; but most processing is linear 3-5 good max
 
 try:
     # For depickling we can use cPickle even if pickled with dill
@@ -102,7 +102,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self.kernel_manager.start_kernel()
 
         self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels(stdin=False, hb=False)
+        self.kernel_client.start_channels(stdin=False) #, hb=False)
 
     def __del__(self):
         if self.kernel_client:
@@ -149,8 +149,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._result_queue = [] # Cache for unhandled messages
         self._cell_execute_ids = {}
         self._execute_start = datetime.now()
-
-        msg_id = self._execute('''%%reset -f
+        # %%reset -f
+        msg_id = self._execute('''
 from pathomx import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start('%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 )       

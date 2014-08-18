@@ -234,7 +234,7 @@ class DialogAbout(QDialog):
 
         self.setWindowTitle('About Pathomx')
         self.help = QWebView(self)  # , parent.onBrowserNav)
-        with open(os.path.join(utils.scriptdir, '..', 'README.md'), 'rU') as f:
+        with open(os.path.join(utils.scriptdir, 'static', 'README.md'), 'rU') as f:
             md = f.read()
 
         html = '''<html>
@@ -1506,10 +1506,21 @@ class GenericApp(QObject):
         self.logger.debug("Starting job %s" % self.name)
 
         varsi = {}
-        for i in list(self.data.i.keys()):
-            varsi[i] = self.data.get(i)  # Will be 'None' if not available
+        # Build the IO magic
+        io = {'input':{},'output':{},}
+        for i, sm in self.data.i.items():
+            if sm:
+                mo, mi = sm
+                io['input'][i] = "_%s_%s" % (mi, id(mo.v))
+            else:
+                io['input'][i] = None
+            
+        for o in self.data.o.keys():
+            io['output'][o] = "_%s_%s" % (o, id(self))
 
-        logging.debug('Notebook sent %d objects' % len(varsi.keys()))
+        varsi['_io'] = io
+
+        #logging.debug('Notebook sent %d objects' % len(varsi.keys()))
 
         self.status.emit('active')
         self.progress.emit(0.)
@@ -1524,7 +1535,7 @@ class GenericApp(QObject):
 
         varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
         varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out
-
+        
         logging.info("Running notebook %s for %s" % (self.notebook, self.name))
 
         notebook_queue.add_job(self.nb_source, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)

@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# Renderer for GPML as SVG
-from gpml2svg import gpml2svg
-
 import os
 import re
 
 import pathomx.ui as ui
 import pathomx.utils as utils
 
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import HTMLView
 from pathomx.plugins import VisualisationPlugin
 from pathomx.qt import *

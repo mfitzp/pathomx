@@ -32,9 +32,9 @@ class BMLNMRApp(ui.ImportDataApp):
             'filename': None,
         })
 
-        self.data.add_output('Raw')  # Add output slot
-        self.data.add_output('PQN')  # Add output slot
-        self.data.add_output('TSA')  # Add output slot
+        self.data.add_output('raw')  # Add output slot
+        self.data.add_output('pqn')  # Add output slot
+        self.data.add_output('tsa')  # Add output slot
 
 
 class BMLNMR(ImportPlugin):

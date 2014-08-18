@@ -14,7 +14,9 @@ sys.path.insert(0,'pathomx')
 # Defaults for py2app / cx_Freeze
 default_build_options=dict(
     packages=[
-        'PyQt5',
+        'PyQt4',
+        "PyQt4.uic.port_v3.proxy_base",
+
         'numpy',
         'scipy',
         'pandas',
@@ -53,6 +55,7 @@ default_build_options=dict(
         'mpl-data',
         'Tkinter',
         "collections.abc",
+        "PyQt5",
         ],
     )
 

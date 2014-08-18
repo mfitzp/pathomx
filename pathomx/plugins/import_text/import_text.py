@@ -18,7 +18,6 @@ import pathomx.db as db
 import pathomx.utils as utils
 
 from pathomx.data import DataSet
-from pathomx.custom_exceptions import *
 
 
 # Dialog box for Metabohunter search options
