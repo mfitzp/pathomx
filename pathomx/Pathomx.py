@@ -12,7 +12,6 @@ if frozen:
 else:
     logging.basicConfig(level=logging.DEBUG)
 
-from . import __version__
 
 import codecs
 from copy import copy
@@ -51,6 +50,8 @@ from .editor.editor import WorkspaceEditorView  # EDITOR_MODE_NORMAL, EDITOR_MOD
 from .translate import tr
 
 from distutils.version import StrictVersion
+
+__version__ = open(os.path.join(utils.basedir, 'VERSION'),'rU').read()
 
 DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "SER-GLYSYN-PWY-1", "PWY-4983", "ASPARAGINE-BIOSYNTHESIS", "ASPARTATESYN-PWY",

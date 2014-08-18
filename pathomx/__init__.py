@@ -14,9 +14,6 @@ from . import displayobjects
 from .utils import scriptdir, basedir
 from IPython.core import display
 
-
-__version__ = open(os.path.join(basedir, 'VERSION'),'rU').read()
-
 MAGIC_TYPES = [
         np.array, np.ndarray,
         pd.Series, pd.DataFrame,
