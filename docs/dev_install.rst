@@ -25,7 +25,7 @@ The following sections list platform-specific setup instructions required to mak
 run. Follow the instructions from the section and then you should be ready to run from the
 command line using::
 
-    python -m pathomx.Pathomx
+    python Pathomx.py
 
 
 Windows
@@ -36,19 +36,21 @@ Make the decision at this point whether to use 64bit or 32bit versions and stick
 
 Install Python 2.7.6 Windows installer from the `Python download site`_.
 
-Install PyQt4_ or PyQt5_ (depending on whether you have Qt4 or Qt5 installed)
-
 You can get Windows binaries for most required Python libraries from `the Pythonlibs library`_. 
-At a minimum you will need to install Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, IPython_, pyzmq_.
+At a minimum you will need to install PyQt4_ or PyQt5_ (depending on whether you have Qt4 or Qt5 installed) 
+Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, IPython_, pyzmq_.
+
 Make sure that the installed binaries match the architecture (32bit/64bit) and the installed Python version.
+
+Install pandoc from http://johnmacfarlane.net/pandoc/installing.html
 
 With pip installed you can now add the final dependencies:
 
-    pip install dill, mplstyler, pyqtconfig
+    pip install dill mplstyler pyqtconfig metaviz biocyc
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
-    python -m pathomx.Pathomx
+    python Pathomx.py
 
 
 MacOS X
@@ -85,7 +87,7 @@ via a hotkey.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
-    python -m pathomx.Pathomx
+    python Pathomx.py
 
 
 Linux
@@ -124,7 +126,7 @@ the same as for the packages minus the python3- prefix). Once installation of th
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
-    python -m pathomx.Pathomx
+    python Pathomx.py
 
 .. _Github: http://github.com/pathomx/pathomx
 .. _useful guide: https://help.github.com/articles/set-up-git
