@@ -272,7 +272,13 @@ def find_packager():
 pkg = find_packager()
 if pkg == None:
     scriptdir = os.path.dirname(os.path.realpath(__file__))  # .rpartition('/')[0]
-    basedir = os.path.join(scriptdir,'..')
+    # Check if Windows NSIST installed (are we running from Program Files
+    if "pkgs" in scriptdir:
+        pkg = 'nsist'
+        basedir = os.path.join(scriptdir,'..','..')
+    else:
+        # Really not a release package, carry on
+        basedir = os.path.join(scriptdir,'..')
 elif pkg == True:
     scriptdir = os.path.dirname(sys.executable)
     basedir = scriptdir
