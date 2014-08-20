@@ -38,15 +38,15 @@ Install Python 2.7.6 Windows installer from the `Python download site`_.
 
 You can get Windows binaries for most required Python libraries from `the Pythonlibs library`_. 
 At a minimum you will need to install PyQt4_ or PyQt5_ (depending on whether you have Qt4 or Qt5 installed) 
-Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, IPython_, pyzmq_.
+Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, pyzmq_.
 
 Make sure that the installed binaries match the architecture (32bit/64bit) and the installed Python version.
 
 Install pandoc from http://johnmacfarlane.net/pandoc/installing.html
 
-With pip installed you can now add the final dependencies:
+With those installed you can now add the final dependencies via Pip:
 
-    pip install dill mplstyler pyqtconfig metaviz biocyc
+    pip install ipython jsonschema jsonpointer mistune dill mplstyler pyqtconfig metaviz biocyc
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 

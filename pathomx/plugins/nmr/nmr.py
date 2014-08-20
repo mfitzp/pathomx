@@ -41,7 +41,7 @@ class NMRApp(ui.ImportDataApp):
     def addImportDataToolbar(self):
         t = self.getCreatedToolbar('External Data', 'external-data')
 
-        import_dataAction = QAction(QIcon(os.path.join(self.plugin.path, 'bruker.png')), 'Import spectra from Bruker spectra\u2026', self.m)
+        import_dataAction = QAction(QIcon(os.path.join(self.plugin.path, 'bruker.png')), 'Import spectra from Bruker spectra\u2026', self.w)
         import_dataAction.setStatusTip('Import spectra from Bruker format')
         import_dataAction.triggered.connect(self.onImportBruker)
         t.addAction(import_dataAction)

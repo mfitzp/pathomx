@@ -39,7 +39,7 @@ def pathomx_notebook_start(fn, vars):
         for k, v in ivars.items():
             vars[k] = v
 
-    vars['_pathomx_exclude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
+    #vars['_pathomx_exclude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
     vars['_pathomx_tempdir'] = os.path.dirname(fn)
 
     # Handle IO magic
@@ -85,7 +85,7 @@ def pathomx_notebook_stop(fn, vars):
         for k, v in vars.items():
             # Check it's an accepted type for passing; and not private (starts with _)
             if not k.startswith('_') and \
-               not k in vars['_pathomx_exclude_input_vars'] and \
+               not k in vars['_io']['input'].keys() and \
                type(v) in MAGIC_TYPES:
                 
                 if type(v) == Figure:
