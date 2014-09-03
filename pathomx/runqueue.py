@@ -19,6 +19,7 @@ MAX_RUNNER_QUEUE = 1 # In process; can only have one
 #    # In PyQt4 we can use the ZMQ kernel and avoid blocking
 #    from IPython.qt.manager import QtKernelManager as KernelManager
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 import uuid
 from copy import deepcopy
@@ -250,15 +251,9 @@ pathomx_notebook_start(varsi, vars());''')
             self._keep_kernel_on_exit = keepkernel
             self.exit_requested.emit(self)
         else:
-            traceback = ''.join(content['traceback'])
-            logging.error(traceback)
-            out = NotebookNode(output_type='pyerr')
-            out.ename = content['ename']
-            out.evalue = content['evalue']
-            out.traceback = content['traceback']
-            #self._current_cell['outputs'].append(out)
-            self.run_notebook_completed(error=True, traceback=content['traceback'])
-
+            traceback = '\n'.join(content['traceback'])
+            #Already logged by the IPython kernel logging.error(traceback)
+            
     def _process_execute_ok(self, msg):
         """ Process a reply for a successful execution request.
         """

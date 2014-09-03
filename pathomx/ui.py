@@ -1162,6 +1162,8 @@ class GenericApp(QObject):
         self._is_job_active = False
         self._queued_start = False
 
+        #self.logView = QTextEdit()
+
         self.logger = logging.getLogger(self.id)
 
         if name == None:
@@ -1235,7 +1237,7 @@ class GenericApp(QObject):
         # Initial display of the notebook
         self.code_editor = Qutepart()
         self.code_editor.detectSyntax(language='Python')
-
+        self.addEditorToolBars()
         self.load_notebook(self.notebook_path)
         
 
@@ -1260,6 +1262,7 @@ class GenericApp(QObject):
 
         self.views.addView(self.notes_viewer, '?', unfocus_on_refresh=True)
         self.views.addView(self.code_editor, 'Source', unfocus_on_refresh=True)
+        #self.views.addView( self.logView, 'Log')
 
         if self._is_autoconsume_success is not False:
             # This will fire after the notebook has completed above
@@ -1506,6 +1509,7 @@ class GenericApp(QObject):
         self.configPanels.addTab(Panel(self), name)
 
     def addSelfToolBar(self):
+    
         pass
 
     def addDataToolBar(self, default_pause_analysis=False):
@@ -1535,7 +1539,24 @@ class GenericApp(QObject):
         select_dataAction.triggered.connect(self.onViewDataOutput)
         t.addAction(select_dataAction)
 
-        self.toolbars['image'] = t
+        self.toolbars['data'] = t
+        
+    def addEditorToolBars(self):
+        t = self.w.addToolBar('Editor')
+        t.setIconSize(QSize(16, 16))
+    
+        t.addAction(self.code_editor.copyLineAction)
+        t.addAction(self.code_editor.pasteLineAction)
+        t.addAction(self.code_editor.cutLineAction)
+        t.addAction(self.code_editor.deleteLineAction)
+        t.addSeparator()
+        t.addAction(self.code_editor.increaseIndentAction)
+        t.addAction(self.code_editor.decreaseIndentAction)
+        t.addSeparator()
+        t.addAction(self.code_editor.toggleBookmarkAction)
+
+        self.toolbars['editor'] = t
+
 
     def onSelectDataSource(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.

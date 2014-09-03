@@ -32,6 +32,7 @@ from IPython.nbformat.v3 import new_code_cell
 
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 from collections import defaultdict
 
@@ -135,37 +136,40 @@ class Logger(logging.Handler):
         self.widget = widget
         self.out = None
         self.color = color
+        self.ansi_processor = QtAnsiCodeProcessor()
 
     def emit(self, record):
         msg = self.format(record)
-
-        item = QTreeWidgetItem()
-        item.setText(0, record.name)
-        item.setText(1, msg)
-
+        if record.levelno < logging.INFO:
+            return False
+        #item = QTreeWidgetItem()
+        #item.setText(0, record.name)
+        #item.setText(1, msg)
+        
+        #if record.name in current_tools_by_id:
+        #    widget = current_tools_by_id[record.name].logView
+        #else:
+        #widget = self.widget
+        
+        char = QTextCharFormat()
         bg = {
-            logging.CRITICAL: QColor(164, 0, 0, 50),
-            logging.ERROR: QColor(239, 41, 41, 50),
-            logging.WARNING: QColor(252, 233, 79, 50),
+            logging.CRITICAL: QColor(164, 0, 0),
+            logging.ERROR: QColor(239, 41, 41),
+            logging.WARNING: QColor(252, 233, 79),
             logging.INFO: None,
-            logging.DEBUG: QColor(114, 159, 207, 50),
+            logging.DEBUG: QColor(114, 159, 207),
             logging.NOTSET: None,
         }[record.levelno]
         if bg:
             for c in range(3):
-                item.setBackground(c, QBrush(bg))
+                char.setForeground(QBrush(bg))
 
-        if record.name in current_tools_by_id:
-            # This is a log entry from a plugin-app. We can get the info (icon, etc) from it
-            item.tool = current_tools_by_id[record.name]
-            item.setIcon(1, item.tool.plugin.workspace_icon)
-        else:
-            i = QPixmap(16, 16)
-            i.fill(Qt.transparent)
-            item.setIcon(1, QIcon(i))
+        
+        for substring in self.ansi_processor.split_string(msg):
+            format = self.ansi_processor.get_format()
+            self.widget.textCursor().insertText(substring, format)
 
-        self.widget.addTopLevelItem(item)
-        self.widget.scrollToBottom()
+        self.widget.textCursor().insertText("\n")
 
     def write(self, m):
         pass
@@ -203,15 +207,15 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         
         # Initiate logging
-        self.logView = QTreeWidget()
-        self.logView.setColumnCount(2)
-        self.logView.expandAll()
-        self.logView.itemClicked.connect(self.onLogItemClicked)
-        self.logView.itemDoubleClicked.connect(self.onLogItemDoubleClicked)
+        self.logView = QTextEdit()
+        #self.logView.setColumnCount(2)
+        #self.logView.expandAll()
+        #self.logView.itemClicked.connect(self.onLogItemClicked)
+        #self.logView.itemDoubleClicked.connect(self.onLogItemDoubleClicked)
 
-        self.logView.setHeaderLabels(['ID', 'Message'])
-        self.logView.setUniformRowHeights(False)
-        self.logView.hideColumn(0)
+        #self.logView.setHeaderLabels(['ID', 'Message'])
+        #self.logView.setUniformRowHeights(False)
+        #self.logView.hideColumn(0)
 
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
@@ -552,10 +556,11 @@ class MainWindow(QMainWindow):
         
         self.workspaceDock = QDockWidget(tr('Workspace'))
         self.workspaceDock.setWidget(self.central)
+        self.workspaceDock.setMinimumHeight(300)
 
         self.activetoolDock = QDockWidget(tr('Active'))
-        self.activetoolDock.setWidget(QWidget(None))
-        
+        self.activetoolDock.setWidget( QWidget(None))
+        self.activetoolDock.setMinimumHeight(300)
         
         self.dummy = QWidget()
         self.dummy.hide()
@@ -564,11 +569,16 @@ class MainWindow(QMainWindow):
         self.workspaceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         
-        self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
-        self.splitDockWidget(self.workspaceDock, self.activetoolDock, Qt.Vertical)
-        #self.addDockWidget(Qt.RightDockWidgetArea, self.activeDock)
+        self.setCorner( Qt.TopLeftCorner, Qt.LeftDockWidgetArea )
+        self.setCorner( Qt.BottomLeftCorner, Qt.LeftDockWidgetArea )
+
+        self.setCorner( Qt.TopRightCorner, Qt.RightDockWidgetArea )
+        self.setCorner( Qt.BottomRightCorner, Qt.RightDockWidgetArea )
         
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.activetoolDock)
+        
 
         self.addFileToolBar()
         self.addEditorToolBar()
