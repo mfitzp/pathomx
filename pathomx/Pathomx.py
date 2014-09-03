@@ -139,18 +139,7 @@ class Logger(logging.Handler):
         self.ansi_processor = QtAnsiCodeProcessor()
 
     def emit(self, record):
-        msg = self.format(record)
-        if record.levelno < logging.INFO:
-            return False
-        #item = QTreeWidgetItem()
-        #item.setText(0, record.name)
-        #item.setText(1, msg)
-        
-        #if record.name in current_tools_by_id:
-        #    widget = current_tools_by_id[record.name].logView
-        #else:
-        #widget = self.widget
-        
+        msg = self.format(record)        
         char = QTextCharFormat()
         bg = {
             logging.CRITICAL: QColor(164, 0, 0),
@@ -208,15 +197,6 @@ class MainWindow(QMainWindow):
         
         # Initiate logging
         self.logView = QTextEdit()
-        #self.logView.setColumnCount(2)
-        #self.logView.expandAll()
-        #self.logView.itemClicked.connect(self.onLogItemClicked)
-        #self.logView.itemDoubleClicked.connect(self.onLogItemDoubleClicked)
-
-        #self.logView.setHeaderLabels(['ID', 'Message'])
-        #self.logView.setUniformRowHeights(False)
-        #self.logView.hideColumn(0)
-
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
