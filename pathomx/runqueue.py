@@ -252,7 +252,7 @@ pathomx_notebook_start(varsi, vars());''')
             self.exit_requested.emit(self)
         else:
             traceback = '\n'.join(content['traceback'])
-            #Already logged by the IPython kernel logging.error(traceback)
+            self.run_notebook_completed(error=True, traceback=traceback)
             
     def _process_execute_ok(self, msg):
         """ Process a reply for a successful execution request.

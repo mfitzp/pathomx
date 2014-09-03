@@ -143,20 +143,6 @@ class Logger(logging.Handler):
         if record.levelno < logging.INFO:
             return False
 
-        char = QTextCharFormat()
-        bg = {
-            logging.CRITICAL: QColor(164, 0, 0),
-            logging.ERROR: QColor(239, 41, 41),
-            logging.WARNING: QColor(252, 233, 79),
-            logging.INFO: None,
-            logging.DEBUG: QColor(114, 159, 207),
-            logging.NOTSET: None,
-        }[record.levelno]
-        if bg:
-            for c in range(3):
-                char.setForeground(QBrush(bg))
-
-        
         for substring in self.ansi_processor.split_string(msg):
             format = self.ansi_processor.get_format()
             self.widget.textCursor().insertText(substring, format)
