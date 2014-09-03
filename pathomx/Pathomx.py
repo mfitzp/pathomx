@@ -140,6 +140,9 @@ class Logger(logging.Handler):
 
     def emit(self, record):
         msg = self.format(record)        
+        if record.levelno < logging.INFO:
+            return False
+
         char = QTextCharFormat()
         bg = {
             logging.CRITICAL: QColor(164, 0, 0),
