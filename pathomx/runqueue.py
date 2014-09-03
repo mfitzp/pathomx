@@ -256,7 +256,7 @@ pathomx_notebook_start(varsi, vars());''')
             out.ename = content['ename']
             out.evalue = content['evalue']
             out.traceback = content['traceback']
-            self._current_cell['outputs'].append(out)
+            #self._current_cell['outputs'].append(out)
             self.run_notebook_completed(error=True, traceback=content['traceback'])
 
     def _process_execute_ok(self, msg):
