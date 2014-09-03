@@ -11,20 +11,15 @@ from .qt import *
 
 MAX_RUNNER_QUEUE = 1 # In process; can only have one
 
-if USE_QT_PY == PYQT5:
-    # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
-    from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+#if USE_QT_PY == PYQT5:
+#    # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
+#    from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+#
+#else:
+#    # In PyQt4 we can use the ZMQ kernel and avoid blocking
+#    from IPython.qt.manager import QtKernelManager as KernelManager
+from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 
-else:
-    # In PyQt4 we can use the ZMQ kernel and avoid blocking
-    from IPython.qt.manager import QtKernelManager as KernelManager
-
-try:
-    # For depickling we can use cPickle even if pickled with dill
-    import cPickle as pickle
-except:
-    import pickle
-    
 import uuid
 from copy import deepcopy
 from datetime import datetime
@@ -110,58 +105,34 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         if self.kernel_manager:
             self.kernel_manager.shutdown_kernel()
 
-    def iter_code_cells(self):
-        '''
-        Iterate over the notebook cells containing code.
-        '''
-        for ws in self.nb.worksheets:
-            for cell in ws.cells:
-                if cell.cell_type == 'code':
-                    yield cell
-
-    def count_code_cells(self):
-        '''
-        Return the number of code cells in the notebook
-        '''
-        for n, cell in enumerate(self.iter_code_cells()):
-            pass
-        return n+1
-
-    def run_notebook(self, notebook, varsi, progress_callback=None, result_callback=None):
+    def run_notebook(self, code, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
         the outputs in-place.
         '''
         
-        self.nb = notebook
+        self.code = code
         self.varsi = varsi
-        # Pickle all variables and import to the notebook (depickler)
-        with open(self.varsi['_pathomx_pickle_in'], 'wb') as f:
-            pickle.dump(self.varsi, f, -1)  # Highest protocol for speed
         
         self._progress_callback = progress_callback
         self._result_callback = result_callback
-        self._notebook_generator = self.iter_code_cells()
-
-        self._total_code_cell_number = self.count_code_cells()
         self._is_active = True
 
         self._result_queue = [] # Cache for unhandled messages
         self._cell_execute_ids = {}
         self._execute_start = datetime.now()
-        # %%reset -f
-        msg_id = self._execute(r'''
-from pathomx import pathomx_notebook_start, pathomx_notebook_stop
-pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
-)       
-        logging.debug("Runing notebook; startup message: %s" % msg_id)
-        for n, cell in enumerate(self.iter_code_cells()):
-            msg_id = self._execute(cell.input)
-            logging.debug('Cell number %d; %s' % ( n, msg_id) )
-            progress = n / float(self._total_code_cell_number)            
-            self._cell_execute_ids[ msg_id ] = (cell, n+1, progress) # Store cell and progress
+        
+        self.kernel_manager.kernel.shell.push({'varsi':varsi})
+        self._execute(r'''from pathomx import pathomx_notebook_start, pathomx_notebook_stop
+pathomx_notebook_start(varsi, vars());''')
+        
+        msg_id = self._execute(code)
 
-        self._final_msg_id = self._execute(r'''pathomx_notebook_stop(r'%s', vars());''' % (self.varsi['_pathomx_pickle_out']))       
+        logging.debug("Runing notebook; startup message: %s" % msg_id)
+
+        self._cell_execute_ids[ msg_id ] = (code, 1, 100) # Store cell and progress
+
+        self._final_msg_id = self._execute(r'''pathomx_notebook_stop(vars());''')
         logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
 
     def run_notebook_completed(self, error=False, traceback=None):
@@ -177,10 +148,9 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
         
             result['status'] = 0
             # Return input; temp
-            with open(self.varsi['_pathomx_pickle_out'], 'rb') as f:
-                result['varso'] = pickle.load(f)
+            result['varso'] = self.kernel_manager.kernel.shell.user_ns['varso']
 
-        result['notebook'] = self.nb
+        #result['notebook'] = None
 
         self._is_active = False
         self.notebook_completed.emit()
@@ -194,6 +164,7 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 
         See parent class :meth:`execute` docstring for full details.
         """
+
         msg_id = self.kernel_client.execute(source, hidden)
         self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'user')
         self._hidden = hidden
@@ -230,7 +201,7 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 
         logging.info("Execute cell %d complete in %s" % (n, datetime.now() - self._execute_start) )
         
-        self.progress.emit( pc )
+        #self.progress.emit( pc )
         if self._progress_callback:
             self._progress_callback( pc )
     
@@ -243,12 +214,6 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
             # Make sure that all output from the SUB channel has been processed
             # before writing a new prompt.
             self.kernel_client.iopub_channel.flush()
-
-            # Reset the ANSI style information to prevent bad text in stdout
-            # from messing up our colors. We're not a true terminal so we're
-            # allowed to do this.
-            # if self.ansi_codes:
-            #     self._ansi_processor.reset_sgr()
 
             content = msg['content']
             status = content['status']
@@ -317,7 +282,7 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
         out = NotebookNode(output_type=msg_type)
 
         if 'execution_count' in content:
-            self._current_cell['prompt_number'] = content['execution_count']
+            #self._current_cell['prompt_number'] = content['execution_count']
             out.prompt_number = content['execution_count']
 
         if msg_type in ('status', 'pyin', 'execute_input'):
@@ -355,7 +320,7 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
         else:
             raise NotImplementedError('unhandled iopub message: %s' % msg_type)
 
-        self._current_cell['outputs'].append(out)
+        #self._current_cell['outputs'].append(out)
 
     def _handle_kernel_died(self, since_last_heartbeat):
         """Handle the kernel's death (if we do not own the kernel).
@@ -394,7 +359,7 @@ pathomx_notebook_start(r'%s', vars());''' % (self.varsi['_pathomx_pickle_in'])
 
                 setattr(out, attr, data)            
             
-            cell['outputs'].append(out)
+            #cell['outputs'].append(out)
 
     def _handle_stream(self, msg):
         """ Handle stdout, stderr, and stdin.

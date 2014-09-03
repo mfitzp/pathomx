@@ -24,7 +24,7 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
 
 import tempfile
 
-from .views import HTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView
+from .views import HTMLView, StaticHTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView
 # Translation (@default context)
 from .translate import tr
 
@@ -34,10 +34,19 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 
 import logging
+
+import IPython
+ipython_css = os.path.join( os.path.dirname(os.path.realpath(IPython.__file__)), 'html', 'static', 'style', 'style.min.css' )
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.utils.ipstruct import Struct
-from IPython.nbconvert.filters.markdown import markdown2html
+from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
+
+from qutepart import Qutepart
+
+from IPython.nbconvert.exporters import export as IPyexport
+from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
+
 
 PX_INIT_SHOT = 50
 PX_RENDER_SHOT = 500
@@ -239,10 +248,12 @@ class DialogAbout(QDialog):
 
         html = '''<html>
         <head>
-        <link href="{baseurl}/html/css/base.css" rel="stylesheet">
+        <link href="file://{ipython_css}" rel="stylesheet">
         </head>
-        <body style="margin:1em;">{html}</body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'html': markdown2html(md)})
+        <body style="margin:1em;">
+            <div class="text_cell rendered_html">{html}</div>
+        </body>
+        </html>'''.format(**{'ipython_css': ipython_css, 'html': markdown2html_mistune(md)})
 
         self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
@@ -284,242 +295,7 @@ class DialogRegister(QDialog):
         bx.addWidget(QLabel('Type of organisation'), 2, 0)
         bx.addWidget(self.type, 2, 1)
 
-        countries = [
-            ('AF', 'Afghanistan'),
-            ('AL', 'Albania'),
-            ('DZ', 'Algeria'),
-            ('AS', 'American Samoa'),
-            ('AD', 'Andorra'),
-            ('AO', 'Angola'),
-            ('AI', 'Anguilla'),
-            ('AQ', 'Antarctica'),
-            ('AG', 'Antigua And Barbuda'),
-            ('AR', 'Argentina'),
-            ('AM', 'Armenia'),
-            ('AW', 'Aruba'),
-            ('AU', 'Australia'),
-            ('AT', 'Austria'),
-            ('AZ', 'Azerbaijan'),
-            ('BS', 'Bahamas'),
-            ('BH', 'Bahrain'),
-            ('BD', 'Bangladesh'),
-            ('BB', 'Barbados'),
-            ('BY', 'Belarus'),
-            ('BE', 'Belgium'),
-            ('BZ', 'Belize'),
-            ('BJ', 'Benin'),
-            ('BM', 'Bermuda'),
-            ('BT', 'Bhutan'),
-            ('BO', 'Bolivia'),
-            ('BA', 'Bosnia And Herzegowina'),
-            ('BW', 'Botswana'),
-            ('BV', 'Bouvet Island'),
-            ('BR', 'Brazil'),
-            ('BN', 'Brunei Darussalam'),
-            ('BG', 'Bulgaria'),
-            ('BF', 'Burkina Faso'),
-            ('BI', 'Burundi'),
-            ('KH', 'Cambodia'),
-            ('CM', 'Cameroon'),
-            ('CA', 'Canada'),
-            ('CV', 'Cape Verde'),
-            ('KY', 'Cayman Islands'),
-            ('CF', 'Central African Rep'),
-            ('TD', 'Chad'),
-            ('CL', 'Chile'),
-            ('CN', 'China'),
-            ('CX', 'Christmas Island'),
-            ('CC', 'Cocos Islands'),
-            ('CO', 'Colombia'),
-            ('KM', 'Comoros'),
-            ('CG', 'Congo'),
-            ('CK', 'Cook Islands'),
-            ('CR', 'Costa Rica'),
-            ('CI', 'Cote D`ivoire'),
-            ('HR', 'Croatia'),
-            ('CU', 'Cuba'),
-            ('CY', 'Cyprus'),
-            ('CZ', 'Czech Republic'),
-            ('DK', 'Denmark'),
-            ('DJ', 'Djibouti'),
-            ('DM', 'Dominica'),
-            ('DO', 'Dominican Republic'),
-            ('TP', 'East Timor'),
-            ('EC', 'Ecuador'),
-            ('EG', 'Egypt'),
-            ('SV', 'El Salvador'),
-            ('GQ', 'Equatorial Guinea'),
-            ('ER', 'Eritrea'),
-            ('EE', 'Estonia'),
-            ('ET', 'Ethiopia'),
-            ('FK', 'Falkland Islands (Malvinas)'),
-            ('FO', 'Faroe Islands'),
-            ('FJ', 'Fiji'),
-            ('FI', 'Finland'),
-            ('FR', 'France'),
-            ('GF', 'French Guiana'),
-            ('PF', 'French Polynesia'),
-            ('TF', 'French S. Territories'),
-            ('GA', 'Gabon'),
-            ('GM', 'Gambia'),
-            ('GE', 'Georgia'),
-            ('DE', 'Germany'),
-            ('GH', 'Ghana'),
-            ('GI', 'Gibraltar'),
-            ('GR', 'Greece'),
-            ('GL', 'Greenland'),
-            ('GD', 'Grenada'),
-            ('GP', 'Guadeloupe'),
-            ('GU', 'Guam'),
-            ('GT', 'Guatemala'),
-            ('GN', 'Guinea'),
-            ('GW', 'Guinea-bissau'),
-            ('GY', 'Guyana'),
-            ('HT', 'Haiti'),
-            ('HN', 'Honduras'),
-            ('HK', 'Hong Kong'),
-            ('HU', 'Hungary'),
-            ('IS', 'Iceland'),
-            ('IN', 'India'),
-            ('ID', 'Indonesia'),
-            ('IR', 'Iran'),
-            ('IQ', 'Iraq'),
-            ('IE', 'Ireland'),
-            ('IL', 'Israel'),
-            ('IT', 'Italy'),
-            ('JM', 'Jamaica'),
-            ('JP', 'Japan'),
-            ('JO', 'Jordan'),
-            ('KZ', 'Kazakhstan'),
-            ('KE', 'Kenya'),
-            ('KI', 'Kiribati'),
-            ('KP', 'Korea (North)'),
-            ('KR', 'Korea (South)'),
-            ('KW', 'Kuwait'),
-            ('KG', 'Kyrgyzstan'),
-            ('LA', 'Laos'),
-            ('LV', 'Latvia'),
-            ('LB', 'Lebanon'),
-            ('LS', 'Lesotho'),
-            ('LR', 'Liberia'),
-            ('LY', 'Libya'),
-            ('LI', 'Liechtenstein'),
-            ('LT', 'Lithuania'),
-            ('LU', 'Luxembourg'),
-            ('MO', 'Macau'),
-            ('MK', 'Macedonia'),
-            ('MG', 'Madagascar'),
-            ('MW', 'Malawi'),
-            ('MY', 'Malaysia'),
-            ('MV', 'Maldives'),
-            ('ML', 'Mali'),
-            ('MT', 'Malta'),
-            ('MH', 'Marshall Islands'),
-            ('MQ', 'Martinique'),
-            ('MR', 'Mauritania'),
-            ('MU', 'Mauritius'),
-            ('YT', 'Mayotte'),
-            ('MX', 'Mexico'),
-            ('FM', 'Micronesia'),
-            ('MD', 'Moldova'),
-            ('MC', 'Monaco'),
-            ('MN', 'Mongolia'),
-            ('MS', 'Montserrat'),
-            ('MA', 'Morocco'),
-            ('MZ', 'Mozambique'),
-            ('MM', 'Myanmar'),
-            ('NA', 'Namibia'),
-            ('NR', 'Nauru'),
-            ('NP', 'Nepal'),
-            ('NL', 'Netherlands'),
-            ('AN', 'Netherlands Antilles'),
-            ('NC', 'New Caledonia'),
-            ('NZ', 'New Zealand'),
-            ('NI', 'Nicaragua'),
-            ('NE', 'Niger'),
-            ('NG', 'Nigeria'),
-            ('NU', 'Niue'),
-            ('NF', 'Norfolk Island'),
-            ('MP', 'Northern Mariana Islands'),
-            ('NO', 'Norway'),
-            ('OM', 'Oman'),
-            ('PK', 'Pakistan'),
-            ('PW', 'Palau'),
-            ('PA', 'Panama'),
-            ('PG', 'Papua New Guinea'),
-            ('PY', 'Paraguay'),
-            ('PE', 'Peru'),
-            ('PH', 'Philippines'),
-            ('PN', 'Pitcairn'),
-            ('PL', 'Poland'),
-            ('PT', 'Portugal'),
-            ('PR', 'Puerto Rico'),
-            ('QA', 'Qatar'),
-            ('RE', 'Reunion'),
-            ('RO', 'Romania'),
-            ('RU', 'Russian Federation'),
-            ('RW', 'Rwanda'),
-            ('KN', 'Saint Kitts And Nevis'),
-            ('LC', 'Saint Lucia'),
-            ('VC', 'St Vincent/Grenadines'),
-            ('WS', 'Samoa'),
-            ('SM', 'San Marino'),
-            ('ST', 'Sao Tome'),
-            ('SA', 'Saudi Arabia'),
-            ('SN', 'Senegal'),
-            ('SC', 'Seychelles'),
-            ('SL', 'Sierra Leone'),
-            ('SG', 'Singapore'),
-            ('SK', 'Slovakia'),
-            ('SI', 'Slovenia'),
-            ('SB', 'Solomon Islands'),
-            ('SO', 'Somalia'),
-            ('ZA', 'South Africa'),
-            ('ES', 'Spain'),
-            ('LK', 'Sri Lanka'),
-            ('SH', 'St. Helena'),
-            ('PM', 'St.Pierre'),
-            ('SD', 'Sudan'),
-            ('SR', 'Suriname'),
-            ('SZ', 'Swaziland'),
-            ('SE', 'Sweden'),
-            ('CH', 'Switzerland'),
-            ('SY', 'Syrian Arab Republic'),
-            ('TW', 'Taiwan'),
-            ('TJ', 'Tajikistan'),
-            ('TZ', 'Tanzania'),
-            ('TH', 'Thailand'),
-            ('TG', 'Togo'),
-            ('TK', 'Tokelau'),
-            ('TO', 'Tonga'),
-            ('TT', 'Trinidad And Tobago'),
-            ('TN', 'Tunisia'),
-            ('TR', 'Turkey'),
-            ('TM', 'Turkmenistan'),
-            ('TV', 'Tuvalu'),
-            ('UG', 'Uganda'),
-            ('UA', 'Ukraine'),
-            ('AE', 'United Arab Emirates'),
-            ('UK', 'United Kingdom'),
-            ('US', 'United States'),
-            ('UY', 'Uruguay'),
-            ('UZ', 'Uzbekistan'),
-            ('VU', 'Vanuatu'),
-            ('VA', 'Vatican City State'),
-            ('VE', 'Venezuela'),
-            ('VN', 'Viet Nam'),
-            ('VG', 'Virgin Islands (British)'),
-            ('VI', 'Virgin Islands (U.S.)'),
-            ('EH', 'Western Sahara'),
-            ('YE', 'Yemen'),
-            ('YU', 'Yugoslavia'),
-            ('ZR', 'Zaire'),
-            ('ZM', 'Zambia'),
-            ('ZW', 'Zimbabwe')
-        ]
-
-        self.country = QComboBox()
-        self.country.addItems([v for k, v in countries])
+        self.country = QLineEdit()
         bx.addWidget(QLabel('Country'), 3, 0)
         bx.addWidget(self.country, 3, 1)
 
@@ -1385,13 +1161,8 @@ class GenericApp(QObject):
         # Set this to true to auto-start a new calculation after current (block multi-runs)
         self._is_job_active = False
         self._queued_start = False
-        #self._queue_start_timer = QTimer()
-        #self._queue_start_timer.timeout.connect(self.start_from_queue)
-        #self._queue_start_timer.start(1000)  # Attempt queue start every second
 
         self.logger = logging.getLogger(self.id)
-
-        self.w.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         if name == None:
             name = getattr(self, 'name', installed_plugin_names[id(self.plugin)])
@@ -1410,13 +1181,12 @@ class GenericApp(QObject):
         self.file_watcher.fileChanged.connect(self.onFileChanged)
 
         self.toolbars = {}
+        self.configPanels = QTabWidget()
 
         self.logger.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
 
         self.w.setCentralWidget(self.views)
-        #logging.debug('Connect event handlers...')
-        #self.complete.connect(self.views.onRefreshAll)
 
         self.logger.debug('Setup config manager...')
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
@@ -1462,11 +1232,34 @@ class GenericApp(QObject):
 
         self.notebook_path = os.path.join(self.plugin.path, self.notebook)
 
-        self.load_notebook(self.notebook_path)
-
         # Initial display of the notebook
-        self.nbview = NotebookView(self, self.nb)
-        self.views.addView(self.nbview, 'Notebook', unfocus_on_refresh=True)
+        self.code_editor = Qutepart()
+        self.code_editor.detectSyntax(language='Python')
+
+        self.load_notebook(self.notebook_path)
+        
+
+        html = '''<html>
+<head><title>About</title><link rel="stylesheet" href="{ipython_css}"></head>
+<body>
+<div class="container" id="notebook-container">
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">{html}</div>
+</div>
+</div>
+</div>
+</div>
+        </body>
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css':'file://' + ipython_css, 'html': markdown2html_mistune(self.notes)})
+
+            
+
+        self.notes_viewer = StaticHTMLView(self)
+        self.notes_viewer.setHtml( unicode(html) )
+
+        self.views.addView(self.notes_viewer, '?', unfocus_on_refresh=True)
+        self.views.addView(self.code_editor, 'Source', unfocus_on_refresh=True)
 
         if self._is_autoconsume_success is not False:
             # This will fire after the notebook has completed above
@@ -1480,8 +1273,28 @@ class GenericApp(QObject):
         with open(notebook_path, 'rU') as f:
             self.nb_source = read_notebook(f, 'json')
 
-        self.nb = deepcopy(self.nb_source)
+        notes = []
+        code = []
+        for ws in self.nb_source.worksheets:
+            for cell in ws.cells:
+                if cell.cell_type == 'code':
+                    code.append(cell.input)
+                elif cell.cell_type == 'markdown':
+                    notes.append(cell.source)
+                    
+        self.code = '\n\n'.join(code)
+        self.notes = '\n\n'.join(notes)
 
+        html, resources = IPyexport(IPyexporter_map['html'], self.nb_source)  
+        
+    @property
+    def code(self):
+        return self.code_editor.text
+    
+    @code.setter
+    def code(self, text):
+        self.code_editor.text = text
+                    
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
         if self._pause_analysis_flag:
@@ -1538,7 +1351,7 @@ class GenericApp(QObject):
         
         logging.info("Running notebook %s for %s" % (self.notebook, self.name))
 
-        notebook_queue.add_job(self.nb_source, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
+        notebook_queue.add_job(self.code, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)
@@ -1558,8 +1371,8 @@ class GenericApp(QObject):
             self.logger.error(result['traceback'])
             varso = {}
 
-        varso['_pathomx_result_notebook'] = result['notebook']
-        self.nb = result['notebook']
+        #varso['_pathomx_result_notebook'] = result['notebook']
+        #self.nb = result['notebook']
 
         self.worker_cleanup(varso)
 
@@ -1590,8 +1403,9 @@ class GenericApp(QObject):
 
     def prerender(self, *args, **kwargs):
 
+        
         result_dict = {
-            'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
+        #    'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
             }
 
         for k, v in kwargs.items():
@@ -1667,10 +1481,20 @@ class GenericApp(QObject):
         self.nameChanged.emit(name)
 
     def show(self):
-        self.w.show()
+        self.parent().activetoolDock.setWidget(self.w)
+        self.parent().activetoolDock.setWindowTitle(self.name)
+        self.parent().activetoolDock.show()
+        
+        self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
-        self.w.raise_()
+        self.parent().activetoolDock.setWidget(self.w)
+        self.parent().activetoolDock.setWindowTitle(self.name)
+        self.parent().activetoolDock.raise_()
+        
+    def hide(self):
+        self.parent().toolDock.setWidget(self.parent().toolbox)
+        
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
@@ -1679,33 +1503,10 @@ class GenericApp(QObject):
         self.deleteLater()
 
     def addConfigPanel(self, Panel, name):
-        dw = QDockWidget(name)
-        dw.setWidget(Panel(self))
-        dw.setMinimumWidth(300)
-        dw.setMaximumWidth(300)
-
-        self.w.addDockWidget(Qt.LeftDockWidgetArea, dw)
-        if self._latest_dock_widget:
-            self.w.tabifyDockWidget(dw, self._latest_dock_widget)
-
-        self._latest_dock_widget = dw
-        dw.raise_()
+        self.configPanels.addTab(Panel(self), name)
 
     def addSelfToolBar(self):
-        t = self.w.addToolBar('App')
-        t.setIconSize(QSize(16, 16))
-
-        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cross.png')), tr('Delete this app…'), self.w)
-        delete_selfAction.setStatusTip('Delete this app')
-        delete_selfAction.triggered.connect(self.onDelete)
-        t.addAction(delete_selfAction)
-
-        delete_selfAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'script-text.png')), tr('Reload script'), self.w)
-        delete_selfAction.setStatusTip('Reload the IPython Notebook script')
-        delete_selfAction.triggered.connect(self.onReloadScript)
-        t.addAction(delete_selfAction)
-
-        self.toolbars['self'] = t
+        pass
 
     def addDataToolBar(self, default_pause_analysis=False):
         t = self.w.addToolBar('Data')
@@ -1842,7 +1643,7 @@ class GenericApp(QObject):
 
     def onMplToolBarCanvasChanged(self, w):
         selected_view = self.views.widget(w)
-        if selected_view and selected_view.is_mpl_toolbar_enabled:
+        if selected_view and hasattr(selected_view, 'is_mpl_toolbar_enabled') and selected_view.is_mpl_toolbar_enabled:
             # Reset buttons to current view state for the selected tabs' Canvas
             for c, m in [('zoom', 'ZOOM'), ('pan', 'PAN')]:
                 self.toolbars['figure']._checkable_actions[c].setChecked(selected_view.navigation._active == m)
@@ -2257,89 +2058,6 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.codeEditor.lineNumberAreaPaintEvent(event)
-
-
-class CodeEditor(QPlainTextEdit):
-
-    sourceChangesApplied = pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        super(CodeEditor, self).__init__(parent)
-
-        font = QFont("Courier", 12)
-        font.setStyleHint(QFont.TypeWriter)
-
-        self.setFont(font)
-
-        tabStop = 4  # 4 characters
-        self.setTabStopWidth(tabStop * QFontMetrics(font).width('_'))
-
-        self.lineNumberArea = LineNumberArea(self)
-
-        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
-        self.updateRequest.connect(self.updateLineNumberArea)
-        #self.cursorPositionChanged.connect( self.highlightCurrentLine )
-
-        self.updateLineNumberAreaWidth(0)
-        #self.highlightCurrentLine()
-
-    def lineNumberAreaWidth(self):
-
-        digits = len(str(max(1, self.blockCount())))
-        space = QApplication.fontMetrics().width('_') * (digits + 2)
-        return space
-
-    def updateLineNumberAreaWidth(self, newBlockCount):
-        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
-        self.lineNumberArea.update()
-
-    def updateLineNumberArea(self, rect, dy):
-        if (dy):
-            self.lineNumberArea.scroll(0, dy)
-        else:
-            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
-
-        if (rect.contains(self.viewport().rect())):
-            self.updateLineNumberAreaWidth(0)
-
-    def resizeEvent(self, e):
-        super(CodeEditor, self).resizeEvent(e)
-        cr = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
-
-    def highlightCurrentLine(self):
-        selection = QTextEdit.ExtraSelection()
-
-        selection.format = QTextCharFormat()
-        selection.format.setBackground(QColor(Qt.yellow))
-        selection.format.setForeground(QColor(Qt.red))
-        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-
-        selection.cursor = QTextCursor()
-        selection.cursor.clearSelection()
-
-        self.setExtraSelections([selection])
-
-    def lineNumberAreaPaintEvent(self, event):
-        painter = QPainter(self.lineNumberArea)
-        painter.fillRect(event.rect(), Qt.lightGray)
-
-        block = self.firstVisibleBlock()
-        blockNumber = block.blockNumber()
-        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-        bottom = top + self.blockBoundingRect(block).height()
-
-        while block.isValid() and top <= event.rect().bottom():
-            if block.isVisible() and bottom >= event.rect().top():
-                number = " %s " % str(blockNumber + 1)
-                painter.setPen(Qt.black)
-                painter.drawText(0, top, self.lineNumberArea.width(), QApplication.fontMetrics().height(),
-                                 Qt.AlignRight, number)
-
-            block = block.next()
-            top = bottom
-            bottom = top + self.blockBoundingRect(block).height()
-            blockNumber += 1
 
             
 class DbApp(QMainWindow):

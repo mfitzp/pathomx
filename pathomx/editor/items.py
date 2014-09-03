@@ -5,9 +5,13 @@ from .. import utils
 from ..globals import settings
 from ..qt import *
 
+from pyqtconfig import ConfigManager
+
+
 TEXT_COLOR = "#000000"
-SHADOW_COLOR = QColor(63, 63, 63, 180)
+SHADOW_COLOR = QColor(63, 63, 63, 100)
 BORDER_COLOR = "#888888"
+SELECT_COLOR = QColor(63, 63, 255, 50)
 
 INTERFACE_COLOR_INPUT = "orange"
 INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
@@ -103,16 +107,13 @@ class BaseInteractiveItem(BaseItem):
         super(BaseInteractiveItem, self).__init__(parent=parent)
         self.setAcceptHoverEvents(True)
 
-        self.shadow = QGraphicsDropShadowEffect(
+    def hoverEnterEvent(self, e):
+        shadow = QGraphicsDropShadowEffect(
             blurRadius=10,
             color=QColor(SHADOW_COLOR),
             offset=QPointF(0, 0),
             )
-
-        self.shadow.setEnabled(False)
-        self.setGraphicsEffect(self.shadow)
-
-    def hoverEnterEvent(self, e):
+        self.setGraphicsEffect(shadow)
         self.graphicsEffect().setEnabled(True)
 
     def hoverLeaveEvent(self, e):
@@ -226,18 +227,12 @@ class ToolItem(BaseItem):
 
             del self._links[datai]
 
-    def mouseDoubleClickEvent(self, e):
-        e.accept()
-        self.onShow()
-    #def mousePressEvent(self, e):
-    #    self.app.showDock()
-
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.app.delete()
         else:
             return super(ToolItem, self).keyPressEvent(e)
-
+            
     def contextMenuEvent(self, e):
         e.accept()
 
@@ -268,12 +263,12 @@ class ToolItem(BaseItem):
     def onDelete(self):
         self.app.delete()
 
-    def onShow(self, v=None):
-        if v:
-            self.app.views.setCurrentWidget(v)
-
+    def onShow(self):
         self.app.show()
         self.app.raise_()
+    
+    def onHide(self):
+        self.app.hide()
 
     def onAddView(self, e, wid):
         self.viewertest = ToolViewItem(self, self.app.views.widget(wid))
@@ -286,6 +281,23 @@ class ToolItem(BaseItem):
             snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
             return snapPos
 
+        elif change == QGraphicsItem.ItemSelectedChange:
+            if value == True:
+                selected_shadow = QGraphicsDropShadowEffect(
+                    blurRadius=25,
+                    color=QColor(SELECT_COLOR),
+                    offset=QPointF(0, 0),
+                    )
+                self.setGraphicsEffect(selected_shadow)
+                self.graphicsEffect().setEnabled(True)
+                self.onShow()
+            
+            else:
+                self.graphicsEffect().setEnabled(False)
+                self.onHide()
+
+            return value
+                
         return super(ToolItem, self).itemChange(change, value)
 
 
@@ -780,7 +792,7 @@ class BaseAnnotationItem(ResizableGraphicsItem):
         super(BaseAnnotationItem, self).__init__(*args, **kwargs)
         # Config for each annotation item, holding the settings (styles, etc)
         # update-control via the toolbar using add_handler linking
-        self.config = config.ConfigManager()
+        self.config = ConfigManager()
         self.config.updated.connect(self.applyStyleConfig)
 
         self.setFlag(QGraphicsItem.ItemIsMovable)

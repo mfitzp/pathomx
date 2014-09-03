@@ -53,6 +53,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.annotations = []
 
     def mousePressEvent(self, e):
+    
         if self.config.get('mode') != EDITOR_MODE_NORMAL:
 
             for i in self.selectedItems():
@@ -75,6 +76,9 @@ class QGraphicsSceneExtend(QGraphicsScene):
             self.annotations.append(tw)
 
         else:
+            for i in self.selectedItems():
+                i.setSelected(False)
+        
             super(QGraphicsSceneExtend, self).mousePressEvent(e)
 
     def mouseMoveEvent(self, e):
@@ -119,6 +123,8 @@ class QGraphicsSceneExtend(QGraphicsScene):
     def addApp(self, app, position=None):
         i = ToolItem(self, app, position=position)
         self.addItem(i)
+        #i.onShow()
+
         return i
 
     def removeApp(self, app):

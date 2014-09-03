@@ -14,6 +14,7 @@ from . import displayobjects
 from .utils import scriptdir, basedir
 from IPython.core import display
 
+
 MAGIC_TYPES = [
         np.array, np.ndarray,
         pd.Series, pd.DataFrame,
@@ -24,7 +25,7 @@ MAGIC_TYPES = [
         ]
 
 
-def pathomx_notebook_start(fn, vars):
+def pathomx_notebook_start(varsi, vars):
     
     _keep_input_vars = ['styles']
     # Wipeout variables possibly hang around from previous runs
@@ -32,15 +33,12 @@ def pathomx_notebook_start(fn, vars):
         if type(vars[k]) in MAGIC_TYPES and \
             not k.startswith('_'):
                 del vars[k]
-
-    with open(fn, 'rb') as f:
-        ivars = pickle.load(f)
-
-        for k, v in ivars.items():
-            vars[k] = v
-
-    #vars['_pathomx_exclude_input_vars'] = [x for x in ivars.keys() if x not in _keep_input_vars]
-    vars['_pathomx_tempdir'] = os.path.dirname(fn)
+    
+    for k, v in varsi.items():
+        vars[k] = v    
+    
+    vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
+    #vars['_pathomx_tempdir'] = os.path.dirname(fn)
 
     # Handle IO magic
     for k,v in vars['_io']['input'].items():
@@ -58,21 +56,8 @@ def pathomx_notebook_start(fn, vars):
         for k, v in vars['rcParams'].items():
             rcParams[k] = v
 
-    
-def figure_prepickle_handler(v):
-    v._cachedRenderer = None
-    for ax in v._axstack.as_list():
-        for axi in ax.images:
-            axi._imcache = None
-        ax._cachedRenderer = None
 
-    return v
-    
-    
-    
-def pathomx_notebook_stop(fn, vars):
-    # Export known variable types from globals
-    
+def pathomx_notebook_stop(vars):
     # Handle IO magic
     for k,v in vars['_io']['output'].items():
         if k in vars:
@@ -80,18 +65,13 @@ def pathomx_notebook_stop(fn, vars):
         else:
             vars[v] = None
 
-    with open(fn, 'wb') as f:
-        ovars = {}
-        for k, v in vars.items():
-            # Check it's an accepted type for passing; and not private (starts with _)
-            if not k.startswith('_') and \
-               not k in vars['_io']['input'].keys() and \
-               type(v) in MAGIC_TYPES:
-                
-                if type(v) == Figure:
-                    v = figure_prepickle_handler(v)
+    varso = {}
+    for k, v in vars.items():
+        # Check it's an accepted type for passing; and not private (starts with _)
+        if not k.startswith('_') and \
+            not k in vars['_io']['input'].keys() and \
+            type(v) in MAGIC_TYPES:
+    
+            varso[k] = v
 
-                ovars[k] = v
-        
-        pickle.dump(ovars, f, -1)
-
+    vars['varso'] = varso

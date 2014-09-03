@@ -15,7 +15,6 @@ from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, M
 
 import matplotlib as mpl
 
-
 from . import utils
 
 logging.debug('Setting up Matplotlib defaults...')

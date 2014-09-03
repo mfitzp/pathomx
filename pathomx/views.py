@@ -79,8 +79,6 @@ class ViewManager( QTabWidget ):
     style_updated = pyqtSignal()
     updated = pyqtSignal()
 
-    #postponed_refresh = pyqtSignal()
-
     def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
         
@@ -88,8 +86,8 @@ class ViewManager( QTabWidget ):
             
         self.setDocumentMode(True)
         self.setTabsClosable(False)
-        self.setTabPosition( QTabWidget.West )
-        self.setMovable(True)
+        self.setTabPosition( QTabWidget.South )
+        #self.setMovable(True)
             
         self._auto_unfocus_tabs = auto_unfocus_tabs
         self._auto_delete_on_no_data = auto_delete_on_no_data
@@ -101,8 +99,6 @@ class ViewManager( QTabWidget ):
     
         self.source_data_updated.connect(self.onRefreshAll)
         self.style_updated.connect(self.onRefreshAll)
-        
-        #self.postponed_refresh.connect(self.onRefreshLater)
     
     # A few wrappers to 
     def addView(self, widget, name, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
@@ -154,6 +150,7 @@ class ViewManager( QTabWidget ):
         #    to_refresh = [self.currentIndex()]
         
         for n in range(self.count()): #to_refresh:
+
             if hasattr(self.widget(n),'autogenerate') and self.widget(n).autogenerate:
                 try:
                     self.widget(n).autogenerate()
@@ -215,7 +212,7 @@ class BaseView(object):
     _offers_rerender_on_save = False
     is_floatable_view = False
     is_mpl_toolbar_enabled = False
-
+    
     @property
     def data(self):
         return self.vm.data[ self.name ] 
@@ -479,9 +476,11 @@ class NotebookView(QWebView, BaseView):
         if notebook:
             self.generate(notebook)
             
+    autogenerate = False
+
     def generate(self, notebook):
-      html, resources = IPyexport(IPyexporter_map['html'], notebook)  
-      self.setHtml(unicode(html), QUrl('file:///')) 
+        html, resources = IPyexport(IPyexporter_map['html'], notebook)  
+        self.setHtml(unicode(html), QUrl('file:///')) 
 
         
 class StaticHTMLView(HTMLView):
@@ -490,6 +489,13 @@ class StaticHTMLView(HTMLView):
     
     This is used for tool help files which do not need to refresh on data update.
     """
+    def __init__(self, parent, html=None, **kwargs):
+        super(StaticHTMLView, self).__init__(parent, html, **kwargs)        
+
+        self.page().setContentEditable(False)
+        self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+    
+    
     autogenerate = False
 
 

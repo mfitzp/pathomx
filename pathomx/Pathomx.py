@@ -30,6 +30,9 @@ from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 from IPython.nbformat.v3 import new_code_cell
 
+# Console widget
+from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+
 from collections import defaultdict
 
 from yapsy.PluginManager import PluginManagerSingleton
@@ -52,6 +55,7 @@ from .editor.editor import WorkspaceEditorView  # EDITOR_MODE_NORMAL, EDITOR_MOD
 from .translate import tr
 
 from distutils.version import StrictVersion
+
 
 __version__ = open(os.path.join(utils.basedir, 'VERSION'),'rU').read()
 
@@ -197,7 +201,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-
+        
         # Initiate logging
         self.logView = QTreeWidget()
         self.logView.setColumnCount(2)
@@ -206,7 +210,7 @@ class MainWindow(QMainWindow):
         self.logView.itemDoubleClicked.connect(self.onLogItemDoubleClicked)
 
         self.logView.setHeaderLabels(['ID', 'Message'])
-        self.logView.setUniformRowHeights(True)
+        self.logView.setUniformRowHeights(False)
         self.logView.hideColumn(0)
 
         logHandler = Logger(self, self.logView)
@@ -475,7 +479,7 @@ class MainWindow(QMainWindow):
                }
 
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
-        self.toolbox.setHeaderLabels(['Installed tools'])
+        self.toolbox.setHeaderLabels(['Available tools'])
         self.toolbox.setUniformRowHeights(True)
 
         for category in plugin_categories:
@@ -497,8 +501,8 @@ class MainWindow(QMainWindow):
         self.toolDock = QDockWidget(tr('Toolkit'))
         self.toolDock.setWidget(self.toolbox)
         self.toolDock.setMinimumWidth(300)
+        self.toolDock.setMaximumWidth(300)
 
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.toolDock.raise_()
         #self.dbtool = ui.DbApp(self)
@@ -533,13 +537,38 @@ class MainWindow(QMainWindow):
         self.editView = WorkspaceEditorView(self)
         self.editor = self.editView.scene
 
+        self.console = RichIPythonWidget()
+        self.console.kernel_manager = notebook_queue.runners[0].kernel_manager
+        self.console.kernel_client = notebook_queue.runners[0].kernel_client
+
         self.central = QTabWidget()
+        self.central.setDocumentMode(True)
         self.central.setTabPosition(QTabWidget.South)
 
         self.central.addTab(self.editView, 'Editor')
+        self.central.addTab(self.console, 'Console')
         self.central.addTab(self.logView, 'Log')
 
-        self.setCentralWidget(self.central)
+        
+        self.workspaceDock = QDockWidget(tr('Workspace'))
+        self.workspaceDock.setWidget(self.central)
+
+        self.activetoolDock = QDockWidget(tr('Active'))
+        self.activetoolDock.setWidget(QWidget(None))
+        
+        
+        self.dummy = QWidget()
+        self.dummy.hide()
+        self.setCentralWidget(self.dummy)
+        
+        self.workspaceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+        self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+        
+        self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
+        self.splitDockWidget(self.workspaceDock, self.activetoolDock, Qt.Vertical)
+        #self.addDockWidget(Qt.RightDockWidgetArea, self.activeDock)
+        
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.addFileToolBar()
         self.addEditorToolBar()
@@ -558,6 +587,8 @@ class MainWindow(QMainWindow):
         #if settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    settings.setValue('/Pathomx/Offered_registration', True)
+
+        
 
         self.statusBar().showMessage(tr('Ready'))
 
@@ -856,6 +887,15 @@ class MainWindow(QMainWindow):
 
     def onRefresh(self):
         self.generateGraphView()
+
+
+
+    def deselectTool(self):
+        self.toolDock.setWidget(self.toolbox)
+    
+    def selectTool(self, t):
+        t.show()
+
 
     '''
     def generatedbBrowserView(self, template='base.html', data={'title': '', 'object': {}, 'data': {}}):
