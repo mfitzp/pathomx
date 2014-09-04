@@ -29,7 +29,7 @@ class FoldChangeApp(ui.AnalysisApp):
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
         self.addDataToolBar()
-        self.addExperimentToolBar()
+        self.addExperimentConfigPanel()
 
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')

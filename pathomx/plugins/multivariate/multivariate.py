@@ -61,7 +61,7 @@ class PLSDATool(ui.AnalysisApp):
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
         self.addDataToolBar()
-        self.addExperimentToolBar()
+        self.addExperimentConfigPanel()
         self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot

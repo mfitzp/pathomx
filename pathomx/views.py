@@ -101,7 +101,7 @@ class ViewManager( QTabWidget ):
         self.style_updated.connect(self.onRefreshAll)
     
     # A few wrappers to 
-    def addView(self, widget, name, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
+    def addView(self, widget, name, color=None, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
         '''
         Add a view to this view manager.
 
@@ -130,6 +130,9 @@ class ViewManager( QTabWidget ):
             t = super(ViewManager, self).addTab(widget, name, **kwargs)
         self.views[name] = widget
         
+        if color:
+            self.tabBar().setTabTextColor(t, color)
+            
         return t
     
     def get_type(self, name):

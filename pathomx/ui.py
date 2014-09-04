@@ -1184,6 +1184,7 @@ class GenericApp(QObject):
 
         self.toolbars = {}
         self.configPanels = QTabWidget()
+        self.configpanels = {}
 
         self.logger.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
@@ -1406,6 +1407,8 @@ class GenericApp(QObject):
 
     def prerender(self, *args, **kwargs):
 
+        FIGURE_COLOR = QColor(0,127,0)
+        DATA_COLOR = QColor(0,0,127)
         
         result_dict = {
         #    'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
@@ -1414,24 +1417,24 @@ class GenericApp(QObject):
         for k, v in kwargs.items():
             if type(v) == Figure:
                 if self.views.get_type(k) != IPyMplView:
-                    self.views.addView(IPyMplView(self), k)
+                    self.views.addView(IPyMplView(self), k, color=FIGURE_COLOR)
                 result_dict[k] = {'fig': v}
 
             elif type(v) == displayobjects.Svg or type(v) == display.SVG:
                 if self.views.get_type(k) != SVGView:
-                    self.views.addView(SVGView(self), k)
+                    self.views.addView(SVGView(self), k, color=FIGURE_COLOR)
 
                 result_dict[k] = {'svg': v}
 
             elif type(v) == displayobjects.Html:
                 if self.views.get_type(k) != HTMLView:
-                    self.views.addView(HTMLView(self), k)
+                    self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
 
                 result_dict[k] = {'html': v}
 
             elif type(v) == pd.DataFrame:
                 if self.views.get_type(k) != DataFrameWidget:
-                    self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k)
+                    self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k, color=DATA_COLOR)
 
                 result_dict[k] = {'data': v}
 
@@ -1506,7 +1509,9 @@ class GenericApp(QObject):
         self.deleteLater()
 
     def addConfigPanel(self, Panel, name):
-        self.configPanels.addTab(Panel(self), name)
+        panel = Panel(self)
+        self.configPanels.addTab(panel, name)
+        self.configpanels[name] = panel
 
     def addSelfToolBar(self):
     
@@ -1927,24 +1932,8 @@ class AnalysisApp(IPythonApp):
         fig.savefig(tf.fileName(), format='png', bbox_inches='tight')
         return tf
 
-    def addExperimentToolBar(self):
-
-        t = self.w.addToolBar(tr('Experiment'))
-        t.setIconSize(QSize(16, 16))
-
-        t.cb_control = QComboBox()
-        t.cb_control.addItems(['Control'])
-        self.config.add_handler('experiment_control', t.cb_control)
-
-        t.cb_test = QComboBox()
-        t.cb_test.addItems(['Test'])
-        self.config.add_handler('experiment_test', t.cb_test)
-
-        t.addWidget(t.cb_control)
-        t.addWidget(t.cb_test)
-
-        self.toolbars['experiment'] = t
-
+    def addExperimentConfigPanel(self):
+        self.addConfigPanel(ExperimentConfigPanel, 'Experiment')
         self.data.source_updated.connect(self.repopulate_experiment_classes)  # Update the classes if data source changes        
 
     def repopulate_experiment_classes(self):
@@ -1957,21 +1946,21 @@ class AnalysisApp(IPythonApp):
 
         if _control not in classes or _test not in classes:
             # Block signals so no trigger of update
-            self.toolbars['experiment'].cb_control.blockSignals(True)
-            self.toolbars['experiment'].cb_test.blockSignals(True)
+            self.configpanels['Experiment'].cb_control.blockSignals(True)
+            self.configpanels['Experiment'].cb_test.blockSignals(True)
             # Empty the toolbar controls
-            self.toolbars['experiment'].cb_control.clear()
-            self.toolbars['experiment'].cb_test.clear()
+            self.configpanels['Experiment'].cb_control.clear()
+            self.configpanels['Experiment'].cb_test.clear()
             # Data source change; update the experimental control with the data input source
-            self.toolbars['experiment'].cb_control.addItems(classes)
-            self.toolbars['experiment'].cb_test.addItem("*")
-            self.toolbars['experiment'].cb_test.addItems(classes)
+            self.configpanels['Experiment'].cb_control.addItems(classes)
+            self.configpanels['Experiment'].cb_test.addItem("*")
+            self.configpanels['Experiment'].cb_test.addItems(classes)
             # Reset to previous values (-if possible)
-            self.toolbars['experiment'].cb_control.setCurrentIndex( self.toolbars['experiment'].cb_control.findText( _control ) ) #PyQt4 compat
-            self.toolbars['experiment'].cb_test.setCurrentIndex( self.toolbars['experiment'].cb_test.findText( _test ) ) #PyQt4 compat
+            self.configpanels['Experiment'].cb_control.setCurrentIndex( self.configpanels['Experiment'].cb_control.findText( _control ) ) #PyQt4 compat
+            self.configpanels['Experiment'].cb_test.setCurrentIndex( self.configpanels['Experiment'].cb_test.findText( _test ) ) #PyQt4 compat
             # Unblock
-            self.toolbars['experiment'].cb_control.blockSignals(False)
-            self.toolbars['experiment'].cb_test.blockSignals(False)
+            self.configpanels['Experiment'].cb_control.blockSignals(False)
+            self.configpanels['Experiment'].cb_test.blockSignals(False)
             # If previously nothing set; now set it to something
             _control = _control if _control in classes else classes[0]
             _test = _test if _test in classes else '*'
@@ -2060,6 +2049,38 @@ class ConfigTablePanel(QTableWidget):
     def __init__(self, parent, *args, **kwargs):
         super(ConfigTablePanel, self).__init__(parent.w, *args, **kwargs)
         self.config = parent.config
+
+
+# Dialog box for Metabohunter search options
+class ExperimentConfigPanel(ConfigPanel):
+
+    def __init__(self, parent, *args, **kwargs):
+        super(ExperimentConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Classes')
+        grid = QGridLayout()
+        
+
+        self.cb_control = QComboBox()
+        self.cb_control.addItems(['Control'])
+        self.config.add_handler('experiment_control', self.cb_control)
+
+        self.cb_test = QComboBox()
+        self.cb_test.addItems(['Test'])
+        self.config.add_handler('experiment_test', self.cb_test)
+
+        grid.addWidget(QLabel('Control'), 0, 0)
+        grid.addWidget(self.cb_control, 0, 1)
+
+        grid.addWidget(QLabel('Test'), 1, 0)
+        grid.addWidget(self.cb_test, 1, 1)
+        gb.setLayout(grid)
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
 
 
 class WebPanel(QWebView):
