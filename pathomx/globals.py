@@ -3,6 +3,7 @@ logging.debug('Loading globals.py')
 
 import os
 import sys
+import platform
 
 from collections import defaultdict
 
@@ -74,5 +75,9 @@ settings.set_defaults({
     'Editor/Snap_to_grid': False,
     'Editor/Show_grid': True,
 })
+
+mono_fontFamilies = {'Windows':'Courier New',
+                'Darwin': 'Menlo'}
+mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
 
 

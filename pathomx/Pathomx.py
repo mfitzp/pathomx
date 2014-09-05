@@ -45,7 +45,7 @@ except ImportError:
 
 from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
-                     settings, url_handlers, app_launchers
+                     settings, url_handlers, app_launchers, mono_fontFamily
 
 from . import utils
 from . import ui
@@ -139,6 +139,9 @@ class Logger(logging.Handler):
         self.ansi_processor = QtAnsiCodeProcessor()
 
     def emit(self, record):
+    
+        self.widget.textCursor().movePosition(QTextCursor.End)
+    
         msg = self.format(record)        
         if record.levelno < logging.INFO:
             return False
@@ -186,6 +189,9 @@ class MainWindow(QMainWindow):
         
         # Initiate logging
         self.logView = QTextEdit()
+        self.logView.setReadOnly(True)
+        self.logView.setFont(QFont(mono_fontFamily))
+        
         logHandler = Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
