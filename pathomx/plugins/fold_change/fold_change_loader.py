@@ -20,6 +20,7 @@ class FoldChangeApp(ui.AnalysisApp):
 
     name = "Fold Change"
     notebook = 'fold_change.ipynb'
+    shortname = 'fold_change'
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}

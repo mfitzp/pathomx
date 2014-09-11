@@ -15,8 +15,11 @@ from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplCa
 
 # Graph data as a bar chart
 class BarTool(ui.AnalysisApp):
+
     name = "Bar"
     notebook = 'basic_plot_category_bar.ipynb'
+    shortname = 'basic_plot_category_bar'
+    
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
@@ -44,6 +47,7 @@ class SpectraTool(ui.IPythonApp):
 
     name = "Spectra"
     notebook = 'basic_plot_spectra.ipynb'
+    shortname = 'basic_plot_spectra'
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
@@ -71,6 +75,7 @@ class HeatmapTool(ui.IPythonApp):
 
     name = "Heatmap"
     notebook = 'basic_plot_heatmap.ipynb'
+    shortname = 'basic_plot_heatmap'
 
     def __init__(self, *args, **kwargs):
         super(HeatmapTool, self).__init__(*args, **kwargs)

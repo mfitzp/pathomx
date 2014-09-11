@@ -18,6 +18,7 @@ from pathomx.data import DataSet
 class ImportMetabolightsApp(ui.ImportDataApp):
 
     notebook = 'metabolights.ipynb'
+    shortname = 'metabolights'
 
     import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     import_description = "Open experimental data from Metabolights experimental datasets"

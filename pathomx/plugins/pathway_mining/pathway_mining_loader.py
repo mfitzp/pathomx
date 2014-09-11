@@ -143,6 +143,7 @@ class PathwayMiningApp(ui.AnalysisApp):
     legacy_outputs = {'output': 'output_data'}
 
     notebook = "pathway_mining.ipynb"
+    shortname = 'pathway_mining'
 
     def __init__(self, *args, **kwargs):
         super(PathwayMiningApp, self).__init__(*args, **kwargs)

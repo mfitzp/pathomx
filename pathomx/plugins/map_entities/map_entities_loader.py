@@ -74,6 +74,8 @@ class MapEntityApp(ui.IPythonApp):
 
     name = "Map to Biocyc"
     notebook = 'map_to_biocyc.ipynb'
+    shortname = 'map_to_biocyc'
+    
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 

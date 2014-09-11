@@ -20,6 +20,7 @@ from pathomx.plugins import ImportPlugin
 class ImportPeakMLApp(ui.ImportDataApp):
 
     notebook = 'import_peakml.ipynb'
+    shortname = 'import_peakml'
 
     import_filename_filter = "PeakML (MzMatch) Data Files (*.peakml);;All files (*.*)"
     import_description = "Open experimental data from PeakML data files"

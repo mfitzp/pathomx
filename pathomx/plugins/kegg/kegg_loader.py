@@ -23,6 +23,8 @@ except ImportError:
 class KEGGPathwayApp(ui.AnalysisApp):
 
     notebook = 'kegg_pathway.ipynb'
+    shortname = 'kegg_pathway'
+
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):

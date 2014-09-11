@@ -14,6 +14,7 @@ from pathomx.plugins import FilterPlugin
 class MergeApp(ui.IPythonApp):
 
     notebook = 'merge.ipynb'
+    shortname = 'merge'
 
     legacy_outputs = {'output': 'output_data'}
 

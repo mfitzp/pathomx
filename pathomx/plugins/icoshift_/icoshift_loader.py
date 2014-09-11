@@ -95,6 +95,8 @@ filling: NaN, previous point
 class IcoshiftApp(ui.IPythonApp):
 
     notebook = 'icoshift_.ipynb'
+    shortname = 'icoshift_'
+
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 

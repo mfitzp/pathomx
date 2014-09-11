@@ -18,6 +18,7 @@ from pathomx.data import DataSet
 class ChenomxApp(ui.ImportDataApp):
 
     notebook = "chenomx.ipynb"
+    shortname = 'chenomx'
 
     import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;All files (*.*)"
     import_description = "Open a mapped metabolite file from Chenomx"

@@ -324,7 +324,10 @@ class DataManager(QObject):
     def _unconsume(self, interface):
         if self.i[interface] is not None:
             source_manager, source_interface = self.i[interface]
-            source_manager.watchers[source_interface].remove(self)
+            
+            if self in source_manager.watchers[source_interface]:
+                source_manager.watchers[source_interface].remove(self)
+    
             del self.i[interface]
             self.unconsumed.emit((source_manager, source_interface), (self, interface))
 

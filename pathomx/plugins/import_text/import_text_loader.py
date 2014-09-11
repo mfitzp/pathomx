@@ -97,6 +97,8 @@ class ImportTextApp(ui.ImportDataApp, ui.IPythonApp):
     import_description = "Open experimental data from text file data file"
 
     notebook = 'import_text.ipynb'
+    shortname = 'import_text'
+    
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):

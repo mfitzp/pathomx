@@ -106,6 +106,8 @@ class MetaboHunterApp(ui.IPythonApp):
     legacy_outputs = {'output': 'output_data'}
 
     notebook = "metabohunter.ipynb"
+    shortname = 'metabohunter'
+
 
     def __init__(self, *args, **kwargs):
         super(MetaboHunterApp, self).__init__(*args, **kwargs)

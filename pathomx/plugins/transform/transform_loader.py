@@ -40,41 +40,44 @@ class TransformApp(ui.IPythonApp):
 class TransformMeanCenter(TransformApp):
     name = "Mean Center"
     notebook = 'mean_center.ipynb'
-
+    shortname = 'mean_center'
 
 class TransformLog2(TransformApp):
     name = "Log2"
     notebook = 'log2.ipynb'
-
+    shortname = 'log2'
 
 class TransformLog10(TransformApp):
     name = "Log10"
     notebook = 'log10.ipynb'
-
+    shortname = 'log10'
 
 class TransformZeroBaseline(TransformApp):
     name = "Zero baseline"
     notebook = 'zero_baseline.ipynb'
-
+    shortname = 'zero_baseline'
 
 class TransformGlobalMinima(TransformApp):
     name = "Global minima"
     notebook = 'global_minima.ipynb'
-
+    shortname = 'global_minima'
 
 class TransformLocalMinima(TransformApp):
     name = "Local minima"
     notebook = 'local_minima.ipynb'
+    shortname = 'local_minima'
 
 
 class TransformRemoveInvalid(TransformApp):
     name = "Remove invalid data"
     notebook = 'remove_invalid.ipynb'
+    shortname = 'remove_invalid'
 
 
 class TransformTranspose(TransformApp):
     name = "Transpose"
     notebook = 'transpose.ipynb'
+    shortname = 'transpose'
 
 
 class Transform(ProcessingPlugin):

@@ -209,6 +209,7 @@ class RegressionTool(ui.AnalysisApp):
     legacy_outputs = {'output': 'output_data'}
 
     notebook = 'regression.ipynb'
+    shortname = 'regression'
 
     def __init__(self, *args, **kwargs):
         super(RegressionTool, self).__init__(*args, **kwargs)

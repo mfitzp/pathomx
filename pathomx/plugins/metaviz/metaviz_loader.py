@@ -178,6 +178,7 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
 class MetaVizApp(ui.AnalysisApp):
 
     notebook = 'metaviz.ipynb'
+    shortname = 'metaviz'
 
     legacy_inputs = {'input': 'compound_data', 'data': 'compound_data'}
 

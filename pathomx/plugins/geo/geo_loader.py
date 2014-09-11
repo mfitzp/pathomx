@@ -21,6 +21,8 @@ from pathomx.utils import UnicodeReader
 class GEOApp(ui.ImportDataApp):
 
     notebook = 'geo.ipynb'
+    shortname = 'geo'
+    
     import_filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
     import_description = "Open experimental data from downloaded data"
     legacy_outputs = {'output': 'output_data'}

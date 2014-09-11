@@ -11,7 +11,7 @@ import warnings
 from . import displayobjects
 from .utils import scriptdir, basedir
 from IPython.core import display
-
+from copy import deepcopy
 
 MAGIC_TYPES = [
         np.array, np.ndarray,
@@ -41,7 +41,7 @@ def pathomx_notebook_start(varsi, vars):
     # Handle IO magic
     for k,v in vars['_io']['input'].items():
         if v in vars:
-            vars[k] = vars[v]
+            vars[k] = deepcopy(vars[v])
         else:
             vars[k] = None
 

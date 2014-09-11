@@ -1233,14 +1233,14 @@ class GenericApp(QObject):
     def init_notebook(self):
         self.logger.debug('Post-init: init_notebook')
 
-        self.notebook_path = os.path.join(self.plugin.path, self.notebook)
 
         # Initial display of the notebook
         self.code_editor = Qutepart()
         self.code_editor.detectSyntax(language='Python')
         self.addEditorToolBars()
-        self.load_notebook(self.notebook_path)
-        
+
+        self.load_notes()
+        self.load_source()
 
         html = '''<html>
 <head><title>About</title><link rel="stylesheet" href="{ipython_css}"></head>
@@ -1270,7 +1270,16 @@ class GenericApp(QObject):
             self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
             
     def reload(self):
-        self.load_notebook(self.notebook_path)
+        self.load_notes()
+        self.load_source()
+
+    def load_notes(self):
+        with open( os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rU') as f:
+            self.notes = f.read()
+
+    def load_source(self):
+        with open( os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
+            self.code = f.read()
 
     def load_notebook(self, notebook_path):
         self.logger.debug('Loading notebook %s' % notebook_path)
@@ -1343,7 +1352,7 @@ class GenericApp(QObject):
         varsi['rcParams'] = {k: v for k, v in rcParams.items() if k not in strip_rcParams}
         varsi['styles'] = styles
 
-        varsi['_pathomx_notebook_path'] = self.notebook_path
+        varsi['_pathomx_tool_path'] = self.plugin.path
 
         varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
         varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out

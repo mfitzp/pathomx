@@ -47,6 +47,7 @@ class FilterApp(ui.IPythonApp):
 
     name = "Filter"
     notebook = 'filter.ipynb'
+    shortname = 'filter'
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
@@ -207,6 +208,7 @@ class ReclassifyTool(ui.IPythonApp):
 
     name = "Reclassify"
     notebook = 'reclassify.ipynb'
+    shortname = 'reclassify'
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}

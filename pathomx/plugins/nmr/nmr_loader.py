@@ -26,6 +26,8 @@ import nmrglue as ng
 class BrukerImport(ui.ImportDataApp):
 
     notebook = 'bruker_import.ipynb'
+    shortname = 'bruker_import'
+    
     legacy_launchers = ['NMRGlue.NMRApp']
     legacy_outputs = {'output': 'output_data'}
     icon = 'bruker.png'
@@ -68,6 +70,8 @@ class BrukerExport(ui.ExportDataApp):
     export_type = "data"
 
     notebook = 'bruker_export.ipynb'
+    shortname = 'bruker_export'
+    
     icon = 'bruker.png'
 
 

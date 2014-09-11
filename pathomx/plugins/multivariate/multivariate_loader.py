@@ -52,6 +52,7 @@ class PLSDATool(ui.AnalysisApp):
 
     name = "PLSDA"
     notebook = 'pls_da.ipynb'
+    shortname = 'pls_da'
 
     legacy_launchers = ['PLSDAPlugin.PLSDAApp']
     legacy_inputs = {'input': 'input_data'}
@@ -102,6 +103,7 @@ class PCATool(ui.IPythonApp):
 
     name = "PCA"
     notebook = 'pca.ipynb'
+    shortname = 'pca'    
 
     legacy_launchers = ['PCAPlugin.PCAApp']
     legacy_inputs = {'input_data': 'input_data'}

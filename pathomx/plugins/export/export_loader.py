@@ -27,6 +27,7 @@ class ExportDataframe(ui.ExportDataApp):
     icon = 'export.png'
 
     notebook = 'export_dataframe.ipynb'
+    shortname = 'export_dataframe'
 
     def __init__(self, *args, **kwargs):
         super(ExportDataframe, self).__init__(*args, **kwargs)
@@ -49,8 +50,10 @@ class ExportDataframe(ui.ExportDataApp):
 class PasteToClipboard(ui.ExportDataApp):
 
     name = "Paste to clipboard"
-    notebook = 'export_clipboard.ipynb'
     icon = 'clipboard.png'
+
+    notebook = 'export_clipboard.ipynb'
+    shortname = 'export_clipboard'
 
     def __init__(self, *args, **kwargs):
         super(PasteToClipboard, self).__init__(*args, **kwargs)

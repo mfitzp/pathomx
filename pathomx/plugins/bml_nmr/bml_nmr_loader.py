@@ -24,6 +24,7 @@ class BMLNMRApp(ui.ImportDataApp):
     import_description = "Open BML-NMR FIMA .zip output"
 
     notebook = 'bml_nmr.ipynb'
+    shortname = 'bml_nmr'
 
     def __init__(self, *args, **kwargs):
         super(BMLNMRApp, self).__init__(*args, **kwargs)

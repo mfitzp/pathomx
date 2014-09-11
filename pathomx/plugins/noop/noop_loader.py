@@ -12,6 +12,7 @@ class NOOPApp(ui.IPythonApp):
 
     name = "NOOP"
     notebook = 'noop.ipynb'
+    shortname = 'noop'
 
     legacy_launchers = ['NOOP.NOOPApp']
     legacy_inputs = {'input': 'input_data'}

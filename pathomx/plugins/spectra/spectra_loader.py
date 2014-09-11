@@ -42,6 +42,7 @@ class SpectraNormApp(ui.IPythonApp):
 
     name = "Spectra normalisation"
     notebook = 'spectra_norm.ipynb'
+    shortname = 'spectra_norm'
 
     legacy_launchers = ['SpectraNorm.SpectraNormApp']
     legacy_inputs = {'input': 'input_data'}
@@ -151,6 +152,7 @@ class PeakAdjApp(ui.IPythonApp):
 
     name = "Peak Scale & Shift"
     notebook = 'spectra_peakadj.ipynb'
+    shortname = 'spectra_peakadj'
 
     legacy_launchers = ['NMRPeakAdj.NMRPeakAdjApp']
     legacy_inputs = {'input': 'input_data'}
@@ -237,6 +239,7 @@ class PeakPickingApp(ui.IPythonApp):
 
     name = "Peak picking"
     notebook = 'spectra_peak_pick.ipynb'
+    shortname = 'spectra_peak_pick'
 
     legacy_launchers = ['NMRPeakPicking.NMRPeakPickingApp']
     legacy_inputs = {'input': 'input_data'}
@@ -302,6 +305,7 @@ class BinningApp(ui.IPythonApp):
 
     name = "Spectra Binning (1D)"
     notebook = 'spectra_binning.ipynb'
+    shortname = 'spectra_binning'
 
     legacy_launchers = ['Binning.BinningApp']
     legacy_inputs = {'input': 'input_data'}
@@ -457,6 +461,7 @@ class BaselineCorrectionTool(ui.IPythonApp):
     name = "Baseline correction"
     description = "Baseline correct NMR spectra"
     notebook = 'spectra_baseline.ipynb'
+    shortname = 'spectra_baseline'
 
     legacy_launchers = ['BaselineCorrection.BaselineCorrectionTool']
     legacy_inputs = {'input': 'input_data'}

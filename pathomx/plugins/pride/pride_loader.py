@@ -21,6 +21,8 @@ from pathomx.data import DataSet
 class ImportPRIDETool(ui.ImportDataApp):
 
     notebook = 'pride.ipynb'
+    shortname = 'pride'
+    
     import_filename_filter = "All compatible files (*.zip);;Zipped PRIDE data files (*.*);;All files (*.*)"
     import_description = "Import experimental data from PRIDE experimental datasets"
     legacy_outputs = {'output': 'output_data'}
