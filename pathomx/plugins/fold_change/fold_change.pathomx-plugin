@@ -1,6 +1,6 @@
 [Core]
 Name = Fold Change
-Module = fold_change
+Module = fold_change_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

@@ -1,6 +1,6 @@
 [Core]
 Name = Export
-Module = export
+Module = export_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

@@ -1,6 +1,6 @@
 [Core]
 Name = Transform
-Module = transform
+Module = transform_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

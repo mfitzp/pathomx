@@ -1,6 +1,6 @@
 [Core]
 Name = Filter
-Module = filter
+Module = filter_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

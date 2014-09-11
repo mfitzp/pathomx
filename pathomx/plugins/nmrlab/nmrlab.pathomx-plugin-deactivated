@@ -1,6 +1,6 @@
 [Core]
 Name = NMRLab/Metabolab
-Module = nmrlab
+Module = nmrlab_loader
 
 [Documentation]
 Author = U. Gunther, C. Ludwig, Martin Fitzpatrick

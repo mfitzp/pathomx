@@ -1,6 +1,6 @@
 [Core]
 Name = Synonym matching
-Module = map_entities
+Module = map_entities_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

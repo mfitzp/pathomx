@@ -1,6 +1,6 @@
 [Core]
 Name = Chenomx
-Module = chenomx
+Module = chenomx_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

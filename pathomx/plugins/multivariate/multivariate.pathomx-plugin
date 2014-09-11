@@ -1,6 +1,6 @@
 [Core]
 Name = Multivariate Analysis
-Module = multivariate
+Module = multivariate_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

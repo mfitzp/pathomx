@@ -1,6 +1,6 @@
 [Core]
 Name = >
-Module = noop
+Module = noop_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

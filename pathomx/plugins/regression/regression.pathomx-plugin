@@ -1,6 +1,6 @@
 [Core]
 Name = Regression
-Module = regression
+Module = regression_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

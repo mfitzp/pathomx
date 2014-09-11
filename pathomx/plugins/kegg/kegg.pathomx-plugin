@@ -1,6 +1,6 @@
 [Core]
 Name = KEGG
-Module = kegg
+Module = kegg_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

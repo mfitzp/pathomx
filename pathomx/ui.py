@@ -1261,14 +1261,14 @@ class GenericApp(QObject):
         self.notes_viewer = StaticHTMLView(self)
         self.notes_viewer.setHtml( unicode(html) )
 
-        self.views.addView(self.notes_viewer, '?', unfocus_on_refresh=True)
-        self.views.addView(self.code_editor, 'Source', unfocus_on_refresh=True)
+        self.views.addView(self.notes_viewer, '&?', unfocus_on_refresh=True)
+        self.views.addView(self.code_editor, '&#', unfocus_on_refresh=True)
         #self.views.addView( self.logView, 'Log')
 
         if self._is_autoconsume_success is not False:
             # This will fire after the notebook has completed above
             self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
-
+            
     def reload(self):
         self.load_notebook(self.notebook_path)
 
@@ -1289,7 +1289,15 @@ class GenericApp(QObject):
         self.code = '\n\n'.join(code)
         self.notes = '\n\n'.join(notes)
 
-        html, resources = IPyexport(IPyexporter_map['html'], self.nb_source)  
+        target_folder = os.path.dirname(notebook_path)
+        notebook_name = os.path.basename(notebook_path)
+        shortname = notebook_name[:-6]
+        
+        with open( os.path.join(target_folder, shortname + '.py'), 'w' ) as f:
+            f.write(self.code)
+
+        with open( os.path.join(target_folder, shortname + '.md'), 'w' ) as f:
+            f.write(self.notes)
         
     @property
     def code(self):
@@ -1306,20 +1314,7 @@ class GenericApp(QObject):
             return False
         self.generate()
 
-    def start_from_queue(self):
-        if self._queued_start:
-            self.logger.debug("Attempting to start from queue for %s" % self.name)
-            if self._is_job_active == False:
-                self.generate()
-
     def generate(self):
-        if self._is_job_active == False:
-            self._is_job_active = True
-        else:
-            self._queued_start = True
-            return False
-        self._queued_start = False
-
         self.logger.debug("Starting job %s" % self.name)
 
         varsi = {}
@@ -1777,7 +1772,7 @@ class ImportDataApp(IPythonApp):
         self.addExternalDataToolbar()
 
 
-class ExportDataApp(GenericApp):
+class ExportDataApp(IPythonApp):
     def __init__(self, *args, **kwargs):
         super(ExportDataApp, self).__init__(*args, **kwargs)
 

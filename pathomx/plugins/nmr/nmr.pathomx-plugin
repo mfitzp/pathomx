@@ -1,6 +1,6 @@
 [Core]
 Name = NMR
-Module = nmr
+Module = nmr_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

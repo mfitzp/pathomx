@@ -1,6 +1,6 @@
 [Core]
 Name = Merge
-Module = merge
+Module = merge_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

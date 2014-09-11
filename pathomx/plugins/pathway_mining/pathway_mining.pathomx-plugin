@@ -1,6 +1,6 @@
 [Core]
 Name = Pathway Mining
-Module = pathway_mining
+Module = pathway_mining_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

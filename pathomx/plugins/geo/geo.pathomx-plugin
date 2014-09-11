@@ -1,6 +1,6 @@
 [Core]
 Name = Gene Expression Omnibus (GEO)
-Module = geo
+Module = geo_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

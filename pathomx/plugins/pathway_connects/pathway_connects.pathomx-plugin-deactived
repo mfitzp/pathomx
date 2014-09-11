@@ -1,6 +1,6 @@
 [Core]
 Name = Pathway Connects
-Module = pathway_connects
+Module = pathway_connects_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

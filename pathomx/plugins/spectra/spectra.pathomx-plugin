@@ -1,6 +1,6 @@
 [Core]
 Name = Spectra processing tools
-Module = spectra
+Module = spectra_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

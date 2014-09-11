@@ -1,6 +1,6 @@
 [Core]
 Name = Text/CSV
-Module = import_text
+Module = import_text_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

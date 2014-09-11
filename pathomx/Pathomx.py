@@ -517,16 +517,16 @@ class MainWindow(QMainWindow):
         self.editor = self.editView.scene
 
         self.console = RichIPythonWidget()
-        self.console.kernel_manager = notebook_queue.runners[0].kernel_manager
-        self.console.kernel_client = notebook_queue.runners[0].kernel_client
+        self.console.kernel_manager = notebook_queue.runner.kernel_manager
+        self.console.kernel_client = notebook_queue.runner.kernel_client
 
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
         self.central.setTabPosition(QTabWidget.South)
 
-        self.central.addTab(self.editView, 'Editor')
-        self.central.addTab(self.console, 'Console')
-        self.central.addTab(self.logView, 'Log')
+        self.central.addTab(self.editView, '&Editor')
+        self.central.addTab(self.console, '&Console')
+        self.central.addTab(self.logView, '&Log')
 
         
         self.workspaceDock = QDockWidget(tr('Workspace'))
@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
     # UI Events
 
     def updateProgressBar(self):
-        self.threadCount.setText('%d/%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
+        #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
         self.jobQueue.setText('%d' % len(notebook_queue.jobs))
 
     def onGoToPathomxWeb(self):
@@ -1218,8 +1218,8 @@ def main():
     app.installTranslator(translator_mp)
 
     # We've got a qApp instance going, set up timers
-    notebook_queue.create_runners()
-    #notebook_queue.start_timers()
+    notebook_queue.create_runner()
+    notebook_queue.start_timers()
 
     MainWindow()
     logging.info('Ready.')

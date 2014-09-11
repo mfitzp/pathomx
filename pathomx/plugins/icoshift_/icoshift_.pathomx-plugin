@@ -1,6 +1,6 @@
 [Core]
 Name = Icoshift
-Module = icoshift_
+Module = icoshift_loader
 
 [Documentation]
 Author = Francesco Savorani, Giorgio Tomasi, Martin Fitzpatrick 

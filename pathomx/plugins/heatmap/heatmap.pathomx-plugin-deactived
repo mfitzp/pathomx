@@ -1,6 +1,6 @@
 [Core]
 Name = Heatmaps
-Module = heatmap
+Module = heatmap_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

@@ -1,6 +1,6 @@
 [Core]
 Name = MetaViz
-Module = metaviz
+Module = metaviz_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

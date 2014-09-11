@@ -1,6 +1,6 @@
 [Core]
 Name = MetaboLights
-Module = metabolights
+Module = metabolights_loader
 
 [Documentation]
 Author = Martin Fitzpatrick

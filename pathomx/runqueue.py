@@ -99,12 +99,24 @@ class NotebookRunner(BaseFrontendMixin, QObject):
 
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels(stdin=False) #, hb=False)
+        
+        # Update progressBars: note that this will not function with current InProcess Kernel
+        # requires separate thread + variable messaging implementation
+        #self._progress_timer = QTimer()
+        #self._progress_timer.timeout.connect(self.progress)
+        #self._progress_timer.start(1000)
+        
 
     def __del__(self):
         if self.kernel_client:
             self.kernel_client.stop_channels()
         if self.kernel_manager:
             self.kernel_manager.shutdown_kernel()
+            
+    def progress(self):
+        progress = self.kernel_manager.kernel.shell.user_ns['_progressBar']
+        if self._progress_callback:
+            self._progress_callback(progress)
 
     def run_notebook(self, code, varsi, progress_callback=None, result_callback=None):
         '''
@@ -427,20 +439,14 @@ class NotebookRunnerQueue(QObject):
 
     def __init__(self, no_of_runners=MAX_RUNNER_QUEUE):
         super(NotebookRunnerQueue, self).__init__() 
-        # If we fall beneath the minimum top it up
-        self.no_of_runners = no_of_runners
-        self.runners = []
-        self.active_runners = []
-        self.no_of_active_runners = 0
-
+        self.runner = None
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
-
         self.start.connect(self.run)
 
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
-        self._run_timer.start(5000)  # Auto-check for pending jobs every 5 seconds; this shouldn't be needed but some jobs get stuck(?)
+        self._run_timer.start(1000)  # Auto-check for pending jobs every 1 second; this shouldn't be needed but some jobs get stuck(?)
 
     def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
         # We take a copy of the notebook, so changes aren't applied back to the source
@@ -452,60 +458,35 @@ class NotebookRunnerQueue(QObject):
         # Check for jobs
         if not self.jobs:
             return False
+            
+        logging.info('Currently %d jobs remaining' % len(self.jobs))
 
-        try:
-            runner = self.runners.pop(0)  # Remove from the beginning
-        except IndexError:
-            # No runners available
+        if self.runner is None or self.runner._is_active == True:
             return False
+            
+        self.runner._is_active = True
 
         # We have a notebook runner, and a job, get the job
         notebook, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
 
         logging.info("Starting job....")
         # Result callback gets the varso dict
-        runner.run_notebook(notebook, varsi, progress_callback=progress_callback, result_callback=result_callback)
-        self.no_of_active_runners += 1
-        self.active_runners.append(runner)
+        self.runner.run_notebook(notebook, varsi, progress_callback=progress_callback, result_callback=result_callback)
 
     def done(self):
         logging.info("...job complete.")
-        for r in self.active_runners[:]:
-            if r._is_active == False:
-                self.active_runners.remove(r)
-                self.runners.append(r)
-                self.no_of_active_runners -= 1
+        self.runner._is_active = False
                 
-    def create_runner(self):
-        r = NotebookRunner()
-        r._execute('%matplotlib inline')               
-        r.notebook_completed.connect( self.done )
-        self.runners.append( r )
-
-    def topup_runners(self):
-        if len(self.runners) < self.no_of_runners:
-            self.create_runner()
-
-    def create_runners(self):
-        for n in range(self.no_of_runners):
-            self.create_runner()
-
     def restart(self):
-        for r in self.runners:
-            r.restart_kernel('Restarting...', now=True)
-        
-        for r in self.active_runners:
-            r.run_notebook_completed(True, "Aborted")
-            r.restart_kernel('Restarting...', now=True)
-            self.runners.append(r)
-        self.active_runners = []
+        self.runner.restart_kernel('Restarting...', now=True)
+        self.runner._is_active = False
         
     def interrupt(self):
-        for r in self.runners:
-            r.interrupt_kernel()
+        self.runner.interrupt_kernel()
+        self.runner._is_active = False
         
-        for r in self.active_runners:
-            r.run_notebook_completed(True, "Aborted")
-            r.interrupt_kernel()
-            self.runners.append(r)
-        self.active_runners = []
+    def create_runner(self):
+        self.runner = NotebookRunner()
+        self.runner._execute('%matplotlib inline')               
+        self.runner.notebook_completed.connect( self.done )
+    

@@ -1,6 +1,6 @@
 [Core]
 Name = WikiPathways & GPML
-Module = gpml
+Module = gpml_loader
 
 [Documentation]
 Author = Martin Fitzpatrick
