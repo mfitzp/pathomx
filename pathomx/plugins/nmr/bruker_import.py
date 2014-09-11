@@ -4,7 +4,7 @@ import nmrglue as ng
 import numpy as np
 import scipy as sp
 
-def load_bruker_fid(fn, pc_init=None):
+def load_bruker_fid(fn, pc_init=None, config={}):
 
     try:
         print("Reading %s" % fn)
@@ -16,19 +16,30 @@ def load_bruker_fid(fn, pc_init=None):
     else:
 
         # remove the digital filter
-        data = ng.bruker.remove_digital_filter(dic, data)
+        if config.get('remove_digital_filter'):
+            data = ng.bruker.remove_digital_filter(dic, data)
 
         # process the spectrum
         original_size = data.shape[-1]
-        data = ng.proc_base.zf_size(data, 32768)    # zero fill to 32768 points
+        
+        if config.get('zero_fill'):
+            data = ng.proc_base.zf_size(data, config.get('zero_fill_to'))    # zero fill to 32768 points
+    
         #data = ng.process.proc_bl.sol_boxcar(data, w=16, mode='same')  # Solvent removal
 
         data = ng.proc_base.fft(data)               # Fourier transform
 
-        data, pc = autophase(data, pc_init)  # Automatic phase correction
-        #data = ng.proc_base.di(data)                # discard the imaginaries
-        #data = data.imag
-        data = ng.proc_base.rev(data)               # reverse the data
+        if config.get('autophase_algorithm') != False:
+            print config.get('autophase_algorithm')
+            data, pc = autophase(data, pc_init, config.get('autophase_algorithm'))  # Automatic phase correction
+        else:
+            pc = 0,0
+
+        if config.get('delete_imaginaries'):
+            data = ng.proc_base.di(data)                # discard the imaginaries
+            
+        if config.get('reverse_spectra'):
+            data = ng.proc_base.rev(data)               # reverse the data
 
         #data = data / 10000000.
         dic['PATHOMX_PH_CORRECT'] = pc
@@ -126,7 +137,7 @@ total_fids = len(fids)
 pc_init = None
 pc_history = []
 for n, fid in enumerate(fids):
-    dic, data, pc = load_bruker_fid(fid, pc_init)
+    dic, data, pc = load_bruker_fid(fid, pc_init, config)
     # Store previous phase correction outputs to speed up subsequent runs
     pc_history.append(pc)
     pc_init = np.median(np.array(pc_history), axis=0)

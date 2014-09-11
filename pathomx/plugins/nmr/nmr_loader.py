@@ -23,6 +23,67 @@ from pathomx.qt import *
 import nmrglue as ng
 
 
+
+# Dialog box for Metabohunter search options
+class BrukerImportConfigPanel(ui.ConfigPanel):
+
+    autophase_algorithms = {
+        'None': False,
+        'Peak minima': 'Peak_minima',
+        'ACME': 'ACME',
+    }
+
+    def __init__(self, parent, *args, **kwargs):
+        super(BrukerImportConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+
+        gb = QGroupBox('Phase correction')
+        grid = QGridLayout()
+
+        self.cb_phasealg = QComboBox()
+        self.cb_phasealg.addItems(self.autophase_algorithms.keys())
+        grid.addWidget(QLabel('Algorithm'), 2, 0)
+        grid.addWidget(self.cb_phasealg, 2, 1)
+        self.config.add_handler('autophase_algorithm', self.cb_phasealg, self.autophase_algorithms)
+
+        gb.setLayout(grid)
+        self.layout.addWidget(gb)
+
+        gb = QGroupBox('Advanced')
+        grid = QGridLayout()
+        self.cb_delimag = QCheckBox()
+        grid.addWidget(QLabel('Delete imaginaries'), 0, 0)
+        grid.addWidget(self.cb_delimag, 0, 1)
+        self.config.add_handler('delete_imaginaries', self.cb_delimag)
+
+        self.cb_reverse = QCheckBox()
+        grid.addWidget(QLabel('Reverse spectra'), 1, 0)
+        grid.addWidget(self.cb_reverse, 1, 1)
+        self.config.add_handler('reverse_spectra', self.cb_reverse)
+
+        self.cb_remdf = QCheckBox()
+        grid.addWidget(QLabel('Remove digital filter'), 2, 0)
+        grid.addWidget(self.cb_remdf, 2, 1)
+        self.config.add_handler('remove_digital_filter', self.cb_remdf)
+
+        self.cb_zf = QCheckBox()
+        grid.addWidget(QLabel('Zero fill'), 3, 0)
+        grid.addWidget(self.cb_zf, 3, 1)
+        self.config.add_handler('zero_fill', self.cb_zf)
+
+        self.le_zf_to = QLineEdit()
+        grid.addWidget(self.le_zf_to, 4, 1)
+        self.config.add_handler('zero_fill_to', self.le_zf_to, mapper=(lambda x: int(x), lambda x: str(x) ))
+
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
+
 class BrukerImport(ui.ImportDataApp):
 
     notebook = 'bruker_import.ipynb'
@@ -37,7 +98,15 @@ class BrukerImport(ui.ImportDataApp):
 
         self.config.set_defaults({
             'filename': None,
+            'autophase_algorithm': 'Peak_minima',
+            'remove_digital_filter': True,
+            'delete_imaginaries': False,
+            'reverse_spectra': True,
+            'zero_fill': True,
+            'zero_fill_to': 32768,
         })
+
+        self.addConfigPanel(BrukerImportConfigPanel, 'Settings')
 
         self.data.add_output('output_data')  # Add output slot        
         self.data.add_output('output_dic')  # Add output slot        
@@ -59,7 +128,6 @@ class BrukerImport(ui.ImportDataApp):
         folder = Qd.getExistingDirectory(self.w, 'Open parent folder for your Bruker NMR experiments')
         if folder:
             self.config.set('filename', folder)
-            self.config.set('datatype', 'bruker')
             self.autogenerate()
 
 
