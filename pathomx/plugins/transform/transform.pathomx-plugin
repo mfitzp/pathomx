@@ -1,9 +1,0 @@
-[Core]
-Name = Transform
-Module = transform_loader
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Mathematical data transformations including log2 and log10

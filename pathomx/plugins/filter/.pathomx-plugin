@@ -1,9 +1,9 @@
 [Core]
-Name = Fold Change
-Module = fold_change_loader
+Name = Filter
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Calculate fold change between two groups
+Description = Filter datasets by class, label or other features

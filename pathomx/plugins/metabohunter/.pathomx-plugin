@@ -1,6 +1,6 @@
 [Core]
 Name = MetaboHunter
-Module = metabohunter_loader
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick

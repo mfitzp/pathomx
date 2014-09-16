@@ -1,9 +1,9 @@
 [Core]
-Name = Text/CSV
-Module = import_text_loader
+Name = Export
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Import data from text and CSV files
+Description = Export data frames

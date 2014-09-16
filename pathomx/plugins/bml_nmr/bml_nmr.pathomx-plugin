@@ -1,6 +1,6 @@
 [Core]
 Name = BML-NMR
-Module = bml_nmr_loader
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick

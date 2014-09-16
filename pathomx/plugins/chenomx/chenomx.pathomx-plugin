@@ -1,9 +1,0 @@
-[Core]
-Name = Chenomx
-Module = chenomx_loader
-
-[Documentation]
-Author = Martin Fitzpatrick
-Version = 1.0
-Website = http://martinfitzpatrick.name/
-Description = Import profiled metabolite concentrations from Chenomx

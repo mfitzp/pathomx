@@ -1,9 +1,9 @@
 [Core]
-Name = PeakML
-Module = import_peakml_loader
+Name = KEGG
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Import PeakML output from MzMatch
+Description = Visualise data on KEGG pathways

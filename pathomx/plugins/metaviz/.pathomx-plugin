@@ -1,9 +1,9 @@
 [Core]
-Name = Synonym matching
-Module = map_entities_loader
+Name = MetaViz
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Map data to MetaCyc database entities 
+Description = Automated pathway layouts, powered by Graphviz

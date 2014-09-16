@@ -1,9 +1,9 @@
 [Core]
-Name = Merge
-Module = merge_loader
+Name = Regression
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Merge data from multiple sources
+Description = Regression analysis

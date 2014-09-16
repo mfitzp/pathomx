@@ -1,9 +1,9 @@
 [Core]
-Name = MetaboLights
-Module = metabolights_loader
+Name = Merge
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Metabolights file data import
+Description = Merge data from multiple sources

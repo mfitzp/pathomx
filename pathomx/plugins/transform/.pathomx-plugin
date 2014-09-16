@@ -1,9 +1,9 @@
 [Core]
-Name = Multivariate Analysis
-Module = multivariate_loader
+Name = Transform
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Multivariate analysis plugins
+Description = Mathematical data transformations including log2 and log10

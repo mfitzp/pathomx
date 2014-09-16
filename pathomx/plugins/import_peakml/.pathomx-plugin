@@ -1,9 +1,9 @@
 [Core]
-Name = Regression
-Module = regression_loader
+Name = PeakML
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Regression analysis
+Description = Import PeakML output from MzMatch

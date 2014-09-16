@@ -1,6 +1,6 @@
 [Core]
 Name = PRIDE
-Module = pride_loader
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick

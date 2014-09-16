@@ -1,6 +1,6 @@
 [Core]
 Name = Basic graphs
-Module = basic_graphs_loader
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick

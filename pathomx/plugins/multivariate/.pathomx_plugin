@@ -1,9 +1,9 @@
 [Core]
-Name = NMR
-Module = nmr_loader
+Name = Multivariate Analysis
+Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Import raw NMR data from Bruker, Varian and more
+Description = Multivariate analysis plugins
