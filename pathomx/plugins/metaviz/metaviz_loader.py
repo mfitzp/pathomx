@@ -177,6 +177,7 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
 
 class MetaVizApp(ui.AnalysisApp):
 
+    name = "MetaboViz"
     notebook = 'metaviz.ipynb'
     shortname = 'metaviz'
 

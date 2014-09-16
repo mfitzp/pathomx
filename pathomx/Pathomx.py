@@ -170,7 +170,7 @@ class ToolTreeWidget(QTreeWidget):
 
             drag = QDrag(self)
             drag.setMimeData(mimeData)
-            drag.setPixmap(item.data['plugin'].pixmap.scaled(QSize(64, 64), transformMode=Qt.SmoothTransformation))
+            drag.setPixmap(item.data['icon'].pixmap(64, 64))
             drag.setHotSpot(QPoint(32, 32))  # - self.visualItemRect(item).top())
 
             drag.exec_(Qt.CopyAction)
@@ -284,7 +284,7 @@ class MainWindow(QMainWindow):
         export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export workflow report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
-        self.menuBars['file'].addAction(export_reportAction)
+        #self.menuBars['file'].addAction(export_reportAction)
 
 
         #printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
@@ -469,7 +469,15 @@ class MainWindow(QMainWindow):
             for tool in self.tools[category]:
                 ti = QTreeWidgetItem()
                 ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
-                ti.setIcon(0, tool['plugin'].icon)
+                
+                if tool['app'].icon:
+                    icon_path = os.path.join(tool['plugin'].path, tool['app'].icon)
+                else:
+                    icon_path = os.path.join(tool['plugin'].path, 'icon.png')
+                
+                tool['icon'] = QIcon(icon_path)
+                
+                ti.setIcon(0, tool['icon'])
                 ti.setToolTip(0, tool['plugin'].metadata['description'])
                 ti.data = tool
                 item.addChild(ti)
@@ -599,12 +607,12 @@ class MainWindow(QMainWindow):
         export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export IPython notebook…', self)
         export_ipythonnbAction.setStatusTip('Export workflow as IPython notebook')
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
-        t.addAction(export_ipythonnbAction)
+        #t.addAction(export_ipythonnbAction)
 
         export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
-        t.addAction(export_reportAction)
+        #t.addAction(export_reportAction)
 
         interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Interrupt kernels…', self)
         interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing')
@@ -1025,6 +1033,8 @@ class MainWindow(QMainWindow):
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
             appref[xapp.get('id')] = app
+
+            app.config.setXMLConfig(xapp)
 
         logging.info("...Linking objects.")
         # Now build the links between objects; we need to force these as data is not present

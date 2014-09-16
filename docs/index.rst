@@ -32,6 +32,7 @@ Users
    :maxdepth: 2
 
    install
+   demos
 
 More documentation is coming soon, in the meantime there are demos available on the Pathomx website `here <http://pathomx.org/demos>`_.
 
@@ -46,6 +47,7 @@ documentation is added to the source code. You can submit patches via github.
    
    dev_install
    api
+   creating_custom_tools
 
 Indices and tables
 ==================

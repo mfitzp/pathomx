@@ -54,7 +54,7 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
 
         vw = QVBoxLayout()
 
-        self.coshift_btn = QCheckBox('Enable co-shift preprocessing', self.m)
+        self.coshift_btn = QCheckBox('Enable co-shift preprocessing')
         #self.coshift_btn.setCheckable( True )
         self.config.add_handler('coshift_proprocess', self.coshift_btn)
         vw.addWidget(self.coshift_btn)

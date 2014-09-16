@@ -1,4 +1,4 @@
-NMR Import
+Bruker Import
 ==========
 
 Load raw NMR spectroscopy data from Bruker spectrometers.  

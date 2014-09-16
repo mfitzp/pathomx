@@ -4,19 +4,22 @@ import pandas as pd
 if input_data is None:
     raise Exception('No input data')
 
-if type(input_data.columns) == pd.Index:
+if type(input_data.columns) == pd.Index or type(input_data.columns) == pd.Float64Index:
     scale = input_data.columns.values
 elif type(input_data.columns) == pd.MultiIndex:
-    try:
-        scidx = input_data.columns.names.index('ppm')
-    except:
-        scidx = input_data.columns.names.index('Label')
+    for cn in ['ppm', 'Scale', 'Label']:
+        if cn in input_data.columns.names:
+            scidx = input_data.columns.names.index(cn)
+            break
+    else:
+        raise Exception("Can't find a valid ppm index.")
         
     scale = [c[scidx] for c in input_data.columns.values]
-    
-r = np.nanmin(scale), np.nanmax(scale)
+
 
 bin_size, bin_offset = config.get('bin_size'), config.get('bin_offset')
+
+r = min(scale), max(scale)
 
 bins = np.arange(r[0] + bin_offset, r[1] + bin_offset, bin_size)
 number_of_bins = len(bins) - 1

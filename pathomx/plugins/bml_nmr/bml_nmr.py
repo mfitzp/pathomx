@@ -46,6 +46,7 @@ for fn, target in fns:
         # Bottom two columns are the metabolite id info, chop off
         dataset = dataset.T
         dataset = dataset[:-2]
+        dataset = dataset.astype(float)
         
         # We've only got sample items, need to add a class column
         sample_nos = [f.replace('(expno_','').strip(')') for f in sample_nos]
@@ -54,12 +55,6 @@ for fn, target in fns:
         vars()[target] = dataset
         del dataset
 
-
-raw
-
-pqn
-
-tsa
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra

@@ -7,21 +7,26 @@ instructions below to install the software.
 Windows (64bit)
 ===============
 
-Download the latest release as a `Windows Installer (.msi)`_. Double-click to start the 
-installation process. You may need to accept the installation. Icons will be added to 
-your Start menu and desktop. Launch as normal from there.
+Download the latest release as a `Windows Installer (.exe)`_. Double-click to start the 
+installation process. Depending on security settings you may need to confirm
+the installation. Icons will be added to 
+your Start menu and desktop. Launch as for any other application.
+
+To get started, take a look at the `demos`_.
 
 MacOS X
 =======
 
 Download the latest release as a `Mac Disk Image (.dmg)`_. Double-click to open, and drag
-the Pathomx application into your Applications folder. Launch as normal.
+the Pathomx application into your Applications folder. Launch for any other app.
+
+To get started, take a look at the `demos`_.
 
 Linux
 =====
 
 Coming soon.
 
-.. _Windows Installer (.msi): http://download.pathomx.org/Pathomx-2.2.0-amd64.msi
-.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-2.2.0.dmg
-
+.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-3.0.0-amd64.exe
+.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-3.0.0.dmg
+.. _demos: 

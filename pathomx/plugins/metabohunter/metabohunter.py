@@ -1,14 +1,18 @@
 import pandas as pd
 import metabohunter as mh
 
+input_data = input_data.dropna(axis=1)
+
 # Generate a table of ppms (from index, Scale) and peaks (from mean of data table)
 if type(input_data.columns) == pd.MultiIndex:
-    if 'Scale' in input_data.columns.names:
-        i = input_data.columns.names.index('Scale')
+    for i in ['Scale','ppm','Label']:
+        if i in input_data_columns.names:
+            idx = input_data_columns.name.index(i)
+            break
     else:
-        i = input_data.columns.names.index('Label')
+        raise Exception('No ppm scale found.')
             
-    ppms = input_data.columns.labels[i]
+    ppms = [v[idx] for v in input_data.columns.values]
 else:
     ppms = input_data.columns.values
 

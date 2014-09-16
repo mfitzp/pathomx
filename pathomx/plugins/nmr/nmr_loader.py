@@ -86,6 +86,7 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
 
 class BrukerImport(ui.ImportDataApp):
 
+    name = "Import Bruker"
     notebook = 'bruker_import.ipynb'
     shortname = 'bruker_import'
     

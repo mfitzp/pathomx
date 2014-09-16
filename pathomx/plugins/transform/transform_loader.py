@@ -79,6 +79,11 @@ class TransformTranspose(TransformApp):
     notebook = 'transpose.ipynb'
     shortname = 'transpose'
 
+class TransformSplitImaginary(TransformApp):
+    name = "Split real/imaginary numbers"
+    notebook = 'split_imaginary.ipynb'
+    shortname = 'split_imaginary'
+
 
 class Transform(ProcessingPlugin):
 
@@ -92,3 +97,4 @@ class Transform(ProcessingPlugin):
         self.register_app_launcher(TransformLocalMinima)
         self.register_app_launcher(TransformRemoveInvalid)
         self.register_app_launcher(TransformTranspose)
+        self.register_app_launcher(TransformSplitImaginary)

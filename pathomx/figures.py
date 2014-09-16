@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import pandas as pd
 
 from collections import OrderedDict
 
@@ -76,7 +77,29 @@ class EntityBoxStyle(BoxStyle._Base):
 # register the custom style
 BoxStyle._style_list["entity-tip"] = EntityBoxStyle
         
-        
+
+def get_text_bbox_screen_coords(fig, t):
+    renderer = fig.canvas.get_renderer()
+    bbox = t.get_window_extent(renderer)
+    return bbox.get_points()
+
+def get_text_bbox_data_coords(fig, ax, t ):
+    renderer = fig.canvas.get_renderer()
+    bbox = t.get_window_extent(renderer)
+    axbox = bbox.transformed(ax.transData.inverted())
+    return axbox.get_points()
+
+def extend_limits(a, b):
+    # Extend a to meet b where applicable
+    ax, ay = list(a[0]), list(a[1])
+    bx, by = b[:,0], b[:,1]
+    ax[0] = bx[0] if bx[0] < ax[0] else ax[0]
+    ax[1] = bx[1] if bx[1] > ax[1] else ax[1]
+    ay[0] = by[0] if by[0] < ay[0] else ay[0]
+    ay[1] = by[1] if by[1] > ay[1] else ay[1]
+    return [ax,ay]
+
+ 
 
 def spectra(data, figure=None, ax=None, styles=None):
     if figure is None:
@@ -120,23 +143,41 @@ def spectra(data, figure=None, ax=None, styles=None):
         data_max = data.max()
         data_abs_max = data.abs().max()
 
-    data_headers = data_abs_max.index
+    # Annotate using the most non-numeric column index that is most complete
+    data_headers = None
+    longest_level = None
+    longest = None
 
-  
-    linear_scale = True
+    linear_scale = False
+    linear_scale_idx = None
     scale = []
-    for x in data.columns.values:
-        try:
-            scale.append( float(x) )
-        except:
-            linear_scale = False
-            break
-            
-    print linear_scale
 
+    if type(data.columns) == pd.MultiIndex:
+        for n, l in enumerate(data.columns.levels):
+            if l.dtype == np.dtype('O'): # Object; maybe str?
+                if len(l) > longest:
+                    longest = len(l)
+                    longest_level = n
+            elif np.issubdtype(l.dtype, np.integer) or np.issubdtype(l.dtype, np.float):
+                linear_scale = True
+                scale = [v[n] for v in data.columns.values]
+    else:
+        scale = []
+        linear_scale = True
+        for x in data.columns.values:
+            try:
+                scale.append( float(x) )
+            except:
+                linear_scale = False
+                break
+        
+        
+    if longest:
+        data_headers = np.array([v[longest_level] for v in data.columns.values])
+  
     # Temporary scale
     if linear_scale:
-        scale = np.array( scale )
+        scale = np.array(scale)
         is_scale_reversed = scale[0] > scale[-1]
     else:
         scale = np.arange(0, data.shape[1] )
@@ -173,42 +214,41 @@ def spectra(data, figure=None, ax=None, styles=None):
 
         for n in range(0, data_individual.shape[0] ):
             row = data_individual.iloc[n]
-        
+
             ax.plot(scale, row.values, linewidth=0.75, alpha=0.25, color=utils.category10[0])
     
         ax.plot(scale, data_mean.values, linewidth=0.75, color=utils.category10[0])
         
     axlimits = ( ax.get_xlim(), ax.get_ylim() )
-    idx = list( np.argsort( data_abs_max ) )[-10:]
-    
-    '''    
-    ylimP = np.amax( dsc.data, axis=0 ) # Positive limit
-    ylimN = -np.amax( -dsc.data, axis=0 ) # Negative limit
-    ylims = ylimP
-    ni = ylimP<-ylimN
-    ylims[ ni ] = ylimN[ ni ]
-    '''
 
-    anno_label = data_headers[idx]
-    anno_scale = scale[idx]
-    anno_y = data_max[idx]
+    if data_headers is not None:
+        mask = np.isnan(data_abs_max)
+        data_abs_max_ma = np.ma.masked_array(data_abs_max, mask=mask)
+        idx = list( np.argsort( data_abs_max_ma ) )[-10:]
 
-    for x,y,l in zip(anno_scale, anno_y, anno_label):
-        if y>=0:
-            r = '60'
-        else:
-            r = '-60'
-         
-        #print x, y, l   
-        #annotate = ax.text(x, y, l, rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="round,pad=0.1", fc="#eeeeee") )
-        #axlimits = self.extend_limits( axlimits, self.get_text_bbox_data_coords(t) )
+        anno_label = data_headers[idx]
+        anno_scale = scale[idx]
+        anno_y = data_max[idx]
 
-    #self.ax.set_xlim(axlimits[0].reverse())
-    #ax.set_ylim(axlimits[1])
-    
-    #ax.set_xlabel('ppm')
-    #ax.set_ylabel('Rel')
+        for x,y,l in zip(anno_scale, anno_y, anno_label):
+            print "*", x,y,l
+            if y>=0:
+                r = '60'
+            else:
+                r = '-60'
+            if l:
+                t = ax.text(x, y, l, rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="round,pad=0.1", fc="#eeeeee") )
+                bounds = get_text_bbox_data_coords(figure, ax, t)
+                if y >= 0:
+                    bounds[1,1] = bounds[1,1] * 1.25
+                else:
+                    bounds[0,1] = bounds[0,1] * 1.25
+                
+                axlimits = extend_limits( axlimits, bounds)
 
+        #ax.set_xlim( axlimits[0] )
+        ax.set_ylim( axlimits[1] )
+            
     return figure
     
  

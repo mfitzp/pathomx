@@ -119,12 +119,12 @@ class PeakAdjConfigPanel(ui.ConfigPanel):
         self.layout.addWidget(gb)
 
         vw = QVBoxLayout()
-        self.toggle_shift = QPushButton(QIcon(os.path.join(self.parent().t.plugin.path, 'icon-16.png')), 'Shift spectra', self.parent())
+        self.toggle_shift = QPushButton(QIcon(os.path.join(self.parent().t.plugin.path, 'icon.png')), 'Shift spectra', self.parent())
         self.toggle_shift.setCheckable(True)
         self.config.add_handler('shifting_enabled', self.toggle_shift)
         vw.addWidget(self.toggle_shift)
 
-        self.toggle_scale = QPushButton(QIcon(os.path.join(self.parent().t.plugin.path, 'icon-16.png')), 'Scale spectra', self.parent())
+        self.toggle_scale = QPushButton(QIcon(os.path.join(self.parent().t.plugin.path, 'icon.png')), 'Scale spectra', self.parent())
         self.toggle_scale.setCheckable(True)
         self.config.add_handler('scaling_enabled', self.toggle_scale)
         vw.addWidget(self.toggle_scale)
@@ -506,6 +506,107 @@ class BaselineCorrectionTool(ui.IPythonApp):
         self.addConfigPanel(BaselineCorrectionConfigPanel, 'Settings')
 
 
+
+
+# Dialog box for spectra exclusion options
+class SpectraExclusionConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, *args, **kwargs):
+        super(SpectraExclusionConfigPanel, self).__init__(*args, **kwargs)
+
+        self.excl = {}
+
+
+        for n in range(4):
+            i = n+1
+            
+            vw = QGridLayout()
+
+            excl_spin_start = QDoubleSpinBox()
+            excl_spin_start.setRange(-2, 12)
+            excl_spin_start.setSuffix('ppm')
+            self.config.add_handler('exclude_%d_start' % i, excl_spin_start)
+
+            excl_spin_end = QDoubleSpinBox()
+            excl_spin_end.setRange(-2, 12)
+            excl_spin_end.setSuffix('ppm')
+            self.config.add_handler('exclude_%d_end' % i, excl_spin_end)
+
+            excl_enable = QCheckBox()
+            self.config.add_handler('exclude_%d' % i, excl_enable)
+
+
+            tl = QLabel('Active')
+            vw.addWidget(tl, 0, 0)
+            vw.addWidget(excl_enable, 0, 1)
+            tl = QLabel('Start')
+            vw.addWidget(tl, 1, 0)
+            vw.addWidget(excl_spin_start, 1, 1)
+            tl = QLabel('End')
+            vw.addWidget(tl, 2, 0)
+            vw.addWidget(excl_spin_end, 2, 1)
+
+            gb = QGroupBox('Region %d' % i)
+            gb.setLayout(vw)
+            self.layout.addWidget(gb)
+
+        self.finalise()
+
+
+
+class SpectraExclusionTool(ui.IPythonApp):
+
+    name = "Spectra Exclusion"
+    description = "Exclude regions of an NMR spectra"
+    notebook = 'spectra_exclude.ipynb'
+    shortname = 'spectra_exclude'
+
+    def __init__(self, *args, **kwargs):
+        super(SpectraExclusionTool, self).__init__(*args, **kwargs)
+
+        self.addDataToolBar()
+        self.addFigureToolBar()
+
+        self.data.add_input('input_data')  # Add input slot
+        self.data.add_output('output_data')
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input_data', {
+            'labels_n': ('>0', None),
+            'entities_t': (None, None),
+            'scales_t': (None, ['float']),
+            })
+        )
+
+        # Define default settings for pathway rendering
+        self.config.set_defaults({
+            'exclude_1':True,
+            'exclude_1_start': -2,
+            'exclude_1_end': 0.2,
+
+            'exclude_2':True,
+            'exclude_2_start': 4.5,
+            'exclude_2_end': 5,
+
+            'exclude_3':True,
+            'exclude_3_start': 10,
+            'exclude_3_end': 12,
+
+            'exclude_4':False,
+            'exclude_4_start': 0,
+            'exclude_4_end': 0,
+
+            'exclude_5':False,
+            'exclude_5_start': 0,
+            'exclude_5_end': 0,
+
+        })
+
+        self.addConfigPanel(SpectraExclusionConfigPanel, 'Settings')
+
+
+
 class Spectra(ProcessingPlugin):
 
     def __init__(self, *args, **kwargs):
@@ -515,3 +616,4 @@ class Spectra(ProcessingPlugin):
         self.register_app_launcher(PeakPickingApp)
         self.register_app_launcher(BinningApp)
         self.register_app_launcher(BaselineCorrectionTool)
+        self.register_app_launcher(SpectraExclusionTool)

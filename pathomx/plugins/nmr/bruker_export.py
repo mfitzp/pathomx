@@ -8,6 +8,9 @@ for n,dic in enumerate(dic_list):
     data = ng.proc_base.rev(data)               # reverse the data
     data = ng.proc_base.ifft(data)   # Inverse Fourier transform
 
+    # Check if we're short on data (allows re-export after binning)
+    if data.shape[-1] < 16384:
+        data = ng.proc_base.zf(data, 16384)
 
     if 'acqus' not in dic:
         raise ValueError("dictionary does not contain acqus parameters")
@@ -45,4 +48,5 @@ for n,dic in enumerate(dic_list):
     data = data[0:16384]
 
     ng.bruker.write( os.path.join(config['filename'],str(n+1)),dic,data,overwrite=True)
+    
     

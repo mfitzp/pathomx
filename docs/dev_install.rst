@@ -95,10 +95,7 @@ You can also optionally install the following for some biological data analysis 
     brew install graphviz
     pip install pydot nmrglue gpml2svg icoshift biocyc metaviz
 
-That should be enough to get Pathomx up and running from the command line. For development a
-useful tool to install is `Total Terminal`_, which gets you access to the command line
-via a hotkey.
-
+That should be enough to get Pathomx up and running from the command line. 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
     python Pathomx.py
@@ -182,4 +179,3 @@ To run Pathomx from the command line, change to the cloned git folder and then e
 
 .. _Homebrew: http://brew.sh/
 
-.. _Total Terminal: http://totalterminal.binaryage.com/

@@ -5,11 +5,9 @@ import csv
 
 biocyc.set_organism('HUMAN')
 
-notebook_path = os.path.dirname(_pathomx_notebook_path)
-
 def map_generator(table):
     map_dict = {}
-    with open( os.path.join(notebook_path, table), 'rU') as f:
+    with open( os.path.join(_pathomx_tool_path, table), 'rU') as f:
         reader = csv.reader(f)
         for row in reader:
             map_dict[ row[1] ] = row[0]
@@ -18,7 +16,7 @@ def map_generator(table):
 
 def reverse_map_generator(table):
     map_dict = {}
-    with open( os.path.join(notebook_path, table), 'rU') as f:
+    with open( os.path.join(_pathomx_tool_path, table), 'rU') as f:
         reader = csv.reader(f)
         for row in reader:
             map_dict[ row[0] ] = row[1]
@@ -43,8 +41,14 @@ lku = {
     }[config.get('map_object_type')]
 
 # Get the index; plus the existing one if available
-lidx = input_data.columns.names.index('Label')
 if type(input_data.columns) == pd.MultiIndex:
+    for li in ['Label','HMDB']:
+        if li in input_data.columns.names:
+            lidx = input_data.columns.names.index('Label')
+            break
+    else:
+        raise Exception('No source labels found')
+        
     labels = [l[lidx] for l in input_data.columns.values ]
 
     if 'BioCyc' in input_data.columns.names:

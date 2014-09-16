@@ -42,8 +42,8 @@ def load_bruker_fid(fn, pc_init=None, config={}):
             data = ng.proc_base.rev(data)               # reverse the data
 
         #data = data / 10000000.
-        dic['PATHOMX_PH_CORRECT'] = pc
-        dic['PATHOMX_ORIGIN_SIZE'] = original_size
+        dic['PATHOMX_PHASE_CORRECT'] = pc
+        dic['PATHOMX_ORIGINAL_SIZE'] = original_size
         return dic, data, pc
 
 def autophase(nmr_data, pc_init=None, algorithm='Peak_minima'):

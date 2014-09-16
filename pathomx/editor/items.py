@@ -321,7 +321,7 @@ class ToolIcon(BaseInteractiveItem):
         #pen.setCapStyle(Qt.RoundCap)
         #pen.setWidth(0)
         painter.setPen(pen)
-        painter.setBrush(QBrush(self.parentItem().app.plugin.icon.pixmap(self.size)))
+        painter.setBrush(QBrush(self.parentItem().app.get_icon.pixmap(self.size)))
         painter.drawRect(QRect(0, 0, self.size.width(), self.size.height()))
         #painter.drawEllipse( QRect(0,0,self.size.width(), self.size.height()) )
         #painter.drawRoundedRect( QRect(0,0,self.size.width(), self.size.height()), 5.0, 5.0 )

@@ -19,8 +19,8 @@ from pathomx.qt import *
 
 class FilterConfigPanel(ui.ConfigPanel):
 
-    def __init__(self, *args, **kwargs):
-        super(FilterConfigPanel, self).__init__(*args, **kwargs)
+    def __init__(self, parent, *args, **kwargs):
+        super(FilterConfigPanel, self).__init__(parent, *args, **kwargs)
 
         # Correlation variables
         gb = QGroupBox('Regexp search and replace')
@@ -128,9 +128,10 @@ class ReclassifyImportDialog(ui.GenericDialog):
 # Dialog box for Metabohunter search options
 class ReclassifyConfigPanel(ui.ConfigPanel):
 
-    def __init__(self, *args, **kwargs):
-        super(ReclassifyConfigPanel, self).__init__(*args, **kwargs)
-
+    def __init__(self, parent, *args, **kwargs):
+        super(ReclassifyConfigPanel, self).__init__(parent, *args, **kwargs)
+        self.v = parent    
+        
         # Correlation variables
         gb = QGroupBox('Reclassifications')
         vbox = QVBoxLayout()
@@ -178,7 +179,7 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
         self.config.set('filters', [(k, v, m) for k, v, m in l if v is not None])
 
     def onFilterImport(self):
-        filename, _ = QFileDialog.getOpenFileName(self.m, 'Load reclassifications from file', '', "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)")
+        filename, _ = QFileDialog.getOpenFileName(self.v.w, 'Load reclassifications from file', '', "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)")
         if filename:
 
             with open(filename, 'rU') as f:

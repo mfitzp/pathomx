@@ -1,4 +1,4 @@
-MetaViz
+MetaboViz
 =======
 
 Metabolic pathway visualisation and analysis powered by GraphViz.  

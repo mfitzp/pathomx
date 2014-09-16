@@ -995,29 +995,39 @@ class DialogDataSource(GenericDialog):
 
             self.lw_consumeri.append(QComboBox())
             cdw = self.lw_consumeri[n]  # Shorthand
-            datasets = self.v.data.can_consume_which_of(current_datasets, [cd])
+            #datasets = self.v.data.can_consume_which_of(current_datasets, [cd])
 
             cdw.addItem('No input')
+            interfaces = []
+            nd = 0
+            # Iterate all available outputs on all tools
+            for t in current_tools:
+                if t is not self.v:
+                    for k,dataset in t.data.o.items():
+                        interfaces.append( (t.data,k) )
+                    
+                        if type(dataset) == pd.DataFrame:
+                            ts = 'pandas.DataFrame(%s)' % dataset.values.dtype
+                            shape = 'x'.join([str(s) for s in dataset.shape])
+                        elif type(dataset) == np.ndarray:
+                            ts = 'numpy.ndarray(%s)' % dataset.values.dtype
+                            shape = 'x'.join([str(s) for s in dataset.shape])
+                        else:
+                            ts = type(dataset)
+                            shape = 'None'
+                
 
-            for nd, dataset in enumerate(datasets):
-
-                e = set()
-                for el in dataset.entities_t:
-                    e |= set(el)  # Add entities to the set
-                e = e - {'NoneType'}  # Remove if it's in there
-
-                entities = ', '.join(e)
-                dimensions = 'x'.join([str(s) for s in dataset.shape])
-
-                cdw.addItem(QIcon(dataset.manager.v.plugin.workspace_icon), '%s %s %s (%s)' % (dataset.name, dataset.manager.v.name, entities, dimensions))
-
-                # If this is the currently used data source for this interface, set it active
-                if cd.target in self.v.data.i and dataset == self.v.data.i[cd.target]:
-                    cdw.setCurrentIndex(nd + 1)  # nd+1 because of the None we've inserted at the front
+                        cdw.addItem(QIcon(t.icon), '%s %s %s (%s)' % (t.name, k, ts, shape))
+    
+                        nd += 1
+                        # If this is the currently used data source for this interface, set it active
+                        if self.v.data.i[cd.target] is not None and t.data == self.v.data.i[cd.target][0] and k == self.v.data.i[cd.target][1]:
+                            cdw.setCurrentIndex(nd)  # nd+1 because of the None we've inserted at the front
 
             cdw.consumer_def = cd
-            cdw.datasets = [None] + datasets
-
+            cdw.interfaces = [None] + interfaces
+            
+            
             self.layout.addWidget(QLabel("%s:" % cd.title))
             self.layout.addWidget(cdw)
 
@@ -1032,11 +1042,13 @@ class DialogDataOutput(GenericDialog):
     def __init__(self, parent=None, view=None, **kwargs):
         super(DialogDataOutput, self).__init__(parent, buttons=['ok'], **kwargs)
 
+        self.v = view
+
         self.setWindowTitle("Data Output(s)")
 
         self.lw_sources = QTreeWidget()  # Use TreeWidget but flat; for multiple column view
-        self.lw_sources.setColumnCount(5)
-        self.lw_sources.setHeaderLabels(['', 'Source', 'Data', 'Entities', 'Size'])  # ,'#'])
+        self.lw_sources.setColumnCount(4)
+        self.lw_sources.setHeaderLabels(['', 'Output', 'Type', 'Size'])  # ,'#'])
         self.lw_sources.setUniformRowHeights(True)
         self.lw_sources.rootIsDecorated()
         self.lw_sources.hideColumn(0)
@@ -1050,19 +1062,17 @@ class DialogDataOutput(GenericDialog):
             tw = QTreeWidgetItem()
 
             tw.setText(0, str(len(self.datasets) - 1))  # Store index
-            tw.setText(1, dataset.manager.v.name)
-            if dataset.manager.v.plugin.workspace_icon:
-                tw.setIcon(1, dataset.manager.v.plugin.workspace_icon)
-
-            tw.setText(2, dataset.name)
-            e = set()
-            for el in dataset.entities_t:
-                e |= set(el)  # Add entities to the set
-            e = e - {'NoneType'}  # Remove if it's in there
-
-            tw.setText(3, ', '.join(e))
-
-            tw.setText(4, 'x'.join([str(s) for s in dataset.shape]))
+            tw.setText(1, k)
+            
+            if type(dataset) == pd.DataFrame:
+                ts = 'pandas.DataFrame(%s)' % dataset.values.dtype
+            elif type(dataset) == np.ndarray:
+                ts = 'numpy.ndarray(%s)' % dataset.values.dtype
+            else:
+                ts = type(dataset)
+                
+            tw.setText(2, ts)
+            tw.setText(3, 'x'.join([str(s) for s in dataset.shape]))
 
             self.lw_sources.addTopLevelItem(tw)
 
@@ -1139,6 +1149,8 @@ class GenericApp(QObject):
     legacy_outputs = {}
 
     autoconfig_name = None
+    
+    icon = None
 
     def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
@@ -1315,6 +1327,14 @@ class GenericApp(QObject):
     @code.setter
     def code(self, text):
         self.code_editor.text = text
+
+    @property
+    def get_icon(self):
+        if self.icon:
+            icon_path = os.path.join(self.plugin.path, self.icon)
+        else:
+            icon_path = os.path.join(self.plugin.path, 'icon.png')
+        return QIcon(icon_path)
                     
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
@@ -1578,8 +1598,8 @@ class GenericApp(QObject):
                 consumer_def = cb.consumer_def
 
                 if i > 0:  # Something in the list (-1) and not 'No data'
-                    dso = cb.datasets[i]
-                    self.data.consume_with(dso, consumer_def)
+                    source_manager, source_interface = cb.interfaces[i]
+                    self.data.consume(source_manager, source_interface)
 
                 else:  # Stop consuming through this interface
                     self.data.unget(consumer_def.target)
