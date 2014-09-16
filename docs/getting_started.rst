@@ -1,5 +1,5 @@
 Getting Started
-***************
+===============
 
 This is quick start-up guide for new users of `Pathomx`_. In here you should find everything
 you need to know to start using Pathomx right away. Once you've been through the basics
@@ -14,14 +14,14 @@ Outputs should be beautiful.
 If Pathomx fails for you on any of those points, please do `file a bug report`_ and it'll 
 be sorted out as soon as humanly possible.
 
-# First steps
+First steps
+-----------
 
+Nomenclature
+------------
 
-# Nomenclature
-
-
-# Drag and drop
-
+Drag and drop
+-------------
 
 
 

@@ -1,5 +1,5 @@
 Creating Custom Tools
-*********************
+=====================
 
 This is a brief guide to creating custom tools within Pathomx. This aspect of the software
 is under heavy development and will become considerably easier in the future. However, if 
@@ -23,14 +23,16 @@ You don't need to create a custom tool if you just want to -
 
 For those type of things you're better off just using the built-in *custom script* tool.
 
-## What do I need to get started?
+What do I need to get started?
+------------------------------
 
 Any standard installation of Pathomx will be OK. If you are using Python packages not 
 in the standard installation you may need to use either the `developer installation`_ or 
 add custom Python path definitions to Pathomx. But to learn the basics it's best to stick
 to exploring with NumPy, SciPy and Pandas.
 
-## The tool stub
+The tool stub
+-------------
 
 All tools follow a basic structure we're going to call the *tool stub*. To get started on 
 custom tool, simply download the `tool stub`_ to your local machine. Unzip the file
@@ -66,7 +68,8 @@ You can have more than one tool per plugin using the same loader to initialise t
 This is useful when you have a number of tools that are conceptually related. This is 
 seen in the standard 'Spectra' toolkit that offers a number of tools for dealing with frequency data.
 
-## Customising the stub
+Customising the stub
+--------------------
 
 To create your custom tool start with the stub file and customise from there. For this demo we'll
 create a custom tool that randomly reorders and drops data on each iteration. We'll call
