@@ -38,12 +38,53 @@ somewhere convenient, preferably in a specific folder for custom Pathomx tools. 
 end up with the following folder structure:
 
 \<root>
+   - .pathomx-plugin
    - __init__.py
-   - stub.pathomx-plugin
+   - loader.py
    - stub.py
    - stub.md
-   - stub_loader.py
    - icon.png
+
+A brief description of each follows - 
+
+`.pathomx-plugin` indicates that this folder is a Pathomx plugin folder. It also holds some
+metadata about the plugin in the `Wheezy`_ plugin format. However, you don't need to know about 
+that to use it just make your changes to the example provided.
+
+`__init__.py` is an empty file required by Python to import the folder as a module. Leave empty.
+
+`loader.py` contains the code required to initialise the plugin and start up. You can also
+define config panels, dialogs and custom views (figure plots, etc.) in this file. 
+
+`stub.py` contains the actual code for the tool that will run on the IPython kernel. 
+`stub.md` contains the descriptive text in `Markdown`_ format.
+
+'icon.png' is the default icon for all tools in this plugin. You can add other icons and define them
+specifically on a per-tool basis if you require.
+
+You can have more than one tool per plugin using the same loader to initialise them all. 
+This is useful when you have a number of tools that are conceptually related. This is 
+seen in the standard 'Spectra' toolkit that offers a number of tools for dealing with frequency data.
+
+## Customising the stub
+
+To create your custom tool start with the stub file and customise from there. For this demo we'll
+create a custom tool that randomly reorders and drops data on each iteration. We'll call
+it 'Gremlin'.
+
+Open up the `.pathomx-plugin` file and edit the metadata. The only line 
+you have to edit is `Name` but feel free to edit the other data to match.
+Do not change the `Module` line as this is needed to load the tool.
+
+Now rename `stub.md` and `stub.py` to `gremlin.md` and `gremlin.py` 
+respectively. Then open up `loader.py` in a suitable text editor. We're
+going to add some configuration options to demonstrate how this is done.
+
+
+
+
+
+
 
 
 
@@ -52,4 +93,5 @@ end up with the following folder structure:
 
 
 .. _tool stub: http://download.pathomx.org/tool_stub_3.0.0.zip
-
+.. _Markdown: 
+.. 
