@@ -20,6 +20,9 @@ First steps
 Nomenclature
 ------------
 
+In Pathomx nomenclature *toolkits* provide *tools* with which you can construct
+*workflows*.
+
 Drag and drop
 -------------
 

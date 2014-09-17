@@ -78,9 +78,8 @@ it 'Gremlin'.
 
 Open up the `.pathomx-plugin` file and edit the metadata. The only line 
 you have to edit is `Name` but feel free to edit the other data to match.
-Do not change the `Module` line as this is needed to load the tool.
-
-Now rename `stub.md` and `stub.py` to `gremlin.md` and `gremlin.py` 
+Do not change the `Module` line as this is needed to load the tool. Next 
+rename `stub.md` and `stub.py` to `gremlin.md` and `gremlin.py` 
 respectively. Then open up `loader.py` in a suitable text editor. We're
 going to add some features to the Gremlin tool to show how it is done.
 
