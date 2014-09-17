@@ -100,7 +100,6 @@ code-block:: python
             self.data.add_input('input_data')  # Add input slot
             self.data.add_output('output_data')  # Add output slot
 
-
     class Stub(ProcessingPlugin):
 
         def __init__(self, *args, **kwargs):
