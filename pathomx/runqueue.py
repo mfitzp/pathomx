@@ -139,6 +139,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._execute(r'''from pathomx import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start(varsi, vars());''')
         
+        #re.split('\n(?=\w)',a)
+        
         msg_id = self._execute(code)
 
         logging.debug("Runing notebook; startup message: %s" % msg_id)

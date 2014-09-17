@@ -120,7 +120,26 @@ text are loaded from e.g. `stub.py` and `stub.md`. So change the `shortname` val
 to 'gremlin' and the `name` to 'Gremlin'.
 
 Below is this is the default config definition. Here you can set default
-values for any configuration parameters.
+values for any configuration parameters using standard Python dictionary syntax. 
+We'll add a parameter `evilness` that defines how much damage the gremlin
+does to your data. Edit the `self.config` definition to:
+
+.. code-block:: python
+
+            self.config.set_defaults({
+            'evilness': 1,
+            })
+
+We've defined the parameter and given it a default value of 1. This will
+now be available from within the run kernel as `config['evilness']`.
+
+Below the config definition there are two lines defining the input and output ports
+of the tool respectively. You can name them anything you like as long as 
+you follow standard Python variable naming conventions. Data will be passed
+into the run kernel using these names. They are defined as `input_data` and 
+`output_data` by default and that is enough for our gremlin tool. 
+
+
 
 
 
