@@ -377,10 +377,13 @@ class BasePlugin(IPlugin):
         else:
             return None
 
-    def register_app_launcher(self, app, workspace_category=None):
-        app.plugin = self
-        key = "%s.%s" % (self.id, app.__name__)
-        app_launchers[key] = app
+    def register_app_launcher(self, *args, **kwargs):
+        self.register_tool_launcher(*args, **kwargs)
+
+    def register_tool_launcher(self, tool, workspace_category=None):
+        tool.plugin = self
+        key = "%s.%s" % (self.id, tool.__name__)
+        app_launchers[key] = tool
 
         if workspace_category == None:
             workspace_category = self.default_workspace_category

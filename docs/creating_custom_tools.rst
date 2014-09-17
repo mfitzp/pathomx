@@ -5,7 +5,8 @@ This is a brief guide to creating custom tools within Pathomx. This aspect of th
 is under heavy development and will become considerably easier in the future. However, if 
 you need to create a custom tool *now* this is the way to do it.
 
-## Do I need a custom tool?
+Do I need a custom tool?
+------------------------
 
 Custom tools allow you to access the full capabilities of the Pathomx software. The goal 
 of a custom tool will be to create a reusable component that you can use, re-use and share
@@ -61,7 +62,7 @@ define config panels, dialogs and custom views (figure plots, etc.) in this file
 `stub.py` contains the actual code for the tool that will run on the IPython kernel. 
 `stub.md` contains the descriptive text in `Markdown`_ format.
 
-'icon.png' is the default icon for all tools in this plugin. You can add other icons and define them
+`icon.png` is the default icon for all tools in this plugin. You can add other icons and define them
 specifically on a per-tool basis if you require.
 
 You can have more than one tool per plugin using the same loader to initialise them all. 
@@ -81,7 +82,46 @@ Do not change the `Module` line as this is needed to load the tool.
 
 Now rename `stub.md` and `stub.py` to `gremlin.md` and `gremlin.py` 
 respectively. Then open up `loader.py` in a suitable text editor. We're
-going to add some configuration options to demonstrate how this is done.
+going to add some features to the Gremlin tool to show how it is done.
+
+In the `loader.py` file you will find the following:
+
+    class StubTool(GenericTool):
+        name = "Stub"
+        shortname = 'stub'
+
+        def __init__(self, *args, **kwargs):
+            super(StubTool, self).__init__(*args, **kwargs)
+
+            self.config.set_defaults({
+            })
+
+            self.data.add_input('input_data')  # Add input slot
+            self.data.add_output('output_data')  # Add output slot
+
+
+    class Stub(ProcessingPlugin):
+
+        def __init__(self, *args, **kwargs):
+            super(Stub, self).__init__(*args, **kwargs)
+            self.register_tool_launcher(StubTool)
+
+
+There are two parts to the tool. The `StubTool` class that defines the tool
+and configures set up, etc. and the `Stub` loader which handles 
+registration of the launcher for creating new instances of the tool. You
+can define as many tools in this file as you want (give them unique names)
+and register them in the same Stub class __init__.
+
+The name of the tool is defined by the `name` parameter to the tool definition.
+If none is supplied the tool will take the name of the plugin by default.
+The `shortname` defines the name of the files that source code and information
+text are loaded from e.g. `stub.py` and `stub.md`. So change the `shortname` value
+to 'gremlin' and the `name` to 'Gremlin'.
+
+Below is this is the default config definition. Here you can set default
+values for any configuration parameters.
+
 
 
 

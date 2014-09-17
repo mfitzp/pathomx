@@ -1754,6 +1754,10 @@ class GenericApp(QObject):
 class IPythonApp(GenericApp):
     pass
 
+# Renaming for sense
+class GenericTool(GenericApp):
+    pass
+
 
 # Import Data viewer
 class ImportDataApp(IPythonApp):
