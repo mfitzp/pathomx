@@ -154,9 +154,22 @@ so you can open that now. In it you'll find:
 
     # This is your stub source file. Add your code here!
 
-Not very interesting. The first three lines simply import a set of standard
+That does not a lot. The first three lines simply import a set of standard
 libraries for working with data - Pandas, NumPy and SciPy. You might
-not need them all but it's worth keeping them available.
+not need them all but it's worth keeping them available for now. To start
+our custom tool we need to add some code to mess up the data. First we need
+a copy of the input_data to output, then we want to mess it up. Add the 
+following code to the file:
+
+.. code-block:: python
+
+    for n in range( config['evilness'] ):
+        # Repeat the evil action 'evilness' times
+        
+        
+
+
+
 
 
 
