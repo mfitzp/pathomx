@@ -139,6 +139,25 @@ you follow standard Python variable naming conventions. Data will be passed
 into the run kernel using these names. They are defined as `input_data` and 
 `output_data` by default and that is enough for our gremlin tool. 
 
+Editing the code
+----------------
+
+The runnable source code for tools is stored in a file named `<shortname>.py` in
+standard Python script style. We've already renamed `stub.py` to `gremlin.py`
+so you can open that now. In it you'll find:
+
+.. code-block:: python
+
+    import pandas as pd
+    import numpy as np
+    import scipy as sp
+
+    # This is your stub source file. Add your code here!
+
+Not very interesting. The first three lines simply import a set of standard
+libraries for working with data - Pandas, NumPy and SciPy. You might
+not need them all but it's worth keeping them available.
+
 
 
 
