@@ -85,7 +85,7 @@ going to add some features to the Gremlin tool to show how it is done.
 
 In the `loader.py` file you will find the following:
 
-code-block:: python
+.. code-block:: python
 
     class StubTool(GenericTool):
         name = "Stub"
