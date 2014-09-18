@@ -264,7 +264,15 @@ Drag it into the workspace and click on it. You'll notice that there isn't much 
 no configuration UI defined and we haven't updated the about text. But it's still a fully-operational
 gremlin. So let's see it in action.
 
-Drag an *Import Text/CSV* tool into the workspace. 
+Drag an *Import Text/CSV* tool into the workspace and select it. Using the open file widget
+select the file you downloaded earlier containing the demo dataset. Have a look at the Spectra 
+view output to see how it *should* look.
+
+Now drag from the *Import Text/CSV* ``output_data` port to the Gremlin ``input_data`` port.
+The gremlin tool will automatically calculate using the new data and display a modified plot
+called 'View'. If you can't see the different between this and the earlier plot try pressing
+the green *play* button a few times to re-run the tool. You should see the data change each
+time.
 
 
 
