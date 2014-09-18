@@ -135,6 +135,9 @@ MOCK_MODULES = [
         'wheezy.template.loader',
         'pandas',
         'pyqtconfig',
+        'IPython',
+        'IPython.qt.console.rich_ipython_widget',
+        'IPython.qt.console.ansi_code_processor',
         ]
 
 for mod_name in MOCK_MODULES:
