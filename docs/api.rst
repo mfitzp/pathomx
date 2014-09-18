@@ -12,7 +12,6 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
-   colors
    config
    custom_exceptions
    data
@@ -20,9 +19,9 @@ to interpret what it's doing.
    Pathomx
    plugins
    qt
-   threads
    translate
    ui
+   utils
    views
    
    
