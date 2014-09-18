@@ -1,3 +1,6 @@
+.. role:: python(code)
+   :language: python
+   
 Creating Custom Tools
 =====================
 
@@ -284,5 +287,3 @@ Drag an *Import Text/CSV* tool into the workspace.
 .. 
 
 
-.. role:: python(code)
-   :language: python
