@@ -79,13 +79,12 @@ elif USE_QT_PY == PYQT4:
 
             
 # Create a Qt application
-app = QApplication(sys.argv)
 try:
+    app = QApplication(sys.argv)
     app.setStyle('fusion')
+    app.setOrganizationName("Pathomx")
+    app.setOrganizationDomain("pathomx.org")
+    app.setApplicationName("Pathomx")
 except:
     pass
-
-app.setOrganizationName("Pathomx")
-app.setOrganizationDomain("pathomx.org")
-app.setApplicationName("Pathomx")
             
