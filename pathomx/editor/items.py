@@ -239,6 +239,10 @@ class ToolItem(BaseItem):
         o = self.scene.parent()
         menu = QMenu(o)
 
+        run_action = QAction('&Run', o)
+        run_action.triggered.connect(self.onRun)
+        menu.addAction(run_action)
+
         show_action = QAction('&Show', o)
         show_action.triggered.connect(self.onShow)
         menu.addAction(show_action)
@@ -250,7 +254,8 @@ class ToolItem(BaseItem):
         vmenu = menu.addMenu('&Views')
         vc = {}
         for wid in range(self.app.views.count()):
-            if self.app.views.widget(wid).is_floatable_view:
+            if hasattr(self.app.views.widget(wid), 'is_floatable_view') and \
+               self.app.views.widget(wid).is_floatable_view == True:
                 def make_callback(i):
                     return lambda n: self.onAddView(n, i)
 
@@ -269,6 +274,9 @@ class ToolItem(BaseItem):
     
     def onHide(self):
         self.app.hide()
+        
+    def onRun(self):
+        self.app.autogenerate()
 
     def onAddView(self, e, wid):
         self.viewertest = ToolViewItem(self, self.app.views.widget(wid))

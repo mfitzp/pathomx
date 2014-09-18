@@ -5,9 +5,9 @@
 Creating Custom Tools
 =====================
 
-This is a brief guide to creating custom tools within Pathomx. This aspect of the software
-is under heavy development and will become considerably easier in the future. However, if 
-you need to create a custom tool *now* this is the way to do it.
+This is a brief guide to creating custom tools within Pathomx. This will become
+easier in the future. However, if  you need to create a custom tool *now*
+this is the way to do it.
 
 Do I need a custom tool?
 ------------------------
@@ -271,28 +271,108 @@ view output to see how it *should* look.
 Now drag from the *Import Text/CSV* ``output_data` port to the Gremlin ``input_data`` port.
 The gremlin tool will automatically calculate using the new data and display a modified plot
 called 'View'. If you can't see the different between this and the earlier plot try pressing
-the green *play* button a few times to re-run the tool. You should see the data change each
+the green *play* button a few times to re-run the tool. You will see the data change each
 time.
 
+Adding configuration
+--------------------
+
+A tool is not a lot of use without the ability to control it. All tools can be modified by editing 
+the source directly (see the *#* tab) but that isn't particular convenient. Pathomx tools
+can define configuration panels, containing multiple widgets that are linked to the defined config settings.
+
+Add the following code to the ``loader.py`` file.
+
+.. code-block:: python
+
+    # Configuration settings for the Gremlin
+    class GremlinConfigPanel(ConfigPanel):
+
+        def __init__(self, *args, **kwargs):
+            super(GremlinConfigPanel, self).__init__(*args, **kwargs)
+
+            gd = QGridLayout()
+
+            choices = {
+                'Random': 1,
+                'Delete row': 2,
+                'Delete column': 3,
+                'Randomise rows': 4,
+                'Randomise columns': 5,
+            }
+
+            gremlin_type_cb = QComboBox()
+            gremlin_type_cb.addItems( choices.keys() )
+            self.config.add_handler('gremlin_type', gremlin_type_cb, choices)
+            gd.addWidget( QLabel('Gremlin type'), 0, 0)
+            gd.addWidget(gremlin_type_cb, 0, 1)
+
+            evilness_sb = QSpinBox()
+            self.config.add_handler('evilness', evilness_sb)
+            gd.addWidget( QLabel('Evilness'), 1, 0)
+            gd.addWidget(evilness_sb, 1, 1)
+
+            self.layout.addLayout(gd)
+
+            self.finalise()
 
 
+This block of code defines the configuration panel for the tool. This is done using standard
+Qt (PyQt) widgets and layout code, which won't be gone into detail here. However, the bits
+unique to Pathomx tool code are worth a bit of explanation:
+
+As previously described tools have an in-built config handler (based on the `pyqtconfig` package
+available on PyPi). This keeps track of settings and also allows widgets to be attached and
+automatically synced with configuration settings. This is achieved with :python:`self.config.add_handler` linee.
+The first parameter is the config key to set, the second the widget and the (optional) third is a
+mapping dictionary/lambda tuple that converts between the displayed and stored value.
+
+This is used for the drop-down so that when *Random* is displayed, the stored value in 
+the config is actually ``1``. These mappings can be applied to any widget and can apply any transformation
+required. The widget is synced to the config value as it is bound.
+
+Each ``ConfigPanel`` has a default ``layout`` object defined to which
+your widgets are attached. They can be placed directly using :python:`self.layout.addWidget(widget)`
+or, as above, by defining a new layout and assigning that. It's usually useful to use a ``GridLayout``
+to place widgets on the panel alongside labels.
+
+Finally, the :python:`self.finalise()` call is required to apply the layouts and wrap up the initialisation.
+
+Next, add the following line to the ``__init__`` function of the GremlinTool class:
+
+.. code-block:: python
+
+        self.addConfigPanel(GremlinConfigPanel, 'Settings')
 
 
+...and you're good to go. Restart Pathomx and the Gremlin tool will auto-reload automatically.
+Drag the tool into the workspace and then select it. On the left hand side you should see 
+your shiny new control panel. Connect the tool up with the sample data as before, and then
+experiment with the config settings to see the effect. 
 
+Since we output the result of the transformation via the ``output_data`` port you can also
+connect up other tools and see the effect there. For example, connect up a PCA or PLS-DA
+tool and see the effect that the gremlin has on the ability of those algorithms to 
+separate the two classes in the dataset.
 
+Polish
+------
 
+Open up the ``gremlin.md`` file and edit the file to say whatever you would like it to. You can
+also replace the ``icon.png`` with a PNG format image more appropriate to an evil gremlin tool.
 
+The end
+-------
 
+This doesn't cover everything that is possible within a custom tool, but it should give
+you enough to get started on your own. If you have any suggestions for improvements of this
+documentation or want to share your own demos, get in touch.
 
-
-
-
-
-
+The `completed Gremlin tool`_ is available for download.
 
 
 .. _tool stub: http://download.pathomx.org/tool_stub_3.0.0.zip
 .. _Markdown: 
-.. 
+.. _completed Gremlin tool: http://download.pathomx.org/demos/gremlin_tool_3.0.0.zip
 
 
