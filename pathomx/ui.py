@@ -7,11 +7,11 @@ logging.debug('Loading ui.py')
 # Import PyQt5 classes
 from .qt import *
 
-from collections import OrderedDict
 import os
-from copy import deepcopy
 import numpy as np
 import pandas as pd
+from collections import OrderedDict
+
 from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
@@ -38,14 +38,10 @@ import logging
 import IPython
 ipython_css = os.path.join( os.path.dirname(os.path.realpath(IPython.__file__)), 'html', 'static', 'style', 'style.min.css' )
 from IPython.nbformat.current import read as read_notebook, NotebookNode
-from IPython.utils.ipstruct import Struct
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
 
 from qutepart import Qutepart
-
-from IPython.nbconvert.exporters import export as IPyexport
-from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 
 PX_INIT_SHOT = 50

@@ -14,10 +14,8 @@ to interpret what it's doing.
    
    custom_exceptions
    data
-   db
    Pathomx
    plugins
-   qt
    translate
    ui
    utils

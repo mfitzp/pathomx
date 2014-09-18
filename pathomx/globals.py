@@ -50,6 +50,11 @@ notebook_queue = NotebookRunnerQueue()
 # Pathomx global variables
 current_tools = []
 current_tools_by_id = {}
+
+available_tools_by_category = defaultdict(list)
+
+plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export"]  # categories_filter.keys()
+
 installed_plugin_names = {}
 current_datasets = []
 app_launchers = {}

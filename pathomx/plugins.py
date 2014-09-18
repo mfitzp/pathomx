@@ -20,7 +20,7 @@ import inspect
 import shutil
 from . import utils
 from . import ui
-from .globals import app_launchers, file_handlers, url_handlers
+from .globals import app_launchers, file_handlers, url_handlers, available_tools_by_category
 
 from zipfile import ZipFile
 
@@ -388,7 +388,7 @@ class BasePlugin(IPlugin):
         if workspace_category == None:
             workspace_category = self.default_workspace_category
 
-        self.m.tools[workspace_category].append({
+        available_tools_by_category[workspace_category].append({
             'id': key,
             'app': tool,
             'plugin': self,

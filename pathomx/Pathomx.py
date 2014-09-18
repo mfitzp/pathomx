@@ -7,9 +7,10 @@ from .qt import *
 import sys
 import logging
 
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
 frozen = getattr(sys, 'frozen', False)
 if frozen:
-    os.environ['QT_API'] = 'pyqt' # Force v4 for release; threading requirements until IPython fully supports PyQt5
     logging.basicConfig(level=logging.INFO)
 else:
     logging.basicConfig(level=logging.DEBUG)
@@ -45,7 +46,8 @@ except ImportError:
 
 from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
-                     settings, url_handlers, app_launchers, mono_fontFamily
+                     settings, url_handlers, app_launchers, mono_fontFamily, available_tools_by_category, \
+                     plugin_categories
 
 from . import utils
 from . import ui
@@ -363,6 +365,7 @@ class MainWindow(QMainWindow):
         self.plugin_places = []
         self.core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
         self.plugin_places.append(self.core_plugin_path)
+        
         #user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
         #if user_application_data_paths:
         #    self.user_plugin_path = os.path.join( unicode(user_application_data_paths[0]), 'plugins')
@@ -374,8 +377,6 @@ class MainWindow(QMainWindow):
         logging.info("Searching for plugins...")
         for place in self.plugin_places:
             logging.info(place)
-
-        self.tools = defaultdict(list)
 
         self.pluginManager.setPluginPlaces(self.plugin_places)
         self.pluginManager.setPluginInfoExtension('pathomx-plugin')
@@ -391,12 +392,9 @@ class MainWindow(QMainWindow):
         self.pluginManager.setCategoriesFilter(categories_filter)
         self.pluginManager.collectPlugins()
 
-        plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export"]  # categories_filter.keys()
-        apps = defaultdict(list)
         self.appBrowsers = {}
         self.plugin_names = dict()
         self.plugin_metadata = dict()
-
 
         # Loop round the plugins and print their names.
         for category in plugin_categories:
@@ -433,7 +431,7 @@ class MainWindow(QMainWindow):
 
                 plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
 
-                apps[category].append(metadata)
+                #apps[category].append(metadata)
 
         self.workspace_count = 0  # Auto-increment
         self.workspace_parents = {}
@@ -447,42 +445,11 @@ class MainWindow(QMainWindow):
         self.workspace.setUniformRowHeights(True)
         self.workspace.hideColumn(1)
 
-        app_category_icons = {
-               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
-               "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
-               "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
-               "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
-               "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
-               "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
-               "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
-               }
 
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
         self.toolbox.setHeaderLabels(['Available tools'])
         self.toolbox.setUniformRowHeights(True)
-
-        for category in plugin_categories:
-            item = QTreeWidgetItem()
-            item.setText(0, category)
-            item.setIcon(0, app_category_icons[category])
-            self.toolbox.addTopLevelItem(item)
-            for tool in self.tools[category]:
-                ti = QTreeWidgetItem()
-                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
-                
-                if tool['app'].icon:
-                    icon_path = os.path.join(tool['plugin'].path, tool['app'].icon)
-                else:
-                    icon_path = os.path.join(tool['plugin'].path, 'icon.png')
-                
-                tool['icon'] = QIcon(icon_path)
-                
-                ti.setIcon(0, tool['icon'])
-                ti.setToolTip(0, tool['plugin'].metadata['description'])
-                ti.data = tool
-                item.addChild(ti)
-            item.sortChildren(0, Qt.AscendingOrder)
-
+        self.buildToolkit()
         self.toolbox.expandAll()
 
         self.toolDock = QDockWidget(tr('Toolkit'))
@@ -571,7 +538,6 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
         # Do version upgrade check
-        print settings.get('Pathomx/Current_version')
         if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(__version__):
             # We've got an upgrade
             logging.info('Upgrade to %s' % __version__)
@@ -585,6 +551,43 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(tr('Ready'))
 
+    def buildToolkit(self):
+    
+        tool_category_icons = {
+               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
+               "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
+               "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
+               "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
+               "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
+               "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
+               "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
+               }
+    
+        self.toolbox.clear()
+        for category in plugin_categories:
+            item = QTreeWidgetItem()
+            item.setText(0, category)
+            item.setIcon(0, tool_category_icons[category])
+            self.toolbox.addTopLevelItem(item)
+
+            for tool in available_tools_by_category[category]:
+                ti = QTreeWidgetItem()
+                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
+                
+                if tool['app'].icon:
+                    icon_path = os.path.join(tool['plugin'].path, tool['app'].icon)
+                else:
+                    icon_path = os.path.join(tool['plugin'].path, 'icon.png')
+                
+                tool['icon'] = QIcon(icon_path)
+                
+                ti.setIcon(0, tool['icon'])
+                ti.setToolTip(0, tool['plugin'].metadata['description'])
+                ti.data = tool
+                item.addChild(ti)
+            item.sortChildren(0, Qt.AscendingOrder)
+
+    
     def addFileToolBar(self):
         t = self.addToolBar('File')
         t.setIconSize(QSize(16, 16))
@@ -1235,8 +1238,7 @@ def main():
     logging.info('Ready.')
     app.exec_()  # Enter Qt application main loop
     logging.info('Exiting.')
-    sys.exit()
     
     
-if __name__ == "__main__":
+if __name__ == "__main__" and not ON_RTD:
     main()

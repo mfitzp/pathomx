@@ -2,19 +2,9 @@ import logging
 
 from collections import namedtuple
 
-from IPython.qt.base_frontend_mixin import BaseFrontendMixin
-
 from .qt import *
 
-MAX_RUNNER_QUEUE = 1 # In process; can only have one
-
-#if USE_QT_PY == PYQT5:
-#    # The normal ZMQ kernel doesn't work in PyQt5 yet so use in the in-process one
-#    from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
-#
-#else:
-#    # In PyQt4 we can use the ZMQ kernel and avoid blocking
-#    from IPython.qt.manager import QtKernelManager as KernelManager
+from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 

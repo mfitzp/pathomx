@@ -9,6 +9,11 @@ PYQT5 = 2
 
 USE_QT_PY = None
 
+# ReadTheDocs
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+if ON_RTD:
+    os.environ['QT_API'] = 'pyqt5' # Force v5 for rtd (because it's wrapped)
+
 QT_API_ENV = os.environ.get('QT_API')
 ETS = dict(pyqt=PYQT4, pyqt5=PYQT5, pyside=PYSIDE)
 

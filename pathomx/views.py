@@ -24,7 +24,9 @@ from .translate import tr
 
 from .qt import USE_QT_PY, PYQT4, PYQT5
 
-if USE_QT_PY == PYQT5:
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
+if ON_RTD or USE_QT_PY == PYQT5:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 elif USE_QT_PY == PYQT4:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
