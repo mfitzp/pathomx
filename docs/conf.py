@@ -135,11 +135,15 @@ MOCK_MODULES = [
         'wheezy.template.loader',
         'pandas',
         'pyqtconfig',
+        'IPython',
+        'IPython.qt'
         'IPython.qt.console'
         'IPython.qt.console.rich_ipython_widget',
         'IPython.qt.console.ansi_code_processor',
         'IPython.qt.base_frontend_mixin',
+        'IPython.nbformat',
         'IPython.nbformat.current',
+        'IPython.nbconvert',
         'IPython.nbconvert.exporters',
         'IPython.nbconvert.exporters.export',
         ]

@@ -2,9 +2,6 @@ import logging
 
 from collections import namedtuple
 
-from IPython.nbformat.current import NotebookNode
-from IPython.nbconvert.exporters import export as IPyexport
-from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 
 from .qt import *
@@ -295,18 +292,19 @@ pathomx_notebook_start(varsi, vars());''')
             'execute_result': 'pyout'
         }
         msg_type = notebook3_format_conversions.get(msg_type, msg_type)
-        out = NotebookNode(output_type=msg_type)
+        #out = NotebookNode(output_type=msg_type)
 
         if 'execution_count' in content:
             #self._current_cell['prompt_number'] = content['execution_count']
-            out.prompt_number = content['execution_count']
+            pass #out.prompt_number = content['execution_count']
 
         if msg_type in ('status', 'pyin', 'execute_input'):
             return
 
         elif msg_type == 'stream':
-            out.stream = content['name']
-            out.text = content['data']
+            pass
+            #out.stream = content['name']
+            #out.text = content['data']
 
         elif msg_type in ('display_data', 'pyout'):
             # Is this handled in _handle_execute_result?
@@ -316,14 +314,14 @@ pathomx_notebook_start(varsi, vars());''')
                 except KeyError:
                     raise NotImplementedError('unhandled mime type: %s' % mime)
 
-                setattr(out, attr, data)
+                #setattr(out, attr, data)
             return
 
         elif msg_type == 'pyerr':
             # Is this handled in _handle_execute_errror?
-            out.ename = content['ename']
-            out.evalue = content['evalue']
-            out.traceback = content['traceback']
+            # out.ename = content['ename']
+            # out.evalue = content['evalue']
+            # out.traceback = content['traceback']
             return 
 
         elif msg_type == 'clear_output':
@@ -366,14 +364,14 @@ pathomx_notebook_start(varsi, vars());''')
                  
             (cell, n, pc) = self._cell_execute_ids[msg_id]
 
-            out = NotebookNode(output_type='display_data')
+            #out = NotebookNode(output_type='display_data')
             for mime, data in msg['content']['data'].items():
                 try:
                     attr = self.MIME_MAP[mime]
                 except KeyError:
                     raise NotImplementedError('unhandled mime type: %s' % mime)
 
-                setattr(out, attr, data)            
+                #setattr(out, attr, data)            
             
             #cell['outputs'].append(out)
 
