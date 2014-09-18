@@ -136,13 +136,16 @@ MOCK_MODULES = [
         'pandas',
         'pyqtconfig',
         'IPython',
+        'IPython.qt'
+        'IPython.qt.console'
         'IPython.qt.console.rich_ipython_widget',
         'IPython.qt.console.ansi_code_processor',
+        'IPython.qt.base_frontend_mixin',
+        'IPython.nbformat',
         'IPython.nbformat.current',
+        'IPython.nbconvert',
         'IPython.nbconvert.exporters',
         'IPython.nbconvert.exporters.export',
-        'IPython.qt.base_frontend_mixin',
-        'IPython.qt.console.rich_ipython_widget',
         ]
 
 for mod_name in MOCK_MODULES:
