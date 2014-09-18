@@ -12,7 +12,6 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
-   config
    custom_exceptions
    data
    db
