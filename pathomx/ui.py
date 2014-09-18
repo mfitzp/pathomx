@@ -1249,8 +1249,10 @@ class GenericApp(QObject):
         # Initial display of the notebook
         self.code_editor = Qutepart()
         self.code_editor.detectSyntax(language='Python')
-        self.addEditorToolBar()
+
         self.addDataToolBar()
+        self.addEditorToolBar()
+        self.addFigureToolBar()
         
 
         self.load_notes()

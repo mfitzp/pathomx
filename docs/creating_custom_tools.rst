@@ -274,6 +274,13 @@ called 'View'. If you can't see the different between this and the earlier plot 
 the green *play* button a few times to re-run the tool. You will see the data change each
 time.
 
+.. image:: images/gremlin_tool_before.png
+    :alt: The original dataset
+
+.. image:: images/gremlin_tool_after.png
+    :alt: The data after the gremlin has been at it
+
+
 Adding configuration
 --------------------
 

@@ -83,8 +83,6 @@ class MapEntityApp(ui.IPythonApp):
         super(MapEntityApp, self).__init__(*args, **kwargs)
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
 
