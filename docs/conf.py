@@ -134,6 +134,7 @@ MOCK_MODULES = [
         'wheezy.template.ext.code',
         'wheezy.template.loader',
         'pandas',
+        'pyqtconfig',
         ]
 
 for mod_name in MOCK_MODULES:
