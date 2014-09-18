@@ -14,58 +14,7 @@
 
 import sys
 import os
-
-class MockType(type):
-
-    def __init__(self, *args, **kwargs):
-        super(MockType, self).__init__(*args)
-        
-    def __call__(self, *args, **kwargs):
-        return self
-        
-    getSaveFileName = None
-    SizeAllCursor = None
-    PointingHandCursor = None
-    ArrowCursor = None
-    CrossCursor = None
-
-    Key_Control = 'control'
-    Key_Shift = 'shift'
-    Key_Alt = 'alt'
-    Key_Meta = 'super'
-    Key_Return = 'enter'
-    Key_Left = 'left'
-    Key_Up = 'up'
-    Key_Right = 'right'
-    Key_Down = 'down'
-    Key_Escape = 'escape'
-    Key_F1 = 'f1'
-    Key_F2 = 'f2'
-    Key_F3 = 'f3'
-    Key_F4 = 'f4'
-    Key_F5 = 'f5'
-    Key_F6 = 'f6'
-    Key_F7 = 'f7'
-    Key_F8 = 'f8'
-    Key_F9 = 'f9'
-    Key_F10 = 'f10'
-    Key_F11 = 'f11'
-    Key_F12 = 'f12'
-    Key_Home = 'home'
-    Key_End = 'end'
-    Key_PageUp = 'pageup'
-    Key_PageDown = 'pagedown'
-
-    MetaModifier = None
-    AltModifier = None
-    ControlModifier = None
-    LeftButton = None
-    RightButton = None
-    MidButton = None
-    
-    start_event_loop_default = None
-    stop_event_loop_default = None
-    
+from unittest.mock import MagicMock
     
 class Mock(MagicMock):
     @classmethod
