@@ -24,6 +24,7 @@ from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 import uuid
 from copy import deepcopy
 from datetime import datetime
+import re
 
 
 class NotebookRunner(BaseFrontendMixin, QObject):
@@ -138,14 +139,20 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
         self._execute(r'''from pathomx import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start(varsi, vars());''')
+
+        # We split the code into 'cells' here so we get UI response between those chunks
+        # this allows progress update/etc. to be displayed
+        # TODO: Implement a method for a running process to mark it's progress specifically
+        code_cells = re.split('\n(?=\w.*[^:]\n)', code) # Split only where not indented (blocks are processed together)
+        cell_pc = 100.0 / len(code_cells)
         
-        #re.split('\n(?=\w)',a)
-        
-        msg_id = self._execute(code)
+        for n, cell in enumerate(code_cells):
+            msg_id = self._execute(cell)
+            logging.debug('Cell number %d; %s' % ( n, msg_id) )
+            progress = n * cell_pc
+            self._cell_execute_ids[ msg_id ] = (cell, n, progress) # Store cell and progress        
 
         logging.debug("Runing notebook; startup message: %s" % msg_id)
-
-        self._cell_execute_ids[ msg_id ] = (code, 1, 100) # Store cell and progress
 
         self._final_msg_id = self._execute(r'''pathomx_notebook_stop(vars());''')
         logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
