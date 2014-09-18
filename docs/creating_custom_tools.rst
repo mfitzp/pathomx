@@ -357,7 +357,7 @@ Drag the tool into the workspace and then select it. On the left hand side you s
 your shiny new control panel. Connect the tool up with the sample data as before, and then
 experiment with the config settings to see the effect. 
 
-.. image:: images/gremlin_tool_control_panel_3.0.0.png
+.. image:: images/gremlin_tool_control_panel_3_0_0.png
     :alt: The control panel as visible in the Pathomx application
 
 
