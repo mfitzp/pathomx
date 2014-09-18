@@ -274,12 +274,12 @@ class MainWindow(QMainWindow):
         saveAsAction.triggered.connect(self.onSaveWorkflowAs)
         self.menuBars['file'].addAction(saveAsAction)
 
-        self.menuBars['file'].addSeparator()
+        #self.menuBars['file'].addSeparator()
 
         export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export IPython notebook…', self)
         export_ipythonnbAction.setStatusTip('Export workflow as IPython notebook')
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
-        self.menuBars['file'].addAction(export_ipythonnbAction)
+        #self.menuBars['file'].addAction(export_ipythonnbAction)
 
         export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export workflow report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
