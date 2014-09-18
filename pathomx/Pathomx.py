@@ -25,9 +25,9 @@ if sys.version_info < (3, 0):  # Python 2 only
 
 
 
-from IPython.nbformat.current import write as write_notebook
-from IPython.nbconvert.exporters import export as IPyexport
-from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
+#from IPython.nbformat.current import write as write_notebook
+#from IPython.nbconvert.exporters import export as IPyexport
+#from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 from IPython.nbformat.v3 import new_code_cell
 
 # Console widget
