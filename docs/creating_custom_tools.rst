@@ -1,6 +1,7 @@
 .. role:: python(code)
    :language: python
-   
+
+
 Creating Custom Tools
 =====================
 
