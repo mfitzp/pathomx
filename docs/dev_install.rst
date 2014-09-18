@@ -46,7 +46,7 @@ Install pandoc from http://johnmacfarlane.net/pandoc/installing.html
 
 With those installed you can now add the final dependencies via Pip:
 
-    pip install ipython jsonschema jsonpointer mistune dill mplstyler pyqtconfig metaviz biocyc
+    pip install ipython jsonschema jsonpointer mistune mplstyler pyqtconfig metaviz biocyc
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
@@ -61,7 +61,7 @@ Make the decision at this point whether to use 64bit or 32bit versions and stick
 
 With Anaconda installed, open the Anaconda command prompt and  you can add the final dependencies.
 
-    pip install dill mplstyler yapsy pyqtconfig.
+    pip install mplstyler yapsy pyqtconfig.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
@@ -87,7 +87,7 @@ You can opt to install pyqt5 instead, however currently this offers lower perfor
 bleeding-edge matplotlib/IPython to function.
 Next use pip to install all required Python packages. This can be done in a one liner with pip::
 
-    pip install numpy scipy pandas matplotlib scikit-learn poster yapsy dill pyqtconfig mplstyler
+    pip install numpy scipy pandas matplotlib scikit-learn poster yapsy pyqtconfig mplstyler
     pip install ipython[all]
 
 You can also optionally install the following for some biological data analysis notebooks::
@@ -108,10 +108,9 @@ Install Anaconda for MacOS X. Link to the website is http://continuum.io/downloa
 With Anaconda installed, open the terminal on Mac and  you can add the final dependencies.
 
     pip install mplstyler yapsy pyqtconfig.
+    conda install -c pwang
 
-    conda install -c pwang dill
-
-    Install pandoc. Link to the website is provided here http://johnmacfarlane.net/pandoc/installing.html.
+Install pandoc. Link to the website is provided here http://johnmacfarlane.net/pandoc/installing.html.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 

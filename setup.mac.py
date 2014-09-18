@@ -21,7 +21,6 @@ build_py2app=dict(
         'pandas',
         'matplotlib',
         'dateutil',
-        'dill',
         'requests',
 
         'IPython',

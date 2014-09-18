@@ -56,7 +56,6 @@ setup(
             'matplotlib>=1.4.0',
             'mplstyler',
             'pyqtconfig',
-            'dill',
             'scikit-learn',
             'requests',
             'yapsy',

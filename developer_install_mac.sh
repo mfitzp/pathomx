@@ -6,7 +6,7 @@ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 brew install python pyqt pandoc hdf5 libpng zeromq freetype pandoc
 brew link --overwrite python
 
-pip install --upgrade numpy scipy pandas yapsy requests matplotlib scikit-learn dill pyqtconfig mplstyler
+pip install --upgrade numpy scipy pandas yapsy requests matplotlib scikit-learn pyqtconfig mplstyler
 pip install --upgrade ipython[all]
 
 #brew install graphviz

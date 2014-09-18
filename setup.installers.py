@@ -23,7 +23,6 @@ default_build_options=dict(
         'IPython',
         'matplotlib',
         'dateutil',
-        'dill',
         'requests',
 
         'sklearn',
