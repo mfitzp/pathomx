@@ -350,6 +350,10 @@ Drag the tool into the workspace and then select it. On the left hand side you s
 your shiny new control panel. Connect the tool up with the sample data as before, and then
 experiment with the config settings to see the effect. 
 
+.. image:: images/gremlin_tool_control_panel_3.0.0.png
+    :alt: The control panel as visible in the Pathomx application
+
+
 Since we output the result of the transformation via the ``output_data`` port you can also
 connect up other tools and see the effect there. For example, connect up a PCA or PLS-DA
 tool and see the effect that the gremlin has on the ability of those algorithms to 
