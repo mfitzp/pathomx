@@ -138,6 +138,11 @@ MOCK_MODULES = [
         'IPython',
         'IPython.qt.console.rich_ipython_widget',
         'IPython.qt.console.ansi_code_processor',
+        'IPython.nbformat.current',
+        'IPython.nbconvert.exporters',
+        'IPython.nbconvert.exporters.export',
+        'IPython.qt.base_frontend_mixin',
+        
         ]
 
 for mod_name in MOCK_MODULES:
