@@ -1249,7 +1249,9 @@ class GenericApp(QObject):
         # Initial display of the notebook
         self.code_editor = Qutepart()
         self.code_editor.detectSyntax(language='Python')
-        self.addEditorToolBars()
+        self.addEditorToolBar()
+        self.addDataToolBar()
+        
 
         self.load_notes()
         self.load_source()
@@ -1377,7 +1379,7 @@ class GenericApp(QObject):
         varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
         varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out
         
-        logging.info("Running notebook %s for %s" % (self.notebook, self.name))
+        logging.info("Running tool %s" % self.name)
 
         notebook_queue.add_job(self.code, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
@@ -1570,7 +1572,7 @@ class GenericApp(QObject):
 
         self.toolbars['data'] = t
         
-    def addEditorToolBars(self):
+    def addEditorToolBar(self):
         t = self.w.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
     

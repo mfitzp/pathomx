@@ -390,13 +390,13 @@ class BasePlugin(IPlugin):
 
         self.m.tools[workspace_category].append({
             'id': key,
-            'app': app,
+            'app': tool,
             'plugin': self,
         })
 
         # Support legacy app launchers (so moving apps between plugins doesn't kill them)
-        for lkey in app.legacy_launchers:
-            app_launchers[lkey] = app
+        for lkey in tool.legacy_launchers:
+            app_launchers[lkey] = tool
 
     def register_file_handler(self, app, ext):
         file_handlers[ext] = app
