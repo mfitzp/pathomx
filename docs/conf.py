@@ -142,7 +142,7 @@ MOCK_MODULES = [
         'IPython.nbconvert.exporters',
         'IPython.nbconvert.exporters.export',
         'IPython.qt.base_frontend_mixin',
-        
+        'IPython.qt.console.rich_ipython_widget',
         ]
 
 for mod_name in MOCK_MODULES:
