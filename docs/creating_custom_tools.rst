@@ -55,7 +55,7 @@ end up with the following folder structure:
 A brief description of each follows - 
 
 ``.pathomx-plugin`` indicates that this folder is a Pathomx plugin folder. It also holds some
-metadata about the plugin in the `Wheezy`_ plugin format. However, you don't need to know about 
+metadata about the plugin in the `Yapsy`_ plugin format. However, you don't need to know about 
 that to use it just make your changes to the example provided.
 
 ``__init__.py`` is an empty file required by Python to import the folder as a module. Leave empty.
@@ -368,11 +368,16 @@ This doesn't cover everything that is possible within a custom tool, but it shou
 you enough to get started on your own. If you have any suggestions for improvements of this
 documentation or want to share your own demos, get in touch.
 
-The `completed Gremlin tool`_ is available for download.
+The `complete Gremlin tool`_ is available for download.
 
 
 .. _tool stub: http://download.pathomx.org/tool_stub_3.0.0.zip
-.. _Markdown: 
-.. _completed Gremlin tool: http://download.pathomx.org/demos/gremlin_tool_3.0.0.zip
+.. _Markdown: http://daringfireball.net/projects/markdown/syntax
+.. _complete Gremlin tool: http://download.pathomx.org/demos/gremlin_tool_3.0.0.zip
+.. _developer installation: http://docs.pathomx.org/en/latest/dev_install.html
+.. _Yapsy: http://yapsy.sourceforge.net/
+.. _Pandas: http://pandas.pydata.org/
+.. _NumPy: http://www.numpy.org/
+.. _SciPy: http://www.scipy.org/
 
 
