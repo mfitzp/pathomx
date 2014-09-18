@@ -137,7 +137,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._execute_start = datetime.now()
         
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
-        self._execute(r'''from pathomx import pathomx_notebook_start, pathomx_notebook_stop
+        self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start(varsi, vars());''')
 
         # We split the code into 'cells' here so we get UI response between those chunks
