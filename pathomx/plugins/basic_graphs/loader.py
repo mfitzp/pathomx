@@ -26,9 +26,6 @@ class BarTool(ui.AnalysisApp):
     def __init__(self, *args, **kwargs):
         super(BarTool, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data', is_public=False)  # Hidden
 
@@ -55,9 +52,6 @@ class SpectraTool(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(SpectraTool, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot        
 
         # Setup data consumer options
@@ -79,9 +73,6 @@ class HeatmapTool(ui.IPythonApp):
 
     def __init__(self, *args, **kwargs):
         super(HeatmapTool, self).__init__(*args, **kwargs)
-
-        self.addDataToolBar()
-        self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot        
 

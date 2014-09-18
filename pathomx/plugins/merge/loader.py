@@ -21,7 +21,6 @@ class MergeApp(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(MergeApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
         self.data.add_input('input_1')  # Add input slot
         self.data.add_input('input_2')  # Add input slot
         self.data.add_output('output_data')  # Add output slot

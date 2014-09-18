@@ -1150,6 +1150,8 @@ class GenericApp(QObject):
 
     autoconfig_name = None
     
+    default_pause_analysis = False
+    
     icon = None
 
     def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
@@ -1545,7 +1547,10 @@ class GenericApp(QObject):
     
         pass
 
-    def addDataToolBar(self, default_pause_analysis=False):
+    def addDataToolBar(self):
+        if 'data' in self.toolbars:
+            return False
+            
         t = self.w.addToolBar('Data')
         t.setIconSize(QSize(16, 16))
 
@@ -1562,10 +1567,10 @@ class GenericApp(QObject):
         pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.w)
         pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
         pause_analysisAction.setCheckable(True)
-        pause_analysisAction.setChecked(default_pause_analysis)
+        pause_analysisAction.setChecked(self.default_pause_analysis)
         pause_analysisAction.toggled.connect(self.onAutoAnalysisToggle)
         t.addAction(pause_analysisAction)
-        self._pause_analysis_flag = default_pause_analysis
+        self._pause_analysis_flag = self.default_pause_analysis
 
         select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self.w)
         select_dataAction.setStatusTip('View resulting data output from this plugin')
@@ -1575,6 +1580,9 @@ class GenericApp(QObject):
         self.toolbars['data'] = t
         
     def addEditorToolBar(self):
+        if 'editor' in self.toolbars:
+            return False
+    
         t = self.w.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
     
@@ -1625,21 +1633,6 @@ class GenericApp(QObject):
 
         return self.toolbars[id]
 
-    def addFigureToolBar(self):
-        t = self.getCreatedToolbar(tr('Figures'), 'figure')
-
-        export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self.w)
-        export_imageAction.setStatusTip(tr('Export figure to image'))
-        export_imageAction.triggered.connect(self.onSaveImage)
-        t.addAction(export_imageAction)
-        #printAction = QAction(QIcon.fromTheme("document-print", QIcon( os.path.join( utils.scriptdir, 'icons', 'printer.png') )), tr('&Print…'), self)
-        #printAction.setShortcut('Ctrl+P')
-        #printAction.setStatusTip( tr('Print current figure') )
-        #printAction.triggered.connect(self.onPrint)
-        #t.addAction(printAction)
-
-        self.addMplToolBarExtensions()
-
     def addExternalDataToolbar(self):
         t = self.getCreatedToolbar(tr('External Data'), 'external-data')
 
@@ -1651,44 +1644,54 @@ class GenericApp(QObject):
         t.addAction(watch_fileAction)
         self._autoload_source_files_on_change = False
 
-    def addMplToolBarExtensions(self):
-        if 'figure' in self.toolbars:  # Never more than one
-            t = self.getCreatedToolbar(tr('Figure'), 'figure')
+    def addFigureToolBar(self):
+        if 'figure' in self.toolbars:
+            return False
+    
+        t = self.w.addToolBar('Editor')
+        t.setIconSize(QSize(16, 16))
 
-            toolitems = (
-                ('Home', 'Reset original view', 'home.png', 'home'),
-                ('Back', 'Back to  previous view', 'back.png', 'back'),
-                ('Forward', 'Forward to next view', 'forward.png', 'forward'),
-                ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png', 'pan'),
-                ('Zoom', 'Zoom to rectangle', 'zoom_to_rect.png', 'zoom'),
-            )
+        export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self.w)
+        export_imageAction.setStatusTip(tr('Export figure to image'))
+        export_imageAction.triggered.connect(self.onSaveImage)
+        t.addAction(export_imageAction)
+    
 
-            t._mpl_specific_actions = []
-            t._checkable_actions = {}
-            t.modeActionGroup = QActionGroup(t)
+        toolitems = (
+            ('Home', 'Reset original view', 'home.png', 'home'),
+            ('Back', 'Back to  previous view', 'back.png', 'back'),
+            ('Forward', 'Forward to next view', 'forward.png', 'forward'),
+            ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png', 'pan'),
+            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect.png', 'zoom'),
+        )
 
-            for text, tooltip_text, image_file, callback in toolitems:
-                act = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', image_file)), text, self)
+        t._mpl_specific_actions = []
+        t._checkable_actions = {}
+        t.modeActionGroup = QActionGroup(t)
 
-                def make_callback(callback):
-                    return lambda e: self.dispatchMplEvent(e, callback)
-                act.triggered.connect(make_callback(callback))
+        for text, tooltip_text, image_file, callback in toolitems:
+            act = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', image_file)), text, self)
 
-                t._mpl_specific_actions.append(act)
+            def make_callback(callback):
+                return lambda e: self.dispatchMplEvent(e, callback)
+            act.triggered.connect(make_callback(callback))
 
-                if callback in ['zoom', 'pan']:
-                    act.setCheckable(True)
-                    t._checkable_actions[callback] = act
-                    act.setActionGroup(t.modeActionGroup)
+            t._mpl_specific_actions.append(act)
 
-                if tooltip_text is not None:
-                    act.setToolTip(tooltip_text)
+            if callback in ['zoom', 'pan']:
+                act.setCheckable(True)
+                t._checkable_actions[callback] = act
+                act.setActionGroup(t.modeActionGroup)
 
-                act.setEnabled(False)  # Disable by default; nonstandard
-                t.addAction(act)
+            if tooltip_text is not None:
+                act.setToolTip(tooltip_text)
 
-            self.views.currentChanged.connect(self.onMplToolBarCanvasChanged)
-            #self.addToolBar( t )
+            act.setEnabled(False)  # Disable by default; nonstandard
+            t.addAction(act)
+
+        self.views.currentChanged.connect(self.onMplToolBarCanvasChanged)
+
+        self.toolbars['figure'] = t
 
     def dispatchMplEvent(self, e, callback):
         selected_view = self.views.widget(self.views.currentIndex())
@@ -1771,12 +1774,11 @@ class ImportDataApp(IPythonApp):
     import_description = tr("Open experimental data from file")
 
     autoconfig_name = "{filename}"
-
+    
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ImportDataApp, self).__init__(parent, *args, **kwargs)
 
         self.addImportDataToolbar()
-        self.addFigureToolBar()
 
         if filename:
             self.thread_load_datafile(filename)

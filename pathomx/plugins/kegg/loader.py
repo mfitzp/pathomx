@@ -26,6 +26,8 @@ class KEGGPathwayApp(ui.AnalysisApp):
     shortname = 'kegg_pathway'
 
     legacy_outputs = {'output': 'output_data'}
+    
+    default_pause_analysis=True
 
     def __init__(self, *args, **kwargs):
         super(KEGGPathwayApp, self).__init__(*args, **kwargs)
@@ -46,9 +48,6 @@ class KEGGPathwayApp(ui.AnalysisApp):
         self.config.set_defaults({
             'kegg_pathway_id': 'hsa00010',
         })
-
-        self.addDataToolBar(default_pause_analysis=True)
-        self.addFigureToolBar()
 
         self.kegg_pathway_t = QLineEdit()
         t = self.addToolBar('KEGG')

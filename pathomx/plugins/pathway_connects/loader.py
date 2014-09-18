@@ -15,8 +15,6 @@ class PathwayConnectsApp(ui.AnalysisApp):
     def __init__(self, *args, **kwargs):
         super(PathwayConnectsApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-
         self.data.add_input('input')  # Add input slot        
         # Setup data consumer options
         self.data.consumer_defs.append(

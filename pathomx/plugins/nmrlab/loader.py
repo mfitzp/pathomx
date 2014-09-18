@@ -25,9 +25,6 @@ class NMRLabMetabolabTool(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(NMRLabMetabolabTool, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
 

@@ -214,9 +214,6 @@ class RegressionTool(ui.AnalysisApp):
     def __init__(self, *args, **kwargs):
         super(RegressionTool, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
 
         # Setup data consumer options

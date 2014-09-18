@@ -29,7 +29,6 @@ class FoldChangeApp(ui.AnalysisApp):
         super(FoldChangeApp, self).__init__(*args, **kwargs)
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
-        self.addDataToolBar()
         self.addExperimentConfigPanel()
 
         self.data.add_input('input_data')  # Add input slot

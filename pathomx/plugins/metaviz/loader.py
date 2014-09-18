@@ -186,9 +186,6 @@ class MetaVizApp(ui.AnalysisApp):
     def __init__(self, *args, **kwargs):
         super(MetaVizApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('suggested_pathways')  # Add input slot
         self.data.add_input('compound_data')  # Add input slot
         self.data.add_input('gene_data')  # Add input slot

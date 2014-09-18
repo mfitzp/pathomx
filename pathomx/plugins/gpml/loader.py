@@ -92,9 +92,6 @@ class GPMLPathwayApp(ui.AnalysisApp):
         load_wikipathwaysAction.setStatusTip('Load a GPML pathway from WikiPathways service')
         load_wikipathwaysAction.triggered.connect(self.onLoadGPMLWikiPathways)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         t = self.addToolBar('GPML')
         t.setIconSize(QSize(16, 16))
         t.addAction(load_gpmlAction)

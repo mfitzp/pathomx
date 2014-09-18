@@ -61,10 +61,7 @@ class PLSDATool(ui.AnalysisApp):
         super(PLSDATool, self).__init__(*args, **kwargs)
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
 
-        self.addDataToolBar()
         self.addExperimentConfigPanel()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
 
         self.config.set_defaults({
@@ -111,9 +108,6 @@ class PCATool(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(PCATool, self).__init__(*args, **kwargs)
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)
-
-        self.addDataToolBar()
-        self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot
 

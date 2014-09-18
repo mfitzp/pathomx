@@ -51,9 +51,6 @@ class SpectraNormApp(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(SpectraNormApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
 
@@ -161,9 +158,6 @@ class PeakAdjApp(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(PeakAdjApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
         self.data.add_output('region')
@@ -248,9 +242,6 @@ class PeakPickingApp(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(PeakPickingApp, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
 
@@ -313,9 +304,6 @@ class BinningApp(ui.IPythonApp):
 
     def __init__(self, *args, **kwargs):
         super(BinningApp, self).__init__(*args, **kwargs)
-
-        self.addDataToolBar()
-        self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
@@ -470,9 +458,6 @@ class BaselineCorrectionTool(ui.IPythonApp):
     def __init__(self, *args, **kwargs):
         super(BaselineCorrectionTool, self).__init__(*args, **kwargs)
 
-        self.addDataToolBar()
-        self.addFigureToolBar()
-
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
 
@@ -563,9 +548,6 @@ class SpectraExclusionTool(ui.IPythonApp):
 
     def __init__(self, *args, **kwargs):
         super(SpectraExclusionTool, self).__init__(*args, **kwargs)
-
-        self.addDataToolBar()
-        self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')

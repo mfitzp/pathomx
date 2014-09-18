@@ -42,8 +42,6 @@ You can get Windows binaries for most required Python libraries from `the Python
 At a minimum you will need to install Pip_, NumPy_, SciPy_, `Scikit-Learn`_, Matplotlib_, IPython_, pyzmq_.
 Make sure that the installed binaries match the architecture (32bit/64bit) and the installed Python version.
 
-Install pandoc from http://johnmacfarlane.net/pandoc/installing.html
-
 With those installed you can now add the final dependencies via Pip:
 
     pip install ipython jsonschema jsonpointer mistune mplstyler pyqtconfig metaviz biocyc
@@ -109,8 +107,6 @@ With Anaconda installed, open the terminal on Mac and  you can add the final dep
 
     pip install mplstyler yapsy pyqtconfig.
     conda install -c pwang
-
-Install pandoc. Link to the website is provided here http://johnmacfarlane.net/pandoc/installing.html.
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 

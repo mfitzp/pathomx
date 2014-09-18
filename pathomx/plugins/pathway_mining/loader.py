@@ -148,9 +148,6 @@ class PathwayMiningApp(ui.AnalysisApp):
     def __init__(self, *args, **kwargs):
         super(PathwayMiningApp, self).__init__(*args, **kwargs)
 
-        # Define automatic mapping (settings will determine the route; allow manual tweaks later)
-        self.addDataToolBar()
-
         self.config.set_defaults({
             '/Data/MiningTarget': 0,
             '/Data/MiningDepth': 5,

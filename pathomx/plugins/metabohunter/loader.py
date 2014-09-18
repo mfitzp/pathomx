@@ -108,13 +108,10 @@ class MetaboHunterApp(ui.IPythonApp):
     notebook = "metabohunter.ipynb"
     shortname = 'metabohunter'
 
+    default_pause_analysis=True
 
     def __init__(self, *args, **kwargs):
         super(MetaboHunterApp, self).__init__(*args, **kwargs)
-        #Define automatic mapping (settings will determine the route; allow manual tweaks later)
-
-        self.addDataToolBar(default_pause_analysis=True)
-        self.addFigureToolBar()
 
         self.data.add_input('input_data')  # Add input slot
         self.data.add_output('output_data')
