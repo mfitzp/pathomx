@@ -12,12 +12,8 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
-   custom_exceptions
    data
-   Pathomx
-   plugins
-   translate
-   ui
+   custom_exceptions
    utils
    views
    

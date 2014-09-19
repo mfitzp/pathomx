@@ -1,5 +1,5 @@
 UI
-*************
+**
 
 .. automodule:: pathomx.ui
    :members:

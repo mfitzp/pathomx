@@ -7,45 +7,12 @@ import platform
 
 from collections import defaultdict
 
-from .qt import QApplication, QLocale, QTranslator, QThreadPool, QObject, QTimer, QLibraryInfo
+from .qt import *
 from .runqueue import NotebookRunnerQueue
 from pyqtconfig import QSettingsManager
-from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
-                    MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
-                    StyleDefinition, ClassMatchDefinition
 
 import matplotlib as mpl
-
 from . import utils
-
-logging.debug('Setting up Matplotlib defaults...')
-
-# Set Matplotlib defaults for nice looking charts
-mpl.rcParams['figure.facecolor'] = 'white'
-mpl.rcParams['figure.autolayout'] = True
-mpl.rcParams['lines.linewidth'] = 0.25
-mpl.rcParams['lines.color'] = 'black'
-mpl.rcParams['lines.markersize'] = 10
-mpl.rcParams['axes.linewidth'] = 0.5
-mpl.rcParams['axes.labelsize'] = 9
-mpl.rcParams['xtick.labelsize'] = 9
-mpl.rcParams['ytick.labelsize'] = 9
-
-mpl.rcParams['legend.fontsize'] = 9
-
-mpl.rcParams['axes.color_cycle'] = utils.category10
-mpl.rcParams['font.size'] = 9
-mpl.rcParams['font.family'] = 'sans-serif'
-mpl.rcParams['font.serif'] = ['Computer Modern Roman', 'Times New Roman']
-mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
-mpl.rcParams['patch.linewidth'] = 0
-
-
-
-# Manager objects
-logging.debug('Setting up managers...')
-styles = StylesManager()
-notebook_queue = NotebookRunnerQueue()
 
 # Pathomx global variables
 current_tools = []
@@ -62,27 +29,51 @@ file_handlers = {}
 url_handlers = defaultdict(list)
 
 logging.debug('Loading settings...')
-settings = QSettingsManager()
-settings.set_defaults({
-    'Pathomx/Is_setup': False,
-    'Pathomx/Current_version': '0.0.1',
-    'Pathomx/Update/Latest_version': '0.0.1',
-    'Pathomx/Update/Last_checked': None,
-    'Pathomx/Offered_registration': False,
 
-    'Plugins/Active': [],
-    'Plugins/Disabled': [],
-    'Plugins/Available': [],
-    'Plugins/Paths': [],
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+if not ON_RTD:
 
-    'Resources/MATLAB_path': 'matlab',
+    from mplstyler import StylesManager, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
+                        MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
+                        StyleDefinition, ClassMatchDefinition
 
-    'Editor/Snap_to_grid': False,
-    'Editor/Show_grid': True,
-})
+    # Manager objects
+    logging.debug('Setting up managers...')
+    styles = StylesManager()
+    notebook_queue = NotebookRunnerQueue()
 
-mono_fontFamilies = {'Windows':'Courier New',
-                'Darwin': 'Menlo'}
-mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
+    settings = QSettingsManager()
+    settings.set_defaults({
+        'Pathomx/Is_setup': False,
+        'Pathomx/Current_version': '0.0.1',
+        'Pathomx/Update/Latest_version': '0.0.1',
+        'Pathomx/Update/Last_checked': None,
+        'Pathomx/Offered_registration': False,
 
+        'Plugins/Active': [],
+        'Plugins/Disabled': [],
+        'Plugins/Available': [],
+        'Plugins/Paths': [],
 
+        'Resources/MATLAB_path': 'matlab',
+
+        'Editor/Snap_to_grid': False,
+        'Editor/Show_grid': True,
+    })    
+    
+    
+    mono_fontFamilies = {'Windows':'Courier New',
+                    'Darwin': 'Menlo'}
+    mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
+    
+
+else:
+    styles = None
+    notebook_queue = None
+    settings = None
+    mono_fontFamily = None
+
+    StylesManager = None
+    MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, MATCH_REGEXP = [None]*5
+    MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES = [[],[],[],[]]
+    StyleDefinition, ClassMatchDefinition = None, None

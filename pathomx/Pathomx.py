@@ -19,17 +19,10 @@ else:
 import codecs
 from copy import copy
 
-if sys.version_info < (3, 0):  # Python 2 only
+if sys.version_info < (3, 0) and ON_RTD == False:  # Python 2 only
     UTF8Writer = codecs.getwriter('utf8')
     sys.stdout = UTF8Writer(sys.stdout)
     reload(sys).setdefaultencoding('utf8')
-
-
-
-#from IPython.nbformat.current import write as write_notebook
-#from IPython.nbconvert.exporters import export as IPyexport
-#from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
-#from IPython.nbformat.v3 import new_code_cell
 
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
@@ -1238,7 +1231,3 @@ def main():
     logging.info('Ready.')
     app.exec_()  # Enter Qt application main loop
     logging.info('Exiting.')
-    
-    
-if __name__ == "__main__" and not ON_RTD:
-    main()

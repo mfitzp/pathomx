@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to Pathomx’s documentation! &mdash; Pathomx 2.2.0 documentation</title>
+    <title>Welcome to Pathomx’s documentation &mdash; Pathomx 2.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Pathomx 2.2.0 documentation" href="#" />
-    <link rel="next" title="API Reference" href="api.html" /> 
+    <link rel="next" title="Installation" href="install.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,7 +37,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="api.html" title="API Reference"
+          <a href="install.html" title="Installation"
              accesskey="N">next</a> |</li>
         <li><a href="#">Pathomx 2.2.0 documentation</a> &raquo;</li> 
       </ul>
@@ -49,17 +49,77 @@
           <div class="body">
             
   <div class="section" id="welcome-to-pathomx-s-documentation">
-<h1>Welcome to Pathomx&#8217;s documentation!<a class="headerlink" href="#welcome-to-pathomx-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This is the home of both the user and developer documentation for Pathomx. It&#8217;s a little
-bare at the moment, but we&#8217;re working on getting the API documentation in place shortly.</p>
-<p>In the meantime, there are demos available on the Pathomx website <a class="reference external" href="http://pathomx.org/demos">here</a>.</p>
-<p>Contents:</p>
+<h1>Welcome to Pathomx&#8217;s documentation<a class="headerlink" href="#welcome-to-pathomx-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Pathomx is a workflow-based tool for the analysis of metabolic pathways and visualisation
+of associated experimental data.</p>
+<img alt="Screenshot of visual editor from Pathomx v2" src="_images/pathomx-v2-visual-editor.png" />
+<p><strong>Workflow based data exploration:</strong> Workflows can be created, edited and shared using the
+built-in analysis workflow editor. Set up standardised analysis approaches and apply them
+to new data consistently. Add-remove tools to test different approaches, and re-apply
+tried and tested methods to new data.</p>
+<p><strong>Metabolic pathway exploration:</strong> Browse through the metabolic pathway database, with
+automated clean rendering of pathways. Add and remove metabolic pathways, show
+intra-pathway linkages, and map metabolic routes through the system. Browse the
+in-built database, following links to online resources for further information.</p>
+<p><strong>Metabolic data visualisation:</strong> Load experimental data gathered by mass-spectroscopy
+(MS) or nuclear magnetic resonance (NMR) spectroscopy and visualise metabolic changes
+overlaid on a a map of the sytem. Visualise gene-expression or protein quantity data
+alongside to explore relationships between enzyme regulation and metabolic processes.
+Use the built-in “Pathway Mining” tools to select the most up, down, or overall
+regulated pathways in the given system to identify the key mechanisms at work.</p>
+</div>
+<div class="section" id="users">
+<h1>Users<a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#windows-64bit">Windows (64bit)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#macos-x">MacOS X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#linux">Linux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-steps">First steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#nomenclature">Nomenclature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#drag-and-drop">Drag and drop</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>More documentation is coming soon, in the meantime there are demos available on the Pathomx website <a class="reference external" href="http://pathomx.org/demos">here</a>.</p>
+</div>
+<div class="section" id="developers">
+<h1>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h1>
+<p>Below is API documentation for core/plugin developers. This is a work in progress as
+documentation is added to the source code. You can submit patches via github.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dev_install.html">Developer Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#windows-using-anaconda">Windows Using Anaconda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#macos-x">MacOS X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#macos-x-using-anaconda">MacOS X Using Anaconda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_install.html#linux">Linux</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_exceptions.html">Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="views.html">Views</a></li>
-<li class="toctree-l2"><a class="reference internal" href="threads.html">Threads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="creating_custom_tools.html">Creating Custom Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#do-i-need-a-custom-tool">Do I need a custom tool?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#what-do-i-need-to-get-started">What do I need to get started?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#the-tool-stub">The tool stub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#customising-the-stub">Customising the stub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#how-to-train-your-gremlin">How to train your Gremlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#initial-test">Initial test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#adding-configuration">Adding configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#polish">Polish</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_custom_tools.html#the-end">The end</a></li>
 </ul>
 </li>
 </ul>
@@ -82,15 +142,15 @@ bare at the moment, but we&#8217;re working on getting the API documentation in 
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to Pathomx&#8217;s documentation!</a><ul>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Welcome to Pathomx&#8217;s documentation</a></li>
+<li><a class="reference internal" href="#users">Users</a></li>
+<li><a class="reference internal" href="#developers">Developers</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
   <h4>Next topic</h4>
-  <p class="topless"><a href="api.html"
-                        title="next chapter">API Reference</a></p>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -123,14 +183,14 @@ bare at the moment, but we&#8217;re working on getting the API documentation in 
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="api.html" title="API Reference"
+          <a href="install.html" title="Installation"
              >next</a> |</li>
         <li><a href="#">Pathomx 2.2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Martin A. Fitzpatrick, Catherine M. McGrath, Stephen P. Young.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

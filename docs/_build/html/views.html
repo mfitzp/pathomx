@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Pathomx 2.2.0 documentation" href="index.html" />
     <link rel="up" title="API Reference" href="api.html" />
-    <link rel="next" title="Threads" href="threads.html" />
-    <link rel="prev" title="API Reference" href="api.html" /> 
+    <link rel="next" title="Creating Custom Tools" href="creating_custom_tools.html" />
+    <link rel="prev" title="Utils" href="utils.html" /> 
   </head>
   <body>
     <div class="related">
@@ -39,10 +39,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="threads.html" title="Threads"
+          <a href="creating_custom_tools.html" title="Creating Custom Tools"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="api.html" title="API Reference"
+          <a href="utils.html" title="Utils"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Pathomx 2.2.0 documentation</a> &raquo;</li>
           <li><a href="api.html" accesskey="U">API Reference</a> &raquo;</li> 
@@ -54,89 +54,48 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-views">
-<span id="views"></span><h1>Views<a class="headerlink" href="#module-views" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="views.D3View">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">D3View</tt><big>(</big><em>parent</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.D3View" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modified QWebView (via WebView) with d3 generated SVG image saving handler.
-Use this as a basis for any custom d3-based rendering views.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="views.HTMLView">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">HTMLView</tt><big>(</big><em>parent</em>, <em>html=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.HTMLView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience wrapper for WebView for HTML viewing.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="views.QWebPageJSLog">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">QWebPageJSLog</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.QWebPageJSLog" title="Permalink to this definition">¶</a></dt>
-<dd><p>Redirects Javascript errors to the console (STDOUT) for debugging.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="views.StaticHTMLView">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">StaticHTMLView</tt><big>(</big><em>parent</em>, <em>html=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.StaticHTMLView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience wrapper for WebView for HTML viewing of non-dynamic content.
-This is used for tool help files which do not need to refresh on data update.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="views.TableView">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">TableView</tt><a class="headerlink" href="#views.TableView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modified QTableView with additional metadata for internal use.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="views.ViewManager">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">ViewManager</tt><big>(</big><em>parent</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manager class for the tool views.</p>
-<p>Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
-is overridden to wrap addView. All other QTabWidget methods and attributes are available.</p>
+  <div class="section" id="views">
+<h1>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pathomx.views"></span><dl class="class">
+<dt id="pathomx.views.BaseView">
+<em class="property">class </em><tt class="descclassname">pathomx.views.</tt><tt class="descname">BaseView</tt><a class="reference internal" href="_modules/pathomx/views.html#BaseView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pathomx.views.BaseView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base View prototype with stubs and data-handling functions that are generically useful.
+Sub-class from this if you want to create a new type of view, e.g. supporting an alternative
+graph rendering engine. If you just want to create a new graph-type you should sub-class
+from one of the backend specific stubs, e.g. MplView or D3View.</p>
 <dl class="method">
-<dt id="views.ViewManager.addTab">
-<tt class="descname">addTab</tt><big>(</big><em>widget</em>, <em>name</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager.addTab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overridden to redirect addTab calls to addView method. Do not use.</p>
+<dt id="pathomx.views.BaseView.autogenerate">
+<tt class="descname">autogenerate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pathomx/views.html#BaseView.autogenerate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pathomx.views.BaseView.autogenerate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pathomx.views.BaseView.build_markers">
+<tt class="descname">build_markers</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pathomx/views.html#BaseView.build_markers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pathomx.views.BaseView.build_markers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pathomx.views.BaseView.data">
+<tt class="descname">data</tt><a class="reference internal" href="_modules/pathomx/views.html#BaseView.data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pathomx.views.BaseView.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pathomx.views.BaseView.is_floatable_view">
+<tt class="descname">is_floatable_view</tt><big>(</big><big>)</big><a class="headerlink" href="#pathomx.views.BaseView.is_floatable_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool(x) -&gt; bool</p>
+<p>Returns True when the argument x is true, False otherwise.
+The builtins True and False are the only two instances of the class bool.
+The class bool is a subclass of the class int, and cannot be subclassed.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="views.ViewManager.addView">
-<tt class="descname">addView</tt><big>(</big><em>widget</em>, <em>name</em>, <em>focused=True</em>, <em>unfocus_on_refresh=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.ViewManager.addView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a view to this view manager.</p>
-<p>Adds the specified widget to the ViewManager under a named tab.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>widget</strong> (<em>object inherited from QWidget or views.BaseView</em>) &#8211; The widget to add as a view.</li>
-<li><strong>name</strong> (<em>str</em>) &#8211; The name of the widget, will be shown on the tab and used as a data-redirector selector.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int tab/view index</p>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="pathomx.views.BaseView.is_mpl_toolbar_enabled">
+<tt class="descname">is_mpl_toolbar_enabled</tt><big>(</big><big>)</big><a class="headerlink" href="#pathomx.views.BaseView.is_mpl_toolbar_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool(x) -&gt; bool</p>
+<p>Returns True when the argument x is true, False otherwise.
+The builtins True and False are the only two instances of the class bool.
+The class bool is a subclass of the class int, and cannot be subclassed.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="views.ViewManager.autoSelect">
-<tt class="descname">autoSelect</tt><big>(</big><big>)</big><a class="headerlink" href="#views.ViewManager.autoSelect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Autoselect one of the current views.</p>
-<p>Iterates through all current views and selects the first that is not flagged <cite>_unfocus_on_refresh</cite>. 
-This is used primarily to unfocus the help tabs following successful data calculation.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="views.WebView">
-<em class="property">class </em><tt class="descclassname">views.</tt><tt class="descname">WebView</tt><big>(</big><em>parent</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#views.WebView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modified QWebView with internal navigation handling, loadfinished-resize triggers
-for SVG, HTML, etc.</p>
 </dd></dl>
 
 </div>
@@ -148,11 +107,11 @@ for SVG, HTML, etc.</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="api.html"
-                        title="previous chapter">API Reference</a></p>
+  <p class="topless"><a href="utils.html"
+                        title="previous chapter">Utils</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="threads.html"
-                        title="next chapter">Threads</a></p>
+  <p class="topless"><a href="creating_custom_tools.html"
+                        title="next chapter">Creating Custom Tools</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/views.txt"
@@ -185,10 +144,10 @@ for SVG, HTML, etc.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="threads.html" title="Threads"
+          <a href="creating_custom_tools.html" title="Creating Custom Tools"
              >next</a> |</li>
         <li class="right" >
-          <a href="api.html" title="API Reference"
+          <a href="utils.html" title="Utils"
              >previous</a> |</li>
         <li><a href="index.html">Pathomx 2.2.0 documentation</a> &raquo;</li>
           <li><a href="api.html" >API Reference</a> &raquo;</li> 
@@ -196,7 +155,7 @@ for SVG, HTML, etc.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Martin A. Fitzpatrick, Catherine M. McGrath, Stephen P. Young.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

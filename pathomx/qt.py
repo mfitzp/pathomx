@@ -12,9 +12,10 @@ USE_QT_PY = None
 # ReadTheDocs
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 if ON_RTD:
-    os.environ['QT_API'] = 'pyqt5' # Force v5 for rtd (because it's wrapped)
-
-QT_API_ENV = os.environ.get('QT_API')
+    QT_API_ENV = 'pyqt5' # Force v5 for rtd (because it's wrapped)
+else:
+    QT_API_ENV = os.environ.get('QT_API')
+    
 ETS = dict(pyqt=PYQT4, pyqt5=PYQT5, pyside=PYSIDE)
 
 # Check environment variable
@@ -82,12 +83,11 @@ elif USE_QT_PY == PYQT4:
         def getSaveFileName(*args, **kwargs):
             return QFileDialog.getSaveFileName_(*args, **kwargs), None
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if not on_rtd:
+if not ON_RTD:
     # Create a Qt application
     app = QApplication(sys.argv)
     app.setStyle('fusion')
     app.setOrganizationName("Pathomx")
     app.setOrganizationDomain("pathomx.org")
     app.setApplicationName("Pathomx")
-            
+    

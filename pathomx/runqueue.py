@@ -8,7 +8,6 @@ from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
-import uuid
 from copy import deepcopy
 from datetime import datetime
 import re
@@ -434,7 +433,7 @@ class NotebookRunnerQueue(QObject):
 
     start = pyqtSignal()
 
-    def __init__(self, no_of_runners=MAX_RUNNER_QUEUE):
+    def __init__(self):
         super(NotebookRunnerQueue, self).__init__() 
         self.runner = None
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
