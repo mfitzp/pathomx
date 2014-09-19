@@ -12,9 +12,19 @@ to interpret what it's doing.
 .. toctree::
    :maxdepth: 2
    
+   Pathomx
    data
    custom_exceptions
    utils
    views
+   plugins
+   displayobjects
+   figures
+   views
+   kernel_helpers
+   runqueue
+   translate
+   ui
    
+
    
