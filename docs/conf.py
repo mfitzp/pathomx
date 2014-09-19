@@ -21,7 +21,9 @@ from mock import Mock as MagicMock
 class Mock(MagicMock):
     __all__ = ['QApplication','pyqtSignal','pyqtSlot','QObject','QAbstractItemModel','QModelIndex','QTabWidget',
         'QWebPage','QTableView','QWebView','QAbstractTableModel','Qt','QWidget','QPushButton','QDoubleSpinBox',
-        'QListWidget','QDialog','QSize','QTableWidget','QMainWindow']
+        'QListWidget','QDialog','QSize','QTableWidget','QMainWindow','QTreeWidget',
+        'QAbstractItemDelegate','QColor','QGraphicsItemGroup','QGraphicsItem','QGraphicsPathItem',
+        'QGraphicsTextItem','QGraphicsRectItem','QGraphicsScene','QGraphicsView',]
         
     def __init__(self, *args, **kwargs):
         super(Mock, self).__init__()
@@ -76,6 +78,9 @@ MOCK_MODULES = [
         'matplotlib.cm',
         'matplotlib.path',
         'matplotlib.patches',
+        'matplotlib.transforms',
+        'matplotlib.axes',
+        'matplotlib.pyplot',
         'dateutil',
         'yapsy',
         'yapsy.IPlugin',
