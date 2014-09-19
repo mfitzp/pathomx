@@ -21,7 +21,7 @@ from mock import Mock as MagicMock
 class Mock(MagicMock):
     __all__ = ['QApplication','pyqtSignal','pyqtSlot','QObject','QAbstractItemModel','QModelIndex','QTabWidget',
         'QWebPage','QTableView','QWebView','QAbstractTableModel','Qt','QWidget','QPushButton','QDoubleSpinBox',
-        'QListWidget','QDialog','QSize',]
+        'QListWidget','QDialog','QSize','QTableWidget']
         
     def __init__(self, *args, **kwargs):
         super(Mock, self).__init__()
