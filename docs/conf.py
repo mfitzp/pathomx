@@ -124,6 +124,11 @@ MOCK_MODULES = [
         'pathomx.qt',
         'pathomx.globals',
         'pathomx.runqueue',
+        'pathomx.figures',
+        'pathomx.views',
+        'pathomx.data',
+        'pathomx.db',
+        'pathomx.custom_exceptions',
 
         # From installer
         'custom_exceptions',
