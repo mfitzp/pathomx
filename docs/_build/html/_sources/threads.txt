@@ -1,5 +1,0 @@
-Threads
-*************
-
-.. automodule:: threads
-   :members:
