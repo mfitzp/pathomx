@@ -1,0 +1,603 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pathomx.data &mdash; Pathomx 2.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Pathomx 2.2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Pathomx 2.2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pathomx.data</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># Experimental data manager</span>
+<span class="c"># Loads a csv data file and extracts key information into usable structures for analysis</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Loading data.py&#39;</span><span class="p">)</span>
+
+<span class="c"># Import PyQt5 classes</span>
+<span class="kn">from</span> <span class="nn">.qt</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="DataTreeItem"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem">[docs]</a><span class="k">class</span> <span class="nc">DataTreeItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    a python object used to return row/column data, and keep note of</span>
+<span class="sd">    it&#39;s parents and/or children</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dso</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">parentItem</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dso</span> <span class="o">=</span> <span class="n">dso</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parentItem</span> <span class="o">=</span> <span class="n">parentItem</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">childItems</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="DataTreeItem.appendChild"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.appendChild">[docs]</a>    <span class="k">def</span> <span class="nf">appendChild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">childItems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.child"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.child">[docs]</a>    <span class="k">def</span> <span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">childItems</span><span class="p">[</span><span class="n">row</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.childCount"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.childCount">[docs]</a>    <span class="k">def</span> <span class="nf">childCount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">childItems</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.columnCount"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.columnCount">[docs]</a>    <span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">2</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.data"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.data">[docs]</a>    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">entities_t</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>  <span class="c"># Add entities to the set</span>
+
+        <span class="nb">map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="p">{</span><span class="s">&#39;NoneType&#39;</span><span class="p">}),</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">shape</span><span class="p">]),</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">map</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.icon"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.icon">[docs]</a>    <span class="k">def</span> <span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">plugin</span><span class="o">.</span><span class="n">workspace_icon</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dso</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">plugin</span><span class="o">.</span><span class="n">workspace_icon</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.parent"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.parent">[docs]</a>    <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentItem</span>
+</div>
+<div class="viewcode-block" id="DataTreeItem.row"><a class="viewcode-back" href="../../data.html#pathomx.data.DataTreeItem.row">[docs]</a>    <span class="k">def</span> <span class="nf">row</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentItem</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentItem</span><span class="o">.</span><span class="n">childItems</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">DataTreeModel</span><span class="p">(</span><span class="n">QAbstractItemModel</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    a model to display a few names, ordered by sex</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsos</span><span class="o">=</span><span class="p">[],</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DataTreeModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dsos</span> <span class="o">=</span> <span class="n">dsos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_HEADERS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;Source&#39;</span><span class="p">,</span> <span class="s">&#39;Data&#39;</span><span class="p">,</span> <span class="s">&#39;Entities&#39;</span><span class="p">,</span> <span class="s">&#39;Size&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span> <span class="o">=</span> <span class="n">DataTreeItem</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;ALL&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parents</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupModelData</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">and</span> <span class="n">parent</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">parent</span><span class="o">.</span><span class="n">internalPointer</span><span class="p">()</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_HEADERS</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">internalPointer</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">dso</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DecorationRole</span> <span class="ow">and</span> <span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">icon</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span> <span class="ow">and</span>
+        <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">QVariant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_HEADERS</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasIndex</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">QModelIndex</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="n">parentItem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parentItem</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">internalPointer</span><span class="p">()</span>
+
+        <span class="n">childItem</span> <span class="o">=</span> <span class="n">parentItem</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">childItem</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">createIndex</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">childItem</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">QModelIndex</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">QModelIndex</span><span class="p">()</span>
+
+        <span class="n">childItem</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">internalPointer</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">childItem</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">QModelIndex</span><span class="p">()</span>
+
+        <span class="n">parentItem</span> <span class="o">=</span> <span class="n">childItem</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">parentItem</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">QModelIndex</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">createIndex</span><span class="p">(</span><span class="n">parentItem</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">parentItem</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">QModelIndex</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">column</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="n">p_Item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p_Item</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">internalPointer</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">p_Item</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">setupModelData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dsos</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dso</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dsos</span><span class="p">:</span>
+                <span class="n">newItem</span> <span class="o">=</span> <span class="n">DataTreeItem</span><span class="p">(</span><span class="n">dso</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">newItem</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutAboutToBeChanged</span><span class="o">.</span><span class="n">emit</span><span class="p">([],</span> <span class="n">QAbstractItemModel</span><span class="o">.</span><span class="n">NoLayoutChangeHint</span><span class="p">)</span>
+
+        <span class="n">ins</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="o">.</span><span class="n">childItems</span><span class="p">):</span>  <span class="c"># self.parentItem.childItems.index(self)</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">dso</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dsos</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">removeRow</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">ins</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">dso</span><span class="p">)</span>
+
+        <span class="n">outs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dsos</span><span class="p">)</span> <span class="o">-</span> <span class="n">ins</span>
+        <span class="k">for</span> <span class="n">dso</span> <span class="ow">in</span> <span class="n">outs</span><span class="p">:</span>
+            <span class="n">newItem</span> <span class="o">=</span> <span class="n">DataTreeItem</span><span class="p">(</span><span class="n">dso</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rootItem</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">newItem</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutChanged</span><span class="o">.</span><span class="n">emit</span><span class="p">([],</span> <span class="n">QAbstractItemModel</span><span class="o">.</span><span class="n">NoLayoutChangeHint</span><span class="p">)</span>
+
+
+<span class="c"># DataManager allows a view/analysis class to handle control of consumable data sources</span>
+<span class="k">class</span> <span class="nc">DataManager</span><span class="p">(</span><span class="n">QObject</span><span class="p">):</span>
+
+    <span class="c"># Signals</span>
+    <span class="n">source_updated</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+    <span class="n">consumed</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+    <span class="n">unconsumed</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+
+    <span class="n">interfaces_changed</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">view</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DataManager</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">view</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">id</span>  <span class="c"># Data manager id == that of parent (simplicity; one manager per view)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">consumer_defs</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># Holds data-consumer definitions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">consumes</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># Holds list of data objects that are consumed</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># Inputs: dict of &#39;interface&#39; tuples: (origin,interface)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># Outputs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">watchers</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>  <span class="c"># List of watchers on each output interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewers</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>  <span class="c"># List of watchers on each output interface</span>
+
+    <span class="c"># Get a dataset through input interface id;</span>
+    <span class="c"># This provides indirect access to a copy of the object (local link in self.i = {})</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># Add ourselves to the watcher for this interface</span>
+            <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">source_manager</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]</span>
+            <span class="c">#dso.manager.watchers[ dso.manager_interface ].add( self )</span>
+            <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">unget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unconsume</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c"># Output a dataset through output interface id</span>
+    <span class="c"># Advertise object for consumption; needs to handle notification of all consumers</span>
+    <span class="c"># independent of the object itself (so can overwrite instead of warping)</span>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">,</span> <span class="n">dso</span><span class="p">,</span> <span class="n">update_consumers</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="n">dso</span>
+                <span class="c"># Update consumers / refresh views</span>
+                <span class="c">#self.o[interface].refresh_interfaces()</span>
+                <span class="c">#self.o[interface].previously_managed_by.append(self)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">notify_watchers</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">unput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Unputting data on interface </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">interface</span><span class="p">)</span>
+        <span class="c"># Trigger _unconsume on all watchers</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">interface</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">w</span><span class="o">.</span><span class="n">i</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">w</span><span class="o">.</span><span class="n">unget</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># DataSet(manager=self) # Empty dso (temp; replace with None later?)</span>
+
+    <span class="c"># Get a dataset through output interface id;</span>
+    <span class="k">def</span> <span class="nf">geto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+            <span class="n">dso</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">dso</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">add_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">,</span> <span class="n">dso</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interfaces_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+            <span class="c">#self.watchers[interface]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">notify_watchers</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interfaces_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">add_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interfaces_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">remove_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unconsume</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interfaces_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">notify_watchers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">manager</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">interface</span><span class="p">]:</span>
+            <span class="n">manager</span><span class="o">.</span><span class="n">source_updated</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+
+    <span class="c"># Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)</span>
+    <span class="c"># Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)</span>
+    <span class="k">def</span> <span class="nf">can_consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">consumer_defs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">consumer_defs</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">consumer_defs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer_defs</span>
+
+        <span class="c"># Don&#39;t add data from self manager (infinite loop trigger)</span>
+        <span class="k">if</span> <span class="n">source_manager</span> <span class="o">==</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">consumer_def</span> <span class="ow">in</span> <span class="n">consumer_defs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">consumer_def</span><span class="o">.</span><span class="n">can_consume</span><span class="p">(</span><span class="n">source_manager</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">can_consume_which_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molist</span><span class="p">,</span> <span class="n">consumer_defs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span> <span class="ow">in</span> <span class="n">molist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_consume</span><span class="p">(</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">consumer_defs</span><span class="p">):</span>
+                <span class="n">which</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">which</span>
+
+    <span class="c"># Check if a manager has a consumable data object</span>
+    <span class="k">def</span> <span class="nf">has_consumable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">manager</span><span class="o">.</span><span class="n">provides</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_consume</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_unconsume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            
+            <span class="k">if</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">source_manager</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]:</span>
+                <span class="n">source_manager</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unconsumed</span><span class="o">.</span><span class="n">emit</span><span class="p">((</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">))</span>
+
+    <span class="c"># This is an unchecked consume action; for loading mainly</span>
+    <span class="k">def</span> <span class="nf">_consume_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+
+    <span class="c"># Remove consumed data to update the source watchers</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unconsume</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">interface</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">)</span>  <span class="c"># Store source as a tuple; we re-do the get rather than storing the actual data</span>
+        <span class="n">source_manager</span><span class="o">.</span><span class="n">watchers</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">consumed</span><span class="o">.</span><span class="n">emit</span><span class="p">((</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">))</span>
+
+    <span class="c"># Check if we can consume some data, then do it</span>
+    <span class="k">def</span> <span class="nf">_consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">consumer_defs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">consumer_defs</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">consumer_defs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer_defs</span>
+
+
+        <span class="c"># Check whether this is allow (checks manager, checks hierarchy (infinite loopage) )</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_consume</span><span class="p">(</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">consumer_defs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">consumer_def</span> <span class="ow">in</span> <span class="n">consumer_defs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">consumer_def</span><span class="o">.</span><span class="n">can_consume</span><span class="p">(</span><span class="n">source_manager</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">source_interface</span><span class="p">]):</span>
+                <span class="c"># Remove existing data object link (stop watching)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_consume_action</span><span class="p">(</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">,</span> <span class="n">consumer_def</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consume</span><span class="p">(</span><span class="n">source_manager</span><span class="p">,</span> <span class="n">source_interface</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">source_updated</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">consume_any_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_l</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">app_l</span><span class="p">:</span>
+            <span class="c"># Iterate all outputs for this app&#39;s data manager</span>
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consume</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">o</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">source_updated</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">consume_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">consumer_def</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consume</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">consumer_def</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">source_updated</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">provide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">stop_consuming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">refresh_consumed_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_updated</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>  <span class="c"># Trigger recalculation</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unget</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unput</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c"># Provider/Consumer classes define data availability and requirements for a given dataManager object.</span>
+<span class="c"># Object can accept input from any Provider that offers it&#39;s Consumer requirements; process it; and then provide it downstream</span>
+<span class="c"># view it&#39;s own Provider class definition.</span>
+
+<div class="viewcode-block" id="at_least_one_element_in_common"><a class="viewcode-back" href="../../data.html#pathomx.data.at_least_one_element_in_common">[docs]</a><span class="k">def</span> <span class="nf">at_least_one_element_in_common</span><span class="p">(</span><span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">l1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">l2</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+</div>
+<span class="k">class</span> <span class="nc">DataDefinition</span><span class="p">(</span><span class="n">QObject</span><span class="p">):</span>
+
+    <span class="n">cmp_map</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="s">&#39;&lt;&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">lt</span><span class="p">,</span>
+        <span class="s">&#39;&lt;=&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">le</span><span class="p">,</span>
+         <span class="s">&#39;=&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">eq</span><span class="p">,</span>
+        <span class="s">&#39;!=&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">ne</span><span class="p">,</span>
+         <span class="s">&#39;&gt;&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">gt</span><span class="p">,</span>
+        <span class="s">&#39;&gt;=&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">ge</span><span class="p">,</span>
+        <span class="s">&#39;aloeic&#39;</span><span class="p">:</span> <span class="n">at_least_one_element_in_common</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">definition</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DataDefinition</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># Store consumer/provider description as entity entries from dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>  <span class="c"># Target attribute for imported data - stored under this in dataManager</span>
+                             <span class="c"># When assigning data; should check if pre-existing and warn to overwrite (or provide options)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">definition</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="k">else</span> <span class="n">target</span>
+
+    <span class="k">def</span> <span class="nf">get_cmp_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmp_map</span><span class="p">[</span><span class="s">&#39;aloeic&#39;</span><span class="p">],</span> <span class="n">s</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c"># Treat all input as strings</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmp_map</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmp_map</span><span class="p">[</span><span class="s">&#39;=&#39;</span><span class="p">],</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">can_consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="c"># FIXME! Check for data types (DataFrame vs Series; dimensions; that&#39;s about it)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+        <span class="c"># Prevent self-consuming (inf. loop)</span>
+        <span class="c">#FIXME: Need a reference to the manager in self for this to work? Add to definition?</span>
+        <span class="c">#if data.manager == self:</span>
+        <span class="c">#    print &quot;Don&#39;t consume oneself.&quot;</span>
+        <span class="c">#    return False</span>
+        <span class="c"># Retrieve matching record in provider; see if provides requirement</span>
+        <span class="c"># if we fail at any point return False</span>
+        <span class="c"># self.interface holds the interface for this</span>
+        <span class="c"># Test each option; if we get to the bottom we&#39;re alright!</span>
+        <span class="c">#logging.debug(&quot;CONSUME? [%s]&quot; % data.name)</span>
+        <span class="c">#logging.debug(self.definition)</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot; COMPARE: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+            <span class="c"># t = (1d,2d,3d)</span>
+            <span class="c"># Dimensionality check</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  dimensionality failure </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="bp">False</span>
+
+            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">cr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">cr</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># No restriction on this definition</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;  pass&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">cmp_fn</span><span class="p">,</span> <span class="n">crr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cmp_fn</span><span class="p">(</span><span class="n">cr</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">crr</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])(</span><span class="n">crr</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="c"># If we can&#39;t match equivalent types; it&#39;s nonsense so fail</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  type failure </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]),</span> <span class="nb">type</span><span class="p">(</span><span class="n">crr</span><span class="p">)))</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+
+                <span class="s">&quot;  comparison </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">cmp_fn</span><span class="p">,</span> <span class="n">crr</span><span class="p">,</span> <span class="n">cmp_fn</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">crr</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">cmp_fn</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">crr</span><span class="p">):</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  comparison failure </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">cmp_fn</span><span class="p">,</span> <span class="n">crr</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot; successful&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+<span class="c">#### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.</span>
+<span class="c">## TODO: Chaining and update notification/re-processing</span>
+
+<div class="viewcode-block" id="DataSet"><a class="viewcode-back" href="../../data.html#pathomx.data.DataSet">[docs]</a><span class="k">class</span> <span class="nc">DataSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DataSet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># DataSet must be assigned to a data manager for inter-object updates/communication to work</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager_interface</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previously_managed_by</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">consumers</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># List of managers that consume this data object (access; but dont affect)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="c"># DEFAULT INTERFACE SETS</span>
+        <span class="c"># Data managers can provide &gt;1 of these, but must handle updating of each from the other</span>
+        <span class="c"># e.g. if a table is updated, it must re-write the dataset representation</span>
+        <span class="c"># Helpers for doing this should ideally be implemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># Interface interface table; for triggering refresh on update</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># Log of processing</span>
+                      <span class="c"># a list of dicts containing the</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Pathomx 2.2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Martin A. Fitzpatrick, Catherine M. McGrath, Stephen P. Young.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
