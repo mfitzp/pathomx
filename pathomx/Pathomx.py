@@ -442,10 +442,10 @@ class MainWindow(QMainWindow):
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
         self.toolbox.setHeaderLabels(['Available tools'])
         self.toolbox.setUniformRowHeights(True)
-        self.buildToolkit()
+        self.buildToolbox()
         self.toolbox.expandAll()
 
-        self.toolDock = QDockWidget(tr('Toolkit'))
+        self.toolDock = QDockWidget(tr('Toolbox'))
         self.toolDock.setWidget(self.toolbox)
         self.toolDock.setMinimumWidth(300)
         self.toolDock.setMaximumWidth(300)
@@ -544,7 +544,7 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(tr('Ready'))
 
-    def buildToolkit(self):
+    def buildToolbox(self):
     
         tool_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),

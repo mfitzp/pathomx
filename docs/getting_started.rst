@@ -17,18 +17,27 @@ be sorted out as soon as humanly possible.
 First steps
 -----------
 
+Before you can start you'll need to `install the software`_. There are a few different ways
+to install Pathomx but they make no difference to how you'll use it.
+
 Nomenclature
 ------------
 
 In Pathomx nomenclature *toolkits* provide *tools* with which you can construct
-*workflows*.
+*workflows*. 
 
-Drag and drop
--------------
+Your currently available tools are shown in the *Toolbox* within the application and can
+be dragged into the workspace to use. Once in the workflow tools can be dragged and rearranged
+as you like, the position of the tool has no effect on function. 
 
+Each tool has a number (0-infinity) of *ports* for *input* and *output*. Data is taken in
+via an input port, processed by the tool in some way, and passed out of the output port.
+
+The output of one tool can be connected to the input of another by *connectors*.
 
 
 
 
 .. _Pathomx: http://pathomx.org
 .. _file a bug report: http://github.com/pathomx/pathomx/issues/
+.. _install the software: install.html
