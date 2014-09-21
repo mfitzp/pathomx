@@ -20,7 +20,6 @@ to interpret what it's doing.
    plugins
    displayobjects
    figures
-   views
    kernel_helpers
    runqueue
    translate
