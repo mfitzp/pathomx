@@ -17,8 +17,6 @@ import pathomx.db as db
 
 import pathomx.utils as utils
 
-from pathomx.data import DataSet
-
 
 # Dialog box for Metabohunter search options
 class ImportDataConfigPanel(ui.ConfigPanel):

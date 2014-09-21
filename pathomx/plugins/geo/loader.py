@@ -12,7 +12,6 @@ import pathomx.db as db
 
 import pathomx.utils as utils
 
-from pathomx.data import DataSet
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 from pathomx.utils import UnicodeReader

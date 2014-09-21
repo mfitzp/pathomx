@@ -8,7 +8,7 @@ import os
 import pathomx.ui as ui
 import pathomx.utils as utils
 
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import TableView
 from pathomx.qt import *
 

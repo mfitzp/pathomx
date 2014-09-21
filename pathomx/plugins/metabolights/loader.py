@@ -12,7 +12,6 @@ import pathomx.ui as ui
 import pathomx.db as db
 
 from pathomx.plugins import ImportPlugin
-from pathomx.data import DataSet
 
 
 class ImportMetabolightsApp(ui.ImportDataApp):

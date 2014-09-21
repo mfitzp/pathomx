@@ -4,7 +4,7 @@ import os
 
 import pathomx.ui as ui
 from pathomx.plugins import FilterPlugin
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.qt import *
 
 

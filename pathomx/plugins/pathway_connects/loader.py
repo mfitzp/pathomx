@@ -6,7 +6,7 @@ import pathomx.utils as utils
 import pathomx.db as db
 
 from pathomx.plugins import VisualisationPlugin
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import D3CircosView
 
 

@@ -11,7 +11,7 @@ import pathomx.db as db
 import pathomx.utils as utils
 
 from pathomx.plugins import ProcessingPlugin
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException

@@ -12,7 +12,6 @@ import pathomx.ui as ui
 import pathomx.utils as utils
 
 from pathomx.plugins import ImportPlugin
-from pathomx.data import DataSet
 
 
 class ChenomxApp(ui.ImportDataApp):

@@ -10,7 +10,7 @@ import pathomx.ui as ui
 import pathomx.db as db
 import pathomx.utils as utils
 
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import TableView
 from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import IdentificationPlugin

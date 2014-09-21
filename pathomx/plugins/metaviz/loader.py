@@ -15,7 +15,7 @@ import pathomx.ui as ui
 import pathomx.utils as utils
 
 from pathomx.plugins import VisualisationPlugin
-from pathomx.data import DataSet, DataDefinition
+from pathomx.data import DataDefinition
 from pathomx.views import SVGView
 from pathomx.qt import *
 
