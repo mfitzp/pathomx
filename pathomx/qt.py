@@ -90,6 +90,8 @@ if not ON_RTD:
     app.setApplicationName("Pathomx")
 
 else:
+    # For Qt a Mock in the conf.py will not work for ReadTheDocs so we have to Mock
+    # separately here. Any class used in Qt must end up here and accessed attributes added.
 
     class QMockObject(object):
         def __init__(self, *args, **kwargs):
