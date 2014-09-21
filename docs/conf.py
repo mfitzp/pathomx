@@ -14,7 +14,102 @@
 
 import sys
 import os
+
+from mock import MagicMock
+
+class Mock(MagicMock):
+    __all__ = []
+    def __init__(self, *args, **kwargs):
+        super(Mock, self).__init__()
     
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return os.devnull
+        else:
+            return Mock()
+    
+    @classmethod
+    def __setattr__(*args, **kwargs):
+        pass
+
+    def __setitem__(self, *args, **kwargs):
+        return
+
+    def __getitem__(self, *args, **kwargs):
+        return
+        
+MOCK_MODULES = [
+    'numpy',
+    'scipy',
+    'nmrglue',
+    'gpml2svg',
+    'poster.encode',
+    'wheezy.template',
+    'sklearn',
+    'sklearn.decomposition',
+    'icoshift',
+    'nmrglue',
+    'nmrglue.fileio.fileiobase',
+    'matplotlib',
+    'matplotlib.backends',
+    'matplotlib.backends.backend_agg',
+    'matplotlib.figure',
+    'matplotlib.backend_bases',
+    'matplotlib.backends.backend_qt5agg',
+    'matplotlib._pylab_helpers',
+    'matplotlib.widgets',
+    'matplotlib.cbook',
+    'matplotlib.colors',
+    'matplotlib.cm',
+    'matplotlib.path',
+    'matplotlib.patches',
+    'matplotlib.transforms',
+    'matplotlib.axes',
+    'matplotlib.pyplot',
+    'dateutil',
+    'yapsy',
+    'yapsy.IPlugin',
+    'yapsy.PluginManager',
+    'wheezy',
+    'wheezy.template',
+    'wheezy.template.engine',
+    'wheezy.template.ext',
+    'wheezy.template.ext.core',
+    'wheezy.template.ext.code',
+    'wheezy.template.loader',
+    'pandas',
+    'pyqtconfig',
+    'IPython',
+    'IPython.core',
+    'IPython.qt',
+    'IPython.qt.console',
+    'IPython.qt.console.rich_ipython_widget',
+    'IPython.qt.console.ansi_code_processor',
+    'IPython.qt.base_frontend_mixin',
+    'IPython.qt.inprocess',
+    'IPython.qt.client',
+    'IPython.qt.inprocess',
+    'IPython.qt.manager',
+    'IPython.nbformat',
+    'IPython.nbformat.current',
+    'IPython.nbconvert',
+    'IPython.nbconvert.exporters',
+    'IPython.nbconvert.exporters.export',
+    'IPython.nbconvert.filters',
+    'IPython.nbconvert.filters.markdown',
+    'IPython.utils',
+    'IPython.utils.ipstruct',
+    'mplstyler',
+    'qutepart',
+    'requests',
+    'sip',
+    'pydot',
+]
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+
     
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
