@@ -1,5 +1,5 @@
 Views
-*************
+*****
 
 .. automodule:: pathomx.views
    :members:

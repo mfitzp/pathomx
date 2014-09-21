@@ -43,7 +43,6 @@ from IPython.core import display
 
 from qutepart import Qutepart
 
-
 PX_INIT_SHOT = 50
 PX_RENDER_SHOT = 500
 

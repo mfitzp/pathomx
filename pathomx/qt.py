@@ -83,11 +83,10 @@ elif USE_QT_PY == PYQT4:
         def getSaveFileName(*args, **kwargs):
             return QFileDialog.getSaveFileName_(*args, **kwargs), None
 
-if not ON_RTD:
-    # Create a Qt application
-    app = QApplication(sys.argv)
-    app.setStyle('fusion')
-    app.setOrganizationName("Pathomx")
-    app.setOrganizationDomain("pathomx.org")
-    app.setApplicationName("Pathomx")
+# Create a Qt application
+app = QApplication(sys.argv)
+app.setStyle('fusion')
+app.setOrganizationName("Pathomx")
+app.setOrganizationDomain("pathomx.org")
+app.setApplicationName("Pathomx")
     

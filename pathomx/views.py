@@ -62,10 +62,6 @@ BLANK_DEFAULT_HTML = '''
 <body>&nbsp;</body></html>
 '''
 
-
-
-
-
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
 class ViewManager( QTabWidget ):

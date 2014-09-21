@@ -482,30 +482,3 @@ class DataDefinition(QObject):
         logging.debug(" successful")
         return True
 
-#### FIXME: Other data managers may need to be provided e.g. for 2D/3D datasets. Interfaces should be consistent.
-## TODO: Chaining and update notification/re-processing
-
-class DataSet(object):
-    def __init__(self, manager=None, size=(0, ), name='', description='', *args, **kwargs):
-        super(DataSet, self).__init__(*args, **kwargs)
-
-        # DataSet must be assigned to a data manager for inter-object updates/communication to work
-        self.manager = manager
-        self.manager_interface = None
-        self.previously_managed_by = []
-
-        self.consumers = []  # List of managers that consume this data object (access; but dont affect)
-
-        self.name = name
-        self.description = description
-        self.type = None
-        self.empty(size)
-
-        # DEFAULT INTERFACE SETS
-        # Data managers can provide >1 of these, but must handle updating of each from the other
-        # e.g. if a table is updated, it must re-write the dataset representation
-        # Helpers for doing this should ideally be implemented
-        self.interfaces = []  # Interface interface table; for triggering refresh on update
-
-        self.log = []  # Log of processing
-                      # a list of dicts containing the
