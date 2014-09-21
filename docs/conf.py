@@ -15,10 +15,8 @@
 import sys
 import os
 
-from mock import Mock as MagicMock
+class Mock(object):
 
-
-class Mock(MagicMock):
     __all__ = ['QApplication','pyqtSignal','pyqtSlot','QObject','QAbstractItemModel','QModelIndex','QTabWidget',
         'QWebPage','QTableView','QWebView','QAbstractTableModel','Qt','QWidget','QPushButton','QDoubleSpinBox',
         'QListWidget','QDialog','QSize','QTableWidget','QMainWindow','QTreeWidget',
@@ -29,12 +27,16 @@ class Mock(MagicMock):
         super(Mock, self).__init__()
 
     @classmethod
+    def __call__(*args, **kwargs):
+        return Mock()
+
+    @classmethod
     def __getattr__(cls, name):
         if name in ('__file__', '__path__'):
             return os.devnull
         else:
             return Mock()
-
+       
     @classmethod
     def __setattr__(*args, **kwargs):
         pass
@@ -43,7 +45,7 @@ class Mock(MagicMock):
         return
 
     def __getitem__(self, *args, **kwargs):
-        return
+        return Mock()
 
 MOCK_MODULES = [
         'PyQt5',

@@ -207,7 +207,7 @@ class ViewManager( QTabWidget ):
                         self.setCurrentIndex( w )
                         self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
                         break
-         
+
 class BaseView(object):
     """
     Base View prototype with stubs and data-handling functions that are generically useful.
@@ -252,8 +252,6 @@ class BaseView(object):
         
         print("%s reduced to %s" % ( no, len(accumulator) )) 
         return accumulator
-        
-        
 
 # Views for Svg/HTML based views (inc d3)
 class RenderPageToFile(QWebPage): 
