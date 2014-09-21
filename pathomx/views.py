@@ -75,6 +75,7 @@ class ViewManager( QTabWidget ):
     Inherits from QTabWidget to focusing tabs on add and unfocus-on-refresh. The QTabWidget method
     is overridden to wrap addView. All other QTabWidget methods and attributes are available.
     """
+    
     auto_unfocus_tabs = ['?']
     # Signals
     source_data_updated = pyqtSignal()
@@ -115,6 +116,7 @@ class ViewManager( QTabWidget ):
         :type name: str
         :rtype: int tab/view index     
         '''
+        
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if we're refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
@@ -213,7 +215,7 @@ class BaseView(object):
     graph rendering engine. If you just want to create a new graph-type you should sub-class
     from one of the backend specific stubs, e.g. MplView or D3View.
     """
-        
+     
     _offers_rerender_on_save = False
     is_floatable_view = False
     is_mpl_toolbar_enabled = False

@@ -237,7 +237,7 @@ def spectra(data, figure=None, ax=None, styles=None):
             else:
                 r = '-60'
             if l:
-                t = ax.text(x, y, l, rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="round,pad=0.1", fc="#eeeeee") )
+                t = ax.text(x, y, l, rotation=r, rotation_mode='anchor', size=6.5, bbox=dict(boxstyle="round,pad=0.1", fc="#eeeeee", ec="none") )
                 bounds = get_text_bbox_data_coords(figure, ax, t)
                 if y >= 0:
                     bounds[1,1] = bounds[1,1] * 1.25
