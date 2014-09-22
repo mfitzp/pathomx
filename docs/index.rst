@@ -34,8 +34,8 @@ Users
    install
    getting_started
    demos/index
-
-More documentation is coming soon, in the meantime there are demos available on the Pathomx website `here <http://pathomx.org/demos>`_.
+   
+   support
 
 Developers
 ==================
