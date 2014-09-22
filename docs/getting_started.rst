@@ -105,15 +105,47 @@ Now select the Mean Center tool to show the following output:
 .. image:: images/getting_started_mean_center_output.png
     :alt: Mean center tool output.
 
-The imported data has been mean centered. Next we'll perform a multivariate analysis.
+The imported data has been mean centered. Next we'll perform a quick multivariate analysis.
 
 Analysis
 --------
 
+Multivariate analysis tools are provided in the default analysis toolbox provided with Pathomx: 
+Principal Components Analysis (PCA) and Partial Least Squares Discriminant Analysis (PLS-DA).
+We'll quickly perform one of each to demonstrate how easy it is to do.
 
+First, the PCA. Find the *PCA* tool in the Toolbox and drag and drop it into the workflow editor.
+Again you should see it automatically connect up with the previous (Mean Center) tool and turn 
+blue to indicate that the analysis has been successful. You've just done a PCA! Click on the tool
+to show the output. Below is the Scores plot:
+
+.. image:: images/getting_started_pca_output.png
+    :alt: Principal Component Analysis (PCA) tool output
+
+Next we'll perform the PLS-DA. Find the *PLS-DA* tool in the Toolbox and drag and drop it into
+the workflow editor, preferably below the PCA tool. Again it will automatically connect, but this
+time incorrectly to the output of the PCA. This is because the output of the PCA is a valid input
+for the PLS-DA, however on this occasion this is not what we want. So, to correct the connection
+simply drag the output from the Mean Center tool across to the input of the newly created PLS-DA tool.
+
+The tool will recalculate, and you'll get the following outputs:
+
+.. image:: images/getting_started_plsda_output.png
+    :alt: Partial Least Squares Discriminant Analysis (PLS-DA) tool output
+
+.. image:: images/getting_started_plsda_output_lv.png
+    :alt: Partial Least Squares Discriminant Analysis (PLS-DA) tool output (Latent Variable 1)
 
 Export
 ------
+
+
+
+Re-using a workflow
+-------------------
+
+
+
 
 
 .. _Pathomx: http://pathomx.org
