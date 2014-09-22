@@ -1,9 +1,11 @@
+.. _getting-started:
+
 Getting Started
 ===============
 
 This is quick start-up guide for new users of `Pathomx`_. In here you should find everything
 you need to know to start using Pathomx right away. Once you've been through the basics
-you might like to see some of the `demo workflows`_ to see what Pathomx is capable of.
+you might like to see some of the :ref:`demos` to see what Pathomx is capable of.
 
 Pathomx aims to offer a powerful, extensible analysis and processing platform while being
 as simple to use as possible to the casual user. It should be possible to pick up Pathomx,
@@ -188,7 +190,7 @@ Next steps
 ----------
 
 This was a quick introduction to the use of Pathomx for analysis. To see more of what is 
-possible have a look through some of the `demo workflows`_.
+possible have a look through some of the :ref:`demos`.
 
 
 .. _Pathomx: http://pathomx.org

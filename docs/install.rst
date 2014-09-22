@@ -12,7 +12,7 @@ installation process. Depending on security settings you may need to confirm
 the installation. Icons will be added to 
 your Start menu and desktop. Launch as for any other application.
 
-To get started, take a look at the `demos`_.
+To begin using Pathomx, take a look at :ref:`getting-started`.
 
 MacOS X
 =======
@@ -20,7 +20,7 @@ MacOS X
 Download the latest release as a `Mac Disk Image (.dmg)`_. Double-click to open, and drag
 the Pathomx application into your Applications folder. Launch for any other app.
 
-To get started, take a look at the `demos`_.
+To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Linux
 =====

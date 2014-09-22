@@ -19,7 +19,7 @@ Releases and announcements are available via `@pathomx`_ on `twitter`_.
 Email
 =======
 
-If you would like to get in touch directly, you can email me [`Martin Fitzpatrick`_ (Lead Developer)] directly. 
+If you would like to get in touch directly, you can email `Martin Fitzpatrick`_ (Lead Developer) directly. 
 Pathomx is a spare-time project and I may take a while to respond if busy elsehwere, please bear with me.
 
 
@@ -28,3 +28,4 @@ Pathomx is a spare-time project and I may take a while to respond if busy elsehw
 .. _feature requests: https://github.com/pathomx/pathomx/labels/enhancement
 .. _@pathomx: http://twitter.com/pathomx
 .. _twitter: http://twitter.com/
+.. _Martin Fitzpatrick: mailto:mfitzp@pathomx.org
