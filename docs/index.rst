@@ -8,22 +8,12 @@ of associated experimental data.
 .. image:: images/pathomx-v2-visual-editor.png
     :alt: Screenshot of visual editor from Pathomx v2
     
-**Workflow based data exploration:** Workflows can be created, edited and shared using the 
+Workflows can be created, edited and shared using the 
 built-in analysis workflow editor. Set up standardised analysis approaches and apply them 
 to new data consistently. Add-remove tools to test different approaches, and re-apply 
-tried and tested methods to new data.
+tried and tested methods to new data. Use the built-in and custom tools to streamline your
+data analysis workflow, improving throughput and reproducibility.
 
-**Metabolic pathway exploration:** Browse through the metabolic pathway database, with 
-automated clean rendering of pathways. Add and remove metabolic pathways, show 
-intra-pathway linkages, and map metabolic routes through the system. Browse the 
-in-built database, following links to online resources for further information.
-
-**Metabolic data visualisation:** Load experimental data gathered by mass-spectroscopy 
-(MS) or nuclear magnetic resonance (NMR) spectroscopy and visualise metabolic changes 
-overlaid on a a map of the sytem. Visualise gene-expression or protein quantity data 
-alongside to explore relationships between enzyme regulation and metabolic processes. 
-Use the built-in “Pathway Mining” tools to select the most up, down, or overall 
-regulated pathways in the given system to identify the key mechanisms at work.
 
 Users
 ==================
