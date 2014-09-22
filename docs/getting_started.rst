@@ -59,8 +59,8 @@ When a tool is selected the *toolbox* will automatically change to show configur
 tool. In this way it is simple to rapidly reconfigure a processing workflow and see the resulting effects
 on the current and downstream tools.
 
-First analysis
---------------
+Loading data
+------------
 
 To demonstrate some key features of Pathomx we're going to perform a quick analysis
 using the standard toolkit and a demo data file. The downloadable file `can be downloaded here`_.
@@ -73,6 +73,29 @@ tool will be created in the location where you drop it. Next select the tool to 
 
 .. image:: images/getting_started_pathomx_text_csv.png
     :alt: The Text/CSV tool showing the default startup state
+
+Selecting the tool will activate the configuration panel on the left where you can change 
+tool settings. Any change to a setting will trigger the automatic re-calculation of the 
+tools output. You can control this behaviour by using the *Pause* button on the tool run control toolbar.
+The *Play* button manually runs the current tool.
+
+.. image:: images/getting_started_tool_run_control.png
+    :alt: Tool run control panel.
+
+To load the data click the button next to the *filename* configuration box and an "Open file..." 
+dialog box will appear. Locate the downloaded file and click OK. The Text/CSV tool will
+automatically run, loading the file and generating a set of default output figures (Heatmap, Spectra).
+
+.. image:: images/getting_started_text_csv_output.png
+    :alt: Tool run control panel.
+
+Processing
+----------
+
+
+
+Analysis
+--------
 
 
 
