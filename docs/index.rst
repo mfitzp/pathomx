@@ -5,8 +5,8 @@ Welcome to Pathomx's documentation
 Pathomx is a workflow-based tool for the analysis of metabolic pathways and visualisation
 of associated experimental data. 
 
-.. image:: images/pathomx-v2-visual-editor.png
-    :alt: Screenshot of visual editor from Pathomx v2
+.. image:: images/pathomx-v3-visual-editor.png
+    :alt: Screenshot of visual editor from Pathomx v3
     
 Workflow-based analysis allows the construction of reproducible and efficient analysis
 of scientific data. Workflows can be re-arranged to test different approaches and saved to 
