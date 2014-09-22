@@ -32,8 +32,10 @@ Users
 Developers
 ==================
 
-Below is API documentation for core/plugin developers. This is a work in progress as 
-documentation is added to the source code. You can submit patches via github.
+Below is documentation for core/plugin developers, including documentation on how to 
+set up a developer installation and create custom tools. API documentation is provided but 
+is currently a work in progress  documentation is added to the source code. Improvements are
+welcomed as pull-requests on Github.
 
 .. toctree::
    :maxdepth: 2

@@ -29,4 +29,3 @@ Coming soon.
 
 .. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-3.0.0-amd64.exe
 .. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-3.0.0.dmg
-.. _demos: 
