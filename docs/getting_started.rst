@@ -160,7 +160,8 @@ Next an File Save dialog will be shown where you can choose the location, filena
 If you select TIF you will get a high-resolution image output at the specified dpi. If you've done
 everything correctly, it should look a lot like this:
 
-.. image:: images/getting_started_plsda_export.tif
+.. image:: images/getting_started_plsda_export.png
+    :target: _images/getting_started_image_export.tif
     :alt: Exported PLS-DA Scores plot as TIF format image 300dpi 12x10cm
 
 Re-using a workflow
