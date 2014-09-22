@@ -72,7 +72,7 @@ tool will be created in the location where you drop it. Next select the tool to 
 
 
 .. image:: images/getting_started_pathomx_text_csv.png
-    :alt: The Text/CSV tool showing the default startup state
+    :alt: The Text/CSV tool showing the default startup state.
 
 Selecting the tool will activate the configuration panel on the left where you can change 
 tool settings. Any change to a setting will trigger the automatic re-calculation of the 
@@ -85,18 +85,35 @@ The *Play* button manually runs the current tool.
 To load the data click the button next to the *filename* configuration box and an "Open file..." 
 dialog box will appear. Locate the downloaded file and click OK. The Text/CSV tool will
 automatically run, loading the file and generating a set of default output figures (Heatmap, Spectra).
+Selecting the Spectra tool output tab will show the figure below:
 
 .. image:: images/getting_started_text_csv_output.png
-    :alt: Tool run control panel.
+    :alt: Text/CSV tool output.
 
 Processing
 ----------
 
+Performing further processing of the data is simply a case of adding more tools to the workflow.
+To return to the toolbox click any empty space in the workflow editor. Next, select the 
+*Mean Center* tool and drag that into the workflow editor, somewhere to the right of the first tool.
+You will notice that the tools automatically connect, and the processing is automatically run (tool status bar turns blue).
+Any tools you add who's inputs are compatible with a previous tool's outputs will automatically connect
+when added. This allows rapid construction of workflows.
 
+Now select the Mean Center tool to show the following output:
+
+.. image:: images/getting_started_mean_center_output.png
+    :alt: Mean center tool output.
+
+The imported data has been mean centered. Next we'll perform a multivariate analysis.
 
 Analysis
 --------
 
+
+
+Export
+------
 
 
 .. _Pathomx: http://pathomx.org
