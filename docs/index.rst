@@ -8,12 +8,14 @@ of associated experimental data.
 .. image:: images/pathomx-v2-visual-editor.png
     :alt: Screenshot of visual editor from Pathomx v2
     
-Workflows can be created, edited and shared using the 
-built-in analysis workflow editor. Set up standardised analysis approaches and apply them 
-to new data consistently. Add-remove tools to test different approaches, and re-apply 
-tried and tested methods to new data. Use the built-in and custom tools to streamline your
-data analysis workflow, improving throughput and reproducibility.
+Workflow-based analysis allows the construction of reproducible and efficient analysis
+of scientific data. Workflows can be re-arranged to test different approaches and saved to 
+track the development of your approach. Saved workflows can also be shared with other users
+or groups, allowing instant reproduction of results and methods. Tools can export images
+as publication-ready high resolution images in common formats.
 
+This documentation contains useful information, demos and tips for the use of Pathomx by
+both users and developers.
 
 Users
 ==================
