@@ -161,17 +161,38 @@ If you select TIF you will get a high-resolution image output at the specified d
 everything correctly, it should look a lot like this:
 
 .. image:: images/getting_started_plsda_export.png
-    :target: _images/getting_started_image_export.tif
+    :target: http://downloads.pathomx.org/demos/getting_started_image_export.tif
     :alt: Exported PLS-DA Scores plot as TIF format image 300dpi 12x10cm
+
+Colours and line styles can be managed for the entire workspace through the *Appearance > Line & Marker Styles*
+tool available via the main toolbar. Note that colours are applied based on experimental class groups,
+meaning that you can set a colour once and it will be used throughout for every output.
 
 Re-using a workflow
 -------------------
 
+While this has all been very nice, the real power of workflow analysis comes from the ability to
+re-use and re-apply the same series of steps to new data. There is a `second dataset to download here`_
+that can be used to try this out.
 
+To perform the analysis simply open up the Text/CSV tool you added first and select the 
+new dataset via the configuration panel. The loaded data will look like this:
 
+.. image:: images/getting_started_1d_dataset.png
+    :alt: Loaded second sample dataset Text/CSV 1d dataset
+
+The analysis will run and the new figures will be generated. You can explore them by 
+clicking through the tools in turn.
+
+Next steps
+----------
+
+This was a quick introduction to the use of Pathomx for analysis. To see more of what is 
+possible have a look through some of the `demo workflows`_.
 
 
 .. _Pathomx: http://pathomx.org
 .. _file a bug report: http://github.com/pathomx/pathomx/issues/
 .. _install the software: install.html
 .. _can be downloaded here: http://download.pathomx.org/demos/thp1_2d_jres_bml_nmr.csv
+.. _second dataset to download here: http://download.pathomx.org/demos/thp1_1d_nmrlab_metabolab.csv
