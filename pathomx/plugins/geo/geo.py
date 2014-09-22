@@ -117,7 +117,11 @@ gene_ids = sorted(dataset_data.keys())  # Get the keys sorted so we keep everyth
 for xn, gene_id in enumerate(gene_ids):
     for yn, sample_id in enumerate(sample_ids):
 
-        data[yn, xn] = float( dataset_data[gene_id][sample_id] )
+        try:
+            data[yn, xn] = float( dataset_data[gene_id][sample_id] )
+        except:
+            data[yn, xn] = np.nan
+            
 # = Entrez Gene identifier
 #UniGene title = Entrez UniGene name
 #UniGene symbol = Entrez UniGene symbol

@@ -59,8 +59,8 @@ When a tool is selected the *toolbox* will automatically change to show configur
 tool. In this way it is simple to rapidly reconfigure a processing workflow and see the resulting effects
 on the current and downstream tools.
 
-Loading data
-------------
+Importing data
+--------------
 
 To demonstrate some key features of Pathomx we're going to perform a quick analysis
 using the standard toolkit and a demo data file. The downloadable file `can be downloaded here`_.
