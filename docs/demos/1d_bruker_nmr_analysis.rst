@@ -11,13 +11,10 @@ You can download the `completed workflow`_ or follow the steps below to recreate
 This workflow is also distributed with the latest versions of Pathomx and can be found within
 the software via *Help > Demos*.
 
-Background
-----------
+Coming Soon
+-----------
 
-
-Constructing the workflow
--------------------------
-
+This demo walkthrough is coming soon.
 
 
 .. _completed workflow: http://download.pathomx.org/demos/thp1_1d_bruker.mpf

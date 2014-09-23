@@ -10,12 +10,10 @@ This workflow is also distributed with the latest versions of Pathomx and can be
 the software via *Help > Demos*.
 
 
-Background
-----------
+Coming Soon
+-----------
 
-
-Constructing the workflow
--------------------------
+This demo walkthrough is coming soon.
 
    
 
