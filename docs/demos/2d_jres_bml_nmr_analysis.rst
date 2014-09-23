@@ -123,11 +123,16 @@ accept the data and run. Select it, then the view tab to see the current state o
 
 You'll note that as well as being mean centered, the top quantities are now annotated with the metabolite that BML-NMR as identified.
 
+Performing a multivariate analysis can also be accomplished in a quick simple step by dragging and dropping the *PLS-DA* tool from
+the toolbox into the workflow editor. Again it will auto-connect and auto calculate to produce the following figures:
+
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_scores.png
     :alt: PLS-DA Scores plot
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_lv1.png
     :alt: PLS-DA Latent variable 1
+
+Note again that on the latent variable plot the data is annotated with the identified and mapped metabolites.
 
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/gpml_glycolysis.png
