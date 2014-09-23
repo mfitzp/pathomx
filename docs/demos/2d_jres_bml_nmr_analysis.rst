@@ -41,6 +41,9 @@ The workflow will be constructed step-by-step using the default toolkit supplied
 and a sample set of outputs shown along the way. If you find anything difficult to follow, `let
 us know`_.
 
+Importing data
+--------------
+
 Start up Pathomx and find the BML-NMR tool in the Toolbox panel on the left (the icon is a green
 square). Drag and drop it into the workflow editor to create a new instance of the tool.
 Select it (turning it blue) to activate it and get access to the configuration panel. Here click the 
@@ -52,6 +55,9 @@ datasets from the file. If you click on the PQN figure tab you will get a visual
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/raw_data_pqn.png
     :alt: The source dataset once loaded (PQN normalised)
+
+Sample classification
+---------------------
 
 The plot shows data for all the samples together with the mean (shown as a thicker line). The dataset
 doesn't currently contain any information on sample classifications, so we'll add them now. Drag a 
@@ -101,6 +107,9 @@ hitting run once more. Now you should have the data visualisation displaying as 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/classes_assigned.png
     :alt: Dataset with class groups assigned
 
+Mapping data to databases 
+-------------------------
+
 At present, though you wouldn't know it, Pathomx knows nothing about what sort of data this is. 
 It doesn't always matter - you can process and analyse any type of data you like with Pathomx. However
 to make use of the biological analysis and visualisation tools we need to map the data we've imported to 
@@ -123,6 +132,9 @@ accept the data and run. Select it, then the view tab to see the current state o
 
 You'll note that as well as being mean centered, the top quantities are now annotated with the metabolite that BML-NMR as identified.
 
+Multivariate analysis
+---------------------
+
 Performing a multivariate analysis can also be accomplished in a quick simple step by dragging and dropping the *PLS-DA* tool from
 the toolbox into the workflow editor. Again it will auto-connect and auto calculate to produce the following figures:
 
@@ -132,8 +144,13 @@ the toolbox into the workflow editor. Again it will auto-connect and auto calcul
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_lv1.png
     :alt: PLS-DA Latent variable 1
 
-Note again that on the latent variable plot the data is annotated with the identified and mapped metabolites.
+Note again that on the latent variable plot the data is annotated with the identified and mapped metabolites. This automatic annotation
+is available on all plots once the data table contains the relevant information (either mapped metabolites or text labels).
 
+Pathway analysis
+----------------
+
+Moving onto more biological 
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/gpml_glycolysis.png
     :alt: Metabolite change visualised using WikiPathways Glycolysis pathway
@@ -143,7 +160,7 @@ Note again that on the latent variable plot the data is annotated with the ident
 
 
 Things to try out
------------------
+=================
 
 If you're feeling adventurous there are a few things you can experiment with the workflow - 
 
