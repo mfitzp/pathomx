@@ -13,6 +13,10 @@ You can download the `completed workflow`_ or follow the steps below to recreate
 This workflow is also distributed with the latest versions of Pathomx and can be found within
 the software via *Help > Demos*.
 
+The data used in this demonstration was derived from the culture of THP-1 macrophage cell 
+line under hypoxic conditions for 24hrs. Metabolites were extracted using a methanol-chloroform protocol.
+The class groups used here represent (N)ormoxia and (H)ypoxia respectively.
+
 Background
 ==========
 
@@ -150,10 +154,33 @@ is available on all plots once the data table contains the relevant information 
 Pathway analysis
 ----------------
 
-Moving onto more biological 
+Next we're going to generate three biological analysis visualisations - two using standard
+pathway maps (WikiPathways) and one using a pathway-mining algorithm approach to generate. However, before
+we do that we need to get our data into the right shape to allow it.
+
+For visualisation of change it's often useful to use fold-change (2-fold = doubled). However, it's
+not possible to calculate a fold change from 0 and so a artificial minima must be created. Because
+the sensitivity of the NMR approach varies for different metabolites we will here apply a local minima
+(on a per-metabolite basis). The simple tool *Local minima* will do this for us. Drag it into the workflow.
+It will automatically take input from *Mean center* but replace this by draggin the output from *Map to Biocyc* into the
+input for *Local minima*.
+
+Next drag and drop a *Fold change* tool into 
+the workflow. Select it and in the configuration panel change the Control setting to *N* and the 
+Test setting to *H*. We'll generate the two WikiPathways views first as they are the most straightforward.
+
+Drag 2x *WikiPathways & GPML* tools into the workflow area. They will probably raise errors (turn red) because 
+there is currently no GPML file defined. You can download them both from WikiPathways here: `Glycolysis`_ and `TCA Cycle`_.
+
+Select the first *WikiPathways & GPML* tool and select the *Open GPML* button from the configuration panel. Select the Glycolysis 
+pathway you downloaded (*WP534_74524.gpml*) and open it. You should see the following:
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/gpml_glycolysis.png
     :alt: Metabolite change visualised using WikiPathways Glycolysis pathway
+
+Repeat the process for the TCA cycle visualisation too.
+
+
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/mined_pathways.png
     :alt: Mined pathways map visualised using MetaboViz
@@ -176,3 +203,5 @@ If you're feeling adventurous there are a few things you can experiment with the
 .. _BML-NMR: http://www.bml-nmr.org/
 .. _let us know: https://github.com/pathomx/pathomx/issues/new
 .. _BioCyc: http://biocyc.org
+.. _Glycolysis: http://wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:WP534&oldid=74524
+.. _TCA Cycle: http://wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:WP78&oldid=70014
