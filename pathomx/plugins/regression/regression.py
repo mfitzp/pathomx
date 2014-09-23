@@ -5,7 +5,7 @@ import scipy.stats
 
 # Build the labels for axes
 if type(input_data.columns) == pd.MultiIndex:
-    labels = input_input_data.columns.values( input_data.columns.names.index(0) )
+    labels = [v[0] for v in input_data.columns.values]
 
 else: # pd.Index
     labels = input_data.columns.values
@@ -22,8 +22,8 @@ for n, v in enumerate(config.get('variables')):
 
     do = pd.DataFrame( np.zeros((len(x),2 )) )
 
-    do.ix[:,0] = x.values
-    do.ix[:,1] = y.values
+    do.iloc[:,0] = x.values
+    do.iloc[:,1] = y.values
     
     do.columns = pd.Index( [labels[a], labels[b]], names='Label' )
     
@@ -43,7 +43,7 @@ do = None;
 from pathomx.figures import scatterplot
 
 for k,c in correlations.items():
-    x_data = np.linspace(np.min(c['data'].ix[:,0]), np.max(c['data'].ix[:,0]), 50)
+    x_data = np.linspace(np.min(c['data'].iloc[:,0]), np.max(c['data'].iloc[:,0]), 50)
     lines = [
         (x_data, np.polyval(c['fit'], x_data), c['label'])
     ]

@@ -129,7 +129,7 @@ pathomx_notebook_start(varsi, vars());''')
         # We split the code into 'cells' here so we get UI response between those chunks
         # this allows progress update/etc. to be displayed
         # TODO: Implement a method for a running process to mark it's progress specifically
-        code_cells = re.split('\n(?=\w.*[^:]\n)', code) # Split only where not indented (blocks are processed together)
+        code_cells = re.split('\n(?=\w[^:]*\n)', code) # Split only where not indented (blocks are processed together)
         cell_pc = 100.0 / len(code_cells)
         
         for n, cell in enumerate(code_cells):

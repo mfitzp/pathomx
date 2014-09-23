@@ -1937,6 +1937,7 @@ class ConfigPanel(QWidget):
     def __init__(self, parent, *args, **kwargs):
         super(ConfigPanel, self).__init__(parent.w, *args, **kwargs)
 
+        self.tool = parent
         self.config = parent.config
         self.layout = QVBoxLayout()
 

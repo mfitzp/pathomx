@@ -23,17 +23,17 @@ from pathomx.views import MplScatterView, MplSpectraView
 from pathomx.qt import *
 
 
-def make_label_for_entry(x):
-    return '\t'.join(map(str, [s for s in x if s != None]))
+def make_label_for_entry(*args):
+    return '\t'.join(map(str, [s for s in args if s != None]))
 
 
 # Dialog box for Metabohunter search options
 class RegressionDialog(ui.GenericDialog):
 
-    def __init__(self, w, *args, **kwargs):
-        super(RegressionDialog, self).__init__(w, *args, **kwargs)
+    def __init__(self, tool, *args, **kwargs):
+        super(RegressionDialog, self).__init__(tool.w, *args, **kwargs)
 
-        self.t = w.t
+        self.t = tool
 
         # Correlation variables
         gb = QGroupBox('Define variables')
@@ -70,20 +70,17 @@ class RegressionDialog(ui.GenericDialog):
         l = []
         if type(input_data.columns) == pd.MultiIndex:
 
-            for n in input_data.columns.names:
-                l.append(input_input_data.columns.values(input_data.columns.names.index(n)))
+            for n, name in enumerate(input_data.columns.names):
+                l.append( [v[n] for v in input_data.columns.values ] )
 
-            for n in range(3 - len(l)):
-                l.append(l[0])
+            self.scale_label_entity_table = zip(*l)
 
         else:  # pd.Index
-            for n in range(3):
-                l.append(input_data.columns.values)
+            self.scale_label_entity_table = [input_data.columns.values]
 
         self.lw_variables.clear()
 
-        self.scale_label_entity_table = zip(range(1, len(l[0]) + 1), l[0], l[1], l[2])
-        self.lw_variables.addItems([make_label_for_entry(x) for x in self.scale_label_entity_table])
+        self.lw_variables.addItems([make_label_for_entry(*x) for x in self.scale_label_entity_table])
 
         self.dialogFinalise()
 
@@ -137,11 +134,11 @@ class RegressionConfigPanel(ui.ConfigPanel):
 
         self.config.add_handler('variables', self.lw_variables, (self.map_list_fwd, self.map_list_rev))
 
-        self.parent().t.data.source_updated.connect(self.onRefreshData)
+        self.tool.data.source_updated.connect(self.onRefreshData)
         self.finalise()
 
     def onRegressionAdd(self):
-        dlg = RegressionDialog(self.parent().parent())
+        dlg = RegressionDialog(self.tool)
 
         if dlg.exec_():
             l = self.config.get('variables')[:]  # Copy
@@ -162,20 +159,15 @@ class RegressionConfigPanel(ui.ConfigPanel):
         self.config.set('variables', [v for v in l if v is not None])
 
     def onRefreshData(self):
-        input_data = self.parent().parent().t.data.get('input_data')
-
+        input_data = self.tool.data.get('input_data')
         l = []
         if type(input_data.columns) == pd.MultiIndex:
 
-            for n in input_data.columns.names:
-                l.append(input_input_data.columns.values(input_data.columns.names.index(n)))
-
-            for n in range(3 - len(l)):
-                l.append(l[0])
+            for n, name in enumerate(input_data.columns.names):
+                l.append( [v[n] for v in input_data.columns.values ] )
 
         else:  # pd.Index
-            for n in range(3):
-                l.append(input_data.columns.values)
+            l = [input_data.columns.values]
 
         self.l = l
 
@@ -191,11 +183,19 @@ class RegressionConfigPanel(ui.ConfigPanel):
 
     def map_list_rev(self, x):
         " Receive the indexes, return the label"
-        l = self.l
+        if not self.l:
+            self.onRefreshData()
+        
+        
+
+        print "===="
+        print x
+        print self.l
+        print "===="
 
         x1, x2 = x
-        x1l = make_label_for_entry([x1, l[0][x1], l[1][x1], l[2][x1]])
-        x2l = make_label_for_entry([x2, l[0][x2], l[1][x2], l[2][x2]])
+        x1l = make_label_for_entry(*[li[x1] for li in self.l])
+        x2l = make_label_for_entry(*[li[x2] for li in self.l])
         s = "%s\t%s" % (x1l, x2l)
         # Auto cache to the fwd mapper so it'll work next time
         self.fwd_map_cache[s] = (x1, x2)
