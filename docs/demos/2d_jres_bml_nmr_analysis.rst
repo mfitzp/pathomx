@@ -37,10 +37,18 @@ and simply maps the NMR sample numbers to a specific class group.
 Constructing the workflow
 -------------------------
 
+The workflow will be constructed step-by-step using the default toolkit supplied with Pathomx
+and a sample set of outputs shown along the way. If you find anything difficult to follow, `let
+us know`_.
 
+Start up Pathomx and find the BML-NMR tool in the Toolbox panel on the left (the icon is a green
+square). Drag and drop it into the workflow editor to create a new instance of the tool.
+Select it (turning it blue) to activate it and get access to the configuration panel. Here click the 
+open file button and browse to the downloaded demo data file.
 
-.. image:: ../images/demos/thp1_2d_jres_bml_nmr/workflow.png
-    :alt: Overview of the demo workflow
+The tool will now run, extracting the data from the zip file and processing it for use in Pathomx.
+A number of outputs will also be generated including 3 data tables and 3 figures for the Raw, TSA-transformed and PQN-transformed
+datasets from the file. If you click on the PQN figure tab you will get a visualisation of the data you have just loaded.
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/raw_data_pqn.png
     :alt: The source dataset once loaded (PQN normalised)
@@ -81,3 +89,4 @@ If you're feeling adventurous there are a few things you can experiment with the
 .. _demo dataset: http://download.pathomx.org/demos/thp1_2d_jres_bml_nmr.zip
 .. _sample classification: http://download.pathomx.org/demos/2d_classifications.csv
 .. _BML-NMR: http://www.bml-nmr.org/
+.. _let us know: https://github.com/pathomx/pathomx/issues/new
