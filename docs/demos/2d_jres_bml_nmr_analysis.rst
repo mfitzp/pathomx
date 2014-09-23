@@ -102,18 +102,26 @@ hitting run once more. Now you should have the data visualisation displaying as 
     :alt: Dataset with class groups assigned
 
 At present, though you wouldn't know it, Pathomx knows nothing about what sort of data this is. 
-It doesn't matter for much analysis - you can process and analyse any kind of data you like with Pathomx. However
-to use biological analysis and visualisation tools we need to map the data we've imported to 
+It doesn't always matter - you can process and analyse any type of data you like with Pathomx. However
+to make use of the biological analysis and visualisation tools we need to map the data we've imported to 
 biological entities. The preference in the standard toolkit is to use `BioCyc`_ reference entities for this because of
 the coverage and free access via the public API.
 
-So to begin our biological analysis, lets map our data from the BML-NMR output to BioCyc entities.
+So to begin our biological analysis, let's map our data from the BML-NMR output to BioCyc entities.
 
+Locate the *Map to BioCyc* tool in the Toolbox and drag it into the workflow editor. It will automatically connect
+to the Reclassify tool already in place. After attempting to process the data for a short while, the tool will finish successfully.
+However, it's attempting to match using BioCyc metabolite names which don't match exactly with those used in BML-NMR. 
 
+Select the tool to activate the control panel. From the drop-down list select FIMA (the name of the matching algorithm using by BML-NMR).
+The tool will recalculate and metabolites will be correctly matched. Unfortunately, the tool doesn't yet show what it's done (coming soon!)
+so for the meantime we can use another tool to get a look. We need to add the *Mean Center* tool anyway so do that now. It will 
+accept the data and run. Select it, then the view tab to see the current state of the data:
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/mean_centered.png
     :alt: Mean centered data
 
+You'll note that as well as being mean centered, the top quantities are now annotated with the metabolite that BML-NMR as identified.
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_scores.png
     :alt: PLS-DA Scores plot
