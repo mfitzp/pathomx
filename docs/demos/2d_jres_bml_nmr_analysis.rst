@@ -14,7 +14,7 @@ This workflow is also distributed with the latest versions of Pathomx and can be
 the software via *Help > Demos*.
 
 Background
-----------
+==========
 
 The Birmingham Metabolite Library (`BML-NMR`_) provided by the University of Birmingham
 also hosts an automated NMR spectra fitting service designed for 2D JRES NMR spectra. These
@@ -35,7 +35,7 @@ the BML-NMR service and Pathomx can handle it as-is. The sample classification f
 and simply maps the NMR sample numbers to a specific class group.
 
 Constructing the workflow
--------------------------
+=========================
 
 The workflow will be constructed step-by-step using the default toolkit supplied with Pathomx
 and a sample set of outputs shown along the way. If you find anything difficult to follow, `let
@@ -101,6 +101,15 @@ hitting run once more. Now you should have the data visualisation displaying as 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/classes_assigned.png
     :alt: Dataset with class groups assigned
 
+At present, though you wouldn't know it, Pathomx knows nothing about what sort of data this is. 
+It doesn't matter for much analysis - you can process and analyse any kind of data you like with Pathomx. However
+to use biological analysis and visualisation tools we need to map the data we've imported to 
+biological entities. The preference in the standard toolkit is to use `BioCyc`_ reference entities for this because of
+the coverage and free access via the public API.
+
+So to begin our biological analysis, lets map our data from the BML-NMR output to BioCyc entities.
+
+
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/mean_centered.png
     :alt: Mean centered data
@@ -136,3 +145,4 @@ If you're feeling adventurous there are a few things you can experiment with the
 .. _sample classification: http://download.pathomx.org/demos/2d_classifications.csv
 .. _BML-NMR: http://www.bml-nmr.org/
 .. _let us know: https://github.com/pathomx/pathomx/issues/new
+.. _BioCyc: http://biocyc.org

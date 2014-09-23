@@ -13,8 +13,8 @@ via Github.
 .. toctree::
    :maxdepth: 2
    
-.. 1d_bruker_nmr_analysis
-.. 1d_bruker_nmr_with_re_export
+   1d_bruker_nmr_analysis
+   1d_bruker_nmr_with_re_export
    2d_jres_bml_nmr_analysis
    
 
