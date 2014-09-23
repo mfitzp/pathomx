@@ -26,7 +26,7 @@ This workflow takes the `.zip` output of the BML-NMR identification service and 
 it to perform multivariate analyses, visualisation on WikiPathways and pathway-analysis-generated
 automated pathway visualisation. The overview of the pathway is as follows:
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/workflow.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/workflow.png
     :alt: Overview of the demo workflow
 
 To test the workflow as it's built you'll need to download the `demo dataset`_ and `sample classification`_
@@ -39,30 +39,30 @@ Constructing the workflow
 
 
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/workflow.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/workflow.png
     :alt: Overview of the demo workflow
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/raw_data_pqn.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/raw_data_pqn.png
     :alt: The source dataset once loaded (PQN normalised)
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/classes_assigned.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/classes_assigned.png
     :alt: Dataset with class groups assigned
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/mean_centered.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/mean_centered.png
     :alt: Mean centered data
 
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/plsda_scores.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_scores.png
     :alt: PLS-DA Scores plot
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/plsda_lv1.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/plsda_lv1.png
     :alt: PLS-DA Latent variable 1
 
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/gpml_glycolysis.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/gpml_glycolysis.png
     :alt: Metabolite change visualised using WikiPathways Glycolysis pathway
 
-.. image:: images/demos/thp1_2d_jres_bml_nmr/mined_pathways.png
+.. image:: ../images/demos/thp1_2d_jres_bml_nmr/mined_pathways.png
     :alt: Mined pathways map visualised using MetaboViz
 
 
