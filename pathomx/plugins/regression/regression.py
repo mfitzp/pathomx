@@ -29,9 +29,13 @@ for n, v in enumerate(config.get('variables')):
     
     # Keep class information for plot (make optional)
     do.index = input_data.index
+    
+    rx = x.values.astype(np.float)
+    ry = y.values.astype(np.float)
 
+    # Skip if zeros or containing nans
     try:
-        slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x.values, y.values)
+        slope, intercept, r_value, p_value, std_err = sp.stats.linregress(rx, ry)
     except:
         # Skip any that fail
         pass

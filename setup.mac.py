@@ -68,6 +68,7 @@ build_py2app=dict(
         ],  
     resources=[
         'pathomx/database',
+        'pathomx/demos',
         'pathomx/html',
         'pathomx/icons',
         'pathomx/identities',

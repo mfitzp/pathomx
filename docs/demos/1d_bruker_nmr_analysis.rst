@@ -7,9 +7,17 @@ assigned experimental classes, then annotated using the MetaboHunter online
 NMR peak identification service, analysed using a simple PLS-DA and also exported
 as a standard CSV format datafile for subsequent analysis.
 
+You can download the `completed workflow`_ or follow the steps below to recreate it yourself.
+This workflow is also distributed with the latest versions of Pathomx and can be found within
+the software via *Help > Demos*.
+
+Background
+----------
+
+
+Constructing the workflow
+-------------------------
 
 
 
-
-
-.. _finished workflow: http://download.pathomx.org/demos/thp1_1d_bruker.mpf
+.. _completed workflow: http://download.pathomx.org/demos/thp1_1d_bruker.mpf

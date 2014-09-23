@@ -38,6 +38,7 @@ setup(
         ('pathomx/identities', 'identities'),
         ('pathomx/html', 'html'),
         ('pathomx/icons', 'icons'),
+        ('pathomx/demos', 'demos'),
         ],
     
     exclude_package_data = { '': ['README.txt'] },

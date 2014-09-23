@@ -11,7 +11,7 @@ from pyqtconfig import ConfigManager
 TEXT_COLOR = "#000000"
 SHADOW_COLOR = QColor(63, 63, 63, 100)
 BORDER_COLOR = "#888888"
-SELECT_COLOR = QColor(63, 63, 255, 50)
+SELECT_COLOR = QColor(63, 63, 255, 127)
 
 INTERFACE_COLOR_INPUT = "orange"
 INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
@@ -89,6 +89,8 @@ class BaseItem(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
 
+        self._effects_locked = False
+
     @property
     def width(self):
         return self.size.width()
@@ -108,16 +110,19 @@ class BaseInteractiveItem(BaseItem):
         self.setAcceptHoverEvents(True)
 
     def hoverEnterEvent(self, e):
-        shadow = QGraphicsDropShadowEffect(
-            blurRadius=10,
-            color=QColor(SHADOW_COLOR),
-            offset=QPointF(0, 0),
-            )
-        self.setGraphicsEffect(shadow)
-        self.graphicsEffect().setEnabled(True)
+        if self._effects_locked == False:
+            shadow = QGraphicsDropShadowEffect(
+                blurRadius=10,
+                color=QColor(SHADOW_COLOR),
+                offset=QPointF(0, 0),
+                )
+            self.setGraphicsEffect(shadow)
+            self.prepareGeometryChange()
+            self.graphicsEffect().setEnabled(True)
 
     def hoverLeaveEvent(self, e):
-        self.graphicsEffect().setEnabled(False)
+        if self._effects_locked == False:
+            self.graphicsEffect().setEnabled(False)
 
 
 class ToolItem(BaseItem):
@@ -186,6 +191,7 @@ class ToolItem(BaseItem):
     def getName(self):
         # FIXME: This feels a bit hacky
         if self.label.toPlainText() != self.name:  # Prevent infinite loop get/set
+            self.label.prepareGeometryChange()
             self.label.setPlainText(self.name)
 
     def setName(self):
@@ -291,19 +297,20 @@ class ToolItem(BaseItem):
 
         elif change == QGraphicsItem.ItemSelectedChange:
             if value == True:
-                selected_shadow = QGraphicsDropShadowEffect(
-                    blurRadius=25,
+                selected_shadow = QGraphicsColorizeEffect(
                     color=QColor(SELECT_COLOR),
-                    offset=QPointF(0, 0),
+                    strength=1,
                     )
-                self.setGraphicsEffect(selected_shadow)
-                self.graphicsEffect().setEnabled(True)
+                self.icon.setGraphicsEffect(selected_shadow)
+                self.icon.prepareGeometryChange()
+                self.icon.graphicsEffect().setEnabled(True)
                 self.onShow()
-            
+                self.icon._effects_locked = True
             else:
-                self.graphicsEffect().setEnabled(False)
+                self.icon.graphicsEffect().setEnabled(False)
                 self.onHide()
-
+                self.icon._effects_locked = False
+                
             return value
                 
         return super(ToolItem, self).itemChange(change, value)
@@ -537,9 +544,7 @@ class LinkItem(QGraphicsPathItem):
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
 
-        
         if self.data is not None:
-
         # Determine maximum length of text by horribly kludge
             max_length = self.bezierPath.length() / 10
             source_manager, source_interface = self.data

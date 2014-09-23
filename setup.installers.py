@@ -81,6 +81,7 @@ else:
         ('pathomx/static', 'static'),
         ('pathomx/database', 'database'),
         ('pathomx/plugins', 'plugins'),
+        ('pathomx/demos', 'demos'),
         ('pathomx/identities', 'identities'),
         ('pathomx/html', 'html'),
         ('pathomx/icons', 'icons'),
