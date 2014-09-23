@@ -89,8 +89,8 @@ in the main application window select *Appearance > Line & Marker Styles*. You'l
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/line_and_marker.png
     :alt: Line and marker style configuration dialog
 
-This dialog is the central control for the appearance of class groups in figures throughout Pathomx. By changing 
-the colours assigned to certain groups here, you can determine how they show up in every figure. Try it by selecting the row for
+This dialog is the central control for the appearance of class groups in figures throughout Pathomx. Any change to
+the colours assigned here determines how they show up in every figure. Select the row for
 *N* and clicking Edit. For the Line setting click the colour button and then choose something obnoxious like pink.
 Save the settings by clicking OK, reselect the Reclassify tool and click the green *play* button on the control bar to re-run it.
 Your *N* line should now be pink.
