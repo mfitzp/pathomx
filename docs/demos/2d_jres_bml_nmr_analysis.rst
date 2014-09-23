@@ -96,7 +96,7 @@ Save the settings by clicking OK, reselect the Reclassify tool and click the gre
 Your *N* line should now be pink.
 
 Enough fun. Go back to *Appearance > Line & Marker Styles* and delete all the rows in the panel. Save it and return to your tool,
-hitting run once more. Now you should have the following image correct.
+hitting run once more. Now you should have the data visualisation displaying as shown.
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/classes_assigned.png
     :alt: Dataset with class groups assigned
