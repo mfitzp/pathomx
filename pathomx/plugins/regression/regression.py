@@ -29,14 +29,20 @@ for n, v in enumerate(config.get('variables')):
     
     # Keep class information for plot (make optional)
     do.index = input_data.index
-    
-    slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
-    correlations["R%d" % (n+1)] = {
-        'data': do,
-        'fit': fit,
-        'label': u'r²=%0.2f, p=%0.2f' % (r_value**2, p_value)
-    }
+    try:
+        slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x.values, y.values)
+    except:
+        # Skip any that fail
+        pass
+    else:
+        correlations["R%d" % (n+1)] = {
+            'data': do,
+            'fit': fit,
+            'label': u'r²=%0.2f, p=%0.2f' % (r_value**2, p_value)
+        }
+        
+        
 do = None;
 
 # Generate simple result figure (using pathomx libs)
