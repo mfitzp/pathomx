@@ -180,7 +180,30 @@ pathway you downloaded (*WP534_74524.gpml*) and open it. You should see the foll
 
 Repeat the process for the TCA cycle visualisation too.
 
+Pre-drawn pathways like these are fine if you know what you're looking for and where the likely biological changes
+will occur. But sometimes it's useful to be able to visualise experimental data on a pathway map and use
+*that* to infer the biological basis for what is happening. Pathomx ships with a pathway mining algorithm *pathminer*
+that allows you to identify the most altered metabolic pathways from a dataset and *metaboviz* a dynamic pathway
+drawing algorithm. These are available through the tools *Pathway Mining* and *MetaboViz* respectively.
 
+First, drag the *Pathway Mining* tool to the workflow editor. Leave the settings as default for now. Next, drag in a
+*MetaboViz* tool. The pathway suggestions from the *Pathway Mining* tool will be correctly connected, however you'll also want
+to drag the output of *Fold change* to the top input `compound_data` on the *MetaboViz* tool. If you click on 
+the MetaboViz tool you'll notice that you already have a pathway map drawn.
+
+We can filter the pathways returned by the pathway mining algorithm to make it easier to visualise (you need <5 usually
+to get a clear layout). So select the *Pathway Mining* tool and on the Include/Exclude tab of the configuration
+select to include only the following:
+
+- Biosynthesis/Amino acid biosynthesis
+- Degradation/Amino acid degradataion
+- Generation/Acetyl-coA
+- Generation/Fermentation
+- Generation/Glycolysis
+- Generation/Other
+- Generation/TCA cycle
+
+Which should give you an output not dissimilar to the following -
 
 .. image:: ../images/demos/thp1_2d_jres_bml_nmr/mined_pathways.png
     :alt: Mined pathways map visualised using MetaboViz
