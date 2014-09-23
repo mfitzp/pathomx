@@ -10,6 +10,13 @@ This workflow is also distributed with the latest versions of Pathomx and can be
 the software via *Help > Demos*.
 
 
+Background
+----------
+
+
+Constructing the workflow
+-------------------------
+
    
 
 .. _completed workflow: http://download.pathomx.org/demos/thp1_1d_bruker_reexport.mpf
