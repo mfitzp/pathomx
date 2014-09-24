@@ -329,15 +329,20 @@ class MainWindow(QMainWindow):
 
         self.menuBars['help'].addSeparator()
 
-        goto_pathomx_websiteAction = QAction(tr('&Homepage'), self)
+        goto_pathomx_websiteAction = QAction(tr('&Homepage…'), self)
         goto_pathomx_websiteAction.setStatusTip('Go to the Pathomx website')
         goto_pathomx_websiteAction.triggered.connect( do_open_web('http://pathomx.org') )
         self.menuBars['help'].addAction(goto_pathomx_websiteAction)
 
-        goto_pathomx_docsAction = QAction(tr('&Documentation'), self)
+        goto_pathomx_docsAction = QAction(tr('&Documentation…'), self)
         goto_pathomx_docsAction.setStatusTip('Read latest Pathomx documentation')
         goto_pathomx_docsAction.triggered.connect( do_open_web('http://docs.pathomx.org') )
         self.menuBars['help'].addAction(goto_pathomx_docsAction)
+
+        goto_pathomx_docsSupport = QAction(tr('&Support…'), self)
+        goto_pathomx_docsSupport.setStatusTip('Get support with Pathomx')
+        goto_pathomx_docsSupport.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/support.html') )
+        self.menuBars['help'].addAction(goto_pathomx_docsSupport)
 
         self.menuBars['help'].addSeparator()
 
@@ -355,6 +360,11 @@ class MainWindow(QMainWindow):
                 open_demo_file.setStatusTip("Load the '%s' demo workflow" % name)
                 open_demo_file.triggered.connect( get_lambda(f) )
                 pathomx_demo_menu.addAction(open_demo_file)
+
+        goto_pathomx_onlineDemos = QAction(tr('&Online demos && walkthroughs…'), self)
+        goto_pathomx_onlineDemos.setStatusTip('See all demos available online')
+        goto_pathomx_onlineDemos.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/demos/index.html') )
+        self.menuBars['help'].addAction(goto_pathomx_onlineDemos)
             
 
         #self.menuBars['help'].addSeparator()
