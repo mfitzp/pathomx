@@ -1149,7 +1149,7 @@ class GenericApp(QObject):
     
     icon = None
 
-    def __init__(self, parent, name=None, position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
+    def __init__(self, parent, name=None, code="", position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
         self.id = str(id(self))
 
@@ -1170,8 +1170,6 @@ class GenericApp(QObject):
         # Set this to true to auto-start a new calculation after current (block multi-runs)
         self._is_job_active = False
         self._queued_start = False
-
-        #self.logView = QTextEdit()
 
         self.logger = logging.getLogger(self.id)
 
@@ -1221,6 +1219,11 @@ class GenericApp(QObject):
 
         self.logger.debug('Completed default tool (%s) setup.' % name)
 
+        self.notes_viewer = StaticHTMLView(self)
+        self.code_editor = Qutepart()
+        self.code = code
+
+
         # Trigger finalise once we're back to the event loop
         self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
 
@@ -1244,7 +1247,6 @@ class GenericApp(QObject):
 
 
         # Initial display of the notebook
-        self.code_editor = Qutepart()
         self.code_editor.detectSyntax(language='Python')
 
         self.addDataToolBar()
@@ -1271,7 +1273,6 @@ class GenericApp(QObject):
 
             
 
-        self.notes_viewer = StaticHTMLView(self)
         self.notes_viewer.setHtml( unicode(html) )
 
         self.views.addView(self.notes_viewer, '&?', unfocus_on_refresh=True)
@@ -1292,7 +1293,10 @@ class GenericApp(QObject):
 
     def load_source(self):
         with open( os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
-            self.code = f.read()
+            self.default_code = f.read()
+        
+        if self.code == "":
+            self.code = self.default_code
 
     def load_notebook(self, notebook_path):
         self.logger.debug('Loading notebook %s' % notebook_path)
@@ -1590,9 +1594,22 @@ class GenericApp(QObject):
         t.addAction(self.code_editor.decreaseIndentAction)
         t.addSeparator()
         t.addAction(self.code_editor.toggleBookmarkAction)
+        t.addSeparator()
+        
+        reset_to_default_codeAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'receipt-shred.png')), tr('Reset code to tool default…'), self.w)
+        reset_to_default_codeAction.setStatusTip('Reset code to tool default')
+        reset_to_default_codeAction.triggered.connect(self.onResetDefaultCode)
+
+        
+        t.addAction(reset_to_default_codeAction)
 
         self.toolbars['editor'] = t
 
+    def onResetDefaultCode(self):
+        reply = QMessageBox.question(self.w, "Reset code to default", "Are you sure you want to reset your custom code to the tool default? Your work will be gone.",
+                            QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.code = self.default_code
 
     def onSelectDataSource(self):
         # Basic add data source dialog. Extend later for multiple data sources etc.

@@ -993,6 +993,11 @@ class MainWindow(QMainWindow):
                     cs.set("id", sk)
                     cs.set("manager", si[0].id)
                     cs.set("interface", si[1])
+                    
+            if v.code != v.default_code:
+                code = et.SubElement(app, "Code")
+                code.text = v.code
+            
 
         tree = et.ElementTree(root)
         tree.write(fn)  # , pretty_print=True)
@@ -1025,7 +1030,14 @@ class MainWindow(QMainWindow):
             # FIXME: This does not work with multiple launchers/plugin - define as plugin.class?
             # Check plugins loaded etc.
             logging.info(('- %s' % xapp.find('Name').text))
-            app = app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](self, auto_consume_data=False, name=xapp.find('Name').text)
+
+            xcode = xapp.find('Code')
+            if xcode is not None:
+                code = xcode.text
+            else:
+                code = ""
+            
+            app = app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](self, code=code, auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
             appref[xapp.get('id')] = app
