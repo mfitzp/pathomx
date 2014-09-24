@@ -331,10 +331,21 @@ class MainWindow(QMainWindow):
         goto_pathomx_docsAction.triggered.connect(self.onGoToPathomxDocs)
         self.menuBars['help'].addAction(goto_pathomx_docsAction)
 
-        goto_pathomx_demosAction = QAction(tr('&Pathomx demos'), self)
-        goto_pathomx_demosAction.setStatusTip('Watch Pathomx demo videos')
-        goto_pathomx_demosAction.triggered.connect(self.onGoToPathomxDemos)
-        self.menuBars['help'].addAction(goto_pathomx_demosAction)
+        pathomx_demo_menu = self.menuBars['help'].addMenu(tr('&Pathomx demos'))
+        demofiles = os.listdir( os.path.join(utils.scriptdir, 'demos') )
+
+        def get_lambda(f):
+            return lambda: self.onOpenDemoWorkflow( os.path.join(utils.scriptdir, 'demos', f) )
+
+        for f in demofiles:
+            name, ext = f.split('.')
+            if ext == 'mpf':
+                name = name.replace('_',' ')
+                open_demo_file = QAction(name, self)
+                open_demo_file.setStatusTip("Load the '%s' demo workflow" % name)
+                open_demo_file.triggered.connect( get_lambda(f) )
+                pathomx_demo_menu.addAction(open_demo_file)
+            
 
         self.menuBars['help'].addSeparator()
 
@@ -766,9 +777,6 @@ class MainWindow(QMainWindow):
     def onGoToPathomxWeb(self):
         QDesktopServices.openUrl(QUrl('http://pathomx.org'))
 
-    def onGoToPathomxDemos(self):
-        QDesktopServices.openUrl(QUrl('http://pathomx.org/demos'))
-
     def onGoToPathomxDocs(self):
         QDesktopServices.openUrl(QUrl('http://docs.pathomx.org/'))
 
@@ -920,6 +928,14 @@ class MainWindow(QMainWindow):
     def saveWorkspace(self, fn):
         pass
 
+    def onOpenDemoWorkflow(self, fn):
+        reply = QMessageBox.question(self, "Open demo workflow", "Are you sure you want to open the demo workflow? Your current workflow will be lost.",
+                            QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.openWorkflow(fn)
+    
+
+
     ### RESET WORKSPACE
     def onClearWorkspace(self):
         reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
@@ -929,7 +945,10 @@ class MainWindow(QMainWindow):
 
     def clearWorkspace(self):
         for t in current_tools[:]:
-            t.deleteLater()
+            try:
+                t.deleteLater()
+            except:
+                pass
 
         for i in self.editor.items()[:]:  # Copy as i.delete modifies the list
             try:
