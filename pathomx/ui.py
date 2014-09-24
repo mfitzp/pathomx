@@ -242,14 +242,19 @@ class DialogAbout(QDialog):
             md = f.read()
 
         html = '''<html>
-        <head>
-        <link href="file://{ipython_css}" rel="stylesheet">
-        </head>
-        <body style="margin:1em;">
-            <div class="text_cell rendered_html">{html}</div>
+<head><title>About</title><link rel="stylesheet" href="{ipython_css}"></head>
+<body>
+<div class="container" id="notebook-container">
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">{html}</div>
+</div>
+</div>
+</div>
+</div>
         </body>
-        </html>'''.format(**{'ipython_css': ipython_css, 'html': markdown2html_mistune(md)})
-
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css':'file://' + ipython_css, 'html': markdown2html_mistune(md)})
+            
         self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)

@@ -314,24 +314,34 @@ class MainWindow(QMainWindow):
         linemarkerstyleAction.triggered.connect(self.onDefineClassStyles)
         self.menuBars['appearance'].addAction(linemarkerstyleAction)
 
-        aboutAction = QAction(QIcon.fromTheme("help-about"), 'Introduction', self)
+        aboutAction = QAction(QIcon.fromTheme("help-about"), 'About Pathomx', self)
         aboutAction.setStatusTip(tr('About Pathomx'))
         aboutAction.triggered.connect(self.onAbout)
         self.menuBars['help'].addAction(aboutAction)
 
+        def do_open_web(href):
+            return lambda: QDesktopServices.openUrl(QUrl(href))
+
+        goto_pathomx_gettingstartedAction = QAction(tr('&Getting started'), self)
+        goto_pathomx_gettingstartedAction.setStatusTip('See the getting started documentation')
+        goto_pathomx_gettingstartedAction.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/getting_started.html')  )
+        self.menuBars['help'].addAction(goto_pathomx_gettingstartedAction)
+
         self.menuBars['help'].addSeparator()
 
-        goto_pathomx_websiteAction = QAction(tr('&Pathomx homepage'), self)
+        goto_pathomx_websiteAction = QAction(tr('&Homepage'), self)
         goto_pathomx_websiteAction.setStatusTip('Go to the Pathomx website')
-        goto_pathomx_websiteAction.triggered.connect(self.onGoToPathomxWeb)
+        goto_pathomx_websiteAction.triggered.connect( do_open_web('http://pathomx.org') )
         self.menuBars['help'].addAction(goto_pathomx_websiteAction)
 
-        goto_pathomx_docsAction = QAction(tr('&Pathomx documentation'), self)
+        goto_pathomx_docsAction = QAction(tr('&Documentation'), self)
         goto_pathomx_docsAction.setStatusTip('Read latest Pathomx documentation')
-        goto_pathomx_docsAction.triggered.connect(self.onGoToPathomxDocs)
+        goto_pathomx_docsAction.triggered.connect( do_open_web('http://docs.pathomx.org') )
         self.menuBars['help'].addAction(goto_pathomx_docsAction)
 
-        pathomx_demo_menu = self.menuBars['help'].addMenu(tr('&Pathomx demos'))
+        self.menuBars['help'].addSeparator()
+
+        pathomx_demo_menu = self.menuBars['help'].addMenu(tr('Demo &workflows'))
         demofiles = os.listdir( os.path.join(utils.scriptdir, 'demos') )
 
         def get_lambda(f):
@@ -347,12 +357,12 @@ class MainWindow(QMainWindow):
                 pathomx_demo_menu.addAction(open_demo_file)
             
 
-        self.menuBars['help'].addSeparator()
+        #self.menuBars['help'].addSeparator()
 
-        do_registerAction = QAction(tr('&Register Pathomx'), self)
-        do_registerAction.setStatusTip('Register Pathomx for release updates')
-        do_registerAction.triggered.connect(self.onDoRegister)
-        self.menuBars['help'].addAction(do_registerAction)
+        #do_registerAction = QAction(tr('&Register Pathomx'), self)
+        #do_registerAction.setStatusTip('Register Pathomx for release updates')
+        #do_registerAction.triggered.connect(self.onDoRegister)
+        #self.menuBars['help'].addAction(do_registerAction)
 
         # GLOBAL WEB SETTINGS
         QNetworkProxyFactory.setUseSystemConfiguration(True)
@@ -774,11 +784,6 @@ class MainWindow(QMainWindow):
         #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
         self.jobQueue.setText('%d' % len(notebook_queue.jobs))
 
-    def onGoToPathomxWeb(self):
-        QDesktopServices.openUrl(QUrl('http://pathomx.org'))
-
-    def onGoToPathomxDocs(self):
-        QDesktopServices.openUrl(QUrl('http://docs.pathomx.org/'))
 
     def onDoRegister(self):
         # Pop-up a registration window; take an email address and submit to
