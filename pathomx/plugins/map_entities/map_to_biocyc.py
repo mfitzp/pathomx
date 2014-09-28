@@ -4,6 +4,7 @@ import os
 import csv
 
 biocyc.set_organism('HUMAN')
+biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
 
 def map_generator(table):
     map_dict = {}

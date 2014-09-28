@@ -3,7 +3,7 @@
 import os
 
 from pathomx.ui import GenericTool
-from pathomx.plugins import FilterPlugin
+from pathomx.plugins import ScriptingPlugin
 from pathomx.data import DataDefinition
 from pathomx.qt import *
 
@@ -23,7 +23,7 @@ class CustomScriptTool(GenericTool):
             self.data.consumer_defs.append( DataDefinition('input_%d' % i, {}) )
 
 
-class CustomScript(FilterPlugin):
+class CustomScript(ScriptingPlugin):
 
     def __init__(self, *args, **kwargs):
         super(CustomScript, self).__init__(*args, **kwargs)

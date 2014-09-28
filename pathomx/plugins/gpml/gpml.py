@@ -7,6 +7,9 @@ from matplotlib.colors import rgb2hex
 
 from pathomx.utils import luminahex
 
+from biocyc import biocyc
+biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
+
 
 xref_urls = {
     'BioCyc compound': 'pathomx://db/compound/%s/view',

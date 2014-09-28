@@ -20,7 +20,7 @@ from pathomx.views import SVGView
 from pathomx.qt import *
 
 from biocyc import biocyc
-
+biocyc.secondary_cache_paths.append( os.path.join(utils.scriptdir, 'database', 'biocyc') )
 
 # Dialog box for Metabohunter search options
 class MetaVizPathwayConfigPanel(ui.ConfigPanel):

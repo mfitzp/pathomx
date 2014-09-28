@@ -14,6 +14,7 @@ from pathomx.qt import *
 
 import numpy as np
 from biocyc import biocyc
+biocyc.secondary_cache_paths.append( os.path.join(utils.scriptdir, 'database', 'biocyc') )
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {

@@ -20,16 +20,78 @@ import inspect
 import shutil
 from . import utils
 from . import ui
-from .globals import app_launchers, file_handlers, url_handlers, available_tools_by_category, plugin_manager, plugin_objects, plugin_metadata
-
-from zipfile import ZipFile
+from .globals import settings, app_launchers, file_handlers, url_handlers, available_tools_by_category, \
+                     plugin_categories, plugin_manager, plugin_objects, plugin_metadata, installed_plugin_names
 
 # Translation (@default context)
 from .translate import tr
 
+from pyqtconfig import ConfigManager
 
+def get_available_plugins(plugin_places = None, include_deactivated=False):
+    global available_tools_by_category
+    
+    if plugin_places == None:
+        plugin_places = settings.get('Plugins/Paths')[:]
+        
+    disabled_plugins =  settings.get('Plugins/Disabled')
+        
+    # Append the core path search so always available
+    core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
+    plugin_places.append(core_plugin_path)
+    
+    if '' in plugin_places:
+        plugin_places.remove('') # Strip the empty string
+        
+    logging.info("Searching for plugins...")
 
+    plugin_manager.setPluginPlaces(plugin_places)
+    plugin_manager.setPluginInfoExtension('pathomx-plugin')
+    categories_filter = {
+           "Import": ImportPlugin,
+           "Processing": ProcessingPlugin,
+           "Filter": FilterPlugin,
+           "Identification": IdentificationPlugin,
+           "Analysis": AnalysisPlugin,
+           "Visualisation": VisualisationPlugin,
+           "Export": ExportPlugin,
+           }
+    plugin_manager.setCategoriesFilter(categories_filter)
+    plugin_manager.collectPlugins()
+    
+    available_tools_by_category = defaultdict(list)
 
+    # Loop round the plugins and print their names.
+    for plugin in plugin_manager.getAllPlugins():
+        plugin_image = os.path.join(os.path.dirname(plugin.path), 'icon.png')
+
+        if not os.path.isfile(plugin_image):
+            plugin_image = None
+
+        try:
+            resource_list = plugin.details.get('Documentation', 'Resources').split(',')
+        except:
+            resource_list = []
+
+        metadata = {
+            'id': type(plugin.plugin_object).__name__,  # __module__,
+            'image': plugin_image,
+            'image_forward_slashes': plugin_image.replace('\\', '/'),  # Slashes fix for CSS in windows
+            'name': plugin.name,
+            'version': plugin.version,
+            'description': plugin.description,
+            'author': plugin.author,
+            'resources': resource_list,
+            'info': plugin,
+            'path': os.path.dirname(plugin.path),
+            'module': os.path.basename(plugin.path),
+            'shortname': os.path.basename( os.path.dirname( plugin.path ) ),
+        }
+
+        plugin_metadata[metadata['shortname']] = metadata
+        installed_plugin_names[id(plugin.plugin_object)] = plugin.name
+
+        plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
 
 
 
@@ -85,78 +147,118 @@ class pluginListDelegate(QAbstractItemDelegate):
             
 class dialogPluginManagement(ui.GenericDialog):
 
+    def populate_plugin_list(self):
+        
+        disabled_plugins = self.config.get('Plugins/Disabled')
+
+        while self.plugins_lw.count() > 0:  # Empty list
+            self.plugins_lw.takeItem(0)
+
+        for id, plugin in plugin_metadata.items():
+            item = QListWidgetItem()
+
+            item.plugin_metadata = plugin
+            item.plugin_shortname = id
+
+            if 'image' in plugin:
+                item.setData(Qt.DecorationRole, plugin['image'])
+
+            item.setData(Qt.DisplayRole, "%s (v%s)" % (plugin['name'], plugin['version']))
+            item.setData(Qt.UserRole, plugin['description'])
+            item.setData(Qt.UserRole + 1, plugin['author'])
+            if plugin['path'] not in disabled_plugins:
+                item.setData(Qt.UserRole + 2, "Active")
+
+            self.plugins_lw.addItem(item)
+
+
+    def onActivate(self):
+        items = self.plugins_lw.selectedItems()
+        disabled_plugins = self.config.get('Plugins/Disabled')
+
+        for i in items:
+            plugin_path = plugin_metadata[ i.plugin_shortname ]['path']
+            if plugin_path in disabled_plugins:
+                disabled_plugins.remove( plugin_path )
+        
+        self.config.set('Plugins/Disabled', disabled_plugins)
+        self.populate_plugin_list()
+
+    def onDeactivate(self):
+        items = self.plugins_lw.selectedItems()
+        disabled_plugins = self.config.get('Plugins/Disabled')
+        
+        for i in items:
+            plugin_path = plugin_metadata[ i.plugin_shortname ]['path']
+            if plugin_path not in disabled_plugins:
+                disabled_plugins.append( plugin_path )
+
+        self.config.set('Plugins/Disabled', disabled_plugins)
+        self.populate_plugin_list()
+
+
+    def onRefresh(self):
+        get_available_plugins( self.config.get('Plugins/Paths')[:], include_deactivated=True )
+        self.populate_plugin_list()
 
     def __init__(self, parent, **kwargs):
         super(dialogPluginManagement, self).__init__(parent, **kwargs)
 
         self.setWindowTitle(tr("Manage Plugins"))
-
-        self.plugins = get_available_plugins()
+    
+        self.config = ConfigManager()
+        self.config.defaults = {
+            'Plugins/Paths': settings.get('Plugins/Paths'),
+            'Plugins/Disabled': settings.get('Plugins/Disabled'),
+        }
 
         self.m = parent
         self.setFixedSize(self.sizeHint())
-
-        self.installed_plugins = plugin_metadata
-
-        self.tabs = QTabWidget()
-        self.tab = defaultdict(dict)
 
         self.plugins_lw = QListWidget()
         self.plugins_lw.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.plugins_lw.setItemDelegate(pluginListDelegate(self.plugins_lw))
 
-        self.populate_plugin_list(self.plugins_lw, self.installed_plugins)
-
-        page1 = QWidget()
+        page = QWidget()
         box = QGridLayout()
-        box.addWidget(self.plugins_lw, 0, 0)
+        paths = QHBoxLayout()
+
+        self.pathlist = QLineEdit()
+        self.config.add_handler('Plugins/Paths', self.pathlist, (lambda x: x.split(';'), lambda x: ';'.join(x) ) )
+
+        paths.addWidget(QLabel('Search Paths:'))
+        paths.addWidget(self.pathlist)
+
+        box.addLayout(paths, 0, 0)
+        box.addWidget(self.plugins_lw, 1, 0)
 
         buttons = QVBoxLayout()
-        upgrade_btn = QPushButton('Upgrade')
-        upgrade_btn.clicked.connect(self.onUpgrade)
-        buttons.addWidget(upgrade_btn)
-
-        uninstall_btn = QPushButton('Uninstall')
-        uninstall_btn.clicked.connect(self.onUninstall)
-        buttons.addWidget(uninstall_btn)
-        buttons.addStretch()
-
-        box.addLayout(buttons, 0, 1)
-        page1.setLayout(box)
-
-        self.plugins_search_lw = QListWidget()
-        self.plugins_search_lw.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.plugins_search_lw.setItemDelegate(pluginListDelegate(self.plugins_search_lw))
-
-        page2 = QWidget()
-        box = QGridLayout()
-        self.searchbox = QLineEdit()
-        querybutton = QPushButton('↺')
-        querybutton.clicked.connect(self.find_plugins_query)
-        box.addWidget(self.searchbox, 0, 0)
-        box.addWidget(querybutton, 0, 1)
-        box.addWidget(self.plugins_search_lw, 1, 0)
-
-        buttons = QVBoxLayout()
-        install_btn = QPushButton('Install')
-        install_btn.clicked.connect(self.onInstall)
-        buttons.addWidget(install_btn)
 
         refresh_btn = QPushButton('Refresh')
         refresh_btn.clicked.connect(self.onRefresh)
         buttons.addWidget(refresh_btn)
+
+        activate_btn = QPushButton('Activate')
+        activate_btn.clicked.connect(self.onActivate)
+        buttons.addWidget(activate_btn)
+
+        deactivate_btn = QPushButton('Dectivate')
+        deactivate_btn.clicked.connect(self.onDeactivate)
+        buttons.addWidget(deactivate_btn)
+
         buttons.addStretch()
 
         box.addLayout(buttons, 1, 1)
-        page2.setLayout(box)
+        page.setLayout(box)
 
-        self.tabs.addTab(page1, tr('Installed'))
-        self.tabs.addTab(page2, tr('Available'))
 
-        self.layout.addWidget(self.tabs)
+        self.layout.addWidget(page)
 
         # Stack it all up, with extra buttons
         self.dialogFinalise()
+
+        # Refresh the list of available plugins
+        self._init_timer = QTimer.singleShot(0, self.onRefresh)
 
     def sizeHint(self):
         return QSize(600, 300)
@@ -362,3 +464,4 @@ class MiscPlugin(BasePlugin):
     '''
     default_workspace_category = 'Misc'
     pass
+

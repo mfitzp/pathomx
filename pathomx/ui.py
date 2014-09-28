@@ -1383,6 +1383,7 @@ class GenericApp(QObject):
         varsi['styles'] = styles
 
         varsi['_pathomx_tool_path'] = self.plugin.path
+        varsi['_pathomx_database_path'] = os.path.join(utils.scriptdir, 'database')
 
         varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
         varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out

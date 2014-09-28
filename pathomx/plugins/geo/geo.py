@@ -7,6 +7,7 @@ from collections import defaultdict
 
 from biocyc import biocyc
 biocyc.set_organism('HUMAN')
+biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
 
 def preprocess_soft(reader, f=None):
     # Preprocess into the chunks (then can manageable process them in turn)

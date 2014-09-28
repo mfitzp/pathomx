@@ -16,7 +16,6 @@ else:
 
 
 from .qt import *
-
 import codecs
 from copy import copy
 
@@ -301,14 +300,16 @@ class MainWindow(QMainWindow):
 
         # PLUGINS MENU
         change_pluginsAction = QAction(tr('&Manage plugins…'), self)
-        change_pluginsAction.setStatusTip('Find, activate, deactivate and remove plugins')
+        change_pluginsAction.setStatusTip('Manage plugin locations and activate/deactivate plugins')
         change_pluginsAction.triggered.connect(self.onChangePlugins)
         self.menuBars['plugins'].addAction(change_pluginsAction)
 
-        check_pluginupdatesAction = QAction(tr('&Check for updated plugins'), self)
-        check_pluginupdatesAction.setStatusTip('Check for updates to installed plugins')
-        check_pluginupdatesAction.triggered.connect(self.onCheckPluginUpdates)
-        #self.menuBars['plugins'].addAction(check_pluginupdatesAction)  FIXME: Add a plugin-update check
+        refresh_pluginsAction = QAction(tr('&Rebuild toolbox'), self)
+        refresh_pluginsAction.setStatusTip('Refresh toolbox with available plugins')
+        refresh_pluginsAction.triggered.connect(self.buildToolbox)
+        self.menuBars['plugins'].addAction(refresh_pluginsAction)
+
+
 
         linemarkerstyleAction = QAction('Line and marker styles…', self)
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
@@ -381,75 +382,15 @@ class MainWindow(QMainWindow):
         QWebSettings.clearMemoryCaches()
 
         # INIT PLUGINS AND TOOLS
+
+        # We pass a copy of main window object in to the plugin manager so it can 
+        # be available for loading
         plugin_manager.m = self
-
-        plugin_places = []
-        core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
-        plugin_places.append(core_plugin_path)
-
-        logging.info("Searching for plugins...")
-        for place in plugin_places:
-            logging.info(place)
-
-        plugin_manager.setPluginPlaces(plugin_places)
-        plugin_manager.setPluginInfoExtension('pathomx-plugin')
-        categories_filter = {
-               "Import": plugins.ImportPlugin,
-               "Processing": plugins.ProcessingPlugin,
-               "Filter": plugins.FilterPlugin,
-               "Identification": plugins.IdentificationPlugin,
-               "Analysis": plugins.AnalysisPlugin,
-               "Visualisation": plugins.VisualisationPlugin,
-               "Export": plugins.ExportPlugin,
-               }
-        plugin_manager.setCategoriesFilter(categories_filter)
-        plugin_manager.collectPlugins()
-
-        # Loop round the plugins and print their names.
-        for category in plugin_categories:
-            for plugin in plugin_manager.getPluginsOfCategory(category):
-
-                plugin_image = os.path.join(os.path.dirname(plugin.path), 'icon.png')
-
-                if not os.path.isfile(plugin_image):
-                    plugin_image = None
-
-                try:
-                    resource_list = plugin.details.get('Documentation', 'Resources').split(',')
-                except:
-                    resource_list = []
-
-                metadata = {
-                    'id': type(plugin.plugin_object).__name__,  # __module__,
-                    'image': plugin_image,
-                    'image_forward_slashes': plugin_image.replace('\\', '/'),  # Slashes fix for CSS in windows
-                    'name': plugin.name,
-                    'version': plugin.version,
-                    'description': plugin.description,
-                    'author': plugin.author,
-                    'resources': resource_list,
-                    'info': plugin,
-                    'path': os.path.dirname(plugin.path),
-                    'module': os.path.basename(plugin.path),
-                    'shortname': os.path.basename(plugin.path),
-                    #'is_core_plugin': plugin.path.startswith(self.core_plugin_path)
-                }
-
-                plugin_metadata[metadata['shortname']] = metadata
-                installed_plugin_names[id(plugin.plugin_object)] = plugin.name
-
-                plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
-
-
-
-
-
 
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
         self.toolbox.setHeaderLabels(['Available tools'])
         self.toolbox.setUniformRowHeights(True)
         self.buildToolbox()
-        self.toolbox.expandAll()
 
         self.toolDock = QDockWidget(tr('Toolbox'))
         self.toolDock.setWidget(self.toolbox)
@@ -552,6 +493,9 @@ class MainWindow(QMainWindow):
 
     def buildToolbox(self):
     
+        plugins.get_available_plugins()
+        disabled_plugins = settings.get('Plugins/Disabled')
+    
         tool_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
                "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
@@ -560,6 +504,7 @@ class MainWindow(QMainWindow):
                "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
                "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
                "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
+               "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'scripts-text.png')),
                }
     
         self.toolbox.clear()
@@ -568,8 +513,11 @@ class MainWindow(QMainWindow):
             item.setText(0, category)
             item.setIcon(0, tool_category_icons[category])
             self.toolbox.addTopLevelItem(item)
-
             for tool in available_tools_by_category[category]:
+                if tool['plugin'].metadata['path'] in disabled_plugins:
+                    # Skip deactivated plugins
+                    continue
+                    
                 ti = QTreeWidgetItem()
                 ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
                 
@@ -585,6 +533,8 @@ class MainWindow(QMainWindow):
                 ti.data = tool
                 item.addChild(ti)
             item.sortChildren(0, Qt.AscendingOrder)
+
+        self.toolbox.expandAll()
 
     
     def addFileToolBar(self):
@@ -751,7 +701,9 @@ class MainWindow(QMainWindow):
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
         if dialog.exec_():
-            pass
+            settings.set('Plugins/Paths', dialog.config.get('Plugins/Paths') )
+            settings.set('Plugins/Disabled', dialog.config.get('Plugins/Disabled') )
+            self.buildToolbox()
 
     def onCheckPluginUpdates(self):
         pass

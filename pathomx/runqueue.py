@@ -330,6 +330,9 @@ pathomx_notebook_start(varsi, vars());''')
         """
         logging.warn("kernel died")
         self.reset()
+        
+    def _handle_kernel_info_reply(self, *args, **kwargs):
+        pass
 
     def _handle_kernel_restarted(self, died=True):
         """Notice that the autorestarter restarted the kernel.

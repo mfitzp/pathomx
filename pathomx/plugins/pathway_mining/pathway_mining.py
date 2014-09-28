@@ -5,6 +5,8 @@ import numpy as np
 from biocyc import biocyc
 
 biocyc.set_organism('HUMAN')
+biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
+
 # Flatten input data to single row
 
 data = []

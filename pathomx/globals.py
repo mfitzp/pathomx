@@ -21,7 +21,7 @@ current_tools_by_id = {}
 
 available_tools_by_category = defaultdict(list)
 
-plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export"]  # categories_filter.keys()
+plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export", "Scripting"]
 
 installed_plugin_names = {}
 current_datasets = []
@@ -52,10 +52,8 @@ if not ON_RTD:
         'Pathomx/Update/Last_checked': None,
         'Pathomx/Offered_registration': False,
 
-        'Plugins/Active': [],
-        'Plugins/Disabled': [],
-        'Plugins/Available': [],
         'Plugins/Paths': [],
+        'Plugins/Disabled': [],
 
         'Resources/MATLAB_path': 'matlab',
 
