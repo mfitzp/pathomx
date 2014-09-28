@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
             'plugins': self.menuBar().addMenu(tr('&Plugins')),
             'appearance': self.menuBar().addMenu(tr('&Appearance')),
             'resources': self.menuBar().addMenu(tr('&Resources')),
-            'database': self.menuBar().addMenu(tr('&Database')),
+            #'database': self.menuBar().addMenu(tr('&Database')),
             'help': self.menuBar().addMenu(tr('&Help')),
         }
 
@@ -291,12 +291,12 @@ class MainWindow(QMainWindow):
         self.menuBars['file'].addSeparator()
 
         # DATABASE MENU
-        explore_dbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-explore.png')), tr('&Explore database…'), self)
-        explore_dbAction.setStatusTip('Explore database')
-        explore_dbAction.triggered.connect(self.onDBExplore)
-        self.menuBars['database'].addAction(explore_dbAction)
+        #explore_dbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'database-explore.png')), tr('&Explore database…'), self)
+        #explore_dbAction.setStatusTip('Explore database')
+        #explore_dbAction.triggered.connect(self.onDBExplore)
+        #self.menuBars['database'].addAction(explore_dbAction)
 
-        self.menuBars['database'].addSeparator()
+        #self.menuBars['database'].addSeparator()
 
         # PLUGINS MENU
         change_pluginsAction = QAction(tr('&Manage plugins…'), self)
