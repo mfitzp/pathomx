@@ -2,8 +2,6 @@
 from __future__ import unicode_literals
 import os
 
-from .qt import *
-
 import sys
 import logging
 
@@ -12,9 +10,12 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 frozen = getattr(sys, 'frozen', False)
 if frozen:
     logging.basicConfig(level=logging.INFO)
+    os.environ['QT_API'] = 'pyqt5'
 else:
     logging.basicConfig(level=logging.DEBUG)
 
+
+from .qt import *
 
 import codecs
 from copy import copy
@@ -40,7 +41,7 @@ except ImportError:
 from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
                      settings, url_handlers, app_launchers, mono_fontFamily, available_tools_by_category, \
-                     plugin_categories
+                     plugin_categories, plugin_manager, plugin_metadata
 
 from . import utils
 from . import ui
@@ -349,7 +350,7 @@ class MainWindow(QMainWindow):
         pathomx_demo_menu = self.menuBars['help'].addMenu(tr('Demo &workflows'))
         demofiles = os.listdir( os.path.join(utils.scriptdir, 'demos') )
 
-        def get_lambda(f):
+        def do_open_demo(f):
             return lambda: self.onOpenDemoWorkflow( os.path.join(utils.scriptdir, 'demos', f) )
 
         for f in demofiles:
@@ -358,7 +359,7 @@ class MainWindow(QMainWindow):
                 name = name.replace('_',' ')
                 open_demo_file = QAction(name, self)
                 open_demo_file.setStatusTip("Load the '%s' demo workflow" % name)
-                open_demo_file.triggered.connect( get_lambda(f) )
+                open_demo_file.triggered.connect( do_open_demo(f) )
                 pathomx_demo_menu.addAction(open_demo_file)
 
         goto_pathomx_onlineDemos = QAction(tr('&Online demos && walkthroughs…'), self)
@@ -366,9 +367,7 @@ class MainWindow(QMainWindow):
         goto_pathomx_onlineDemos.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/demos/index.html') )
         self.menuBars['help'].addAction(goto_pathomx_onlineDemos)
             
-
         #self.menuBars['help'].addSeparator()
-
         #do_registerAction = QAction(tr('&Register Pathomx'), self)
         #do_registerAction.setStatusTip('Register Pathomx for release updates')
         #do_registerAction.triggered.connect(self.onDoRegister)
@@ -381,29 +380,19 @@ class MainWindow(QMainWindow):
         QWebSettings.setObjectCacheCapacities(0, 0, 0)
         QWebSettings.clearMemoryCaches()
 
-        self.plugins = {}  # Dict of plugin shortnames to data
-        self.plugins_obj = {}  # Dict of plugin name references to objs (for load/save)
-        self.pluginManager = PluginManagerSingleton.get()
-        self.pluginManager.m = self
+        # INIT PLUGINS AND TOOLS
+        plugin_manager.m = self
 
-        self.plugin_places = []
-        self.core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
-        self.plugin_places.append(self.core_plugin_path)
-        
-        #user_application_data_paths = QStandardPaths.standardLocations(QStandardPaths.DataLocation)
-        #if user_application_data_paths:
-        #    self.user_plugin_path = os.path.join( unicode(user_application_data_paths[0]), 'plugins')
-        #    utils.mkdir_p(self.user_plugin_path)
-        #    self.plugin_places.append(self.user_plugin_path)
-        #
-        #    self.application_data_path = os.path.join( unicode(user_application_data_paths[1]) )
+        plugin_places = []
+        core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
+        plugin_places.append(core_plugin_path)
 
         logging.info("Searching for plugins...")
-        for place in self.plugin_places:
+        for place in plugin_places:
             logging.info(place)
 
-        self.pluginManager.setPluginPlaces(self.plugin_places)
-        self.pluginManager.setPluginInfoExtension('pathomx-plugin')
+        plugin_manager.setPluginPlaces(plugin_places)
+        plugin_manager.setPluginInfoExtension('pathomx-plugin')
         categories_filter = {
                "Import": plugins.ImportPlugin,
                "Processing": plugins.ProcessingPlugin,
@@ -413,16 +402,12 @@ class MainWindow(QMainWindow):
                "Visualisation": plugins.VisualisationPlugin,
                "Export": plugins.ExportPlugin,
                }
-        self.pluginManager.setCategoriesFilter(categories_filter)
-        self.pluginManager.collectPlugins()
-
-        self.appBrowsers = {}
-        self.plugin_names = dict()
-        self.plugin_metadata = dict()
+        plugin_manager.setCategoriesFilter(categories_filter)
+        plugin_manager.collectPlugins()
 
         # Loop round the plugins and print their names.
         for category in plugin_categories:
-            for plugin in self.pluginManager.getPluginsOfCategory(category):
+            for plugin in plugin_manager.getPluginsOfCategory(category):
 
                 plugin_image = os.path.join(os.path.dirname(plugin.path), 'icon.png')
 
@@ -447,27 +432,17 @@ class MainWindow(QMainWindow):
                     'path': os.path.dirname(plugin.path),
                     'module': os.path.basename(plugin.path),
                     'shortname': os.path.basename(plugin.path),
-                    'is_core_plugin': plugin.path.startswith(self.core_plugin_path)
+                    #'is_core_plugin': plugin.path.startswith(self.core_plugin_path)
                 }
 
-                self.plugins[metadata['shortname']] = metadata
+                plugin_metadata[metadata['shortname']] = metadata
                 installed_plugin_names[id(plugin.plugin_object)] = plugin.name
 
                 plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
 
-                #apps[category].append(metadata)
 
-        self.workspace_count = 0  # Auto-increment
-        self.workspace_parents = {}
-        self.workspace_index = {}  # id -> obj
 
-        self.workspace = QTreeWidget()
-        self.workspace.setColumnCount(4)
-        self.workspace.expandAll()
 
-        self.workspace.setHeaderLabels(['', 'ID', ' ◎', ' ⚑'])  # ,'#'])
-        self.workspace.setUniformRowHeights(True)
-        self.workspace.hideColumn(1)
 
 
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)

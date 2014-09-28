@@ -13,8 +13,8 @@ sys.path.insert(0,'pathomx')
 build_py2app=dict(
     argv_emulation=True,
     includes=[
-        'PyQt4',
-        "PyQt4.uic.port_v3.proxy_base",
+        'PyQt5',
+        "PyQt5.uic.port_v3.proxy_base",
 
         'numpy',
         'scipy',
@@ -31,7 +31,11 @@ build_py2app=dict(
 
         'sklearn',
         'sklearn.decomposition',
-
+        'sklearn.cross_decomposition',
+        
+        'nose',
+        'nose.tools',
+        
         'nmrglue',
         'nmrglue.fileio.fileiobase',
 
@@ -44,6 +48,7 @@ build_py2app=dict(
         "zmq",
         "zmq.utils.garbage",
         "zmq.backend.cython",
+
         
         "pygments",
         'pygments.styles',
@@ -64,7 +69,10 @@ build_py2app=dict(
         'mpl-data',
         'Tkinter',
         "collections.abc",
-        "PyQt5",
+        'nose',
+        'PyQt4',
+        'PySide',
+        'debug',
         ],  
     resources=[
         'pathomx/database',
@@ -86,6 +94,13 @@ build_py2app=dict(
         CFBundleIdentifier = "org.pathomx.pathomx",
     ),    
     iconfile='pathomx/static/icon.icns',
+    #/usr/local/Cellar/qt5/5.3.2/plugins
+    qt_plugins=[
+        'platforms/libqcocoa.dylib',
+        'imageformats',
+        'printsupport/libcocoaprintersupport.dylib',
+        'accessible',
+        ],
     )
 
 setup(

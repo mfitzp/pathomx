@@ -10,6 +10,7 @@ from collections import defaultdict
 from .qt import *
 from .runqueue import NotebookRunnerQueue
 from pyqtconfig import QSettingsManager
+from yapsy.PluginManager import PluginManagerSingleton
 
 import matplotlib as mpl
 from . import utils
@@ -85,6 +86,10 @@ if not ON_RTD:
     mpl.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial']
     mpl.rcParams['patch.linewidth'] = 0
 
+    plugin_manager = PluginManagerSingleton.get()
+    plugin_objects = {}
+    plugin_metadata = {}
+    
 else:
 
     styles = None
@@ -96,3 +101,7 @@ else:
     MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES = [], [], [], []
     StyleDefinition = None
     ClassMatchDefinition = None
+    
+    plugin_manager = None
+    plugin_objects = None
+    plugin_metadata = None

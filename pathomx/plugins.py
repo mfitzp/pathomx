@@ -20,12 +20,18 @@ import inspect
 import shutil
 from . import utils
 from . import ui
-from .globals import app_launchers, file_handlers, url_handlers, available_tools_by_category
+from .globals import app_launchers, file_handlers, url_handlers, available_tools_by_category, plugin_manager, plugin_objects, plugin_metadata
 
 from zipfile import ZipFile
 
 # Translation (@default context)
 from .translate import tr
+
+
+
+
+
+
 
 
 class pluginListDelegate(QAbstractItemDelegate):
@@ -78,169 +84,19 @@ class pluginListDelegate(QAbstractItemDelegate):
 
             
 class dialogPluginManagement(ui.GenericDialog):
-    # Store a local copy of plugins.list in case not available at time of requesting
-    # On startup perform an async request to get weekly update of available plugins
-    # Start plugin management trigger a request if no plugins.list file available locally
 
-    def get_available_plugins(self):
-        # Download the plugin list if not updated <1 day ago
-        f = urlopen('http://plugins.pathomx.org/plugins.list')
-        plugin_list = f.readlines()
-        f.close()
-
-        available_plugins = {}
-        # 'Name','Author','Version','Description','Website','Updated'
-        mapping = ['shortname', 'name', 'author', 'version', 'description', 'website', 'update']
-        for line in plugin_list:
-            data = line.split('\t')
-            available_plugins[data[0]] = dict(list(zip(mapping, data[0:])))
-            available_plugins[data[0]]['_'] = line
-        self.available_plugins = available_plugins
-
-    def find_plugins_query(self):
-        s = self.searchbox.text()
-
-        if not self.available_plugins:
-            self.get_available_plugins()
-
-        plugin_matches = {}
-
-        for k, v in list(self.available_plugins.items()):
-            if re.match("(.*)%s(.*)" % s, v['_']):
-                plugin_matches[k] = v
-
-        self.populate_plugin_list(self.plugins_search_lw, plugin_matches, show_installed=True)
-
-    def populate_plugin_list(self, listwidget, plugins, show_installed=False):
-
-        while listwidget.count() > 0:  # Empty list
-            listwidget.takeItem(0)
-
-        for id, plugin in list(plugins.items()):
-            item = QListWidgetItem()
-
-            item.plugin_shortname = id
-
-            if 'image' in plugin:
-                item.setData(Qt.DecorationRole, plugin['image'])
-
-            item.setData(Qt.DisplayRole, "%s (v%s)" % (plugin['name'], plugin['version']))
-            item.setData(Qt.UserRole, plugin['description'])
-            item.setData(Qt.UserRole + 1, plugin['author'])
-            if self.is_upgradeable(id):  # id in self.available_plugins and ( StrictVersion( str(plugin['version']) ) < StrictVersion( str(self.available_plugins[id]['version']) ) ):
-                item.setData(Qt.UserRole + 2, "v%s available" % self.available_plugins[id]['version'])
-            elif id in self.installed_plugins and show_installed:
-                item.setData(Qt.UserRole + 2, "Installed")
-
-            listwidget.addItem(item)
-
-    def do_install(self, plugin_shortname, is_upgrade=False):
-        # Check if already installed
-        if plugin_shortname in self.installed_plugins and not is_upgrade:
-            return False
-        # Perform an install of the selected plugin
-        # Download and unzip the zip file to the user-specific plugins location
-        # Trigger plugin-install hook (need to implement; define out of main)
-        plugin_version = self.available_plugins[plugin_shortname]['version']
-        url = 'http://plugins.pathomx.org/downloads/%s/%s-%s.zip' % (plugin_shortname, plugin_shortname, plugin_version)
-        plugin_save_path = self.m.user_plugin_path
-        local_filename = os.path.join(QDir.tempPath(), 'pathomx-temp-download.zip')
-
-        try:
-            # NOTE the stream=True parameter
-            r = requests.get(url, stream=True)
-            with open(local_filename, 'wb') as fd:
-                for chunk in r.iter_content(1024):
-                    fd.write(chunk)
-
-            with ZipFile(local_filename, 'r') as zip:
-                zip.extractall(plugin_save_path)
-        except:
-            return False
-        else:
-            return True
-        #http://plugins.pathomx.org/downloads/zeitgeist/zeitgeist-0.0.1.tgz
-
-    def do_uninstall(self, plugin_shortname):
-        if plugin_shortname in self.installed_plugins and not self.installed_plugins[plugin_shortname]['is_core_plugin']:
-            #shutil.rmtree(self.installed_plugins[plugin_shortname]['path'])
-            try:
-                shutil.rmtree(self.installed_plugins[plugin_shortname]['path'])
-            except:
-                return False
-            else:
-                return True
-
-    def do_upgrade(self, plugin_shortname):
-        if self.is_upgradeable(plugin_shortname):  # Can only upgrade installed (bit semantic currently)
-            return self.do_install(plugin_shortname, is_upgrade=True)
-            # Tidy up everything post-upgrade/re-init
-            # Need to ensure that on loading the latest version of each plugin is always pulled
-
-    def toggle_enable(self, plugin_shortname):
-        pass
-
-    def is_upgradeable(self, plugin_shortname):
-        return plugin_shortname in self.available_plugins and plugin_shortname in self.installed_plugins \
-                 and (StrictVersion(str(self.installed_plugins[plugin_shortname]['version'])) < StrictVersion(str(self.available_plugins[plugin_shortname]['version'])))
-
-    def onInstall(self):
-        successful_count = 0
-        for widget in self.plugins_search_lw.selectedItems():
-            s = self.do_install(widget.plugin_shortname)
-            if s:
-                successful_count += 1
-
-        msgBox = QMessageBox(self)
-        if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) installed. To complete installation please restart Pathomx" % successful_count))
-        else:
-            msgBox.setText(tr("No plugins installed."))
-
-        msgBox.exec_()
-
-    def onUpgrade(self):
-        successful_count = 0
-        for widget in self.plugins_lw.selectedItems():
-            s = self.do_upgrade(widget.plugin_shortname)
-            if s:
-                successful_count += 1
-
-        msgBox = QMessageBox(self)
-        if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) upgraded. To complete upgrade please restart Pathomx" % successful_count))
-        else:
-            msgBox.setText(tr("No plugins upgraded."))
-        msgBox.exec_()
-
-    def onUninstall(self):
-        successful_count = 0
-        for widget in self.plugins_lw.selectedItems():
-            s = self.do_uninstall(widget.plugin_shortname)
-            if s:
-                successful_count += 1
-
-        msgBox = QMessageBox(self)
-        if successful_count > 0:
-            msgBox.setText(tr("%d plugin(s) uninstalled. To complete uninstallation please restart Pathomx" % successful_count))
-        else:
-            msgBox.setText(tr("No plugins uninstalled."))
-        msgBox.exec_()
-
-    def onRefresh(self):
-        self.get_available_plugins()
 
     def __init__(self, parent, **kwargs):
         super(dialogPluginManagement, self).__init__(parent, **kwargs)
 
         self.setWindowTitle(tr("Manage Plugins"))
 
-        self.get_available_plugins()
+        self.plugins = get_available_plugins()
 
         self.m = parent
         self.setFixedSize(self.sizeHint())
 
-        self.installed_plugins = self.m.plugins
+        self.installed_plugins = plugin_metadata
 
         self.tabs = QTabWidget()
         self.tab = defaultdict(dict)
@@ -326,7 +182,7 @@ class BasePlugin(IPlugin):
         self.instances = []
         self.id = type(self).__name__  # self.__module__
         self.module = self.__module__
-        self.m.plugins_obj[self.id] = self
+        plugin_objects[self.id] = self
         #self.name = "%s %s " % (self.default_workspace_category, "Plugin")
 
     def post_setup(self, path=None, name=None, metadata={}):  # Post setup hook
