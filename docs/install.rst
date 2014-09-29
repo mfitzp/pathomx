@@ -16,9 +16,9 @@ To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
-* `v2.5.2 (MSI installer) Windows Vista/7/8 (64bit)<http://download.pathomx.org/Pathomx-2.5.2-amd64.msi>`_
-* `v2.4.3 (MSI installer) Windows Vista/7/8 (64bit)<http://download.pathomx.org/Pathomx-2.4.3-amd64.msi>`_
-* `v2.3.0 (MSI installer) Windows Vista/7/8 (64bit)<http://download.pathomx.org/Pathomx-2.3.0-amd64.msi>`_
+* `v2.5.2 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.5.2-amd64.msi>`_
+* `v2.4.3 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.4.3-amd64.msi>`_
+* `v2.3.0 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.3.0-amd64.msi>`_
 
 
 MacOS X
@@ -31,9 +31,9 @@ To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
-* `v2.5.2 (Disk Image) MacOS X Mountain Lion<http://download.pathomx.org/Pathomx-2.5.2.dmg>`_
-* `v2.4.0 (Disk Image) MacOS X Mountain Lion<http://download.pathomx.org/Pathomx-2.4.0.dmg>`_
-* `v2.3.0 (Disk Image) MacOS X Mountain Lion<http://download.pathomx.org/Pathomx-2.3.0.dmg>`_
+* `v2.5.2 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.5.2.dmg>`_
+* `v2.4.0 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.4.0.dmg>`_
+* `v2.3.0 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.3.0.dmg>`_
 
 Linux
 =====
