@@ -14,6 +14,13 @@ your Start menu and desktop. Launch as for any other application.
 
 To begin using Pathomx, take a look at :ref:`getting-started`.
 
+Previous releases are also available for download if required:
+
+* [v2.5.2 (MSI installer) Windows Vista/7/8 (64bit)](http://download.pathomx.org/Pathomx-2.5.2-amd64.msi)
+* [v2.4.3 (MSI installer) Windows Vista/7/8 (64bit)](http://download.pathomx.org/Pathomx-2.4.3-amd64.msi)
+* [v2.3.0 (MSI installer) Windows Vista/7/8 (64bit)](http://download.pathomx.org/Pathomx-2.3.0-amd64.msi)
+
+
 MacOS X
 =======
 
@@ -22,10 +29,16 @@ the Pathomx application into your Applications folder. Launch for any other app.
 
 To begin using Pathomx, take a look at :ref:`getting-started`.
 
+Previous releases are also available for download if required:
+
+* [v2.5.2 (Disk Image) MacOS X Mountain Lion](http://download.pathomx.org/Pathomx-2.5.2.dmg)
+* [v2.4.0 (Disk Image) MacOS X Mountain Lion](http://download.pathomx.org/Pathomx-2.4.0.dmg)
+* [v2.3.0 (Disk Image) MacOS X Mountain Lion](http://download.pathomx.org/Pathomx-2.3.0.dmg)
+
 Linux
 =====
 
 Coming soon.
 
-.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-3.0.0-amd64.exe
-.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-3.0.0.dmg
+.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-2.5.2-amd64.msi
+.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-2.5.2.dmg
