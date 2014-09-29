@@ -20,7 +20,8 @@ from . import displayobjects
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition, notebook_queue, \
-                    current_tools, current_tools_by_id, installed_plugin_names, current_datasets
+                    current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
+                    mono_fontFamily
 
 import tempfile
 
@@ -41,7 +42,11 @@ from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
 
-from qutepart import Qutepart
+try:
+    assert False
+    from qutepart import Qutepart
+except:
+    Qutepart = None
 
 PX_INIT_SHOT = 50
 PX_RENDER_SHOT = 500
@@ -1225,7 +1230,24 @@ class GenericApp(QObject):
         self.logger.debug('Completed default tool (%s) setup.' % name)
 
         self.notes_viewer = StaticHTMLView(self)
-        self.code_editor = Qutepart()
+        if Qutepart:
+            self.code_editor = Qutepart()
+            self.code_editor.is_enhanced_editor = True
+        else:
+            class QTextEditExtra(QTextEdit):
+
+                @property
+                def text(self):
+                    return self.toPlainText()
+    
+                @text.setter
+                def text(self, text):
+                    self.setPlainText(text)
+
+            self.code_editor = QTextEditExtra()
+            self.code_editor.setFont( QFont(mono_fontFamily) )
+            self.code_editor.is_enhanced_editor = False
+            
         self.code = code
 
 
@@ -1252,7 +1274,8 @@ class GenericApp(QObject):
 
 
         # Initial display of the notebook
-        self.code_editor.detectSyntax(language='Python')
+        if self.code_editor.is_enhanced_editor:
+            self.code_editor.detectSyntax(language='Python')
 
         self.addDataToolBar()
         self.addEditorToolBar()
@@ -1591,22 +1614,21 @@ class GenericApp(QObject):
         t = self.w.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
     
-        t.addAction(self.code_editor.copyLineAction)
-        t.addAction(self.code_editor.pasteLineAction)
-        t.addAction(self.code_editor.cutLineAction)
-        t.addAction(self.code_editor.deleteLineAction)
-        t.addSeparator()
-        t.addAction(self.code_editor.increaseIndentAction)
-        t.addAction(self.code_editor.decreaseIndentAction)
-        t.addSeparator()
-        t.addAction(self.code_editor.toggleBookmarkAction)
-        t.addSeparator()
+        if self.code_editor.is_enhanced_editor:
+            t.addAction(self.code_editor.copyLineAction)
+            t.addAction(self.code_editor.pasteLineAction)
+            t.addAction(self.code_editor.cutLineAction)
+            t.addAction(self.code_editor.deleteLineAction)
+            t.addSeparator()
+            t.addAction(self.code_editor.increaseIndentAction)
+            t.addAction(self.code_editor.decreaseIndentAction)
+            t.addSeparator()
+            t.addAction(self.code_editor.toggleBookmarkAction)
+            t.addSeparator()
         
         reset_to_default_codeAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'receipt-shred.png')), tr('Reset code to tool default…'), self.w)
         reset_to_default_codeAction.setStatusTip('Reset code to tool default')
         reset_to_default_codeAction.triggered.connect(self.onResetDefaultCode)
-
-        
         t.addAction(reset_to_default_codeAction)
 
         self.toolbars['editor'] = t
