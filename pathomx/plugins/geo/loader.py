@@ -16,14 +16,17 @@ from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 from pathomx.utils import UnicodeReader
 
+class GEOConfigPanel(ui.SimpleFileOpenConfigPanel):
 
-class GEOApp(ui.ImportDataApp):
+    filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
+    description = "Open experimental data from downloaded data"
 
-    notebook = 'geo.ipynb'
+
+class GEOApp(ui.GenericTool):
+
     shortname = 'geo'
+    autoconfig_name = "{filename}"
     
-    import_filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
-    import_description = "Open experimental data from downloaded data"
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +37,7 @@ class GEOApp(ui.ImportDataApp):
         })
 
         self.data.add_output('output_data')  # Add output slot
-
+        self.addConfigPanel(GEOConfigPanel, 'Settings')
 
 class GEO(ImportPlugin):
 

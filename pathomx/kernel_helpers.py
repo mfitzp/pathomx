@@ -23,6 +23,11 @@ MAGIC_TYPES = [
         ]
 
 
+class PathomxTool(object):
+    ''' Simple wrapper class that holds the variables+code for a given tool; including
+        remote references (multiprocessing) if applicable. '''
+    pass
+
 def pathomx_notebook_start(varsi, vars):
     
     _keep_input_vars = ['styles']

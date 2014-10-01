@@ -16,14 +16,16 @@ import pathomx.db as db
 
 from pathomx.plugins import ImportPlugin
 
+class PRIDEConfigPanel(ui.SimpleFileOpenConfigPanel):
+
+    filename_filter = "All compatible files (*.zip);;Zipped PRIDE data files (*.*);;All files (*.*)"
+    description = "Import experimental data from PRIDE experimental datasets"
 
 class ImportPRIDETool(ui.ImportDataApp):
 
-    notebook = 'pride.ipynb'
     shortname = 'pride'
+    autoconfig_name = "{filename}"
     
-    import_filename_filter = "All compatible files (*.zip);;Zipped PRIDE data files (*.*);;All files (*.*)"
-    import_description = "Import experimental data from PRIDE experimental datasets"
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +36,8 @@ class ImportPRIDETool(ui.ImportDataApp):
         })
 
         self.data.add_output('output_data')  # Add output slot
-
+        
+        self.addConfigPanel(PRIDEConfigPanel, "Settings")
         
 class ImportPRIDE(ImportPlugin):
 

@@ -16,14 +16,14 @@ import pathomx.utils as utils
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 
+class BMLNMRConfigPanel(ui.SimpleFileOpenConfigPanel):
+    filename_filter = "Compressed Files (*.zip);;All files (*.*)"
+    description = "Open BML-NMR FIMA .zip output"
 
-class BMLNMRApp(ui.ImportDataApp):
+class BMLNMRApp(ui.GenericTool):
 
-    import_filename_filter = "Compressed Files (*.zip);;All files (*.*)"
-    import_description = "Open BML-NMR FIMA .zip output"
-
-    notebook = 'bml_nmr.ipynb'
     shortname = 'bml_nmr'
+    autoconfig_name = "{filename}"
 
     def __init__(self, *args, **kwargs):
         super(BMLNMRApp, self).__init__(*args, **kwargs)
@@ -36,6 +36,7 @@ class BMLNMRApp(ui.ImportDataApp):
         self.data.add_output('pqn')  # Add output slot
         self.data.add_output('tsa')  # Add output slot
 
+        self.addConfigPanel( BMLNMRConfigPanel, "Settings" )
 
 class BMLNMR(ImportPlugin):
 

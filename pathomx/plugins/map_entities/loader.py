@@ -70,7 +70,7 @@ class MapEntityConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MapEntityApp(ui.IPythonApp):
+class MapEntityApp(ui.GenericTool):
 
     name = "Map to Biocyc"
     notebook = 'map_to_biocyc.ipynb'

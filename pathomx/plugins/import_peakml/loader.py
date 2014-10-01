@@ -16,13 +16,18 @@ import pathomx.utils as utils
 from pathomx.plugins import ImportPlugin
 
 
-class ImportPeakMLApp(ui.ImportDataApp):
+class PeakMLConfigPanel(ui.SimpleFileOpenConfigPanel):
 
-    notebook = 'import_peakml.ipynb'
+    filename_filter = "PeakML (MzMatch) Data Files (*.peakml);;All files (*.*)"
+    description = "Open experimental data from PeakML data files"
+
+
+
+class ImportPeakMLApp(ui.GenericTool):
+
     shortname = 'import_peakml'
+    autoconfig_name = "{filename}"
 
-    import_filename_filter = "PeakML (MzMatch) Data Files (*.peakml);;All files (*.*)"
-    import_description = "Open experimental data from PeakML data files"
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):
@@ -34,6 +39,7 @@ class ImportPeakMLApp(ui.ImportDataApp):
 
         self.data.add_output('output_data')  # Add output slot
 
+        self.addConfigPanel(PeakMLConfigPanel, 'Settings')
 
 class ImportPeakML(ImportPlugin):
 

@@ -99,14 +99,15 @@ class MetaboHunterConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MetaboHunterApp(ui.IPythonApp):
+class MetaboHunterApp(ui.GenericTool):
 
     name = "MetaboHunter"
+    shortname = 'metabohunter'
+    autoconfig_name = "{filename}"
+    
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-    notebook = "metabohunter.ipynb"
-    shortname = 'metabohunter'
 
     default_pause_analysis=True
 

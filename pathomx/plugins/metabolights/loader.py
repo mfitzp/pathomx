@@ -14,13 +14,17 @@ import pathomx.db as db
 from pathomx.plugins import ImportPlugin
 
 
-class ImportMetabolightsApp(ui.ImportDataApp):
+class MetabolightsConfigPanel(ui.SimpleFileOpenConfigPanel):
 
-    notebook = 'metabolights.ipynb'
+    filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
+    description = "Open experimental data from Metabolights experimental datasets"
+
+
+
+class ImportMetabolightsApp(ui.GenericTool):
+
     shortname = 'metabolights'
-
-    import_filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
-    import_description = "Open experimental data from Metabolights experimental datasets"
+    autoconfig_name = "{filename}"
 
     def __init__(self, *args, **kwargs):
         super(ImportMetabolightsApp, self).__init__(*args, **kwargs)
@@ -31,6 +35,7 @@ class ImportMetabolightsApp(ui.ImportDataApp):
 
         self.data.add_output('output_data')  # Add output slot        
 
+        self.addConfigPanel(MetabolightsConfigPanel, 'Settings')
 
 class ImportMetabolights(ImportPlugin):
 

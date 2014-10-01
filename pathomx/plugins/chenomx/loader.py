@@ -14,13 +14,15 @@ import pathomx.utils as utils
 from pathomx.plugins import ImportPlugin
 
 
-class ChenomxApp(ui.ImportDataApp):
+class ChenomxConfigPanel(ui.SimpleFileOpenConfigPanel):
 
-    notebook = "chenomx.ipynb"
+    filename_filter = "All compatible files (*.csv *.txt *.tsv);;All files (*.*)"
+    description = "Open a mapped metabolite file from Chenomx"
+    
+class ChenomxApp(ui.GenericTool):
+
     shortname = 'chenomx'
-
-    import_filename_filter = "All compatible files (*.csv *.txt *.tsv);;All files (*.*)"
-    import_description = "Open a mapped metabolite file from Chenomx"
+    autoconfig_name = "{filename}"
 
     def __init__(self, *args, **kwargs):
         super(ChenomxApp, self).__init__(*args, **kwargs)
@@ -30,7 +32,8 @@ class ChenomxApp(ui.ImportDataApp):
         })
 
         self.data.add_output('output_data')  # Add output slot
-
+        
+        self.addConfigPanel(ChenomxConfigPanel, 'Settings')
 
 class Chenomx(ImportPlugin):
 

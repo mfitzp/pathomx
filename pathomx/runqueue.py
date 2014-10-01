@@ -93,6 +93,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         #self._progress_timer.timeout.connect(self.progress)
         #self._progress_timer.start(1000)
         
+        #self.executed.connect( self.progress )
+        
 
     def __del__(self):
         if self.kernel_client:
@@ -101,8 +103,8 @@ class NotebookRunner(BaseFrontendMixin, QObject):
             self.kernel_manager.shutdown_kernel()
             
     def progress(self):
-        progress = self.kernel_manager.kernel.shell.user_ns['_progressBar']
-        if self._progress_callback:
+        progress = self.kernel_manager.kernel.shell.user_ns.get('_pathomx_progress', None)
+        if progress and self._progress_callback:
             self._progress_callback(progress)
 
     def run_notebook(self, code, varsi, progress_callback=None, result_callback=None):
@@ -129,14 +131,17 @@ pathomx_notebook_start(varsi, vars());''')
         # We split the code into 'cells' here so we get UI response between those chunks
         # this allows progress update/etc. to be displayed
         # TODO: Implement a method for a running process to mark it's progress specifically
-        code_cells = re.split('\n(?=\w[^:]*\n)', code) # Split only where not indented (blocks are processed together)
-        cell_pc = 100.0 / len(code_cells)
+        # code_cells = re.split('\n(?=\w[^:]*\n)', code) # Split only where not indented (blocks are processed together)
+        # cell_pc = 100.0 / len(code_cells)
         
-        for n, cell in enumerate(code_cells):
-            msg_id = self._execute(cell)
-            logging.debug('Cell number %d; %s' % ( n, msg_id) )
-            progress = n * cell_pc
-            self._cell_execute_ids[ msg_id ] = (cell, n, progress) # Store cell and progress        
+        msg_id = self._execute(code)
+        self._cell_execute_ids[ msg_id ] = (code, 1, 100) # Store cell and progress        
+        
+        #for n, cell in enumerate(code_cells):
+        #    msg_id = self._execute(cell)
+        #    logging.debug('Cell number %d; %s' % ( n, msg_id) )
+        #    progress = n * cell_pc
+        #    self._cell_execute_ids[ msg_id ] = (cell, n, progress) # Store cell and progress        
 
         logging.debug("Runing notebook; startup message: %s" % msg_id)
 

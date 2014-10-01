@@ -37,7 +37,15 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
 
         self.v = parent
         self.config = parent.config
-
+        gb = QGroupBox('Parent folder')
+        grid = QGridLayout()
+        self.filename = ui.QFolderLineEdit(description = 'Import spectra from Bruker format files')
+        grid.addWidget(QLabel('Path'), 0, 0)
+        grid.addWidget(self.filename, 0, 1)
+        self.config.add_handler('filename', self.filename)
+        gb.setLayout(grid)
+        self.layout.addWidget(gb)
+        
         gb = QGroupBox('Phase correction')
         grid = QGridLayout()
 
@@ -83,11 +91,11 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class BrukerImport(ui.ImportDataApp):
+class BrukerImport(ui.GenericTool):
 
     name = "Import Bruker"
-    notebook = 'bruker_import.ipynb'
     shortname = 'bruker_import'
+    autoconfig_name = "{filename}"
     
     legacy_launchers = ['NMRGlue.NMRApp']
     legacy_outputs = {'output': 'output_data'}
@@ -111,13 +119,6 @@ class BrukerImport(ui.ImportDataApp):
         self.data.add_output('output_data')  # Add output slot        
         self.data.add_output('output_dic')  # Add output slot        
 
-    def addImportDataToolbar(self):
-        t = self.getCreatedToolbar('External Data', 'external-data')
-
-        import_dataAction = QAction(QIcon(os.path.join(self.plugin.path, 'bruker.png')), 'Import spectra from Bruker spectra\u2026', self.w)
-        import_dataAction.setStatusTip('Import spectra from Bruker format')
-        import_dataAction.triggered.connect(self.onImportBruker)
-        t.addAction(import_dataAction)
 
     def onImportBruker(self):
         """ Open a data file"""

@@ -21,7 +21,7 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition, notebook_queue, \
                     current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
-                    mono_fontFamily
+                    mono_fontFamily, custom_pyqtconfig_hooks
 
 import tempfile
 
@@ -186,6 +186,74 @@ class QListWidgetAddRemove(QListWidget):
         self.itemAddedOrRemoved.emit()
         return r
 
+class QFileOpenLineEdit(QWidget):
+
+    textChanged = pyqtSignal(object)
+    icon = 'disk--arrow.png'
+
+    def __init__(self, parent=None, description=tr("Select file"), filename_filter=tr("All Files") + " (*.*);;", **kwargs):
+        super(QFileOpenLineEdit, self).__init__(parent, **kwargs)
+    
+        self._text = None
+
+        self.description = description
+        self.filename_filter = filename_filter
+
+        self.lineedit = QLineEdit()
+        self.button = QToolButton()
+        self.button.setIcon( QIcon(os.path.join(utils.scriptdir, 'icons', self.icon)) )
+
+        layout = QHBoxLayout(self)
+        layout.addWidget(self.lineedit)
+        layout.addWidget(self.button, stretch=1)
+        self.setLayout(layout)
+
+        self.button.pressed.connect(self.onSelectPath)
+        
+        # Reciprocal setting of values; keep in sync
+        self.textChanged.connect(self.lineedit.setText)
+        self.lineedit.textChanged.connect(self.setText)
+     
+    def onSelectPath(self):
+    
+        filename, _ = QFileDialog.getOpenFileName(self, self.description, '', self.filename_filter)
+        if filename:
+            self.setText(filename)
+    
+    def text(self):
+        return self._text
+        
+    def setText(self, text):
+        self._text = text           
+        self.textChanged.emit(self._text)
+
+class QFileSaveLineEdit(QFileOpenLineEdit):
+    
+    icon = 'disk--pencil.png'
+    
+    def __init__(self, parent=None, description=tr("Select save filename"), filename_filter=tr("All Files") + " (*.*);;", **kwargs):
+        super(QFileSaveLineEdit, self).__init__(parent, description, filename_filter, **kwargs)
+
+    def onSelectPath(self):
+        filename, _ = QFileDialog.getSaveFileName(self.w, self.description, '', self.filename_filter)
+        if filename:
+            self.setText(filename)
+            
+class QFolderLineEdit(QFileOpenLineEdit):
+
+    icon = 'folder-horizontal-open.png'
+
+    def __init__(self, parent=None, description=tr("Select folder"), filename_filter="", **kwargs):
+        super(QFolderLineEdit, self).__init__(parent, description, filename_filter, **kwargs)
+
+    def onSelectPath(self):
+        Qd = QFileDialog()
+        Qd.setFileMode(QFileDialog.Directory)
+        Qd.setOption(QFileDialog.ShowDirsOnly)
+    
+        folder = Qd.getExistingDirectory(self, self.description)
+        if folder:
+            self.setText(folder)
 
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
@@ -1154,7 +1222,7 @@ class GenericApp(QObject):
     legacy_outputs = {}
 
     autoconfig_name = None
-    
+
     default_pause_analysis = False
     
     icon = None
@@ -1210,6 +1278,8 @@ class GenericApp(QObject):
 
         self.logger.debug('Setup config manager...')
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
+        # Add hooks for custom widgets
+        self.config.hooks = dict( self.config.hooks.items() + custom_pyqtconfig_hooks.items() )
 
         self.logger.debug('Create editor icon...')
         self.editorItem = self.parent().editor.addApp(self, position=position)
@@ -1406,6 +1476,7 @@ class GenericApp(QObject):
         varsi['styles'] = styles
 
         varsi['_pathomx_tool_path'] = self.plugin.path
+        varsi['_pathomx_progress'] = None
         varsi['_pathomx_database_path'] = os.path.join(utils.scriptdir, 'database')
 
         varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
@@ -1806,50 +1877,6 @@ class GenericTool(GenericApp):
     pass
 
 
-# Import Data viewer
-class ImportDataApp(IPythonApp):
-
-    import_type = tr('Data')
-    import_filename_filter = tr("All Files") + " (*.*);;"
-    import_description = tr("Open experimental data from file")
-
-    autoconfig_name = "{filename}"
-    
-    def __init__(self, parent, filename=None, *args, **kwargs):
-        super(ImportDataApp, self).__init__(parent, *args, **kwargs)
-
-        self.addImportDataToolbar()
-
-        if filename:
-            self.thread_load_datafile(filename)
-
-    def onImportData(self):
-        """ Open a data file with a guided import wizard"""
-        filename, _ = QFileDialog.getOpenFileName(self.w, self.import_description, '', self.import_filename_filter)
-        if filename:
-            self.config.set('filename', filename)
-            self.autogenerate()
-
-    def getFileFormatParameters(self, filename):
-        return {}
-
-    def autoconfig(self):
-        pass
-
-    def onFileChanged(self, file):
-        self.load_datafile(file)
-        pass
-
-    def addImportDataToolbar(self):
-        t = self.getCreatedToolbar(tr('External Data'), 'external-data')
-
-        import_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')), 'Import %s file…' % self.import_type, self.w)
-        import_dataAction.setStatusTip(self.import_description)
-        import_dataAction.triggered.connect(self.onImportData)
-        t.addAction(import_dataAction)
-
-        self.addExternalDataToolbar()
-
 
 class ExportDataApp(IPythonApp):
     def __init__(self, *args, **kwargs):
@@ -2003,6 +2030,37 @@ class ConfigPanel(QWidget):
                     control.Deselect(idx)
         except:
             pass
+            
+
+
+
+class SimpleFileOpenConfigPanel(ConfigPanel):
+    ''' Simple file open configuration panel for standard use
+        
+        This simple configuration panel shows just a file path widget and button
+        and can be used for most standard import tools that have no complex options.
+    '''
+    
+    description=tr("Open experimental data from file")
+    filename_filter=tr("All Files") + " (*.*);;"
+
+    def __init__(self, parent, *args,  **kwargs):
+        super(SimpleFileOpenConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Open file')
+        grid = QGridLayout()
+        self.filename = QFileOpenLineEdit(description=self.description, filename_filter=self.filename_filter)
+        grid.addWidget(QLabel('Path'), 0, 0)
+        grid.addWidget(self.filename, 0, 1)
+        self.config.add_handler('filename', self.filename)
+        gb.setLayout(grid)
+        
+        self.layout.addWidget(gb)
+
+        self.finalise()            
+            
 
 
 class ConfigTablePanel(QTableWidget):
@@ -2012,8 +2070,13 @@ class ConfigTablePanel(QTableWidget):
         self.config = parent.config
 
 
-# Dialog box for Metabohunter search options
 class ExperimentConfigPanel(ConfigPanel):
+    ''' Standard experiment definition config panel
+    
+        Offers a reusable standardised experimental control panel to define
+        experimental classes. Will be extended to support timecourse analysis etc.
+        + auto cross-configuration between multiple instance (config-passing)
+    '''
 
     def __init__(self, parent, *args, **kwargs):
         super(ExperimentConfigPanel, self).__init__(parent, *args, **kwargs)
