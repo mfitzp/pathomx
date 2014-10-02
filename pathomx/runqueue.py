@@ -14,6 +14,7 @@ from IPython.parallel.error import TimeoutError
 from copy import deepcopy
 from datetime import datetime
 import re
+import traceback
 
 
 class ClusterRunner(QObject):
@@ -46,7 +47,7 @@ class ClusterRunner(QObject):
         
         self.progress_timer = QTimer()
         self.progress_timer.timeout.connect(self.check_progress)
-        self.progress_timer.start(2000)
+        self.progress_timer.start(1000)
     
     def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
         self.is_active = True
@@ -55,7 +56,7 @@ class ClusterRunner(QObject):
         
         # Check metadata to see if this kernel has the outputs for the previous tool
         self.e.push({'varsi':varsi})
-        self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
+        self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress
 pathomx_notebook_start(varsi, vars());''')
         self.ar = self.e.execute(code)
         self.e.execute(r'''pathomx_notebook_stop(vars());''')
@@ -63,15 +64,14 @@ pathomx_notebook_start(varsi, vars());''')
     def check_status(self):
         if self.ar:
             try:
-                r = self.ar.get(1)
+                r = self.ar.get(0)
             except TimeoutError:
                 pass
             except Exception as e:
                 # Handle all code exceptions and pass back the exception
                 result = {}
                 result['status'] = -1
-                _, _, traceback = sys.exc_info()
-                result['traceback'] = traceback
+                result['traceback'] = '\n'.join( e.render_traceback() )
                 self._result_callback(result)
                 self.ar = None
                 self.is_active = False # Release this kernel
@@ -82,7 +82,7 @@ pathomx_notebook_start(varsi, vars());''')
 
         elif self.aro:
             try:
-                varso = self.aro.get(1)
+                varso = self.aro.get(0)
             except TimeoutError:
                 pass
             except Exception as e:
@@ -99,7 +99,7 @@ pathomx_notebook_start(varsi, vars());''')
         if self.ar and self._progress_callback:
             lines = self.ar.stdout.split('\n')
             cre = re.compile("____pathomx_execute_progress_(.*)____")
-            for l in reversed(lines):
+            for l in lines:
                 m = cre.match(l)
                 if m:
                     self._progress_callback( float(m.group(1)) )
@@ -502,6 +502,7 @@ class RunManager(QObject):
 
         if no_of_kernels > 0:
             self.is_parallel = True
+            self.client[:].execute('%reset')
             for id in range(no_of_kernels):
                 e = self.client[id]
                 runner = ClusterRunner(e)

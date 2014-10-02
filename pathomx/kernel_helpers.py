@@ -98,7 +98,7 @@ def pathomx_notebook_stop(vars):
 def progress(progress):
     ''' Output the current progress to stdout on the remote core
         this will be read from stdout and displayed in the UI '''
-    print("____pathomx_execute_progress_%f____")
+    print("____pathomx_execute_progress_%f____" % progress)
     
 
     
