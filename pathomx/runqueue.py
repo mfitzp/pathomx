@@ -8,16 +8,108 @@ from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
+from IPython.parallel import Client
+from IPython.parallel.error import TimeoutError
+
 from copy import deepcopy
 from datetime import datetime
 import re
 
 
-class NotebookRunner(BaseFrontendMixin, QObject):
+class ClusterRunner(QObject):
     '''
-    A runner object that handles running the running of IPython notebook and working
-    responses back into the output notebook. Based off the original runipy code
-    amended to handle in-process running and the IPython FrontendWidget.
+    A runner object that handles running IPython code on an IPython cluster for 
+    parallel processing without blocking the UI.
+    '''
+    pass
+    
+    def __init__(self, e, *args, **kwargs):
+        super(ClusterRunner, self).__init__(*args, **kwargs)
+        
+        self.e = e
+        self.ar = None
+        self.aro = None
+        self.is_active = False
+        
+        # Store metadata about tools' last run for variable passing etc.
+        self.tool_metadata = {}
+        '''
+        Runner metadata;
+            - tool-metadata (?):
+                - last-run kernel [check for lookup/push requirement before starting]
+                - 
+        '''
+        
+        self.status_timer = QTimer()
+        self.status_timer.timeout.connect(self.check_status)
+        self.status_timer.start(1000)
+        
+        self.progress_timer = QTimer()
+        self.progress_timer.timeout.connect(self.check_progress)
+        self.progress_timer.start(2000)
+    
+    def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
+        self.is_active = True
+        self._progress_callback = progress_callback
+        self._result_callback = result_callback
+        
+        # Check metadata to see if this kernel has the outputs for the previous tool
+        self.e.push({'varsi':varsi})
+        self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
+pathomx_notebook_start(varsi, vars());''')
+        self.ar = self.e.execute(code)
+        self.e.execute(r'''pathomx_notebook_stop(vars());''')
+    
+    def check_status(self):
+        if self.ar:
+            try:
+                r = self.ar.get(1)
+            except TimeoutError:
+                pass
+            except Exception as e:
+                # Handle all code exceptions and pass back the exception
+                result = {}
+                result['status'] = -1
+                _, _, traceback = sys.exc_info()
+                result['traceback'] = traceback
+                self._result_callback(result)
+                self.ar = None
+                self.is_active = False # Release this kernel
+                
+            else:
+                self.ar = None
+                self.aro = self.e.pull('varso', block=False)
+
+        elif self.aro:
+            try:
+                varso = self.aro.get(1)
+            except TimeoutError:
+                pass
+            except Exception as e:
+                print 'Exception when returning variable:', e
+            else:
+                self.aro = None
+                result = {}
+                result['status'] = 0
+                result['varso'] = varso
+                self._result_callback(result)
+                self.is_active = False # Release this kernel
+
+    def check_progress(self):
+        if self.ar and self._progress_callback:
+            lines = self.ar.stdout.split('\n')
+            cre = re.compile("____pathomx_execute_progress_(.*)____")
+            for l in reversed(lines):
+                m = cre.match(l)
+                if m:
+                    self._progress_callback( float(m.group(1)) )
+            else:
+                return None        
+
+class InProcessRunner(BaseFrontendMixin, QObject):
+    '''
+    A runner object that handles running the running tool code via an in-process IPython
+    kernel. Base off initial runipy code amended to handle in-process running and the IPython FrontendWidget.
     '''
 
     # Emitted when a user visible 'execute_request' has been submitted to the
@@ -33,10 +125,6 @@ class NotebookRunner(BaseFrontendMixin, QObject):
 
     # Execute next cell
     execute_next = pyqtSignal()
-    
-    # Emitted when all cells a notebook have been run
-    notebook_completed = pyqtSignal()
-    notebook_result = pyqtSignal(object)
     
     # Emit current cell number
     progress = pyqtSignal(object)
@@ -62,7 +150,7 @@ class NotebookRunner(BaseFrontendMixin, QObject):
     #---------------------------------------------------------------------------
 
     def __init__(self, *args, **kwargs):
-        super(NotebookRunner, self).__init__(*args, **kwargs)
+        super(InProcessRunner, self).__init__(*args, **kwargs)
         # FrontendWidget protected variables.
         self._kernel_manager = None
         self._kernel_client = None
@@ -74,27 +162,18 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self._final_msg_id = None
         self._cell_execute_ids = {}
         
-        self._is_active = False
+        self.is_active = False
         self._executing = False
         
         # Set flag for whether we are connected via localhost.
         self._local_kernel = kwargs.get('local_kernel',
-                                    NotebookRunner._local_kernel)
+                                    InProcessRunner._local_kernel)
 
         self.kernel_manager = KernelManager()
         self.kernel_manager.start_kernel()
 
         self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels(stdin=False) #, hb=False)
-        
-        # Update progressBars: note that this will not function with current InProcess Kernel
-        # requires separate thread + variable messaging implementation
-        #self._progress_timer = QTimer()
-        #self._progress_timer.timeout.connect(self.progress)
-        #self._progress_timer.start(1000)
-        
-        #self.executed.connect( self.progress )
-        
+        self.kernel_client.start_channels(stdin=False) #, hb=False)        
 
     def __del__(self):
         if self.kernel_client:
@@ -107,18 +186,18 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         if progress and self._progress_callback:
             self._progress_callback(progress)
 
-    def run_notebook(self, code, varsi, progress_callback=None, result_callback=None):
+    def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
         the outputs in-place.
         '''
+        self.is_active = True
         
         self.code = code
         self.varsi = varsi
         
         self._progress_callback = progress_callback
         self._result_callback = result_callback
-        self._is_active = True
 
         self._result_queue = [] # Cache for unhandled messages
         self._cell_execute_ids = {}
@@ -127,28 +206,12 @@ class NotebookRunner(BaseFrontendMixin, QObject):
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
         self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start(varsi, vars());''')
-
-        # We split the code into 'cells' here so we get UI response between those chunks
-        # this allows progress update/etc. to be displayed
-        # TODO: Implement a method for a running process to mark it's progress specifically
-        # code_cells = re.split('\n(?=\w[^:]*\n)', code) # Split only where not indented (blocks are processed together)
-        # cell_pc = 100.0 / len(code_cells)
         
         msg_id = self._execute(code)
         self._cell_execute_ids[ msg_id ] = (code, 1, 100) # Store cell and progress        
-        
-        #for n, cell in enumerate(code_cells):
-        #    msg_id = self._execute(cell)
-        #    logging.debug('Cell number %d; %s' % ( n, msg_id) )
-        #    progress = n * cell_pc
-        #    self._cell_execute_ids[ msg_id ] = (cell, n, progress) # Store cell and progress        
-
-        logging.debug("Runing notebook; startup message: %s" % msg_id)
-
         self._final_msg_id = self._execute(r'''pathomx_notebook_stop(vars());''')
-        logging.debug("Runing notebook; shutdown message: %s" % self._final_msg_id)
 
-    def run_notebook_completed(self, error=False, traceback=None):
+    def run_completed(self, error=False, traceback=None):
         logging.info("Notebook run took %s" % ( datetime.now() - self._execute_start ) )
         result = {}
         if error:
@@ -163,26 +226,19 @@ pathomx_notebook_start(varsi, vars());''')
             # Return input; temp
             result['varso'] = self.kernel_manager.kernel.shell.user_ns['varso']
 
-        #result['notebook'] = None
-
-        self._is_active = False
-        self.notebook_completed.emit()
-        self.notebook_result.emit(result)
+        self.is_active = False
         if self._result_callback:
             self._result_callback(result)
     
 
-    def _execute(self, source, hidden=False):
+    def _execute(self, source):
         """ Execute 'source'. If 'hidden', do not show any output.
 
         See parent class :meth:`execute` docstring for full details.
         """
 
-        msg_id = self.kernel_client.execute(source, hidden)
+        msg_id = self.kernel_client.execute(source, False)
         self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'user')
-        self._hidden = hidden
-        #if not hidden:
-        #    self.executing.emit(source)
         return msg_id
 
     #---------------------------------------------------------------------------
@@ -205,7 +261,7 @@ pathomx_notebook_start(varsi, vars());''')
         msg_id = msg['parent_header']['msg_id']
         
         if msg_id == self._final_msg_id:
-            return self.run_notebook_completed()
+            return self.run_completed()
             
         if msg_id not in self._cell_execute_ids:
             return
@@ -264,71 +320,12 @@ pathomx_notebook_start(varsi, vars());''')
             self.exit_requested.emit(self)
         else:
             traceback = '\n'.join(content['traceback'])
-            self.run_notebook_completed(error=True, traceback=traceback)
+            self.run_completed(error=True, traceback=traceback)
             
     def _process_execute_ok(self, msg):
         """ Process a reply for a successful execution request.
         """
-        payload = msg['content']['payload']
-        for item in payload:
-            if not self._process_execute_payload(item):
-                warning = 'Warning: received unknown payload of type %s'
-                print(warning % repr(item['source']))    
-    
-        content = msg['content']
-        msg_type = msg['msg_type']
-
-        # IPython 3.0.0-dev writes pyerr/pyout in the notebook format but uses
-        # error/execute_result in the message spec. This does the translation
-        # needed for tests to pass with IPython 3.0.0-dev
-        notebook3_format_conversions = {
-            'error': 'pyerr',
-            'execute_result': 'pyout'
-        }
-        msg_type = notebook3_format_conversions.get(msg_type, msg_type)
-        #out = NotebookNode(output_type=msg_type)
-
-        if 'execution_count' in content:
-            #self._current_cell['prompt_number'] = content['execution_count']
-            pass #out.prompt_number = content['execution_count']
-
-        if msg_type in ('status', 'pyin', 'execute_input'):
-            return
-
-        elif msg_type == 'stream':
-            pass
-            #out.stream = content['name']
-            #out.text = content['data']
-
-        elif msg_type in ('display_data', 'pyout'):
-            # Is this handled in _handle_execute_result?
-            for mime, data in content['data'].items():
-                try:
-                    attr = self.MIME_MAP[mime]
-                except KeyError:
-                    raise NotImplementedError('unhandled mime type: %s' % mime)
-
-                #setattr(out, attr, data)
-            return
-
-        elif msg_type == 'pyerr':
-            # Is this handled in _handle_execute_errror?
-            # out.ename = content['ename']
-            # out.evalue = content['evalue']
-            # out.traceback = content['traceback']
-            return 
-
-        elif msg_type == 'clear_output':
-            self._current_cell['outputs'] = []
-            return
-
-        elif msg_type == 'execute_reply':
-            pass
-
-        else:
-            raise NotImplementedError('unhandled iopub message: %s' % msg_type)
-
-        #self._current_cell['outputs'].append(out)
+        pass
 
     def _handle_kernel_died(self, since_last_heartbeat):
         """Handle the kernel's death (if we do not own the kernel).
@@ -433,17 +430,19 @@ pathomx_notebook_start(varsi, vars());''')
             logging.info("Restarting kernel...\n")
 
 
-class NotebookRunnerQueue(QObject):
+class RunManager(QObject):
     '''
     Auto-creating and managing distribution of notebook runners for notebooks.
     Re-population handled on timer. Keeping a maximum N available at all times.
     '''
 
     start = pyqtSignal()
-
+    is_parallel = False
+    
     def __init__(self):
-        super(NotebookRunnerQueue, self).__init__() 
-        self.runner = None
+        super(RunManager, self).__init__() 
+
+        self.runners = []
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
         self.start.connect(self.run)
 
@@ -452,11 +451,20 @@ class NotebookRunnerQueue(QObject):
         self._run_timer.timeout.connect(self.run)
         self._run_timer.start(1000)  # Auto-check for pending jobs every 1 second; this shouldn't be needed but some jobs get stuck(?)
 
-    def add_job(self, nb, varsi, progress_callback=None, result_callback=None):
+    def add_job(self, tool, code, varsi, progress_callback=None, result_callback=None):
         # We take a copy of the notebook, so changes aren't applied back to the source
         # ensuring each run starts with blank slate
-        self.jobs.append(( deepcopy(nb), varsi, progress_callback, result_callback))
+        self.jobs.append((tool, code, varsi, progress_callback, result_callback))
         self.start.emit() # Auto-start on every add job
+
+    @property
+    def no_of_kernels(self):
+        return len(self.runners)
+        
+    @property
+    def no_of_active_kernels(self):
+        return sum([1 if k.is_active else 0 for k in self.runners])
+
 
     def run(self):
         # Check for jobs
@@ -464,33 +472,45 @@ class NotebookRunnerQueue(QObject):
             return False
             
         logging.info('Currently %d jobs remaining' % len(self.jobs))
+        
+        try:
+            runner = self.runners[0]
+        except:
+            return False
 
-        if self.runner is None or self.runner._is_active == True:
+        if runner.is_active == True:
             return False
             
-        self.runner._is_active = True
-
-        # We have a notebook runner, and a job, get the job
-        notebook, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
+        # We have a runner, and a job, get the job
+        tool, code, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
 
         logging.info("Starting job....")
         # Result callback gets the varso dict
-        self.runner.run_notebook(notebook, varsi, progress_callback=progress_callback, result_callback=result_callback)
+        runner.run(tool, code, varsi, progress_callback=progress_callback, result_callback=result_callback)
 
-    def done(self):
-        logging.info("...job complete.")
-        self.runner._is_active = False
-                
     def restart(self):
         self.runner.restart_kernel('Restarting...', now=True)
-        self.runner._is_active = False
         
     def interrupt(self):
         self.runner.interrupt_kernel()
-        self.runner._is_active = False
         
-    def create_runner(self):
-        self.runner = NotebookRunner()
-        self.runner._execute('%matplotlib inline')               
-        self.runner.notebook_completed.connect( self.done )
+    def create_runners(self):
+    
+        # First try with ipcluster; fall back to inprocess if not available
+        self.client = Client()
+        no_of_kernels = len(self.client.ids)
+
+        if no_of_kernels > 0:
+            self.is_parallel = True
+            for id in range(no_of_kernels):
+                e = self.client[id]
+                runner = ClusterRunner(e)
+                self.runners.append(runner)
+            
+        else:
+            self.is_parallel = False
+            runner = InProcessRunner()
+            runner._execute('%matplotlib inline')               
+            self.runners.append(runner)
+            
     

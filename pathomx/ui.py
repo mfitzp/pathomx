@@ -1292,10 +1292,6 @@ class GenericApp(QObject):
 
         self.logger.debug('Setting up paths...')
         self._working_path = os.path.join(tempfile.gettempdir(), str(id(self)))
-        utils.mkdir_p(self._working_path)
-
-        self._pathomx_pickle_in = os.path.join(self._working_path, 'in')
-        self._pathomx_pickle_out = os.path.join(self._working_path, 'out')
 
         self.logger.debug('Completed default tool (%s) setup.' % name)
 
@@ -1476,15 +1472,11 @@ class GenericApp(QObject):
         varsi['styles'] = styles
 
         varsi['_pathomx_tool_path'] = self.plugin.path
-        varsi['_pathomx_progress'] = None
         varsi['_pathomx_database_path'] = os.path.join(utils.scriptdir, 'database')
-
-        varsi['_pathomx_pickle_in'] = self._pathomx_pickle_in
-        varsi['_pathomx_pickle_out'] = self._pathomx_pickle_out
         
         logging.info("Running tool %s" % self.name)
 
-        notebook_queue.add_job(self.code, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
+        notebook_queue.add_job(self, self.code, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)

@@ -1,6 +1,7 @@
 import os, sys
 import numpy as np
 import pandas as pd
+import re
 
 from matplotlib.figure import Figure, AxesStack
 from matplotlib.axes import Subplot
@@ -26,7 +27,21 @@ MAGIC_TYPES = [
 class PathomxTool(object):
     ''' Simple wrapper class that holds the variables+code for a given tool; including
         remote references (multiprocessing) if applicable. '''
-    pass
+    def __init__(*args, **kwargs):
+        
+        # Set to the flattened combination of defaults+settings
+        self.config = {}
+        
+        self.vars_in = {}
+        self.vars_out = {}
+        
+        self.refs_in = {}
+        self.refs_out = {}
+        
+        # The code for this tool; write-update on push
+        self.code = ''
+        
+        
 
 def pathomx_notebook_start(varsi, vars):
     
@@ -78,3 +93,12 @@ def pathomx_notebook_stop(vars):
             varso[k] = v
 
     vars['varso'] = varso
+    
+    
+def progress(progress):
+    ''' Output the current progress to stdout on the remote core
+        this will be read from stdout and displayed in the UI '''
+    print("____pathomx_execute_progress_%f____")
+    
+
+    

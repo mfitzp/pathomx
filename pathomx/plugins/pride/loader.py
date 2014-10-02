@@ -21,7 +21,7 @@ class PRIDEConfigPanel(ui.SimpleFileOpenConfigPanel):
     filename_filter = "All compatible files (*.zip);;Zipped PRIDE data files (*.*);;All files (*.*)"
     description = "Import experimental data from PRIDE experimental datasets"
 
-class ImportPRIDETool(ui.ImportDataApp):
+class ImportPRIDETool(ui.GenericTool):
 
     shortname = 'pride'
     autoconfig_name = "{filename}"

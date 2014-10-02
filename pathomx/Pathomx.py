@@ -431,16 +431,16 @@ class MainWindow(QMainWindow):
         self.editView = WorkspaceEditorView(self)
         self.editor = self.editView.scene
 
-        self.console = RichIPythonWidget()
-        self.console.kernel_manager = notebook_queue.runner.kernel_manager
-        self.console.kernel_client = notebook_queue.runner.kernel_client
+        #self.console = RichIPythonWidget()
+        #self.console.kernel_manager = notebook_queue.runner.kernel_manager
+        #self.console.kernel_client = notebook_queue.runner.kernel_client
 
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
         self.central.setTabPosition(QTabWidget.South)
 
         self.central.addTab(self.editView, '&Editor')
-        self.central.addTab(self.console, '&Console')
+        #self.central.addTab(self.console, '&Console')
         self.central.addTab(self.logView, '&Log')
 
         
@@ -719,7 +719,7 @@ class MainWindow(QMainWindow):
 
     def updateProgressBar(self):
         #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
-        self.jobQueue.setText('%d' % len(notebook_queue.jobs))
+        self.jobQueue.setText('%d/%d' % (notebook_queue.no_of_active_kernels, notebook_queue.no_of_kernels) )
 
 
     def onDoRegister(self):
@@ -1197,7 +1197,7 @@ def main():
     app.installTranslator(translator_mp)
 
     # We've got a qApp instance going, set up timers
-    notebook_queue.create_runner()
+    notebook_queue.create_runners()
     notebook_queue.start_timers()
 
     MainWindow()

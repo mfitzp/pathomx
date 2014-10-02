@@ -8,7 +8,7 @@ import platform
 from collections import defaultdict
 
 from .qt import *
-from .runqueue import NotebookRunnerQueue
+from .runqueue import RunManager
 from pyqtconfig import QSettingsManager
 from yapsy.PluginManager import PluginManagerSingleton
 
@@ -42,7 +42,7 @@ if not ON_RTD:
     # Manager objects
     logging.debug('Setting up managers...')
     styles = StylesManager()
-    notebook_queue = NotebookRunnerQueue()
+    notebook_queue = RunManager()
 
     settings = QSettingsManager()
     settings.set_defaults({
