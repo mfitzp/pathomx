@@ -8,13 +8,17 @@ from IPython.qt.base_frontend_mixin import BaseFrontendMixin
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
-from IPython.parallel import Client
-from IPython.parallel.error import TimeoutError
+from IPython.parallel import Client, TimeoutError, RemoteError
 
 from copy import deepcopy
 from datetime import datetime
 import re
 import traceback
+
+STATUS_READY = 0
+STATUS_RUNNING = 1
+STATUS_COMPLETE = 2
+STATUS_ERROR = 3
 
 
 class ClusterRunner(QObject):
@@ -31,6 +35,8 @@ class ClusterRunner(QObject):
         self.ar = None
         self.aro = None
         self.is_active = False
+        self.status = STATUS_READY
+        self.stdout = ""
         
         # Store metadata about tools' last run for variable passing etc.
         self.tool_metadata = {}
@@ -43,14 +49,17 @@ class ClusterRunner(QObject):
         
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.check_status)
-        self.status_timer.start(1000)
+        self.status_timer.start(100) # 0.1 sec
         
         self.progress_timer = QTimer()
         self.progress_timer.timeout.connect(self.check_progress)
-        self.progress_timer.start(1000)
+        self.progress_timer.start(1000) # 1 sec
     
     def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
         self.is_active = True
+        self.status = STATUS_RUNNING
+        self.stdout = ""
+                
         self._progress_callback = progress_callback
         self._result_callback = result_callback
         
@@ -62,38 +71,51 @@ pathomx_notebook_start(varsi, vars());''')
         self.e.execute(r'''pathomx_notebook_stop(vars());''')
     
     def check_status(self):
+        result = {}
+    
         if self.ar:
+            self.stdout = self.ar.stdout
             try:
                 r = self.ar.get(0)
             except TimeoutError:
                 pass
-            except Exception as e:
+            except RemoteError as e:
                 # Handle all code exceptions and pass back the exception
-                result = {}
                 result['status'] = -1
                 result['traceback'] = '\n'.join( e.render_traceback() )
+                result['stdout'] = self.stdout                                
                 self._result_callback(result)
                 self.ar = None
                 self.is_active = False # Release this kernel
+                self.status = STATUS_ERROR
                 
             else:
                 self.ar = None
                 self.aro = self.e.pull('varso', block=False)
-
+                self.status = STATUS_COMPLETE
+                
         elif self.aro:
             try:
-                varso = self.aro.get(0)
+                varso = self.aro.get(0)                
             except TimeoutError:
                 pass
-            except Exception as e:
-                print 'Exception when returning variable:', e
+            except RemoteError as e:
+                result['status'] = -1
+                result['traceback'] = '\n'.join( e.render_traceback() )
+                result['stdout'] = self.stdout                
+                self._result_callback(result)
+                self.aro = None
+                self.is_active = False # Release this kernel
+                self.status = STATUS_ERROR
+
             else:
                 self.aro = None
-                result = {}
                 result['status'] = 0
                 result['varso'] = varso
+                result['stdout'] = self.stdout                
                 self._result_callback(result)
                 self.is_active = False # Release this kernel
+                self.status = STATUS_READY
 
     def check_progress(self):
         if self.ar and self._progress_callback:
@@ -163,6 +185,8 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self._cell_execute_ids = {}
         
         self.is_active = False
+        self.status = STATUS_READY
+
         self._executing = False
         
         # Set flag for whether we are connected via localhost.
@@ -173,18 +197,14 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self.kernel_manager.start_kernel()
 
         self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels(stdin=False) #, hb=False)        
+        self.kernel_client.start_channels()
 
     def __del__(self):
         if self.kernel_client:
             self.kernel_client.stop_channels()
         if self.kernel_manager:
             self.kernel_manager.shutdown_kernel()
-            
-    def progress(self):
-        progress = self.kernel_manager.kernel.shell.user_ns.get('_pathomx_progress', None)
-        if progress and self._progress_callback:
-            self._progress_callback(progress)
+
 
     def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
         '''
@@ -237,7 +257,7 @@ pathomx_notebook_start(varsi, vars());''')
         See parent class :meth:`execute` docstring for full details.
         """
 
-        msg_id = self.kernel_client.execute(source, False)
+        msg_id = self.kernel_client.execute(source, True)
         self._request_info['execute'][msg_id] = self._ExecutionRequest(msg_id, 'user')
         return msg_id
 
@@ -495,7 +515,6 @@ class RunManager(QObject):
         self.runner.interrupt_kernel()
         
     def create_runners(self):
-    
         # First try with ipcluster; fall back to inprocess if not available
         self.client = Client()
         no_of_kernels = len(self.client.ids)
@@ -503,15 +522,32 @@ class RunManager(QObject):
         if no_of_kernels > 0:
             self.is_parallel = True
             self.client[:].execute('%reset')
+            #self.client[:].execute('%matplotlib inline')
             for id in range(no_of_kernels):
                 e = self.client[id]
                 runner = ClusterRunner(e)
                 self.runners.append(runner)
             
+                
         else:
             self.is_parallel = False
             runner = InProcessRunner()
-            runner._execute('%matplotlib inline')               
+            runner.kernel_client.execute('%reset -f') 
+            runner.kernel_client.execute('%matplotlib inline')
             self.runners.append(runner)
             
+    def create_user_kernel(self):
+        if self.is_parallel:
+            # Create an in-process user kernel to provide dynamic access to variables
+            self.user_kernel_manager = KernelManager()
+            self.user_kernel_manager.start_kernel()
+            self.user_kernel_client = self.user_kernel_manager.client()
+            self.user_kernel_client.start_channels()    
+            #self.user_kernel_client.execute('%reset -f') 
+            #self.user_kernel_client.execute('%matplotlib inline')
+            
+        else:
+            # Create an in-process user kernel to provide dynamic access to variables
+            self.user_kernel_manager = self.runners[0].kernel_manager
+            self.user_kernel_client = self.runners[0].kernel_client
     

@@ -25,21 +25,19 @@ MAGIC_TYPES = [
 
 
 class PathomxTool(object):
-    ''' Simple wrapper class that holds the variables+code for a given tool; including
-        remote references (multiprocessing) if applicable. '''
-    def __init__(*args, **kwargs):
+    ''' Simple wrapper class that holds the output data for a given tool; This is for user-friendliness
+    not for use '''
+
+    def __str__(self):
+        return self._name        
         
-        # Set to the flattened combination of defaults+settings
-        self.config = {}
+    def __repr__(self):
+        return self._name        
         
-        self.vars_in = {}
-        self.vars_out = {}
+    def __init__(self, name, *args, **kwargs):
+        self.__dict__.update(kwargs)
+        self._name = name
         
-        self.refs_in = {}
-        self.refs_out = {}
-        
-        # The code for this tool; write-update on push
-        self.code = ''
         
         
 
@@ -56,7 +54,6 @@ def pathomx_notebook_start(varsi, vars):
         vars[k] = v    
     
     vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
-    #vars['_pathomx_tempdir'] = os.path.dirname(fn)
 
     # Handle IO magic
     for k,v in vars['_io']['input'].items():

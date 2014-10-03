@@ -55,6 +55,7 @@ def get_available_plugins(plugin_places = None, include_deactivated=False):
            "Analysis": AnalysisPlugin,
            "Visualisation": VisualisationPlugin,
            "Export": ExportPlugin,
+           "Scripting": ScriptingPlugin,
            }
     plugin_manager.setCategoriesFilter(categories_filter)
     plugin_manager.collectPlugins()

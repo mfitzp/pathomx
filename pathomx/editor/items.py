@@ -18,11 +18,11 @@ INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
 INTERFACE_COLOR_OUTPUT = "yellow"
 INTERFACE_COLOR_VIEW = "blue"
 
-CONNECTOR_COLOR = "#aaaaaa"
+CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey-green
 
 INTERFACE_ACTIVE_COLOR = {
-    True: 'blue',  # Light Tango green
-    False: '#aaaaaa',
+    True: QColor(60, 60, 180, 127),  # Grey-blue
+    False: CONNECTOR_COLOR,
 }
 
 STATUS_COLORS = {
@@ -397,6 +397,9 @@ class ToolInterfaceHandler(BaseItem):
                 # Creating
                 self.interface_items[interface] = ToolInterface(self.app, self.interfaces[interface], interface, self.interface_type, self)
                 self.interface_items[interface].setPos(x, y)
+                t = QTransform()
+                t.rotate(n*angle_increment)
+                self.interface_items[interface].setTransform(t)
             else:
                 # Updating
                 self.interface_items[interface].interface = self.interfaces[interface]
@@ -406,11 +409,15 @@ class ToolInterfaceHandler(BaseItem):
         pass
 
 
-class ToolInterface(BaseInteractiveItem):
+class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
 
     def __init__(self, app=None, interface=None, interface_name='', interface_type='input', parent=None):
         super(ToolInterface, self).__init__(parent=parent)
 
+        #self.setAcceptHoverEvents(True)
+        #self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
+        #self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        
         self.app = app
 
         self.interface = interface
@@ -432,6 +439,23 @@ class ToolInterface(BaseInteractiveItem):
         self.setAcceptDrops(True)
         self._linkInProgress = None
         self._offset = QPointF(4, 4)
+        #self.updateShape( len(interface_name) * 8)
+
+    def get_interface_status(self):
+        if self.interface_type == 'input':  
+            return not self.app.data.i[ self.interface_name ] is None
+        
+        elif self.interface_type == 'output':
+            return not self.app.data.o[ self.interface_name ] is None
+        
+        
+    def updateShape(self, l): 
+        ''' Update polygon shape to the specified length (to match inner text) '''
+        w = 5
+        points = [QPoint(0, 0), QPoint(w*2, -w), QPoint(l, -w), 
+        QPoint(l-w, 0), 
+        QPoint(l, w), QPoint(w*2, w), QPoint(0, 0)]
+        self.setPolygon( QPolygonF(points) )
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
@@ -475,11 +499,13 @@ class ToolInterface(BaseInteractiveItem):
 
     def paint(self, painter, option, widget):
         """
-        Paint the tool object
+        Paint the tool object; pass first to default then over-write
         """
-        self.color = CONNECTOR_COLOR  # INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+        #super(ToolInterface, self).paint(painter, option, widget)
+        
+        self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+
         brush = QBrush(QColor(self.color))
-        #pen.setWidth(4)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
 
@@ -493,14 +519,7 @@ class LinkItem(QGraphicsPathItem):
         # DataSet carried by this link (if any)
         self.data = None
 
-        pen = QPen()
-        pen.setColor(QColor(CONNECTOR_COLOR))
-        pen.setCapStyle(Qt.RoundCap)
-        pen.setWidth(4)
-        self.pen = pen
-        self.setPen(self.pen)
-        self._LINE_PEN = pen
-        self._TEXT_PEN = QPen(QColor(TEXT_COLOR))
+        self.setLineColor(CONNECTOR_COLOR)
 
         self.textLabelItem = QGraphicsTextItem(self)
         self.textLabelItem.setPlainText('')
@@ -529,17 +548,14 @@ class LinkItem(QGraphicsPathItem):
 
         p1 = sourcePoint + QPointF(pi, 0)
         p2 = sinkPoint - QPointF(pi, 0)
-        # Shrink the horizontal port extension if we're too close
-        #if p1.x() > p2.x():
-        #    pi = (p1.x() + p2.x()) / 2
-        #    p1 = QPointF(pi, p1.y())
-        #    p2 = QPointF(pi, p2.y())
-
+        
         bezierPath.cubicTo(p1, p2, sinkPoint)
         self.bezierPath = bezierPath
         self.setPath(bezierPath)  # source.x(), source.y(), self.sink.x(), self.sink.y() )
 
         self.updateText()
+        
+        self.setLineColor( INTERFACE_ACTIVE_COLOR[ self.source.get_interface_status() ] )
 
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
@@ -581,6 +597,14 @@ class LinkItem(QGraphicsPathItem):
 
             self.textLabelItem.setTransform(transform)
 
+    def setLineColor(self, color):
+        pen = QPen()
+        pen.setColor(QColor(color))
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setWidth(4)
+        self.pen = pen
+        self.setPen(self.pen)
+    
 
 class ToolProgressItem(BaseItem):
     """

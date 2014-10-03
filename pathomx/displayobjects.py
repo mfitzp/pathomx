@@ -14,4 +14,12 @@ class Svg(BaseObj):
 
 
 class Html(BaseObj):
-    pass
+
+    def __init__(self, data, **kwargs):
+
+        if type(data) == str or type(data) == unicode:
+            self.data = data
+        
+        # Support IPython notebook aware objects
+        elif hasattr(data, '_repr_html_'):
+            self.data = data._repr_html_()

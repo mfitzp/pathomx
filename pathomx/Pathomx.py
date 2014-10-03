@@ -14,7 +14,6 @@ if frozen:
 else:
     logging.basicConfig(level=logging.DEBUG)
 
-
 from .qt import *
 import codecs
 from copy import copy
@@ -27,6 +26,7 @@ if sys.version_info < (3, 0) and ON_RTD == False:  # Python 2 only
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
+from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 
 from collections import defaultdict
 
@@ -404,11 +404,17 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(tr('Pathomx'))
 
+
+        self.kernelStatus = ui.KernelStatusWidget()
+        self.statusBar().addPermanentWidget(self.kernelStatus)
+
+    
         self.threadCount = QLabel(self.statusBar())
         font = self.threadCount.font()
         font.setPointSize(8)
         self.threadCount.setFont(font)
         self.statusBar().addPermanentWidget(self.threadCount)
+        
 
         self.jobQueue = QLabel(self.statusBar())
         font = self.jobQueue.font()
@@ -424,23 +430,25 @@ class MainWindow(QMainWindow):
 
         self._progressBar_timer = QTimer()
         self._progressBar_timer.timeout.connect(self.updateProgressBar)
-        self._progressBar_timer.start(5000)  # Attempt queue start every 5 seconds
+        self._progressBar_timer.start(1000)  # Update the progress bar / thread-watcher every second
 
         self.progressTracker = {}  # Dict storing values for each view/object
 
         self.editView = WorkspaceEditorView(self)
         self.editor = self.editView.scene
 
-        #self.console = RichIPythonWidget()
-        #self.console.kernel_manager = notebook_queue.runner.kernel_manager
-        #self.console.kernel_client = notebook_queue.runner.kernel_client
+        # IPython Widget for internal (user) console
+        self.console = RichIPythonWidget()
+        self.console._call_tip = lambda: None
+        self.console.kernel_manager = notebook_queue.user_kernel_manager
+        self.console.kernel_client = notebook_queue.user_kernel_client
 
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
         self.central.setTabPosition(QTabWidget.South)
 
         self.central.addTab(self.editView, '&Editor')
-        #self.central.addTab(self.console, '&Console')
+        self.central.addTab(self.console, '&Console')
         self.central.addTab(self.logView, '&Log')
 
         
@@ -718,6 +726,7 @@ class MainWindow(QMainWindow):
     # UI Events
 
     def updateProgressBar(self):
+        self.kernelStatus.update(notebook_queue)
         #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
         self.jobQueue.setText('%d/%d' % (notebook_queue.no_of_active_kernels, notebook_queue.no_of_kernels) )
 
@@ -1198,6 +1207,7 @@ def main():
 
     # We've got a qApp instance going, set up timers
     notebook_queue.create_runners()
+    notebook_queue.create_user_kernel()
     notebook_queue.start_timers()
 
     MainWindow()

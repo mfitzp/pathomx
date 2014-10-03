@@ -42,8 +42,10 @@ from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
 
+from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR
+from .kernel_helpers import PathomxTool
+
 try:
-    assert False
     from qutepart import Qutepart
 except:
     Qutepart = None
@@ -64,6 +66,47 @@ BLANK_DEFAULT_HTML = '''
 </style>
 <body>&nbsp;</body></html>
 '''
+
+class KernelStatusWidget(QWidget):
+
+    def __init__(self, *args, **kwargs):
+        super(KernelStatusWidget, self).__init__(*args, **kwargs)
+        
+        # Kernel queue list interrogate
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+        
+    def update(self, runmanager):
+        runners = runmanager.runners
+        # Ensure we've got enough items
+        if len(runners) > self.layout.count():
+            for i in range( self.layout.count(), len(runners) ):
+                w = QWidget()
+                w.setMinimumSize( QSize(10,10) )
+                w.setAutoFillBackground(True)
+                self.layout.addWidget(w)
+        elif len(runners) < self.layout.count():
+            for i in range( len(runners), self.layout.count() ):
+                self.layout.takeAt(i)
+                
+        for i, k in enumerate(runners):
+            w = self.layout.itemAt(i).widget()
+            p = w.palette()
+
+            if k.status == STATUS_READY:
+                p.setColor(w.backgroundRole(), QColor(0, 0, 0, 63) )
+            elif k.status == STATUS_RUNNING:
+                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 127) )
+            elif k.status == STATUS_COMPLETE:
+                p.setColor(w.backgroundRole(), QColor(0, 0, 255, 127) )
+            elif k.status == STATUS_ERROR:
+                p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127) )
+
+            w.setPalette(p)                
+        
+    def sizeHint(self):
+        return QSize( self.layout.count() * 10, 10)
+                    
 
 
 class QColorButton(QPushButton):
@@ -1481,6 +1524,9 @@ class GenericApp(QObject):
     def _worker_result_callback(self, result):
         self.progress.emit(1.)
 
+        if 'stdout' in result:
+            self.logger.error(result['stdout'])
+        
         if result['status'] == 0:
             self.logger.debug("Notebook complete %s" % self.name)
             self.status.emit('done')
@@ -1517,6 +1563,9 @@ class GenericApp(QObject):
         for o in list(self.data.o.keys()):
             if o in kwargs:
                 self.data.put(o, kwargs[o])
+
+        # Set into the workspace of user kernel
+        notebook_queue.user_kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
