@@ -15,6 +15,10 @@ from datetime import datetime
 import re
 import traceback
 
+# Kernel is busy but not because of us
+STATUS_BLOCKED = -1
+
+# Normal statuses
 STATUS_READY = 0
 STATUS_RUNNING = 1
 STATUS_COMPLETE = 2
@@ -34,8 +38,8 @@ class ClusterRunner(QObject):
         self.e = e
         self.ar = None
         self.aro = None
-        self.is_active = False
-        self.status = STATUS_READY
+        self._is_active = False
+        self._status = STATUS_READY
         self.stdout = ""
         
         # Store metadata about tools' last run for variable passing etc.
@@ -54,10 +58,21 @@ class ClusterRunner(QObject):
         self.progress_timer = QTimer()
         self.progress_timer.timeout.connect(self.check_progress)
         self.progress_timer.start(1000) # 1 sec
+        
+    @property
+    def is_active(self):
+        return self._is_active or self.e.queue_status()['queue'] > 0
+        
+    @property
+    def status(self):
+        if self._status == STATUS_READY and self.e.queue_status()['queue'] > 0:
+            return STATUS_BLOCKED
+        else:
+            return self._status
     
     def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
-        self.is_active = True
-        self.status = STATUS_RUNNING
+        self._is_active = True
+        self._status = STATUS_RUNNING
         self.stdout = ""
                 
         self._progress_callback = progress_callback
@@ -86,13 +101,13 @@ pathomx_notebook_start(varsi, vars());''')
                 result['stdout'] = self.stdout                                
                 self._result_callback(result)
                 self.ar = None
-                self.is_active = False # Release this kernel
-                self.status = STATUS_ERROR
+                self._is_active = False # Release this kernel
+                self._status = STATUS_ERROR
                 
             else:
                 self.ar = None
                 self.aro = self.e.pull('varso', block=False)
-                self.status = STATUS_COMPLETE
+                self._status = STATUS_COMPLETE
                 
         elif self.aro:
             try:
@@ -105,8 +120,8 @@ pathomx_notebook_start(varsi, vars());''')
                 result['stdout'] = self.stdout                
                 self._result_callback(result)
                 self.aro = None
-                self.is_active = False # Release this kernel
-                self.status = STATUS_ERROR
+                self._is_active = False # Release this kernel
+                self._status = STATUS_ERROR
 
             else:
                 self.aro = None
@@ -114,8 +129,8 @@ pathomx_notebook_start(varsi, vars());''')
                 result['varso'] = varso
                 result['stdout'] = self.stdout                
                 self._result_callback(result)
-                self.is_active = False # Release this kernel
-                self.status = STATUS_READY
+                self._is_active = False # Release this kernel
+                self._status = STATUS_READY
 
     def check_progress(self):
         if self.ar and self._progress_callback:
@@ -464,6 +479,7 @@ class RunManager(QObject):
 
         self.runners = []
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
+
         self.start.connect(self.run)
 
     def start_timers(self):
@@ -516,19 +532,25 @@ class RunManager(QObject):
         
     def create_runners(self):
         # First try with ipcluster; fall back to inprocess if not available
-        self.client = Client()
-        no_of_kernels = len(self.client.ids)
+        
+        try:
+            self.client = Client(timeout=1)
+        except:
+            self.client = None
+            no_of_kernels = 0
+        else:
+            no_of_kernels = len(self.client.ids)
 
         if no_of_kernels > 0:
             self.is_parallel = True
             self.client[:].execute('%reset')
+            #FIXME: We can't use inline plots until the pickling is fixed https://github.com/matplotlib/matplotlib/issues/3614
             #self.client[:].execute('%matplotlib inline')
             for id in range(no_of_kernels):
                 e = self.client[id]
                 runner = ClusterRunner(e)
                 self.runners.append(runner)
             
-                
         else:
             self.is_parallel = False
             runner = InProcessRunner()
@@ -543,8 +565,6 @@ class RunManager(QObject):
             self.user_kernel_manager.start_kernel()
             self.user_kernel_client = self.user_kernel_manager.client()
             self.user_kernel_client.start_channels()    
-            #self.user_kernel_client.execute('%reset -f') 
-            #self.user_kernel_client.execute('%matplotlib inline')
             
         else:
             # Create an in-process user kernel to provide dynamic access to variables

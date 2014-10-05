@@ -430,7 +430,7 @@ class MainWindow(QMainWindow):
 
         self._progressBar_timer = QTimer()
         self._progressBar_timer.timeout.connect(self.updateProgressBar)
-        self._progressBar_timer.start(1000)  # Update the progress bar / thread-watcher every second
+        self._progressBar_timer.start(500)  # Update the progress bar / thread-watcher every second
 
         self.progressTracker = {}  # Dict storing values for each view/object
 

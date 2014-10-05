@@ -42,7 +42,7 @@ from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
 
-from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR
+from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
 from .kernel_helpers import PathomxTool
 
 try:
@@ -101,6 +101,8 @@ class KernelStatusWidget(QWidget):
                 p.setColor(w.backgroundRole(), QColor(0, 0, 255, 127) )
             elif k.status == STATUS_ERROR:
                 p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127) )
+            elif k.status == STATUS_BLOCKED:
+                p.setColor(w.backgroundRole(), QColor(0, 0, 0, 31) )
 
             w.setPalette(p)                
         

@@ -37,9 +37,7 @@ class PathomxTool(object):
     def __init__(self, name, *args, **kwargs):
         self.__dict__.update(kwargs)
         self._name = name
-        
-        
-        
+
 
 def pathomx_notebook_start(varsi, vars):
     
@@ -84,10 +82,13 @@ def pathomx_notebook_stop(vars):
     for k, v in vars.items():
         # Check it's an accepted type for passing; and not private (starts with _)
         if not k.startswith('_') and \
-            not k in vars['_io']['input'].keys() and \
-            type(v) in MAGIC_TYPES:
-    
-            varso[k] = v
+            not k in vars['_io']['input'].keys():
+            
+            if type(v) in MAGIC_TYPES:
+                varso[k] = v
+            
+            elif hasattr(v,'_repr_html_'):
+                varso[k] = displayobjects.Html(v)
 
     vars['varso'] = varso
     
