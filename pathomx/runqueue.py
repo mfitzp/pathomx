@@ -541,7 +541,7 @@ class RunManager(QObject):
         else:
             no_of_kernels = len(self.client.ids)
 
-        if no_of_kernels > 0:
+        if False and no_of_kernels > 0:
             self.is_parallel = True
             self.client[:].execute('%reset')
             #FIXME: We can't use inline plots until the pickling is fixed https://github.com/matplotlib/matplotlib/issues/3614

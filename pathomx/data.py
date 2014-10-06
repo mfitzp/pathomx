@@ -181,6 +181,9 @@ class DataManager(QObject):
 
     # Signals
     source_updated = pyqtSignal()
+
+    output_updated = pyqtSignal(object)
+    
     consumed = pyqtSignal(tuple, tuple)
     unconsumed = pyqtSignal(tuple, tuple)
 
@@ -232,6 +235,7 @@ class DataManager(QObject):
                 #self.o[interface].refresh_interfaces()
                 #self.o[interface].previously_managed_by.append(self)
                 self.notify_watchers(interface)
+                self.output_updated.emit(interface)
             except:
                 pass
 

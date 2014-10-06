@@ -21,7 +21,7 @@ INTERFACE_COLOR_VIEW = "blue"
 CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey-green
 
 INTERFACE_ACTIVE_COLOR = {
-    True: QColor(60, 60, 180, 127),  # Grey-blue
+    True: QColor(0, 0, 255, 127),  # Grey-blue
     False: CONNECTOR_COLOR,
 }
 
@@ -371,6 +371,7 @@ class ToolInterfaceHandler(BaseItem):
         self.interfaces = {'input': app.data.i, 'output': app.data.o, 'views': app.views}[interface_type]
         self.interface_items = dict()
 
+        app.data.output_updated.connect(self.update_interface_status)
         app.data.interfaces_changed.connect(self.update_interfaces)
 
         transform = QTransform()
@@ -404,6 +405,14 @@ class ToolInterfaceHandler(BaseItem):
                 # Updating
                 self.interface_items[interface].interface = self.interfaces[interface]
                 self.interface_items[interface].setPos(x, y)
+
+    def update_interface_status(self, i):
+        if i in self.interface_items.keys():
+            self.interface_items[i].update() # Redraw
+            
+            for l in self.interface_items[i]._links: # Redraw links
+                l.updateLine()
+                
 
     def paint(self, painter, option, widget):
         pass
@@ -443,7 +452,8 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
 
     def get_interface_status(self):
         if self.interface_type == 'input':  
-            return not self.app.data.i[ self.interface_name ] is None
+            return (self.app.data.i[ self.interface_name ] is not None) and \
+                   (self.app.data.get( self.interface_name ) is not None )
         
         elif self.interface_type == 'output':
             return not self.app.data.o[ self.interface_name ] is None
@@ -518,7 +528,6 @@ class LinkItem(QGraphicsPathItem):
 
         # DataSet carried by this link (if any)
         self.data = None
-
         self.setLineColor(CONNECTOR_COLOR)
 
         self.textLabelItem = QGraphicsTextItem(self)
@@ -526,7 +535,6 @@ class LinkItem(QGraphicsPathItem):
         font = QFont()
         font.setPointSize(8)
         self.textLabelItem.setFont(font)
-        #self.scene().addItem( self.textLabelItem )
 
         self.bezierPath = None
 
