@@ -14,6 +14,7 @@ from copy import deepcopy
 from datetime import datetime
 import re
 import traceback
+import random
 
 # Kernel is busy but not because of us
 STATUS_BLOCKED = -1
@@ -41,9 +42,6 @@ class ClusterRunner(QObject):
         self._is_active = False
         self._status = STATUS_READY
         self.stdout = ""
-        
-        # Store metadata about tools' last run for variable passing etc.
-        self.tool_metadata = {}
         '''
         Runner metadata;
             - tool-metadata (?):
@@ -70,7 +68,7 @@ class ClusterRunner(QObject):
         else:
             return self._status
     
-    def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
+    def run(self, code, varsi, progress_callback=None, result_callback=None):
         self._is_active = True
         self._status = STATUS_RUNNING
         self.stdout = ""
@@ -221,7 +219,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
             self.kernel_manager.shutdown_kernel()
 
 
-    def run(self, tool, code, varsi, progress_callback=None, result_callback=None):
+    def run(self, code, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
         the outputs in-place.
@@ -474,6 +472,10 @@ class RunManager(QObject):
     start = pyqtSignal()
     is_parallel = False
     
+    # Store metadata about tools' last run for variable passing etc.
+    run_metadata = {}
+    
+    
     def __init__(self):
         super(RunManager, self).__init__() 
 
@@ -487,10 +489,10 @@ class RunManager(QObject):
         self._run_timer.timeout.connect(self.run)
         self._run_timer.start(1000)  # Auto-check for pending jobs every 1 second; this shouldn't be needed but some jobs get stuck(?)
 
-    def add_job(self, tool, code, varsi, progress_callback=None, result_callback=None):
+    def add_job(self, tool, varsi, progress_callback=None, result_callback=None):
         # We take a copy of the notebook, so changes aren't applied back to the source
         # ensuring each run starts with blank slate
-        self.jobs.append((tool, code, varsi, progress_callback, result_callback))
+        self.jobs.append((tool, varsi, progress_callback, result_callback))
         self.start.emit() # Auto-start on every add job
 
     @property
@@ -509,20 +511,51 @@ class RunManager(QObject):
             
         logging.info('Currently %d jobs remaining' % len(self.jobs))
         
-        try:
-            runner = self.runners[0]
-        except:
+        # We have job, get it
+        tool, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
+
+        # Identify the best runner for the job
+        # - which runners are available
+        # - which runners were the source data generated on
+        # - which source(s) have the largest data size
+        for runner in self.runners:
+            if not runner.is_active:
+                # That'll do for now    
+                break
+        else:
+            self.jobs.insert(0, (tool, varsi, progress_callback, result_callback))
             return False
 
-        if runner.is_active == True:
-            return False
+        # Build the IO magic
+        # - if the source did not run on the current runner we'll need to push the data over
+        io = {'input':{},'output':{},}
+        for i, sm in tool.data.i.items():
+            if sm:
+                mo, mi = sm
+                io['input'][i] = "_%s_%s" % (mi, id(mo.v))
+                
+                # Check if the last run of this occurred on the selected runner
+                if id(mo.v) in self.run_metadata and \
+                    self.run_metadata[ id(mo.v) ]['last_runner'] != id(runner):
+
+                    # We need to push the actual data; this should do it?
+                    varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
+            else:
+                io['input'][i] = None
             
-        # We have a runner, and a job, get the job
-        tool, code, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
+        for o in tool.data.o.keys():
+            io['output'][o] = "_%s_%s" % (o, id(tool))
+
+        varsi['_io'] = io
+
+        self.run_metadata[ id(tool) ] = {
+            'last_runner': id(runner)
+        }
 
         logging.info("Starting job....")
+
         # Result callback gets the varso dict
-        runner.run(tool, code, varsi, progress_callback=progress_callback, result_callback=result_callback)
+        runner.run(tool.code, varsi, progress_callback=progress_callback, result_callback=result_callback)
 
     def restart(self):
         self.runner.restart_kernel('Restarting...', now=True)
@@ -541,7 +574,7 @@ class RunManager(QObject):
         else:
             no_of_kernels = len(self.client.ids)
 
-        if False and no_of_kernels > 0:
+        if no_of_kernels > 0:
             self.is_parallel = True
             self.client[:].execute('%reset')
             #FIXME: We can't use inline plots until the pickling is fixed https://github.com/matplotlib/matplotlib/issues/3614

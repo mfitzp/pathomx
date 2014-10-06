@@ -443,7 +443,7 @@ class DataDefinition(QObject):
 
     def can_consume(self, data):
         # FIXME! Check for data types (DataFrame vs Series; dimensions; that's about it)
-        return True
+        return data is not None
         # Prevent self-consuming (inf. loop)
         #FIXME: Need a reference to the manager in self for this to work? Add to definition?
         #if data.manager == self:

@@ -102,7 +102,7 @@ class KernelStatusWidget(QWidget):
             elif k.status == STATUS_ERROR:
                 p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127) )
             elif k.status == STATUS_BLOCKED:
-                p.setColor(w.backgroundRole(), QColor(0, 0, 0, 31) )
+                p.setColor(w.backgroundRole(), QColor(0, 127, 0, 63) )
 
             w.setPalette(p)                
         
@@ -1488,40 +1488,21 @@ class GenericApp(QObject):
         self.generate()
 
     def generate(self):
-        self.logger.debug("Starting job %s" % self.name)
-
-        varsi = {}
-        # Build the IO magic
-        io = {'input':{},'output':{},}
-        for i, sm in self.data.i.items():
-            if sm:
-                mo, mi = sm
-                io['input'][i] = "_%s_%s" % (mi, id(mo.v))
-            else:
-                io['input'][i] = None
-            
-        for o in self.data.o.keys():
-            io['output'][o] = "_%s_%s" % (o, id(self))
-
-        varsi['_io'] = io
-
-        #logging.debug('Notebook sent %d objects' % len(varsi.keys()))
-
-        self.status.emit('active')
-        self.progress.emit(0.)
-
-        varsi['config'] = self.config.as_dict()
-
-        strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
-        varsi['rcParams'] = {k: v for k, v in rcParams.items() if k not in strip_rcParams}
-        varsi['styles'] = styles
-
-        varsi['_pathomx_tool_path'] = self.plugin.path
-        varsi['_pathomx_database_path'] = os.path.join(utils.scriptdir, 'database')
-        
         logging.info("Running tool %s" % self.name)
 
-        notebook_queue.add_job(self, self.code, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
+        strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
+        varsi = {
+            'config': self.config.as_dict(), 
+            'rcParams': {k: v for k, v in rcParams.items() if k not in strip_rcParams},
+            'styles': styles,
+            '_pathomx_tool_path': self.plugin.path,
+            '_pathomx_database_path': os.path.join(utils.scriptdir, 'database'),
+        }
+        
+        self.status.emit('active')
+        self.progress.emit(0.)
+        
+        notebook_queue.add_job(self, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)

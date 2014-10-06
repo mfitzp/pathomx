@@ -4,6 +4,11 @@ Support
 If you're having trouble getting Pathomx doing what you want or you have an idea how it
 can be improved, there are a number of ways you can get help.
 
+Mailing list
+============
+
+Post a message to the `mailing list`_ (hosted on Google Groups) for support.
+
 Bugs, Issues & Suggestions
 ==========================
 
@@ -29,3 +34,4 @@ Pathomx is a spare-time project and I may take a while to respond if busy elsehw
 .. _@pathomx: http://twitter.com/pathomx
 .. _twitter: http://twitter.com/
 .. _Martin Fitzpatrick: mailto:mfitzp@pathomx.org
+.. _mailing list: https://groups.google.com/forum/#!forum/pathomx-users
