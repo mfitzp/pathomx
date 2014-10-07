@@ -25,6 +25,16 @@ STATUS_RUNNING = 1
 STATUS_COMPLETE = 2
 STATUS_ERROR = 3
 
+# FIXME; we need to base-class the runner code
+def setup_languages(execute, language):
+    if language == 'r':
+        # Init R library loader (will take time first time; but instant thereafter)
+        execute(r'''%load_ext rpy2.ipython''')
+        
+    elif language == 'matlab':
+        # Init MATLAB
+        execute(r'''%load_ext pymatbridge''')
+
 
 class ClusterRunner(QObject):
     '''
@@ -68,7 +78,9 @@ class ClusterRunner(QObject):
         else:
             return self._status
     
-    def run(self, code, varsi, progress_callback=None, result_callback=None):
+    def run(self, tool, varsi, progress_callback=None, result_callback=None):
+        code = tool.code
+
         self._is_active = True
         self._status = STATUS_RUNNING
         self.stdout = ""
@@ -80,6 +92,9 @@ class ClusterRunner(QObject):
         self.e.push({'varsi':varsi})
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress
 pathomx_notebook_start(varsi, vars());''')
+        
+        setup_languages( self.e.execute, tool.language )
+
         self.ar = self.e.execute(code)
         self.e.execute(r'''pathomx_notebook_stop(vars());''') # This will queue directly above the main code block
     
@@ -220,14 +235,12 @@ class InProcessRunner(BaseFrontendMixin, QObject):
             self.kernel_manager.shutdown_kernel()
 
 
-    def run(self, code, varsi, progress_callback=None, result_callback=None):
+    def run(self, tool, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
         the outputs in-place.
         '''
         self.is_active = True
-        
-        self.code = code
         self.varsi = varsi
         
         self._progress_callback = progress_callback
@@ -240,9 +253,11 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
         self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
 pathomx_notebook_start(varsi, vars());''')
+
+        setup_languages( self._execute, tool.language )
         
-        msg_id = self._execute(code)
-        self._cell_execute_ids[ msg_id ] = (code, 1, 100) # Store cell and progress        
+        msg_id = self._execute(tool.code)
+        self._cell_execute_ids[ msg_id ] = (tool.code, 1, 100) # Store cell and progress        
         self._final_msg_id = self._execute(r'''pathomx_notebook_stop(vars());''')
 
     def run_completed(self, error=False, traceback=None):
@@ -556,7 +571,7 @@ class RunManager(QObject):
         tool.logger.info("Starting job....")
 
         # Result callback gets the varso dict
-        runner.run(tool.code, varsi, progress_callback=progress_callback, result_callback=result_callback)
+        runner.run(tool, varsi, progress_callback=progress_callback, result_callback=result_callback)
 
     def restart(self):
         self.runner.restart_kernel('Restarting...', now=True)

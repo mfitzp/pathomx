@@ -1308,6 +1308,8 @@ class GenericApp(QObject):
     default_pause_analysis = False
     
     icon = None
+    
+    language = 'python' # Script/function language (determines loading IPython helpers)
 
     def __init__(self, parent, name=None, code="", position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
