@@ -1,4 +1,4 @@
-
+from copy import copy
 
 class BaseObj(object):
 
@@ -6,7 +6,7 @@ class BaseObj(object):
         return self.data
 
     def __init__(self, data, **kwargs):
-        self.data = data
+        self.data = copy(data)
 
 
 class Svg(BaseObj):

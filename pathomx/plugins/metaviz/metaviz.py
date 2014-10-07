@@ -1,3 +1,4 @@
+import os
 from biocyc import biocyc, Pathway, Gene, Compound, Protein
 biocyc.set_organism('HUMAN')
 biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )

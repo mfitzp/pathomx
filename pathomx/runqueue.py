@@ -81,7 +81,7 @@ class ClusterRunner(QObject):
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress
 pathomx_notebook_start(varsi, vars());''')
         self.ar = self.e.execute(code)
-        self.e.execute(r'''pathomx_notebook_stop(vars());''')
+        self.e.execute(r'''pathomx_notebook_stop(vars());''') # This will queue directly above the main code block
     
     def check_status(self):
         result = {}
@@ -115,7 +115,8 @@ pathomx_notebook_start(varsi, vars());''')
             except RemoteError as e:
                 result['status'] = -1
                 result['traceback'] = '\n'.join( e.render_traceback() )
-                result['stdout'] = self.stdout                
+                result['stdout'] = self.stdout
+                result['varso'] = []
                 self._result_callback(result)
                 self.aro = None
                 self._is_active = False # Release this kernel
@@ -552,7 +553,7 @@ class RunManager(QObject):
             'last_runner': id(runner)
         }
 
-        logging.info("Starting job....")
+        tool.logger.info("Starting job....")
 
         # Result callback gets the varso dict
         runner.run(tool.code, varsi, progress_callback=progress_callback, result_callback=result_callback)
@@ -578,7 +579,7 @@ class RunManager(QObject):
             self.is_parallel = True
             self.client[:].execute('%reset')
             #FIXME: We can't use inline plots until the pickling is fixed https://github.com/matplotlib/matplotlib/issues/3614
-            #self.client[:].execute('%matplotlib inline')
+            self.client[:].execute('%matplotlib inline')
             for id in range(no_of_kernels):
                 e = self.client[id]
                 runner = ClusterRunner(e)
@@ -598,6 +599,7 @@ class RunManager(QObject):
             self.user_kernel_manager.start_kernel()
             self.user_kernel_client = self.user_kernel_manager.client()
             self.user_kernel_client.start_channels()    
+            # self.user_kernel_client.execute('%matplotlib inline')
             
         else:
             # Create an in-process user kernel to provide dynamic access to variables

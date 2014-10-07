@@ -1,4 +1,4 @@
-import os
+import os, sys
 import copy
 import math
 from .. import utils
@@ -574,11 +574,17 @@ class LinkItem(QGraphicsPathItem):
             source_manager, source_interface = self.data
             dataobj = source_manager.o[source_interface]
             if dataobj is not None:
-                strs = [
-                    source_interface,
-                    "(%s)" % "x".join([str(x) for x in dataobj.shape]),
-                    ]
-
+                strs = [source_interface]
+                if hasattr(dataobj, 'shape'):
+                    strs.append( "(%s)" % "x".join([str(x) for x in dataobj.shape]) )
+                else:
+                    try:
+                        obj_len = len( dataobj )
+                    except:
+                        pass
+                    else:
+                        strs.append( "(%s)" % obj_len )
+            
                 text = ''
                 for s in strs:
                     if len(text + s) < max_length:

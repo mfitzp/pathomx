@@ -41,6 +41,7 @@ ipython_css = os.path.join( os.path.dirname(os.path.realpath(IPython.__file__)),
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
+from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
 from .kernel_helpers import PathomxTool
@@ -66,6 +67,42 @@ BLANK_DEFAULT_HTML = '''
 </style>
 <body>&nbsp;</body></html>
 '''
+
+
+
+
+class Logger(logging.Handler):
+    def __init__(self, parent, widget, out=None, color=None):
+        super(Logger, self).__init__()
+        self.m = parent
+        """(edit, out=None, color=None) -> can write stdout, stderr to a
+        QTextEdit.
+        edit = QTextEdit
+        out = alternate stream ( can be the original sys.stdout )
+        color = alternate color (i.e. color stderr a different color)
+        """
+        self.widget = widget
+        self.out = None
+        self.color = color
+        self.ansi_processor = QtAnsiCodeProcessor()
+
+    def emit(self, record):
+    
+        self.widget.textCursor().movePosition(QTextCursor.End)
+    
+        msg = self.format(record)        
+        if record.levelno < logging.INFO:
+            return False
+
+        for substring in self.ansi_processor.split_string(msg):
+            format = self.ansi_processor.get_format()
+            self.widget.textCursor().insertText(substring, format)
+
+        self.widget.textCursor().insertText("\n")
+
+    def write(self, m):
+        pass
+
 
 class KernelStatusWidget(QWidget):
 
@@ -102,7 +139,7 @@ class KernelStatusWidget(QWidget):
             elif k.status == STATUS_ERROR:
                 p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127) )
             elif k.status == STATUS_BLOCKED:
-                p.setColor(w.backgroundRole(), QColor(0, 127, 0, 63) )
+                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 63) )
 
             w.setPalette(p)                
         
@@ -1294,7 +1331,15 @@ class GenericApp(QObject):
         self._is_job_active = False
         self._queued_start = False
 
+        # Initiate logging
+        self.log_viewer = QTextEdit()
+        self.log_viewer.setReadOnly(True)
+        self.log_viewer.setFont(QFont(mono_fontFamily))
+        
+        logHandler = Logger(self, self.log_viewer)
+
         self.logger = logging.getLogger(self.id)
+        self.logger.addHandler(logHandler)
 
         if name == None:
             name = getattr(self, 'name', installed_plugin_names[id(self.plugin)])
@@ -1416,6 +1461,7 @@ class GenericApp(QObject):
 
         self.views.addView(self.notes_viewer, '&?', unfocus_on_refresh=True)
         self.views.addView(self.code_editor, '&#', unfocus_on_refresh=True)
+        self.views.addView(self.log_viewer, '&=', unfocus_on_refresh=True)
         #self.views.addView( self.logView, 'Log')
 
         if self._is_autoconsume_success is not False:
@@ -1436,33 +1482,6 @@ class GenericApp(QObject):
         
         if self.code == "":
             self.code = self.default_code
-
-    def load_notebook(self, notebook_path):
-        self.logger.debug('Loading notebook %s' % notebook_path)
-        with open(notebook_path, 'rU') as f:
-            self.nb_source = read_notebook(f, 'json')
-
-        notes = []
-        code = []
-        for ws in self.nb_source.worksheets:
-            for cell in ws.cells:
-                if cell.cell_type == 'code':
-                    code.append(cell.input)
-                elif cell.cell_type == 'markdown':
-                    notes.append(cell.source)
-                    
-        self.code = '\n\n'.join(code)
-        self.notes = '\n\n'.join(notes)
-
-        target_folder = os.path.dirname(notebook_path)
-        notebook_name = os.path.basename(notebook_path)
-        shortname = notebook_name[:-6]
-        
-        with open( os.path.join(target_folder, shortname + '.py'), 'w' ) as f:
-            f.write(self.code)
-
-        with open( os.path.join(target_folder, shortname + '.md'), 'w' ) as f:
-            f.write(self.notes)
         
     @property
     def code(self):
@@ -1488,7 +1507,7 @@ class GenericApp(QObject):
         self.generate()
 
     def generate(self):
-        logging.info("Running tool %s" % self.name)
+        self.logger.info("Running tool %s" % self.name)
 
         strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
         varsi = {
@@ -1590,6 +1609,14 @@ class GenericApp(QObject):
                     self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k, color=DATA_COLOR)
 
                 result_dict[k] = {'data': v}
+            
+            elif hasattr(v, '_repr_html_'):
+                # on IPython notebook aware objects to generate Html views
+                if self.views.get_type(k) != HTMLView:
+                    self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
+
+                result_dict[k] = {'html': v._repr_html_()}
+                
 
         return result_dict
 
@@ -1981,7 +2008,7 @@ class AnalysisApp(IPythonApp):
                 'experiment_test': _test,
             }, trigger_update=False)
 
-            logging.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
+            self.logger.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
 
     def onDataChanged(self):
         self.repopulate_experiment_classes()

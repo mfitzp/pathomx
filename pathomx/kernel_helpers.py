@@ -15,10 +15,15 @@ from IPython.core import display
 from copy import deepcopy
 
 MAGIC_TYPES = [
+        # Standard Python types
+        int, str, dict, list, set,
+        # Numpy
         np.array, np.ndarray,
+        # Pandas
         pd.Series, pd.DataFrame,
         Figure, Subplot,
         StylesManager,
+        # View types
         displayobjects.Svg, displayobjects.Html,
         display.SVG
         ]
@@ -88,7 +93,13 @@ def pathomx_notebook_stop(vars):
                 varso[k] = v
             
             elif hasattr(v,'_repr_html_'):
-                varso[k] = displayobjects.Html(v)
+                try:
+                    # Check if it is a bound method (not a class definition)
+                    v._repr_html_()
+                except:
+                    pass
+                else:
+                    varso[k] = displayobjects.Html(v)
 
     vars['varso'] = varso
     

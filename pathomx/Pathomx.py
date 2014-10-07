@@ -25,7 +25,6 @@ if sys.version_info < (3, 0) and ON_RTD == False:  # Python 2 only
 
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
 
 from collections import defaultdict
@@ -118,38 +117,6 @@ DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
 
 PATHWAY_ROOTS = ['Activation-Inactivation-Interconversion','Biosynthesis','Degradation','Detoxification','Energy-Metabolism','Macromolecule-Modification','Metabolic-Clusters','Signaling-Pathways','Super-Pathways']
 
-class Logger(logging.Handler):
-    def __init__(self, parent, widget, out=None, color=None):
-        super(Logger, self).__init__()
-        self.m = parent
-        """(edit, out=None, color=None) -> can write stdout, stderr to a
-        QTextEdit.
-        edit = QTextEdit
-        out = alternate stream ( can be the original sys.stdout )
-        color = alternate color (i.e. color stderr a different color)
-        """
-        self.widget = widget
-        self.out = None
-        self.color = color
-        self.ansi_processor = QtAnsiCodeProcessor()
-
-    def emit(self, record):
-    
-        self.widget.textCursor().movePosition(QTextCursor.End)
-    
-        msg = self.format(record)        
-        if record.levelno < logging.INFO:
-            return False
-
-        for substring in self.ansi_processor.split_string(msg):
-            format = self.ansi_processor.get_format()
-            self.widget.textCursor().insertText(substring, format)
-
-        self.widget.textCursor().insertText("\n")
-
-    def write(self, m):
-        pass
-
 
 class ToolTreeWidget(QTreeWidget):
 
@@ -187,7 +154,7 @@ class MainWindow(QMainWindow):
         self.logView.setReadOnly(True)
         self.logView.setFont(QFont(mono_fontFamily))
         
-        logHandler = Logger(self, self.logView)
+        logHandler = ui.Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
