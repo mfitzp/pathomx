@@ -60,6 +60,9 @@ build_py2app=dict(
         'jinja2',
         'jinja2.ext',
         
+        'rpy2',
+        'pymatbridge',
+        
         ],
     excludes=[
         '_xmlplus',
