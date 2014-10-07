@@ -48,7 +48,6 @@ with open(os.path.join(_pathomx_tempdir, 'kegg-pathway-data.txt'), 'w') as tmp:
     for k, c in list(node_colors.items()):
         tmp.write('%s\t%s\n' % (k, c[0]))
 
-    tmp.write('gly\t#ff0000\n')
     
 m = MultipartEncoder(
         fields = {

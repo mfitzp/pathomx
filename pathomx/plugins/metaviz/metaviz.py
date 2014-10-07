@@ -13,6 +13,7 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 from matplotlib.colors import rgb2hex
 
+from pathomx.utils import luminahex
 
 if compound_data is not None or gene_data is not None or protein_data is not None:
 
@@ -62,7 +63,14 @@ if compound_data is not None or gene_data is not None or protein_data is not Non
         values = data.iloc[0]
         for e,v in zip(ids, values):
             if type(e) in [Gene, Compound, Protein]:
-                analysis[e] = (rgb2hex( mapper.to_rgba(v) ), '#000000')
+                hexcol = rgb2hex( mapper.to_rgba(v) )
+                l = luminahex(hexcol)
+                if l < 0.5:
+                    contrasthexcol = '#ffffff'
+                else:
+                    contrasthexcol = '#000000'
+                
+                analysis[e] = (hexcol, contrasthexcol)
 
     print "Range %.2f..%.2f" % (overall_min, overall_max)
     

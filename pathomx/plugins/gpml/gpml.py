@@ -116,7 +116,7 @@ if compound_data is not None or gene_data is not None or protein_data is not Non
             if luminahex(color) < 0.5:
                 contrast = "#FFFFFF"
             else:
-                contrast = "#FFFFFF"
+                contrast = "#000000"
                 
             node_colors[('PATHOMX%d' % id(data) , n)] = (color, contrast)
             

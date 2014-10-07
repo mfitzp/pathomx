@@ -130,7 +130,7 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
         showanalysisAction = QPushButton('Show network analysis', self.parent())
         showanalysisAction.setStatusTip('Show network analysis hints and molecular importance')
         showanalysisAction.setCheckable(True)
-        self.config.add_handler('show_analysis', showanalysisAction)
+        self.config.add_handler('show_network_analysis', showanalysisAction)
 
         showgibbsAction = QPushButton(QIcon(os.path.join(utils.scriptdir, 'icons', 'visualization.png')), ' Show Gibbs reaction', self.parent())
         showgibbsAction.setStatusTip('Show Gibbs reaction rates')
@@ -218,7 +218,7 @@ class MetaVizApp(ui.AnalysisApp):
             'show_enzymes': True,
             'show_secondary': True,
             'show_molecular': True,
-            'show_network_analysis': True,
+            'show_network_analysis': False,
             'show_gibbs': False,
 
             'highlightpathways': True,
