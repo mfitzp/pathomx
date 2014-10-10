@@ -157,7 +157,8 @@ class ViewManager( QTabWidget ):
             if hasattr(self.widget(n),'autogenerate') and self.widget(n).autogenerate:
                 try:
                     self.widget(n).autogenerate()
-                except:
+                except Exception as e:
+                    logging.error(e)
                     # Failure; disable the tab or delete
                     if self._auto_delete_on_no_data:
                         to_delete.append( self.widget(n) )

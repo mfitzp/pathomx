@@ -1567,6 +1567,9 @@ class GenericApp(QObject):
         for o in list(self.data.o.keys()):
             if o in kwargs:
                 self.data.put(o, kwargs[o])
+            #else:
+            #    self.data.put(o, None) # Clear up; but this triggers wasteful autogenerate 'firing' ?
+            #                             will be fixed by setting status through downstream network once proper queue in effect
 
         # Set into the workspace of user kernel
         notebook_queue.user_kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})

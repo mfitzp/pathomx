@@ -108,7 +108,7 @@ class BrukerImport(ui.GenericTool):
             'filename': None,
             'autophase_algorithm': 'Peak_minima',
             'remove_digital_filter': True,
-            'delete_imaginaries': False,
+            'delete_imaginaries': True,
             'reverse_spectra': True,
             'zero_fill': True,
             'zero_fill_to': 32768,
@@ -179,5 +179,5 @@ class NMRGlue(ImportPlugin):
 
     def __init__(self, *args, **kwargs):
         super(NMRGlue, self).__init__(*args, **kwargs)
-        self.register_app_launcher(BrukerImport)
-        self.register_app_launcher(BrukerExport)
+        self.register_app_launcher(BrukerImport, workspace_category='Import')
+        self.register_app_launcher(BrukerExport, workspace_category='Export')

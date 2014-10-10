@@ -52,6 +52,8 @@ else:
     output_data.columns = pd.Index(new_scale, name='Scales')
     output_data.index = input_data.index
 
+output_data.dropna(axis=1, inplace=True)
+
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 

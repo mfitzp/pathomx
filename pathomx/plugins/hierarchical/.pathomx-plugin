@@ -1,0 +1,9 @@
+[Core]
+Name = Fold Change
+Module = loader
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Calculate fold change between two groups

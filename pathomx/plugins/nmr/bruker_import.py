@@ -9,10 +9,10 @@ def load_bruker_fid(fn, pc_init=None, config={}):
     try:
         print("Reading %s" % fn)
         # read in the bruker formatted data
-        dic, data = ng.bruker.read(fn)
-    except:
-        print("...fail")
-        return None, None
+        dic, data = ng.bruker.read(fn, read_prog=False)
+    except Exception as e:
+        print(fn, e)
+        return None, None, None
     else:
 
         # remove the digital filter
@@ -132,17 +132,19 @@ for r, d, files in os.walk(config['filename']): #filename contains a folder for 
         # The following is a hack; need some interface for choosing between processed/raw data
         # and for various formats of NMR data input- but simple
         fids.append(r)
-
+        
 total_fids = len(fids)
 pc_init = None
 pc_history = []
 for n, fid in enumerate(fids):
     dic, data, pc = load_bruker_fid(fid, pc_init, config)
-    # Store previous phase correction outputs to speed up subsequent runs
-    pc_history.append(pc)
-    pc_init = np.median(np.array(pc_history), axis=0)
-
+    
     if data is not None:
+
+        # Store previous phase correction outputs to speed up subsequent runs
+        pc_history.append(pc)
+        pc_init = np.median(np.array(pc_history), axis=0)
+    
         label = os.path.basename(fid)
         #if 'AUTOPOS' in dic['acqus']:
         #    label = label + " %s" % dic['acqus']['AUTOPOS']
@@ -150,41 +152,49 @@ for n, fid in enumerate(fids):
         nmr_data.append(data)
         nmr_dic.append(dic)
         _ppm_real_scan_folder = fid
+        
+    progress(float(n)/total_fids) # Emit progress update
 
-# Generate the ppm for these spectra
-# read in the bruker formatted data// use latest
-dic, data_unp = ng.bruker.read(_ppm_real_scan_folder)
-# Calculate ppms
-# SW total ppm 11.9877
-# SW_h total Hz 7194.244
-# SF01 Hz of 0ppm 600
-# TD number of data points 32768
+if _ppm_real_scan_folder:
+    # Nothing worked
+    
+    # Generate the ppm for these spectra
+    # read in the bruker formatted data// use latest
+    dic, data_unp = ng.bruker.read(_ppm_real_scan_folder, read_prog=False)
+    # Calculate ppms
+    # SW total ppm 11.9877
+    # SW_h total Hz 7194.244
+    # SF01 Hz of 0ppm 600
+    # TD number of data points 32768
+    
+    # Offset (not provided but we have:
+    # O1 Hz offset (shift) of spectra 2822.5 centre!
+    # BF ? 600Mhz
+    # O1/BF = centre of the spectra
+    # OFFSET = (SW/2) - (O1/BF)
+    
+    # What we need to calculate is start, end, increment
+    offset = (float(dic['acqus']['SW']) / 2) - (float(dic['acqus']['O1']) / float(dic['acqus']['BF1']))
+    start = float(dic['acqus']['SW']) - offset
+    end = -offset
+    step = float(dic['acqus']['SW']) / 32768
+    
+    nmr_ppms = np.arange(start, end, -step)[:32768]
+    experiment_name = '%s (%s)' % (dic['acqus']['EXP'], config['filename'])
+    
+    
+    print("Processing spectra to Pandas DataFrame...")
+    output_data = pd.DataFrame(nmr_data)
+    output_data.index = pd.MultiIndex.from_tuples( [(l,None) for l in sample_labels], names=['Sample','Class']   )
+    output_data.columns = pd.MultiIndex.from_tuples( [(s,) for s in nmr_ppms], names=['Scale'])
+    
+    # Export the dictionary parameters for all sets
+    output_dic = nmr_dic
+    
+    # Generate simple result figure (using pathomx libs)
+    from pathomx.figures import spectra
+    
+    View = spectra(output_data, styles=styles);
 
-# Offset (not provided but we have:
-# O1 Hz offset (shift) of spectra 2822.5 centre!
-# BF ? 600Mhz
-# O1/BF = centre of the spectra
-# OFFSET = (SW/2) - (O1/BF)
-
-# What we need to calculate is start, end, increment
-offset = (float(dic['acqus']['SW']) / 2) - (float(dic['acqus']['O1']) / float(dic['acqus']['BF1']))
-start = float(dic['acqus']['SW']) - offset
-end = -offset
-step = float(dic['acqus']['SW']) / 32768
-
-nmr_ppms = np.arange(start, end, -step)[:32768]
-experiment_name = '%s (%s)' % (dic['acqus']['EXP'], config['filename'])
-
-
-print("Processing spectra to Pandas DataFrame...")
-output_data = pd.DataFrame(nmr_data)
-output_data.index = pd.MultiIndex.from_tuples( [(l,None) for l in sample_labels], names=['Sample','Class']   )
-output_data.columns = pd.MultiIndex.from_tuples( [(s,) for s in nmr_ppms], names=['Scale'])
-
-# Export the dictionary parameters for all sets
-output_dic = nmr_dic
-
-# Generate simple result figure (using pathomx libs)
-from pathomx.figures import spectra
-
-View = spectra(output_data, styles=styles);
+else:
+    raise Exception("No valid data found")

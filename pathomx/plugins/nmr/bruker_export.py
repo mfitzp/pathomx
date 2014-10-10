@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import nmrglue as ng
 
+total_fids = len(dic_list)
+
 for n,dic in enumerate(dic_list):
     data = input_data.values[n,:].flatten()
 
@@ -49,4 +51,4 @@ for n,dic in enumerate(dic_list):
 
     ng.bruker.write( os.path.join(config['filename'],str(n+1)),dic,data,overwrite=True)
     
-    
+    progress(float(n)/total_fids) # Emit progress update    

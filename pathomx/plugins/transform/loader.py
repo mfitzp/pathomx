@@ -16,7 +16,7 @@ from pathomx.data import DataDefinition
 from pathomx.views import MplSpectraView, IPyMplView
 
 
-class TransformApp(ui.IPythonApp):
+class TransformApp(ui.GenericTool):
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
@@ -76,10 +76,24 @@ class TransformTranspose(TransformApp):
     notebook = 'transpose.ipynb'
     shortname = 'transpose'
 
-class TransformSplitImaginary(TransformApp):
+class TransformSplitImaginary(ui.GenericTool):
     name = "Split real/imaginary numbers"
     notebook = 'split_imaginary.ipynb'
     shortname = 'split_imaginary'
+
+    def __init__(self, *args, **kwargs):
+        super(TransformSplitImaginary, self).__init__(*args, **kwargs)
+
+        self.data.add_input('input_data')  # Add input slot
+
+        self.data.add_output('real')
+        self.data.add_output('imag')
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input_data', {  # Accept anything!
+            })
+        )    
 
 
 class Transform(ProcessingPlugin):

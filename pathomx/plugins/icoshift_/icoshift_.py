@@ -5,9 +5,8 @@ spectra = input_data.values
 
 xCS, ints, ind, target = icoshift(config.get('target'), spectra, inter=config.get('alignment_mode'), n=config.get('maximum_shift'))
 
-output_data = pd.DataFrame( xCS )
-output_data.index = input_data.index
-output_data.columns = input_data.columns
+output_data = input_data
+output_data[:] = spectra
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra

@@ -4,7 +4,7 @@ import os
 import copy
 
 import numpy as np
-from icoshift import icoshift
+#from icoshift import icoshift
 
 import pathomx.ui as ui
 import pathomx.db as db
@@ -107,13 +107,14 @@ class IcoshiftApp(ui.IPythonApp):
         self.data.add_output('output_data')
 
         # Setup data consumer options
+        # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input', {
-            'labels_n': ('>0', None),
+            DataDefinition('input_data', {
+            'labels_n': (None, '>0'),
             'entities_t': (None, None),
-            'scales_t': (None, ['float']),
             })
         )
+
 
         self.config.set_defaults({
             'target': 'average',

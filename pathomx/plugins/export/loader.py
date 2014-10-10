@@ -49,7 +49,7 @@ class ExportDataframe(ui.ExportDataApp):
 
 class PasteToClipboard(ui.ExportDataApp):
 
-    name = "Paste to clipboard"
+    name = "Copy to clipboard"
     icon = 'clipboard.png'
 
     notebook = 'export_clipboard.ipynb'
