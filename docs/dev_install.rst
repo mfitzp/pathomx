@@ -105,13 +105,24 @@ Install Anaconda for MacOS X. Link to the website is http://continuum.io/downloa
 
 With Anaconda installed, open the terminal on Mac and  you can add the final dependencies.
 
-    pip install mplstyler yapsy pyqtconfig.
-    conda install -c pwang
+    pip install mplstyler yapsy pyqtconfig
 
 To run Pathomx from the command line, change to the cloned git folder and then enter::
 
     python Pathomx.py
 
+Troubleshooting 
+---------------
+1) Since the master branch of Pathomx is tracking the latest dev tag of iPython, and Anaconda pulls in a release version (might not be the latest), there can be import errors. This can be fixed by performing the following steps to pull in the latest release or dev version of iPython:
+
+    a) Try updating iPython to the latest release version:
+        - conda update conda
+        - conda update ipython
+
+    b) If this doesn't work, try pulling in the latest dev version of iPython:
+        - git clone --recursive https://github.com/ipython/ipython.git
+        - cd ipython
+        - pip install -e ".[notebook]" --user
 
 Linux
 =====
