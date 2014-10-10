@@ -15,7 +15,7 @@ import pathomx.ui as ui
 import pathomx.utils as utils
 
 from pathomx.plugins import VisualisationPlugin
-from pathomx.data import DataDefinition
+from pathomx.data import DataDefinition, PandasDataDefinition
 from pathomx.views import SVGView
 from pathomx.qt import *
 
@@ -193,8 +193,8 @@ class MetaVizApp(ui.AnalysisApp):
 
         # Setup data consumer options
         self.data.consumer_defs.extend([
-            DataDefinition('suggested_pathways', {
-            'entities_t': (None, ['Pathway']),
+            PandasDataDefinition('suggested_pathways', {
+                'shape':['1','>0'],
             }, 'Show pathways'),
             DataDefinition('compound_data', {
             'entities_t': (None, ['Compound', ])

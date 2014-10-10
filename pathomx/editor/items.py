@@ -18,10 +18,10 @@ INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
 INTERFACE_COLOR_OUTPUT = "yellow"
 INTERFACE_COLOR_VIEW = "blue"
 
-CAN_CONSUME_COLOR = QColor(0, 255, 0, 127)
-CANNOT_CONSUME_COLOR = QColor(255, 0, 0, 127)
+CAN_CONSUME_COLOR = QColor(0, 200, 0, 127)
+CANNOT_CONSUME_COLOR = QColor(200, 0, 0, 127)
 
-CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey-green
+CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey
 
 INTERFACE_ACTIVE_COLOR = {
     True: QColor(0, 0, 255, 127),  # Grey-blue
@@ -536,9 +536,12 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
 
                 logging.debug("Data link: %s %s %s %s " % (source_manager, source_interface, dest_manager, dest_interface) )
 
-                # FIXME: This is horrible; simplify the data manager
-                c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
-                dest_manager.source_updated.emit(dest_interface)
+                if dest_manager.can_consume(source_manager, source_interface, interface=dest_interface) or \
+                    event.modifiers() == Qt.ControlModifier: # force connection with modifier key
+                    
+                    # FIXME: This is horrible; simplify the data manager
+                    c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
+                    dest_manager.source_updated.emit(dest_interface)
                 
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None

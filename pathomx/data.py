@@ -440,6 +440,7 @@ class DataDefinition(object):
         self.title = title if title else target
 
     def can_consume(self, data):
+        logging.debug("Checking can consume object on %s" % self.target)
         return self.check(data)
         
     def check(self, o):
@@ -453,7 +454,9 @@ class DataDefinition(object):
         for k, v in list(self.cmp_map.items()):
             if k in s:
                 return v, s.replace(k, '')
+        
         return self.cmp_map['='], s 
+        
 
         
 class NumpyArrayDataDefinition( DataDefinition ):
@@ -468,6 +471,7 @@ class NumpyArrayDataDefinition( DataDefinition ):
 
     def _check_dimensionality(self, o):
         if 'shape' not in self.definition:
+            logging.debug("  not checking shape")
             return True
             
         shape = o.shape
@@ -497,6 +501,7 @@ class PandasDataDefinition( NumpyArrayDataDefinition ):
                self._check_dimensionality(o)  
 
     def _check_instance(self, o):
+        logging.debug("  check instance")
         return isinstance(o, pd.DataFrame)
 
 
