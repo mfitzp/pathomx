@@ -158,7 +158,7 @@ class RegressionConfigPanel(ui.ConfigPanel):
 
         self.config.set('variables', [v for v in l if v is not None])
 
-    def onRefreshData(self):
+    def onRefreshData(self, *args): # Ignore source_updated interface param
         input_data = self.tool.data.get('input_data')
         l = []
         if type(input_data.columns) == pd.MultiIndex:

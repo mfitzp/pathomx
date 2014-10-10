@@ -57,6 +57,8 @@ row_clusters = sch.linkage(row_pairwise_dists,method=config['method'])
 col_pairwise_dists = distance.squareform(distance.pdist(input_data.T))
 col_clusters = sch.linkage(col_pairwise_dists,method=config['method'])
 
+progress(0.25)
+
 # heatmap with row names
 View = plt.figure(figsize=(12,8))
 heatmapGS = gridspec.GridSpec(2,2,wspace=0.0,hspace=0.0,width_ratios=[0.25,1],height_ratios=[0.25,1])
@@ -72,6 +74,8 @@ rowGSSS = gridspec.GridSpecFromSubplotSpec(1,2,subplot_spec=heatmapGS[1,0],wspac
 row_denAX = View.add_subplot(rowGSSS[0,0])
 row_denD = sch.dendrogram(row_clusters,color_threshold=np.inf,orientation='right')
 clean_axis(row_denAX)
+
+progress(0.5)
 
 ### row colorbar ###
 if 'Class' in input_data.index.names:
@@ -90,6 +94,8 @@ heatmapAX = View.add_subplot(heatmapGS[1,1])
 axi = heatmapAX.imshow(input_data.iloc[row_denD['leaves'],col_denD['leaves']], interpolation='nearest',aspect='auto',origin='lower'
                        ,norm=my_norm,cmap=cm.RdBu_r)
 clean_axis(heatmapAX)
+
+progress(0.75)
 
 #class_idx = input_data.index.names.index('Class')
 #classes = [v[class_idx] for v in input_data.index.values]

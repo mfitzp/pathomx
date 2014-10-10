@@ -18,6 +18,9 @@ INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
 INTERFACE_COLOR_OUTPUT = "yellow"
 INTERFACE_COLOR_VIEW = "blue"
 
+CAN_CONSUME_COLOR = QColor(0, 255, 0, 127)
+CANNOT_CONSUME_COLOR = QColor(255, 0, 0, 127)
+
 CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey-green
 
 INTERFACE_ACTIVE_COLOR = {
@@ -371,6 +374,7 @@ class ToolInterfaceHandler(BaseItem):
         self.interfaces = {'input': app.data.i, 'output': app.data.o, 'views': app.views}[interface_type]
         self.interface_items = dict()
 
+        app.data.source_updated.connect(self.update_interface_status)
         app.data.output_updated.connect(self.update_interface_status)
         app.data.interfaces_changed.connect(self.update_interfaces)
 
@@ -408,7 +412,7 @@ class ToolInterfaceHandler(BaseItem):
 
     def update_interface_status(self, i):
         if i in self.interface_items.keys():
-            self.interface_items[i].update() # Redraw
+            self.interface_items[i].update_interface_color() # Redraw
             
             for l in self.interface_items[i]._links: # Redraw links
                 l.updateLine()
@@ -448,7 +452,17 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
         self.setAcceptDrops(True)
         self._linkInProgress = None
         self._offset = QPointF(4, 4)
+        
+        self.update_interface_color()
         #self.updateShape( len(interface_name) * 8)
+        
+    def update_interface_color(self, color=None):
+        if color:
+            self.color = color
+        else:
+            self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]
+            
+        self.update()
 
     def get_interface_status(self):
         if self.interface_type == 'input':  
@@ -477,10 +491,26 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
     def mouseMoveEvent(self, event):
 
         if self._linkInProgress == None:
-            self._linkInProgress = LinkItem(self, event)  # source_offset=self.scenePos())
-            self.scene().addItem(self._linkInProgress)
+            if self.interface_type == 'output':
+                self._linkInProgress = LinkItem(self, event)  # source_offset=self.scenePos())
+                self.scene().addItem(self._linkInProgress)
+                # Highlight all targets that are acceptable
+                for i in self.scene().items():
+                    if isinstance(i, ToolInterface) and i.interface_type == 'input': # and \
+                        # i.app.data.i[i.interface_name] is None:
+                
+                        source_manager = self._linkInProgress.source.app.data
+                        source_interface = self._linkInProgress.source.interface_name
+                        dest_manager = i.app.data
+                        dest_interface = i.interface_name
 
-            self.grabMouse()
+                        if dest_manager.can_consume(source_manager, source_interface, interface=dest_interface):
+                            i.update_interface_color(CAN_CONSUME_COLOR)
+            
+                        else:
+                            i.update_interface_color(CANNOT_CONSUME_COLOR)
+
+                self.grabMouse()
         else:
             self._linkInProgress.sink = event
             self._linkInProgress.updateLine()
@@ -488,6 +518,12 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
     def mouseReleaseEvent(self, event):
         if self._linkInProgress:
             self.ungrabMouse()
+            
+            # Reset apperance
+            for i in self.scene().items():
+                if isinstance(i, ToolInterface) and i.interface_type == 'input':
+                    i.update_interface_color()
+            
             targets = [x for x in self.scene().items(event.scenePos()) if isinstance(x, ToolInterface) and x.interface_type == 'input']
             if targets:
                 target = targets[0]
@@ -502,7 +538,7 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
 
                 # FIXME: This is horrible; simplify the data manager
                 c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
-                dest_manager.source_updated.emit()
+                dest_manager.source_updated.emit(dest_interface)
                 
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
@@ -512,8 +548,8 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
         Paint the tool object; pass first to default then over-write
         """
         #super(ToolInterface, self).paint(painter, option, widget)
-        
-        self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+
+        #self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
 
         brush = QBrush(QColor(self.color))
         painter.setBrush(brush)

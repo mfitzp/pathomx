@@ -107,7 +107,24 @@ def pathomx_notebook_stop(vars):
 def progress(progress):
     ''' Output the current progress to stdout on the remote core
         this will be read from stdout and displayed in the UI '''
-    print("____pathomx_execute_progress_%f____" % progress)
+    print("____pathomx_execute_progress_%.2f____" % progress)
     
 
-    
+class open_with_progress(file):
+    ''' Custom file reader that will output progress of file opening '''
+    def __init__(self, f, *args, **kwargs):
+        super(open_with_progress, self).__init__(f, *args, **kwargs)
+        
+        self._fsize = os.path.getsize(f)
+        self._progress = None
+        
+    def read(self, *args, **kwargs):
+        super(open_with_progress, self).read(*args, **kwargs)
+        self.check_and_emit_progress()
+        
+    def check_and_emit_progress(self):
+        # We only output at 2dp so only emit when that changes
+        prg = round( self.tell() / self._fsize, 2 )
+        if prg != self._progress:
+            self._progress = prg
+            progress( prg )

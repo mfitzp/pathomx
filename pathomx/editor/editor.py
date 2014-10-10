@@ -16,7 +16,6 @@ EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
 EDITOR_MODE_ARROW = 3
 
-
 class QGraphicsSceneExtend(QGraphicsScene):
 
     def __init__(self, parent, *args, **kwargs):

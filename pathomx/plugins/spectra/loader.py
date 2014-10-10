@@ -13,7 +13,7 @@ import pathomx.db as db
 
 import pathomx.utils as utils
 
-from pathomx.data import DataDefinition
+from pathomx.data import DataDefinition, PandasDataDefinition
 from pathomx.views import MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 
@@ -56,10 +56,8 @@ class SpectraNormApp(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 
@@ -164,10 +162,8 @@ class PeakAdjApp(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 
@@ -247,10 +243,8 @@ class PeakPickingApp(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 
@@ -310,10 +304,8 @@ class BinningApp(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 
@@ -463,10 +455,8 @@ class BaselineCorrectionTool(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 
@@ -554,10 +544,8 @@ class SpectraExclusionTool(ui.IPythonApp):
 
         # Setup data consumer options
         self.data.consumer_defs.append(
-            DataDefinition('input_data', {
-            'labels_n': ('>0', None),
-            'entities_t': (None, None),
-            'scales_t': (None, ['float']),
+            PandasDataDefinition('input_data', {
+                'shape':['>0','>0']
             })
         )
 

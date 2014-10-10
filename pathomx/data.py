@@ -14,6 +14,8 @@ from copy import deepcopy
 import operator
 import logging
 
+import pandas as pd
+import numpy as np
 
 class DataTreeItem(object):
     '''
@@ -180,8 +182,7 @@ class DataTreeModel(QAbstractItemModel):
 class DataManager(QObject):
 
     # Signals
-    source_updated = pyqtSignal()
-
+    source_updated = pyqtSignal(object)
     output_updated = pyqtSignal(object)
     
     consumed = pyqtSignal(tuple, tuple)
@@ -293,14 +294,20 @@ class DataManager(QObject):
 
     def notify_watchers(self, interface):
         for manager in self.watchers[interface]:
-            manager.source_updated.emit()
+            for dest_interface, mi in manager.i.items():
+                m, i = mi
+                if m == self:
+                    manager.source_updated.emit(dest_interface)
 
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
-    def can_consume(self, source_manager, source_interface, consumer_defs=None):
+    def can_consume(self, source_manager, source_interface, consumer_defs=None, interface=None):
 
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
+
+        if interface:
+            consumer_defs = [d for d in consumer_defs if d.target == interface] 
 
         # Don't add data from self manager (infinite loop trigger)
         if source_manager == self:
@@ -346,27 +353,28 @@ class DataManager(QObject):
         source_manager.watchers[source_interface].add(self)
 
         self.consumed.emit((source_manager, source_interface), (self, interface))
+        return interface
 
     # Check if we can consume some data, then do it
     def _consume(self, source_manager, source_interface, consumer_defs=None):
         if consumer_defs == None:
             consumer_defs = self.consumer_defs
 
-
-        # Check whether this is allow (checks manager, checks hierarchy (infinite loopage) )
+        # Check whether this is allowed (checks manager, checks hierarchy (infinite loopage) )
         if not self.can_consume(source_manager, source_interface, consumer_defs):
             return False
 
         for consumer_def in consumer_defs:
             if consumer_def.can_consume(source_manager.o[source_interface]):
                 # Remove existing data object link (stop watching)
-                self._consume_action(source_manager, source_interface, consumer_def.target)
-                return True
+                return self._consume_action(source_manager, source_interface, consumer_def.target)
+
             return False
 
     def consume(self, source_manager, source_interface):
-        if self._consume(source_manager, source_interface):
-            self.source_updated.emit()
+        interface = self._consume(source_manager, source_interface)
+        if interface:
+            self.source_updated.emit(interface)
             return True
         return False
 
@@ -374,14 +382,15 @@ class DataManager(QObject):
         for a in app_l:
             # Iterate all outputs for this app's data manager
             for o in a.data.o.keys():
-                if self._consume(a.data, o):
-                    self.source_updated.emit()
+                interface = self._consume(a.data, o)
+                if interface:
+                    self.source_updated.emit(interface)
                     return a.data.o[o]
         return False
 
     def consume_with(self, data, consumer_def):
         if self._consume(data, [consumer_def]):
-            self.source_updated.emit()
+            self.source_updated.emit(consumer_def.target)
             return True
 
     def provide(self, target):
@@ -392,7 +401,7 @@ class DataManager(QObject):
             del self.i[target]
 
     def refresh_consumed_data(self):
-        self.source_updated.emit()  # Trigger recalculation
+        self.source_updated.emit(None)  # Trigger recalculation
 
     def reset(self):
         for i in list(self.i.keys()):
@@ -409,7 +418,7 @@ def at_least_one_element_in_common(l1, l2):
     return len(set(l1) & set(l2)) > 0
 
 
-class DataDefinition(QObject):
+class DataDefinition(object):
 
     cmp_map = {
          '<': operator.lt,
@@ -421,16 +430,21 @@ class DataDefinition(QObject):
         'aloeic': at_least_one_element_in_common,
     }
 
-    def __init__(self, target, definition, title=None, *args, **kwargs):
+    def __init__(self, target, definition={}, title=None, *args, **kwargs):
         super(DataDefinition, self).__init__(*args, **kwargs)
 
         # Store consumer/provider description as entity entries from dict
-        self.target = target  # Target attribute for imported data - stored under this in dataManager
-                             # When assigning data; should check if pre-existing and warn to overwrite (or provide options)
+        self.target = target  # Target interface for imported data - stored under this in dataManager
         self.definition = definition
 
         self.title = title if title else target
 
+    def can_consume(self, data):
+        return self.check(data)
+        
+    def check(self, o):
+        return o is not None
+        
     def get_cmp_fn(self, s):
         if type(s) == list:
             return self.cmp_map['aloeic'], s
@@ -439,50 +453,50 @@ class DataDefinition(QObject):
         for k, v in list(self.cmp_map.items()):
             if k in s:
                 return v, s.replace(k, '')
-        return self.cmp_map['='], s
+        return self.cmp_map['='], s 
 
-    def can_consume(self, data):
-        # FIXME! Check for data types (DataFrame vs Series; dimensions; that's about it)
-        return data is not None
-        # Prevent self-consuming (inf. loop)
-        #FIXME: Need a reference to the manager in self for this to work? Add to definition?
-        #if data.manager == self:
-        #    print "Don't consume oneself."
-        #    return False
-        # Retrieve matching record in provider; see if provides requirement
-        # if we fail at any point return False
-        # self.interface holds the interface for this
-        # Test each option; if we get to the bottom we're alright!
-        #logging.debug("CONSUME? [%s]" % data.name)
-        #logging.debug(self.definition)
+        
+class NumpyArrayDataDefinition( DataDefinition ):
+    ''' Custom matching definition for numpy arrays '''
 
-        for k, v in list(self.definition.items()):
-            t = getattr(data, k)
-            logging.debug(" COMPARE: %s %s %s" % (k, v, t))
-            # t = (1d,2d,3d)
-            # Dimensionality check
-            if len(v) != len(t):
-                logging.debug("  dimensionality failure %s %s" % (len(v), len(t)))
-                return False
+    def check(self, o):
+        return self._check_instance(o) and \
+               self._check_dimensionality(o)  
 
-            for n, cr in enumerate(v):
-                if cr == None:  # No restriction on this definition
-                    logging.debug('  pass')
-                    continue
+    def _check_instance(self, o):
+        return isinstance(o, np.ndarray)
 
-                cmp_fn, crr = self.get_cmp_fn(cr)
-                try:
-                    crr = type(t[n])(crr)
-                except:
-                    # If we can't match equivalent types; it's nonsense so fail
-                    logging.debug("  type failure %s %s" % (type(t[n]), type(crr)))
-                    return False
+    def _check_dimensionality(self, o):
+        if 'shape' not in self.definition:
+            return True
+            
+        shape = o.shape
+        d = self.definition['shape']
+        
+        if len(shape) != len(d):
+            logging.debug("  dimensionality failure %s %s" % (len(shape), len(d)))
+            return False
+        
+        for n, cr in enumerate(d):
+            if cr == None:  # No restriction on this definition
+                logging.debug('  pass')
+                continue
 
-                "  comparison %s %s %s = %s" % (t[n], cmp_fn, crr, cmp_fn(t[n], crr))
-                if not cmp_fn(t[n], crr):
-                    logging.debug("  comparison failure %s %s %s" % (t[n], cmp_fn, crr))
-                    return False
-
-        logging.debug(" successful")
+            cmp_fn, crr = self.get_cmp_fn(cr)
+            if not cmp_fn(shape[n], int(crr)):
+                logging.debug("  comparison failure %s %s %s" % (shape[n], cmp_fn, crr))
+                return False        
+                
         return True
+
+class PandasDataDefinition( NumpyArrayDataDefinition ):
+    ''' Custom matching definition for pandas dataframes '''
+
+    def check(self, o):
+        return self._check_instance(o) and \
+               self._check_dimensionality(o)  
+
+    def _check_instance(self, o):
+        return isinstance(o, pd.DataFrame)
+
 

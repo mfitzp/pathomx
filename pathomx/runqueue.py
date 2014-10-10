@@ -90,7 +90,7 @@ class ClusterRunner(QObject):
         
         # Check metadata to see if this kernel has the outputs for the previous tool
         self.e.push({'varsi':varsi})
-        self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress
+        self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
         
         setup_languages( self.e.execute, tool.language )
@@ -251,7 +251,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self._execute_start = datetime.now()
         
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
-        self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop
+        self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
 
         setup_languages( self._execute, tool.language )

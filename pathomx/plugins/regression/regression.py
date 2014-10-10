@@ -13,6 +13,7 @@ else: # pd.Index
 
 
 correlations = {}
+total_n = len(config.get('variables'))
 for n, v in enumerate(config.get('variables')):
     a, b = v
     x = input_data.ix[:, a ] 
@@ -46,6 +47,7 @@ for n, v in enumerate(config.get('variables')):
             'label': u'r²=%0.2f, p=%0.2f' % (r_value**2, p_value)
         }
         
+    progress(float(n)/total_n)
         
 do = None;
 

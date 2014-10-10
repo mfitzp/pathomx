@@ -1979,7 +1979,7 @@ class AnalysisApp(IPythonApp):
         self.addConfigPanel(ExperimentConfigPanel, 'Experiment')
         self.data.source_updated.connect(self.repopulate_experiment_classes)  # Update the classes if data source changes        
 
-    def repopulate_experiment_classes(self):
+    def repopulate_experiment_classes(self, *args):
         _control = self.config.get('experiment_control')
         _test = self.config.get('experiment_test')
 
