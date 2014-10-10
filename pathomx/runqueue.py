@@ -89,6 +89,7 @@ class ClusterRunner(QObject):
         self._result_callback = result_callback
         
         # Check metadata to see if this kernel has the outputs for the previous tool
+        self.e.execute('%reset_selective -f [^_]')
         self.e.push({'varsi':varsi})
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
@@ -249,7 +250,8 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self._result_queue = [] # Cache for unhandled messages
         self._cell_execute_ids = {}
         self._execute_start = datetime.now()
-        
+
+        self._execute('%reset_selective -f [^_]')        
         self.kernel_manager.kernel.shell.push({'varsi':varsi})
         self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
@@ -541,7 +543,9 @@ class RunManager(QObject):
         else:
             self.jobs.insert(0, (tool, varsi, progress_callback, result_callback))
             return False
-
+        
+        varsi['_pathomx_expected_output_vars'] = tool.data.o.keys()
+        
         # Build the IO magic
         # - if the source did not run on the current runner we'll need to push the data over
         io = {'input':{},'output':{},}

@@ -394,7 +394,7 @@ class ToolInterfaceHandler(BaseItem):
         angle_increment = 15.
         angle_start = self.setup[0] - (items - 1) * (angle_increment / 2)
 
-        for n, interface in enumerate(self.interfaces.keys()):
+        for n, interface in enumerate( sorted( self.interfaces.keys() ) ):
             angle = angle_start + (n * angle_increment)
             x = x0 + r * math.cos(2 * math.pi * (angle / 360.)) - 4
             y = y0 + r * math.sin(2 * math.pi * (angle / 360.))

@@ -15,8 +15,6 @@ from IPython.core import display
 from copy import deepcopy
 
 MAGIC_TYPES = [
-        # Standard Python types
-        int, str, dict, list, set,
         # Numpy
         np.array, np.ndarray,
         # Pandas
@@ -46,17 +44,18 @@ class PathomxTool(object):
 
 def pathomx_notebook_start(varsi, vars):
     
-    _keep_input_vars = ['styles']
+    
     # Wipeout variables possibly hang around from previous runs
-    for k in list( vars.keys() ):
-        if type(vars[k]) in MAGIC_TYPES and \
-            not k.startswith('_'):
-                del vars[k]
+    #for k in list( vars.keys() ):
+    #    if type(vars[k]) in MAGIC_TYPES and \
+    #        not k.startswith('_'):
+    #            del vars[k]
     
     for k, v in varsi.items():
         vars[k] = v    
     
-    vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
+    # _keep_input_vars = ['styles']
+    # vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
 
     # Handle IO magic
     for k,v in vars['_io']['input'].items():
@@ -89,7 +88,7 @@ def pathomx_notebook_stop(vars):
         if not k.startswith('_') and \
             not k in vars['_io']['input'].keys():
             
-            if type(v) in MAGIC_TYPES:
+            if type(v) in MAGIC_TYPES or k in vars['_pathomx_expected_output_vars']:
                 varso[k] = v
             
             elif hasattr(v,'_repr_html_'):
@@ -111,7 +110,7 @@ def progress(progress):
     
 
 class open_with_progress(file):
-    ''' Custom file reader that will output progress of file opening '''
+
     def __init__(self, f, *args, **kwargs):
         super(open_with_progress, self).__init__(f, *args, **kwargs)
         
