@@ -21,6 +21,7 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.colors import colorConverter
 import scipy.spatial.distance as distance
 import scipy.cluster.hierarchy as sch
 import matplotlib.cm as cm
@@ -65,10 +66,23 @@ col_denAX = View.add_subplot(heatmapGS[0,1])
 col_denD = sch.dendrogram(col_clusters,color_threshold=np.inf)
 clean_axis(col_denAX)
 
+rowGSSS = gridspec.GridSpecFromSubplotSpec(1,2,subplot_spec=heatmapGS[1,0],wspace=0.0,hspace=0.0,width_ratios=[1,0.05])
+
 ### row dendrogram ###
-row_denAX = View.add_subplot(heatmapGS[1,0])
+row_denAX = View.add_subplot(rowGSSS[0,0])
 row_denD = sch.dendrogram(row_clusters,color_threshold=np.inf,orientation='right')
 clean_axis(row_denAX)
+
+### row colorbar ###
+if 'Class' in input_data.index.names:
+    class_idx = input_data.index.names.index('Class')
+    
+    classcol = [ styles.get_style_for_class(x[class_idx]).color for x in input_data.index.values[row_denD['leaves']]]
+    classrgb = np.array([colorConverter.to_rgb(c) for c in classcol]).reshape(-1,1,3)
+    row_cbAX = View.add_subplot(rowGSSS[0,1])
+    row_axi = row_cbAX.imshow(classrgb,interpolation='nearest',aspect='auto',origin='lower')
+    clean_axis(row_cbAX)
+    
 
 ### heatmap ####
 heatmapAX = View.add_subplot(heatmapGS[1,1])
@@ -100,4 +114,4 @@ if input_data.shape[1] <= 100:
 for l in heatmapAX.get_xticklines() + heatmapAX.get_yticklines(): 
     l.set_markersize(0)
     
-
+heatmapGS.tight_layout(View,h_pad=0.1,w_pad=0.5)

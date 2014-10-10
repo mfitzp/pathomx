@@ -58,7 +58,7 @@ class HierarchicalClusterTool(ui.GenericTool):
             'method':'complete',
         })
 
-        self.addConfigPanel( ClusterConfigPanel, 'Settings')
+        self.addConfigPanel( HierarchicalClusterConfigPanel, 'Settings')
 
 
 class HierarchicalCluster(AnalysisPlugin):
