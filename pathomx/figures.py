@@ -568,16 +568,13 @@ def difference(data1, data2, figure=None, ax=None, styles=None):
     if scale1[0] > scale1[-1]:
         # Reverse direction
         is_reversed = True
-    
         # Flip to increasing for interpolation
-        scale1_si = np.argsort(scale1)
-        scale1 = scale1[ scale1_si ]
-        data1v = data1v[ scale1_si ]
+        scale1 = scale1[::-1]
+        data1v = data1v[::-1]
 
     if scale2[0] > scale2[-1]:
-        scale2_si = np.argsort(scale2)
-        scale2 = scale2[ scale2_si ]
-        data2v = data2v[ scale2_si ]
+        scale2 = scale2[::-1]
+        data2v = data2v[::-1]
 
     # Interpolate the data for shorter set
     if len(scale1) < len(scale2):
