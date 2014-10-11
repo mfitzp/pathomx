@@ -315,7 +315,12 @@ class MainWindow(QMainWindow):
 
         self.menuBars['help'].addSeparator()
 
-        pathomx_demo_menu = self.menuBars['help'].addMenu(tr('Demo &workflows'))
+        pathomx_demo_menu = self.menuBars['help'].addMenu(tr('Example &workflows'))
+
+        self.menuBars['file'].addSeparator()
+        pathomx_demo_menu_f = self.menuBars['file'].addMenu(tr('Example &workflows'))
+
+
         demofiles = os.listdir( os.path.join(utils.scriptdir, 'demos') )
 
         def do_open_demo(f):
@@ -329,6 +334,7 @@ class MainWindow(QMainWindow):
                 open_demo_file.setStatusTip("Load the '%s' demo workflow" % name)
                 open_demo_file.triggered.connect( do_open_demo(f) )
                 pathomx_demo_menu.addAction(open_demo_file)
+                pathomx_demo_menu_f.addAction(open_demo_file)
 
         goto_pathomx_onlineDemos = QAction(tr('&Online demos && walkthroughs…'), self)
         goto_pathomx_onlineDemos.setStatusTip('See all demos available online')
