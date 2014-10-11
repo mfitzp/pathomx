@@ -45,3 +45,6 @@ Thumbs.db
 
 # Temporary
 tmp
+
+# Misc
+.idea
