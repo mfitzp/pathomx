@@ -547,7 +547,7 @@ class MplView(FigureCanvas, BaseView):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.add_subplot(111)
         
-        self.ax.plot([1,2,3,4])
+        self.ax.plot([1, 2, 3, 4])
 
         self.ax.spines['top'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
@@ -565,7 +565,7 @@ class MplView(FigureCanvas, BaseView):
         
         # Install navigation handler; we need to provide a Qt interface that can handle multiple 
         # plots in a window under separate tabs
-        self.navigation = MplNavigationHandler( self )
+        self.navigation = MplNavigationHandler(self)
         
 
     def generate(self):

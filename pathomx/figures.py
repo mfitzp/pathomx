@@ -103,17 +103,20 @@ def extend_limits(a, b):
     return [ax, ay]
 
 def find_linear_scale(data):
+    scale = None
     scale_name = None
+    linear_scale = False
+    longest = None
     if type(data.columns) == pd.MultiIndex:
         for n, l in enumerate(data.columns.levels):
             if l.dtype == np.dtype('O'):  # Object; maybe str?
                 if len(l) > longest:
                     longest = len(l)
-                    longest_level = n
-                    scale_name = l
+
             elif np.issubdtype(l.dtype, np.integer) or np.issubdtype(l.dtype, np.float):
                 linear_scale = True
                 scale = [v[n] for v in data.columns.values]
+                scale_name = data.columns.names[n]
     else:
         scale = []
         linear_scale = True
