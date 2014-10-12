@@ -100,7 +100,7 @@ class PCATool(ui.IPythonApp):
 
     name = "PCA"
     notebook = 'pca.ipynb'
-    shortname = 'pca'    
+    shortname = 'pca'
 
     legacy_launchers = ['PCAPlugin.PCAApp']
     legacy_inputs = {'input_data': 'input_data'}

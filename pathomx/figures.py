@@ -102,6 +102,7 @@ def extend_limits(a, b):
     ay[1] = by[1] if by[1] > ay[1] else ay[1]
     return [ax, ay]
 
+
 def find_linear_scale(data):
     scale = None
     scale_name = None
@@ -588,11 +589,13 @@ def difference(data1, data2, figure=None, ax=None, styles=None):
         data2v = np.interp(np.array(scale1), np.array(sorted(scale2)), data2v)
         x = scale1
 
+    else:
+        x = scale1
+
     # Return to original order (not we must sort both arrays the same direction)
     if is_reversed:
-        scale1 = scale1[::-1]
+        x = x[::-1]
         data1v = data1v[::-1]
-        scale2 = scale2[::-1]
         data2v = data2v[::-1]
 
     y1 = data1v
@@ -602,7 +605,6 @@ def difference(data1, data2, figure=None, ax=None, styles=None):
     ax.plot(x, y2, color='black', linewidth=0.25)
     ax.fill_between(x, y1, y2, where=y2 >= y1, facecolor=utils.category10[0], interpolate=False)
     ax.fill_between(x, y1, y2, where=y2 <= y1, facecolor=utils.category10[1], interpolate=False)
-
 
     if scale_name1:
         ax.set_xlabel(scale_name1)

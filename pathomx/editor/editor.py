@@ -16,6 +16,7 @@ EDITOR_MODE_TEXT = 1
 EDITOR_MODE_REGION = 2
 EDITOR_MODE_ARROW = 3
 
+
 class QGraphicsSceneExtend(QGraphicsScene):
 
     def __init__(self, parent, *args, **kwargs):
@@ -52,7 +53,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.annotations = []
 
     def mousePressEvent(self, e):
-    
+
         if self.config.get('mode') != EDITOR_MODE_NORMAL:
 
             for i in self.selectedItems():
@@ -77,7 +78,7 @@ class QGraphicsSceneExtend(QGraphicsScene):
         else:
             for i in self.selectedItems():
                 i.setSelected(False)
-        
+
             super(QGraphicsSceneExtend, self).mousePressEvent(e)
 
     def mouseMoveEvent(self, e):

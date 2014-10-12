@@ -18,7 +18,7 @@ class BarTool(ui.AnalysisApp):
     name = "Bar"
     notebook = 'basic_plot_category_bar.ipynb'
     shortname = 'basic_plot_category_bar'
-    
+
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 

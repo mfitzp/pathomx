@@ -16,6 +16,7 @@ from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 from pathomx.utils import UnicodeReader
 
+
 class GEOConfigPanel(ui.SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
@@ -26,7 +27,7 @@ class GEOApp(ui.GenericTool):
 
     shortname = 'geo'
     autoconfig_name = "{filename}"
-    
+
     legacy_outputs = {'output': 'output_data'}
 
     def __init__(self, *args, **kwargs):
@@ -38,6 +39,7 @@ class GEOApp(ui.GenericTool):
 
         self.data.add_output('output_data')  # Add output slot
         self.addConfigPanel(GEOConfigPanel, 'Settings')
+
 
 class GEO(ImportPlugin):
 

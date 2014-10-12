@@ -115,7 +115,6 @@ class IcoshiftApp(ui.IPythonApp):
             })
         )
 
-
         self.config.set_defaults({
             'target': 'average',
             'alignment_mode': 'whole',

@@ -4,6 +4,7 @@ import base64
 from collections import defaultdict
 import xml.etree.ElementTree as et
 
+
 def decode(s):
     s = base64.decodestring(s)
     # Each number stored as a 4-chr representation (ascii value, not character)
@@ -81,13 +82,13 @@ for mid, identities in list(quantities.items()):
         data[r, c] = intensity
 
 output_data = pd.DataFrame(data)
-output_data.index = pd.MultiIndex.from_tuples( zip(measurements, [midclass[mid] for mid in measurements]), names=["Sample","Class"])
-output_data.columns = pd.MultiIndex.from_tuples( zip(range(len(all_identities)), all_identities, [float(masses[i]) for i in all_identities] ), names=['Measurement','HMDB','Scale'])
-
+output_data.index = pd.MultiIndex.from_tuples(zip(measurements, [midclass[mid] for mid in measurements]), names=["Sample", "Class"])
+output_data.columns = pd.MultiIndex.from_tuples(zip(range(len(all_identities)), all_identities, [float(masses[i]) for i in all_identities]), names=['Measurement', 'HMDB', 'Scale'])
 
 output_data
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-View = spectra(output_data, styles=styles);
+View = spectra(output_data, styles=styles)
+

@@ -51,8 +51,7 @@ from .translate import tr
 
 from distutils.version import StrictVersion
 
-
-__version__ = open(os.path.join(utils.basedir, 'VERSION'),'rU').read()
+__version__ = open(os.path.join(utils.basedir, 'VERSION'), 'rU').read()
 
 DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "SER-GLYSYN-PWY-1", "PWY-4983", "ASPARAGINE-BIOSYNTHESIS", "ASPARTATESYN-PWY",
@@ -115,7 +114,7 @@ DEFAULT_PATHWAYS = ["PWY-5340", "PWY-5143", "PWY-5754", "PWY-6482", "PWY-5905",
         "OXIDATIVEPENT-PWY-1", "NONOXIPENT-PWY", "PWY66-398", "PWY-7437", "PWY-7434",
         "PWY-7433", "PWY66-14", "PWY66-11", "PYRUVDEH-RXN"]
 
-PATHWAY_ROOTS = ['Activation-Inactivation-Interconversion','Biosynthesis','Degradation','Detoxification','Energy-Metabolism','Macromolecule-Modification','Metabolic-Clusters','Signaling-Pathways','Super-Pathways']
+PATHWAY_ROOTS = ['Activation-Inactivation-Interconversion', 'Biosynthesis', 'Degradation', 'Detoxification', 'Energy-Metabolism', 'Macromolecule-Modification', 'Metabolic-Clusters', 'Signaling-Pathways', 'Super-Pathways']
 
 
 class ToolTreeWidget(QTreeWidget):
@@ -148,12 +147,12 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-        
+
         # Initiate logging
         self.logView = QTextEdit()
         self.logView.setReadOnly(True)
         self.logView.setFont(QFont(mono_fontFamily))
-        
+
         logHandler = ui.Logger(self, self.logView)
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
@@ -235,7 +234,6 @@ class MainWindow(QMainWindow):
         saveAsAction.setStatusTip(tr('Save current workflow for future use'))
         saveAsAction.triggered.connect(self.onSaveWorkflowAs)
         self.menuBars['file'].addAction(saveAsAction)
-
         #self.menuBars['file'].addSeparator()
 
         export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export IPython notebook…', self)
@@ -276,8 +274,6 @@ class MainWindow(QMainWindow):
         refresh_pluginsAction.triggered.connect(self.buildToolbox)
         self.menuBars['plugins'].addAction(refresh_pluginsAction)
 
-
-
         linemarkerstyleAction = QAction('Line and marker styles…', self)
         linemarkerstyleAction.setStatusTip(tr('Set line and marker styles for data classes'))
         linemarkerstyleAction.triggered.connect(self.onDefineClassStyles)
@@ -293,24 +289,24 @@ class MainWindow(QMainWindow):
 
         goto_pathomx_gettingstartedAction = QAction(tr('&Getting started'), self)
         goto_pathomx_gettingstartedAction.setStatusTip('See the getting started documentation')
-        goto_pathomx_gettingstartedAction.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/getting_started.html')  )
+        goto_pathomx_gettingstartedAction.triggered.connect(do_open_web('http://docs.pathomx.org/en/latest/getting_started.html'))
         self.menuBars['help'].addAction(goto_pathomx_gettingstartedAction)
 
         self.menuBars['help'].addSeparator()
 
         goto_pathomx_websiteAction = QAction(tr('&Homepage…'), self)
         goto_pathomx_websiteAction.setStatusTip('Go to the Pathomx website')
-        goto_pathomx_websiteAction.triggered.connect( do_open_web('http://pathomx.org') )
+        goto_pathomx_websiteAction.triggered.connect(do_open_web('http://pathomx.org'))
         self.menuBars['help'].addAction(goto_pathomx_websiteAction)
 
         goto_pathomx_docsAction = QAction(tr('&Documentation…'), self)
         goto_pathomx_docsAction.setStatusTip('Read latest Pathomx documentation')
-        goto_pathomx_docsAction.triggered.connect( do_open_web('http://docs.pathomx.org') )
+        goto_pathomx_docsAction.triggered.connect(do_open_web('http://docs.pathomx.org'))
         self.menuBars['help'].addAction(goto_pathomx_docsAction)
 
         goto_pathomx_docsSupport = QAction(tr('&Support…'), self)
         goto_pathomx_docsSupport.setStatusTip('Get support with Pathomx')
-        goto_pathomx_docsSupport.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/support.html') )
+        goto_pathomx_docsSupport.triggered.connect(do_open_web('http://docs.pathomx.org/en/latest/support.html'))
         self.menuBars['help'].addAction(goto_pathomx_docsSupport)
 
         self.menuBars['help'].addSeparator()
@@ -320,27 +316,26 @@ class MainWindow(QMainWindow):
         self.menuBars['file'].addSeparator()
         pathomx_demo_menu_f = self.menuBars['file'].addMenu(tr('Example &workflows'))
 
-
-        demofiles = os.listdir( os.path.join(utils.scriptdir, 'demos') )
+        demofiles = os.listdir(os.path.join(utils.scriptdir, 'demos'))
 
         def do_open_demo(f):
-            return lambda: self.onOpenDemoWorkflow( os.path.join(utils.scriptdir, 'demos', f) )
+            return lambda: self.onOpenDemoWorkflow(os.path.join(utils.scriptdir, 'demos', f))
 
         for f in demofiles:
             name, ext = f.split('.')
             if ext == 'mpf':
-                name = name.replace('_',' ')
+                name = name.replace('_', ' ')
                 open_demo_file = QAction(name, self)
                 open_demo_file.setStatusTip("Load the '%s' demo workflow" % name)
-                open_demo_file.triggered.connect( do_open_demo(f) )
+                open_demo_file.triggered.connect(do_open_demo(f))
                 pathomx_demo_menu.addAction(open_demo_file)
                 pathomx_demo_menu_f.addAction(open_demo_file)
 
         goto_pathomx_onlineDemos = QAction(tr('&Online demos && walkthroughs…'), self)
         goto_pathomx_onlineDemos.setStatusTip('See all demos available online')
-        goto_pathomx_onlineDemos.triggered.connect( do_open_web('http://docs.pathomx.org/en/latest/demos/index.html') )
+        goto_pathomx_onlineDemos.triggered.connect(do_open_web('http://docs.pathomx.org/en/latest/demos/index.html'))
         self.menuBars['help'].addAction(goto_pathomx_onlineDemos)
-            
+
         #self.menuBars['help'].addSeparator()
         #do_registerAction = QAction(tr('&Register Pathomx'), self)
         #do_registerAction.setStatusTip('Register Pathomx for release updates')
@@ -356,7 +351,7 @@ class MainWindow(QMainWindow):
 
         # INIT PLUGINS AND TOOLS
 
-        # We pass a copy of main window object in to the plugin manager so it can 
+        # We pass a copy of main window object in to the plugin manager so it can
         # be available for loading
         plugin_manager.m = self
 
@@ -370,24 +365,20 @@ class MainWindow(QMainWindow):
         self.toolDock.setMinimumWidth(300)
         self.toolDock.setMaximumWidth(300)
 
-
         self.toolDock.raise_()
         #self.dbtool = ui.DbApp(self)
         #self.dbBrowser = self.dbtool.dbBrowser
 
         self.setWindowTitle(tr('Pathomx'))
 
-
         self.kernelStatus = ui.KernelStatusWidget()
         self.statusBar().addPermanentWidget(self.kernelStatus)
 
-    
         self.threadCount = QLabel(self.statusBar())
         font = self.threadCount.font()
         font.setPointSize(8)
         self.threadCount.setFont(font)
         self.statusBar().addPermanentWidget(self.threadCount)
-        
 
         self.jobQueue = QLabel(self.statusBar())
         font = self.jobQueue.font()
@@ -424,32 +415,30 @@ class MainWindow(QMainWindow):
         self.central.addTab(self.console, '&Console')
         self.central.addTab(self.logView, '&Log')
 
-        
         self.workspaceDock = QDockWidget(tr('Workspace'))
         self.workspaceDock.setWidget(self.central)
         self.workspaceDock.setMinimumHeight(300)
 
         self.activetoolDock = QDockWidget(tr('Active'))
-        self.activetoolDock.setWidget( QWidget(None))
+        self.activetoolDock.setWidget(QWidget(None))
         self.activetoolDock.setMinimumHeight(300)
-        
+
         self.dummy = QWidget()
         self.dummy.hide()
         self.setCentralWidget(self.dummy)
-        
+
         self.workspaceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
-        
-        self.setCorner( Qt.TopLeftCorner, Qt.LeftDockWidgetArea )
-        self.setCorner( Qt.BottomLeftCorner, Qt.LeftDockWidgetArea )
 
-        self.setCorner( Qt.TopRightCorner, Qt.RightDockWidgetArea )
-        self.setCorner( Qt.BottomRightCorner, Qt.RightDockWidgetArea )
-        
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.activetoolDock)
-        
 
         self.addFileToolBar()
         self.addEditorToolBar()
@@ -468,15 +457,13 @@ class MainWindow(QMainWindow):
         #    self.onDoRegister()
         #    settings.setValue('/Pathomx/Offered_registration', True)
 
-        
-
         self.statusBar().showMessage(tr('Ready'))
 
     def buildToolbox(self):
-    
+
         plugins.get_available_plugins()
         disabled_plugins = settings.get('Plugins/Disabled')
-    
+
         tool_category_icons = {
                "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
                "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
@@ -487,7 +474,7 @@ class MainWindow(QMainWindow):
                "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
                "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'scripts-text.png')),
                }
-    
+
         self.toolbox.clear()
         for category in plugin_categories:
             item = QTreeWidgetItem()
@@ -498,17 +485,17 @@ class MainWindow(QMainWindow):
                 if tool['plugin'].metadata['path'] in disabled_plugins:
                     # Skip deactivated plugins
                     continue
-                    
+
                 ti = QTreeWidgetItem()
                 ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
-                
+
                 if tool['app'].icon:
                     icon_path = os.path.join(tool['plugin'].path, tool['app'].icon)
                 else:
                     icon_path = os.path.join(tool['plugin'].path, 'icon.png')
-                
+
                 tool['icon'] = QIcon(icon_path)
-                
+
                 ti.setIcon(0, tool['icon'])
                 ti.setToolTip(0, tool['plugin'].metadata['description'])
                 ti.data = tool
@@ -516,7 +503,6 @@ class MainWindow(QMainWindow):
             item.sortChildren(0, Qt.AscendingOrder)
 
         self.toolbox.expandAll()
-
     
     def addFileToolBar(self):
         t = self.addToolBar('File')
@@ -682,8 +668,8 @@ class MainWindow(QMainWindow):
     def onChangePlugins(self):
         dialog = plugins.dialogPluginManagement(self)
         if dialog.exec_():
-            settings.set('Plugins/Paths', dialog.config.get('Plugins/Paths') )
-            settings.set('Plugins/Disabled', dialog.config.get('Plugins/Disabled') )
+            settings.set('Plugins/Paths', dialog.config.get('Plugins/Paths'))
+            settings.set('Plugins/Disabled', dialog.config.get('Plugins/Disabled'))
             self.buildToolbox()
 
     def onCheckPluginUpdates(self):
@@ -701,8 +687,7 @@ class MainWindow(QMainWindow):
     def updateProgressBar(self):
         self.kernelStatus.update(notebook_queue)
         #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
-        self.jobQueue.setText('%d/%d' % (notebook_queue.no_of_active_kernels, notebook_queue.no_of_kernels) )
-
+        self.jobQueue.setText('%d/%d' % (notebook_queue.no_of_active_kernels, notebook_queue.no_of_kernels))
 
     def onDoRegister(self):
         # Pop-up a registration window; take an email address and submit to
@@ -809,14 +794,11 @@ class MainWindow(QMainWindow):
     def onRefresh(self):
         self.generateGraphView()
 
-
-
     def deselectTool(self):
         self.toolDock.setWidget(self.toolbox)
-    
+
     def selectTool(self, t):
         t.show()
-
 
     '''
     def generatedbBrowserView(self, template='base.html', data={'title': '', 'object': {}, 'data': {}}):
@@ -857,8 +839,6 @@ class MainWindow(QMainWindow):
                             QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.openWorkflow(fn)
-    
-
 
     ### RESET WORKSPACE
     def onClearWorkspace(self):
@@ -936,11 +916,10 @@ class MainWindow(QMainWindow):
                     cs.set("id", sk)
                     cs.set("manager", si[0].id)
                     cs.set("interface", si[1])
-                    
+
             if v.code != v.default_code:
                 code = et.SubElement(app, "Code")
                 code.text = v.code
-            
 
         tree = et.ElementTree(root)
         tree.write(fn)  # , pretty_print=True)
@@ -979,7 +958,7 @@ class MainWindow(QMainWindow):
                 code = xcode.text
             else:
                 code = ""
-            
+
             app = app_launchers["%s.%s" % (xapp.find("Plugin").text, xapp.find("Launcher").text)](self, code=code, auto_consume_data=False, name=xapp.find('Name').text)
             editorxy = xapp.find('EditorXY')
             app.editorItem.setPos(QPointF(float(editorxy.get('x')), float(editorxy.get('y'))))
@@ -1011,24 +990,22 @@ class MainWindow(QMainWindow):
     def onExportIPyNotebook(self):
         filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow to IPython notebook', '', "IPython Notebook (*.ipynb)")
         if filename:
-                notebook = self.export_to_notebook()
-                with open(filename, 'w') as f:
-                    write_notebook(notebook, f, 'json')            
-                
+            notebook = self.export_to_notebook()
+            with open(filename, 'w') as f:
+                write_notebook(notebook, f, 'json')
+
     def onExportReport(self):
         filename, _ = QFileDialog.getSaveFileName(self, 'Export workflow report', '', "Portable Document Format (*.pdf);; Hypertext Markup Language (*.html);; ReStructured Text (*.rst);; Markdown (*.md);; Python script (*.py)")
         if filename:
-            name, ext = os.path.splitext(filename) 
+            name, ext = os.path.splitext(filename)
             export_format = ext.strip('.')
-            if export_format in ['pdf','rst','md','html','py']:
+            if export_format in ['pdf', 'rst', 'md', 'html', 'py']:
 
                 notebook = self.export_to_notebook()
                 output, resources = IPyexport(IPyexporter_map[export_format], notebook)
                 with open(filename, 'w') as f:
                     f.write(output)
-
                 
-
     def export_to_notebook(self, include_outputs=True):
         '''
         Export an IPython notebook representing the entire workflow
@@ -1123,7 +1100,6 @@ class MainWindow(QMainWindow):
         notebook = copy(tool.nb)
         notebook.worksheets[0].cells = workbook_cells
         return notebook
-        
 
     def add_code_cell(self, nb, index, code):
         nb.insert(index, Struct(**{
@@ -1134,7 +1110,7 @@ class MainWindow(QMainWindow):
             'prompt_number': 0,
             'input': code,
             'metadata': {},
-        }))        
+        }))
 
     def onInterruptKernels(self):
         notebook_queue.interrupt()
@@ -1155,7 +1131,7 @@ class MainWindow(QMainWindow):
     #        return super(QApplicationExtend, self).event(e)
 
 def main():
-    
+
     logging.debug('Setting up localisation...')
 
     locale = QLocale.system().name()

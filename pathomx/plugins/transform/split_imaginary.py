@@ -11,6 +11,7 @@ imag.index = input_data.index
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-Real = spectra(real);
-Imag = spectra(imag);
+Real = spectra(real)
+
+Imag = spectra(imag)
 

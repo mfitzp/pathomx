@@ -10,7 +10,7 @@ from collections import defaultdict
 # Unzip into temporary folder
 folder = tempfile.mkdtemp()
 zf = zipfile.ZipFile(config['filename'])
-zf.extract('peptides.txt', folder)  
+zf.extract('peptides.txt', folder)
 
 datafile = os.path.join(folder, 'peptides.txt')
 
@@ -35,38 +35,37 @@ with open(datafile, 'r') as f:
         if 'Intensity ' in c:
             # Quantification column
             labelsn = c.replace('Intensity ', '')
-            labels.append( labelsn )
-            labelsc.append( n )
-        
+            labels.append(labelsn)
+            labelsc.append(n)
 
     raw_data = []
     entities = []
 
-    # Now get data    
+    # Now get data
     for n, row in enumerate(reader):
 
         datar = [float(row[x]) for x in labelsc]
-        raw_data.append( datar )
+        raw_data.append(datar)
 
         entity = None
 
         # Identify protein
         if lead_protein_col:
-            entity = row[ lead_protein_col ]
+            entity = row[lead_protein_col]
 
         if entity == None and proteins_col:
-            entity = row[ proteins_col ].split(';')[0]
+            entity = row[proteins_col].split(';')[0]
 
-        entities.append( entity )
-
+        entities.append(entity)
 
 output_data = pd.DataFrame(np.array(raw_data).T)
-output_data.index = pd.MultiIndex.from_tuples( zip(labels), names=["Sample"])
-output_data.columns = pd.MultiIndex.from_tuples( zip(range(n+1), entities), names=["Measurement","UniProt"])
+output_data.index = pd.MultiIndex.from_tuples(zip(labels), names=["Sample"])
+output_data.columns = pd.MultiIndex.from_tuples(zip(range(n + 1), entities), names=["Measurement", "UniProt"])
 
 output_data
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-View = spectra(output_data, styles=styles);
+View = spectra(output_data, styles=styles)
+

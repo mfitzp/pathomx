@@ -14,7 +14,7 @@ from pathomx.qt import *
 
 import numpy as np
 from biocyc import biocyc
-biocyc.secondary_cache_paths.append( os.path.join(utils.scriptdir, 'database', 'biocyc') )
+biocyc.secondary_cache_paths.append(os.path.join(utils.scriptdir, 'database', 'biocyc'))
 
 METAPATH_MINING_TYPE_CODE = ('c', 'u', 'd', 'm', 't')
 METAPATH_MINING_TYPES = {
@@ -75,8 +75,8 @@ class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
 
         fwd_map = lambda x: biocyc.find_pathway_by_name(x).id
         rev_map = lambda x: biocyc.get(x).name
-        
-        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget'] # Works the same
+
+        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget']  # Works the same
         self.config.add_handler(pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map))
 
         self.label[label]['lw_regExp'] = QLineEdit()
@@ -103,6 +103,7 @@ class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
 
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
+
 
 # Dialog box for Metabohunter search options
 class PathwayMiningConfigPanel(ui.ConfigPanel):
@@ -185,7 +186,6 @@ class PathwayMiningApp(ui.AnalysisApp):
         self.addConfigPanel(PathwayMiningConfigPanel, 'Pathway Mining')
 
 
-        
 class PathwayMining(AnalysisPlugin):
 
     def __init__(self, *args, **kwargs):

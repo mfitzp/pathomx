@@ -11,4 +11,5 @@ output_data[:] = spectra
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-View = spectra(output_data, styles=styles);
+View = spectra(output_data, styles=styles)
+

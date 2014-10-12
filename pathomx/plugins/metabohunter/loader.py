@@ -16,6 +16,7 @@ from pathomx.qt import *
 from collections import OrderedDict
 import csv
 
+
 # Dialog box for Metabohunter search options
 class MetaboHunterConfigPanel(ui.ConfigPanel):
 
@@ -104,12 +105,11 @@ class MetaboHunterApp(ui.GenericTool):
     name = "MetaboHunter"
     shortname = 'metabohunter'
     autoconfig_name = "{filename}"
-    
+
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
-
-    default_pause_analysis=True
+    default_pause_analysis = True
 
     def __init__(self, *args, **kwargs):
         super(MetaboHunterApp, self).__init__(*args, **kwargs)

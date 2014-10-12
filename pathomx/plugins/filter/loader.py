@@ -127,8 +127,8 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, *args, **kwargs):
         super(ReclassifyConfigPanel, self).__init__(parent, *args, **kwargs)
-        self.v = parent    
-        
+        self.v = parent
+
         # Correlation variables
         gb = QGroupBox('Reclassifications')
         vbox = QVBoxLayout()

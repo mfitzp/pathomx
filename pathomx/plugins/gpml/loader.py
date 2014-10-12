@@ -50,7 +50,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
 
     notebook = 'gpml.ipynb'
     shortname = 'gpml'
-    
+
     legacy_inputs = {'input': 'compound_data'}
 
     def __init__(self, *args, **kwargs):

@@ -14,7 +14,7 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 if not ON_RTD:
 
     QT_API_ENV = os.environ.get('QT_API')
-    
+
     ETS = dict(pyqt=PYQT4, pyqt5=PYQT5, pyside=PYSIDE)
 
     # Check environment variable
@@ -90,6 +90,7 @@ if not ON_RTD:
     app.setApplicationName("Pathomx")
 
 else:
+
     # For Qt a Mock in the conf.py will not work for ReadTheDocs so we have to Mock
     # separately here. Any class used in Qt must end up here and accessed attributes added.
 
@@ -99,95 +100,125 @@ else:
 
         def __call__(self, *args, **kwargs):
             return None
-        
+
+
     class QApplication(QMockObject):
         pass
+
 
     class pyqtSignal(QMockObject):
         pass
 
+
     class pyqtSlot(QMockObject):
         pass
+
 
     class QObject(QMockObject):
         pass
 
+
     class QAbstractItemModel(QMockObject):
         pass
+
 
     class QModelIndex(QMockObject):
         pass
 
+
     class QTabWidget(QMockObject):
         pass
-        
+
+
     class QWebPage(QMockObject):
         pass
+
 
     class QTableView(QMockObject):
         pass
 
+
     class QWebView(QMockObject):
         pass
+
 
     class QAbstractTableModel(QMockObject):
         pass
 
+
     class Qt(QMockObject):
         DisplayRole = None
+
 
     class QWidget(QMockObject):
         pass
 
+
     class QPushButton(QMockObject):
         pass
 
+
     class QDoubleSpinBox(QMockObject):
         pass
-    
+
+
     class QListWidget(QMockObject):
         pass
+
 
     class QDialog(QMockObject):
         pass
 
+
     class QSize(QMockObject):
         pass
+
 
     class QTableWidget(QMockObject):
         pass
 
+
     class QMainWindow(QMockObject):
         pass
 
+
     class QTreeWidget(QMockObject):
         pass
-    
+
+
     class QAbstractItemDelegate(QMockObject):
         pass
+
 
     class QColor(QMockObject):
         pass
 
+
     class QGraphicsItemGroup(QMockObject):
         pass
+
 
     class QGraphicsItem(QMockObject):
         pass
 
+
     class QGraphicsPathItem(QMockObject):
         pass
-    
+
+
     class QGraphicsTextItem(QMockObject):
         pass
+
 
     class QGraphicsRectItem(QMockObject):
         pass
 
+
     class QGraphicsScene(QMockObject):
         pass
 
+
     class QGraphicsView(QMockObject):
         pass
-        
+
     app = None

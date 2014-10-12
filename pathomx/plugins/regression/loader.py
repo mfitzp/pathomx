@@ -71,7 +71,7 @@ class RegressionDialog(ui.GenericDialog):
         if type(input_data.columns) == pd.MultiIndex:
 
             for n, name in enumerate(input_data.columns.names):
-                l.append( [v[n] for v in input_data.columns.values ] )
+                l.append([v[n] for v in input_data.columns.values])
 
             self.scale_label_entity_table = zip(*l)
 
@@ -158,13 +158,13 @@ class RegressionConfigPanel(ui.ConfigPanel):
 
         self.config.set('variables', [v for v in l if v is not None])
 
-    def onRefreshData(self, *args): # Ignore source_updated interface param
+    def onRefreshData(self, *args):  # Ignore source_updated interface param
         input_data = self.tool.data.get('input_data')
         l = []
         if type(input_data.columns) == pd.MultiIndex:
 
             for n, name in enumerate(input_data.columns.names):
-                l.append( [v[n] for v in input_data.columns.values ] )
+                l.append([v[n] for v in input_data.columns.values])
 
         else:  # pd.Index
             l = [input_data.columns.values]
@@ -186,8 +186,6 @@ class RegressionConfigPanel(ui.ConfigPanel):
         if not self.l:
             self.onRefreshData()
         
-        
-
         print "===="
         print x
         print self.l

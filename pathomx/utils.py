@@ -20,13 +20,15 @@ rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
+
 def luminahex(hex):
     hex = hex.strip('#')
-    R, G, B = int( hex[0:2], 16) / 255., int( hex[2:4], 16) / 255., int( hex[4:6], 16 ) / 255.
+    R, G, B = int(hex[0:2], 16) / 255., int(hex[2:4], 16) / 255., int(hex[4:6], 16) / 255.
     return lumina(R, G, B)
-    
+
+
 def lumina(R, G, B):
-    return (R+R+B+G+G+G)/6
+    return (R + R + B + G + G + G) / 6
 
 
 def _convert_list_type_from_XML(vs):
@@ -213,8 +215,6 @@ else:
     from csv import writer as UnicodeWriter
 
 
-
-
 def mkdir_p(path):
     try:
         os.makedirs(path)
@@ -276,17 +276,17 @@ if pkg == None:
     # Check if Windows NSIST installed (are we running from Program Files
     if "pkgs" in scriptdir:
         pkg = 'nsist'
-        basedir = os.path.join(scriptdir,'..','..')
+        basedir = os.path.join(scriptdir, '..', '..')
     else:
         # Really not a release package, carry on
-        basedir = os.path.join(scriptdir,'..')
+        basedir = os.path.join(scriptdir, '..')
 elif pkg == True:
     scriptdir = os.path.dirname(sys.executable)
     basedir = scriptdir
 elif pkg == 'py2app':
     #'/Applications/Pathomx.app/Contents/Resources'
     scriptdir = os.environ['RESOURCEPATH']
-    basedir = scriptdir    
+    basedir = scriptdir
 elif pkg == 'py2exe':
     scriptdir = os.path.dirname(str(sys.executable, sys.getfilesystemencoding()))
     basedir = scriptdir

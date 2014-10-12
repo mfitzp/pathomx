@@ -20,14 +20,14 @@ from pathomx.views import SVGView
 from pathomx.qt import *
 
 from biocyc import biocyc
-biocyc.secondary_cache_paths.append( os.path.join(utils.scriptdir, 'database', 'biocyc') )
+biocyc.secondary_cache_paths.append(os.path.join(utils.scriptdir, 'database', 'biocyc'))
+
 
 # Dialog box for Metabohunter search options
 class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(MetaVizPathwayConfigPanel, self).__init__(*args, **kwargs)
-
         #all_pathways = parent.db.dbm.pathways.keys()
         #self.all_pathways = sorted([p.name for id, p in db.dbm.get_pathways()])
         #self.all_pathways = [p.name for p in biocyc.known_pathways]
@@ -71,8 +71,8 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
         fwd_map = lambda x: biocyc.find_pathway_by_name(x).id
         rev_map = lambda x: biocyc.get(x).name
-        
-        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget'] # Works the same
+
+        self.config.hooks['QBioCycPathwayTreeWidget'] = self.config.hooks['QCheckTreeWidget']  # Works the same
         self.config.add_handler(pathway_config, self.label[label]['lw_pathways'], (fwd_map, rev_map))
 
         self.label[label]['lw_regExp'] = QLineEdit()
@@ -194,7 +194,7 @@ class MetaVizApp(ui.AnalysisApp):
         # Setup data consumer options
         self.data.consumer_defs.extend([
             PandasDataDefinition('suggested_pathways', {
-                'shape':['1','>0'],
+                'shape': ['1', '>0'],
             }, 'Show pathways'),
             DataDefinition('compound_data', {
             'entities_t': (None, ['Compound', ])

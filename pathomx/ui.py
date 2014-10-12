@@ -37,7 +37,7 @@ from matplotlib import rcParams
 import logging
 
 import IPython
-ipython_css = os.path.join( os.path.dirname(os.path.realpath(IPython.__file__)), 'html', 'static', 'style', 'style.min.css' )
+ipython_css = os.path.join(os.path.dirname(os.path.realpath(IPython.__file__)), 'html', 'static', 'style', 'style.min.css')
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
@@ -69,8 +69,6 @@ BLANK_DEFAULT_HTML = '''
 '''
 
 
-
-
 class Logger(logging.Handler):
     def __init__(self, parent, widget, out=None, color=None):
         super(Logger, self).__init__()
@@ -87,10 +85,10 @@ class Logger(logging.Handler):
         self.ansi_processor = QtAnsiCodeProcessor()
 
     def emit(self, record):
-    
+
         self.widget.textCursor().movePosition(QTextCursor.End)
-    
-        msg = self.format(record)        
+
+        msg = self.format(record)
         if record.levelno < logging.INFO:
             return False
 
@@ -108,44 +106,43 @@ class KernelStatusWidget(QWidget):
 
     def __init__(self, *args, **kwargs):
         super(KernelStatusWidget, self).__init__(*args, **kwargs)
-        
+
         # Kernel queue list interrogate
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        
+
     def update(self, runmanager):
         runners = runmanager.runners
         # Ensure we've got enough items
         if len(runners) > self.layout.count():
-            for i in range( self.layout.count(), len(runners) ):
+            for i in range(self.layout.count(), len(runners)):
                 w = QWidget()
-                w.setMinimumSize( QSize(10,10) )
+                w.setMinimumSize(QSize(10, 10))
                 w.setAutoFillBackground(True)
                 self.layout.addWidget(w)
         elif len(runners) < self.layout.count():
-            for i in range( len(runners), self.layout.count() ):
+            for i in range(len(runners), self.layout.count()):
                 self.layout.takeAt(i)
-                
+
         for i, k in enumerate(runners):
             w = self.layout.itemAt(i).widget()
             p = w.palette()
 
             if k.status == STATUS_READY:
-                p.setColor(w.backgroundRole(), QColor(0, 0, 0, 63) )
+                p.setColor(w.backgroundRole(), QColor(0, 0, 0, 63))
             elif k.status == STATUS_RUNNING:
-                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 127) )
+                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 127))
             elif k.status == STATUS_COMPLETE:
-                p.setColor(w.backgroundRole(), QColor(0, 0, 255, 127) )
+                p.setColor(w.backgroundRole(), QColor(0, 0, 255, 127))
             elif k.status == STATUS_ERROR:
-                p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127) )
+                p.setColor(w.backgroundRole(), QColor(255, 0, 0, 127))
             elif k.status == STATUS_BLOCKED:
-                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 63) )
+                p.setColor(w.backgroundRole(), QColor(0, 255, 0, 63))
 
-            w.setPalette(p)                
-        
+            w.setPalette(p)
+
     def sizeHint(self):
-        return QSize( self.layout.count() * 10, 10)
-                    
+        return QSize(self.layout.count() * 10, 10)
 
 
 class QColorButton(QPushButton):
@@ -268,6 +265,7 @@ class QListWidgetAddRemove(QListWidget):
         self.itemAddedOrRemoved.emit()
         return r
 
+
 class QFileOpenLineEdit(QWidget):
 
     textChanged = pyqtSignal(object)
@@ -275,7 +273,7 @@ class QFileOpenLineEdit(QWidget):
 
     def __init__(self, parent=None, description=tr("Select file"), filename_filter=tr("All Files") + " (*.*);;", **kwargs):
         super(QFileOpenLineEdit, self).__init__(parent, **kwargs)
-    
+
         self._text = None
 
         self.description = description
@@ -283,7 +281,7 @@ class QFileOpenLineEdit(QWidget):
 
         self.lineedit = QLineEdit()
         self.button = QToolButton()
-        self.button.setIcon( QIcon(os.path.join(utils.scriptdir, 'icons', self.icon)) )
+        self.button.setIcon(QIcon(os.path.join(utils.scriptdir, 'icons', self.icon)))
 
         layout = QHBoxLayout(self)
         layout.addWidget(self.lineedit)
@@ -291,28 +289,29 @@ class QFileOpenLineEdit(QWidget):
         self.setLayout(layout)
 
         self.button.pressed.connect(self.onSelectPath)
-        
+
         # Reciprocal setting of values; keep in sync
         self.textChanged.connect(self.lineedit.setText)
         self.lineedit.textChanged.connect(self.setText)
-     
+
     def onSelectPath(self):
-    
+
         filename, _ = QFileDialog.getOpenFileName(self, self.description, '', self.filename_filter)
         if filename:
             self.setText(filename)
-    
+
     def text(self):
         return self._text
-        
+
     def setText(self, text):
-        self._text = text           
+        self._text = text
         self.textChanged.emit(self._text)
 
+
 class QFileSaveLineEdit(QFileOpenLineEdit):
-    
+
     icon = 'disk--pencil.png'
-    
+
     def __init__(self, parent=None, description=tr("Select save filename"), filename_filter=tr("All Files") + " (*.*);;", **kwargs):
         super(QFileSaveLineEdit, self).__init__(parent, description, filename_filter, **kwargs)
 
@@ -320,7 +319,8 @@ class QFileSaveLineEdit(QFileOpenLineEdit):
         filename, _ = QFileDialog.getSaveFileName(self.w, self.description, '', self.filename_filter)
         if filename:
             self.setText(filename)
-            
+
+
 class QFolderLineEdit(QFileOpenLineEdit):
 
     icon = 'folder-horizontal-open.png'
@@ -332,10 +332,11 @@ class QFolderLineEdit(QFileOpenLineEdit):
         Qd = QFileDialog()
         Qd.setFileMode(QFileDialog.Directory)
         Qd.setOption(QFileDialog.ShowDirsOnly)
-    
+
         folder = Qd.getExistingDirectory(self, self.description)
         if folder:
             self.setText(folder)
+
 
 # GENERIC CONFIGURATION AND OPTION HANDLING
 
@@ -408,8 +409,8 @@ class DialogAbout(QDialog):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css':'file://' + ipython_css, 'html': markdown2html_mistune(md)})
-            
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css': 'file://' + ipython_css, 'html': markdown2html_mistune(md)})
+
         self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
@@ -568,8 +569,8 @@ class ExportImageDialog(GenericDialog):
         w.addWidget(self.height_p, r, 1)
 
         self.print_units = QComboBox()
-        self.print_units.addItems( list(self.print_u.keys()) )
-        self.print_units.setCurrentIndex( self.print_units.findText( self.default_print_units ) )
+        self.print_units.addItems(list(self.print_u.keys()))
+        self.print_units.setCurrentIndex(self.print_units.findText(self.default_print_units))
 
         w.addWidget(self.print_units, r, 2)
         r += 1
@@ -581,7 +582,7 @@ class ExportImageDialog(GenericDialog):
 
         self.resolution_units = QComboBox()
         self.resolution_units.addItems(list(self.resolution_u.keys()))
-        self.resolution_units.setCurrentIndex( self.resolution_units.findText( self.default_resolution_units ) )
+        self.resolution_units.setCurrentIndex(self.resolution_units.findText(self.default_resolution_units))
 
         w.addWidget(QLabel('Resolution'), r, 0)
         w.addWidget(self.resolution, r, 1)
@@ -595,7 +596,7 @@ class ExportImageDialog(GenericDialog):
             r += 1
             self.scaling = QComboBox()
             self.scaling.addItems(['Resample', 'Resize'])
-            self.scaling.setCurrentIndex( self.scaling.findText('Resample') )
+            self.scaling.setCurrentIndex(self.scaling.findText('Resample'))
             w.addWidget(QLabel('Scaling method'), r, 0)
             w.addWidget(self.scaling, r, 1)
             r += 1
@@ -1158,9 +1159,9 @@ class DialogDataSource(GenericDialog):
             # Iterate all available outputs on all tools
             for t in current_tools:
                 if t is not self.v:
-                    for k,dataset in t.data.o.items():
-                        interfaces.append( (t.data,k) )
-                    
+                    for k, dataset in t.data.o.items():
+                        interfaces.append((t.data, k))
+
                         if type(dataset) == pd.DataFrame:
                             ts = 'pandas.DataFrame(%s)' % dataset.values.dtype
                             shape = 'x'.join([str(s) for s in dataset.shape])
@@ -1170,10 +1171,9 @@ class DialogDataSource(GenericDialog):
                         else:
                             ts = type(dataset)
                             shape = 'None'
-                
 
                         cdw.addItem(QIcon(t.icon), '%s %s %s (%s)' % (t.name, k, ts, shape))
-    
+
                         nd += 1
                         # If this is the currently used data source for this interface, set it active
                         if self.v.data.i[cd.target] is not None and t.data == self.v.data.i[cd.target][0] and k == self.v.data.i[cd.target][1]:
@@ -1181,8 +1181,7 @@ class DialogDataSource(GenericDialog):
 
             cdw.consumer_def = cd
             cdw.interfaces = [None] + interfaces
-            
-            
+
             self.layout.addWidget(QLabel("%s:" % cd.title))
             self.layout.addWidget(cdw)
 
@@ -1218,14 +1217,14 @@ class DialogDataOutput(GenericDialog):
 
             tw.setText(0, str(len(self.datasets) - 1))  # Store index
             tw.setText(1, k)
-            
+
             if type(dataset) == pd.DataFrame:
                 ts = 'pandas.DataFrame(%s)' % dataset.values.dtype
             elif type(dataset) == np.ndarray:
                 ts = 'numpy.ndarray(%s)' % dataset.values.dtype
             else:
                 ts = type(dataset)
-                
+
             tw.setText(2, ts)
             tw.setText(3, 'x'.join([str(s) for s in dataset.shape]))
 
@@ -1306,10 +1305,10 @@ class GenericApp(QObject):
     autoconfig_name = None
 
     default_pause_analysis = False
-    
+
     icon = None
-    
-    language = 'python' # Script/function language (determines loading IPython helpers)
+
+    language = 'python'  # Script/function language (determines loading IPython helpers)
 
     def __init__(self, parent, name=None, code="", position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
@@ -1337,7 +1336,7 @@ class GenericApp(QObject):
         self.log_viewer = QTextEdit()
         self.log_viewer.setReadOnly(True)
         self.log_viewer.setFont(QFont(mono_fontFamily))
-        
+
         logHandler = Logger(self, self.log_viewer)
 
         self.logger = logging.getLogger(self.id)
@@ -1371,7 +1370,7 @@ class GenericApp(QObject):
         self.logger.debug('Setup config manager...')
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
         # Add hooks for custom widgets
-        self.config.hooks = dict( self.config.hooks.items() + custom_pyqtconfig_hooks.items() )
+        self.config.hooks = dict(self.config.hooks.items() + custom_pyqtconfig_hooks.items())
 
         self.logger.debug('Create editor icon...')
         self.editorItem = self.parent().editor.addApp(self, position=position)
@@ -1397,17 +1396,16 @@ class GenericApp(QObject):
                 @property
                 def text(self):
                     return self.toPlainText()
-    
+
                 @text.setter
                 def text(self, text):
                     self.setPlainText(text)
 
             self.code_editor = QTextEditExtra()
-            self.code_editor.setFont( QFont(mono_fontFamily) )
+            self.code_editor.setFont(QFont(mono_fontFamily))
             self.code_editor.is_enhanced_editor = False
-            
-        self.code = code
 
+        self.code = code
 
         # Trigger finalise once we're back to the event loop
         self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
@@ -1438,7 +1436,6 @@ class GenericApp(QObject):
         self.addDataToolBar()
         self.addEditorToolBar()
         self.addFigureToolBar()
-        
 
         self.load_notes()
         self.load_source()
@@ -1455,11 +1452,9 @@ class GenericApp(QObject):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css':'file://' + ipython_css, 'html': markdown2html_mistune(self.notes)})
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css': 'file://' + ipython_css, 'html': markdown2html_mistune(self.notes)})
 
-            
-
-        self.notes_viewer.setHtml( unicode(html) )
+        self.notes_viewer.setHtml(unicode(html))
 
         self.views.addView(self.notes_viewer, '&?', unfocus_on_refresh=True)
         self.views.addView(self.code_editor, '&#', unfocus_on_refresh=True)
@@ -1469,26 +1464,26 @@ class GenericApp(QObject):
         if self._is_autoconsume_success is not False:
             # This will fire after the notebook has completed above
             self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
-            
+
     def reload(self):
         self.load_notes()
         self.load_source()
 
     def load_notes(self):
-        with open( os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rU') as f:
+        with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rU') as f:
             self.notes = f.read()
 
     def load_source(self):
-        with open( os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
+        with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
             self.default_code = f.read()
-        
+
         if self.code == "":
             self.code = self.default_code
-        
+
     @property
     def code(self):
         return self.code_editor.text
-    
+
     @code.setter
     def code(self, text):
         self.code_editor.text = text
@@ -1500,7 +1495,7 @@ class GenericApp(QObject):
         else:
             icon_path = os.path.join(self.plugin.path, 'icon.png')
         return QIcon(icon_path)
-                    
+
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
         if self._pause_analysis_flag:
@@ -1513,16 +1508,16 @@ class GenericApp(QObject):
 
         strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
         varsi = {
-            'config': self.config.as_dict(), 
+            'config': self.config.as_dict(),
             'rcParams': {k: v for k, v in rcParams.items() if k not in strip_rcParams},
             'styles': styles,
             '_pathomx_tool_path': self.plugin.path,
             '_pathomx_database_path': os.path.join(utils.scriptdir, 'database'),
         }
-        
+
         self.status.emit('active')
         self.progress.emit(0.)
-        
+
         notebook_queue.add_job(self, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
 
     def _worker_result_callback(self, result):
@@ -1530,7 +1525,7 @@ class GenericApp(QObject):
 
         if 'stdout' in result:
             self.logger.error(result['stdout'])
-        
+
         if result['status'] == 0:
             self.logger.debug("Notebook complete %s" % self.name)
             self.status.emit('done')
@@ -1545,7 +1540,6 @@ class GenericApp(QObject):
             self.status.emit('error')
             self.logger.error(result['traceback'])
             varso = {}
-
         #varso['_pathomx_result_notebook'] = result['notebook']
         #self.nb = result['notebook']
 
@@ -1579,14 +1573,14 @@ class GenericApp(QObject):
         self.views.data = self.prerender(**kwargs_dict)
         # Delay this 1/2 second so next processing gets underway
         # FIXME: when we've got a better runner system
-        QTimer.singleShot( PX_RENDER_SHOT, self.views.source_data_updated.emit )
+        QTimer.singleShot(PX_RENDER_SHOT, self.views.source_data_updated.emit)
         #self.views.source_data_updated.emit()
 
     def prerender(self, *args, **kwargs):
 
-        FIGURE_COLOR = QColor(0,127,0)
-        DATA_COLOR = QColor(0,0,127)
-        
+        FIGURE_COLOR = QColor(0, 127, 0)
+        DATA_COLOR = QColor(0, 0, 127)
+
         result_dict = {
         #    'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
             }
@@ -1614,14 +1608,13 @@ class GenericApp(QObject):
                     self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k, color=DATA_COLOR)
 
                 result_dict[k] = {'data': v}
-            
+
             elif hasattr(v, '_repr_html_'):
                 # on IPython notebook aware objects to generate Html views
                 if self.views.get_type(k) != HTMLView:
                     self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
 
                 result_dict[k] = {'html': v._repr_html_()}
-                
 
         return result_dict
 
@@ -1675,17 +1668,16 @@ class GenericApp(QObject):
         self.parent().activetoolDock.setWidget(self.w)
         self.parent().activetoolDock.setWindowTitle(self.name)
         self.parent().activetoolDock.show()
-        
+
         self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
         self.parent().activetoolDock.setWidget(self.w)
         self.parent().activetoolDock.setWindowTitle(self.name)
         self.parent().activetoolDock.raise_()
-        
+
     def hide(self):
         self.parent().toolDock.setWidget(self.parent().toolbox)
-        
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
@@ -1699,13 +1691,13 @@ class GenericApp(QObject):
         self.configpanels[name] = panel
 
     def addSelfToolBar(self):
-    
+
         pass
 
     def addDataToolBar(self):
         if 'data' in self.toolbars:
             return False
-            
+
         t = self.w.addToolBar('Data')
         t.setIconSize(QSize(16, 16))
 
@@ -1733,14 +1725,14 @@ class GenericApp(QObject):
         t.addAction(select_dataAction)
 
         self.toolbars['data'] = t
-        
+
     def addEditorToolBar(self):
         if 'editor' in self.toolbars:
             return False
-    
+
         t = self.w.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
-    
+
         if self.code_editor.is_enhanced_editor:
             t.addAction(self.code_editor.copyLineAction)
             t.addAction(self.code_editor.pasteLineAction)
@@ -1752,7 +1744,7 @@ class GenericApp(QObject):
             t.addSeparator()
             t.addAction(self.code_editor.toggleBookmarkAction)
             t.addSeparator()
-        
+
         reset_to_default_codeAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'receipt-shred.png')), tr('Reset code to tool default…'), self.w)
         reset_to_default_codeAction.setStatusTip('Reset code to tool default')
         reset_to_default_codeAction.triggered.connect(self.onResetDefaultCode)
@@ -1814,7 +1806,7 @@ class GenericApp(QObject):
     def addFigureToolBar(self):
         if 'figure' in self.toolbars:
             return False
-    
+
         t = self.w.addToolBar('Editor')
         t.setIconSize(QSize(16, 16))
 
@@ -1822,7 +1814,6 @@ class GenericApp(QObject):
         export_imageAction.setStatusTip(tr('Export figure to image'))
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
-    
 
         toolitems = (
             ('Home', 'Reset original view', 'home.png', 'home'),
@@ -1928,10 +1919,10 @@ class GenericApp(QObject):
 class IPythonApp(GenericApp):
     pass
 
+
 # Renaming for sense
 class GenericTool(GenericApp):
     pass
-
 
 
 class ExportDataApp(IPythonApp):
@@ -1999,8 +1990,8 @@ class AnalysisApp(IPythonApp):
             self.configpanels['Experiment'].cb_test.addItem("*")
             self.configpanels['Experiment'].cb_test.addItems(classes)
             # Reset to previous values (-if possible)
-            self.configpanels['Experiment'].cb_control.setCurrentIndex( self.configpanels['Experiment'].cb_control.findText( _control ) ) #PyQt4 compat
-            self.configpanels['Experiment'].cb_test.setCurrentIndex( self.configpanels['Experiment'].cb_test.findText( _test ) ) #PyQt4 compat
+            self.configpanels['Experiment'].cb_control.setCurrentIndex(self.configpanels['Experiment'].cb_control.findText(_control))  # PyQt4 compat
+            self.configpanels['Experiment'].cb_test.setCurrentIndex(self.configpanels['Experiment'].cb_test.findText(_test))  # PyQt4 compat
             # Unblock
             self.configpanels['Experiment'].cb_control.blockSignals(False)
             self.configpanels['Experiment'].cb_test.blockSignals(False)
@@ -2086,8 +2077,6 @@ class ConfigPanel(QWidget):
                     control.Deselect(idx)
         except:
             pass
-            
-
 
 
 class SimpleFileOpenConfigPanel(ConfigPanel):
@@ -2096,11 +2085,11 @@ class SimpleFileOpenConfigPanel(ConfigPanel):
         This simple configuration panel shows just a file path widget and button
         and can be used for most standard import tools that have no complex options.
     '''
-    
-    description=tr("Open experimental data from file")
-    filename_filter=tr("All Files") + " (*.*);;"
 
-    def __init__(self, parent, *args,  **kwargs):
+    description = tr("Open experimental data from file")
+    filename_filter = tr("All Files") + " (*.*);;"
+
+    def __init__(self, parent, *args, **kwargs):
         super(SimpleFileOpenConfigPanel, self).__init__(parent, *args, **kwargs)
 
         self.v = parent
@@ -2112,11 +2101,10 @@ class SimpleFileOpenConfigPanel(ConfigPanel):
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
         gb.setLayout(grid)
-        
+
         self.layout.addWidget(gb)
 
-        self.finalise()            
-            
+        self.finalise()
 
 
 class ConfigTablePanel(QTableWidget):
@@ -2141,7 +2129,6 @@ class ExperimentConfigPanel(ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Classes')
         grid = QGridLayout()
-        
 
         self.cb_control = QComboBox()
         self.cb_control.addItems(['Control'])
@@ -2160,7 +2147,6 @@ class ExperimentConfigPanel(ConfigPanel):
         self.layout.addWidget(gb)
 
         self.finalise()
-
 
 
 class WebPanel(QWebView):
@@ -2206,64 +2192,64 @@ class QCheckTreeWidget(QTreeWidget):
 
     def __init__(self, *args, **kwargs):
         super(QCheckTreeWidget, self).__init__(*args, **kwargs)
-        self.itemChanged.connect( self.updateChecks )
+        self.itemChanged.connect(self.updateChecks)
         self._checked_item_cache = set()
-        
+
     def updateCheckCache(self, item, checkstate):
         # Only count items without children (leaf nodes)
         if item.childCount() != 0:
             return
-            
+
         if checkstate == Qt.Checked:
-            self._checked_item_cache.add( item.text(0) )
+            self._checked_item_cache.add(item.text(0))
         else:
-            self._checked_item_cache.discard( item.text(0) )
-        
-    def updateChecks(self, item, column, recursing = False):
+            self._checked_item_cache.discard(item.text(0))
+
+    def updateChecks(self, item, column, recursing=False):
         self.blockSignals(True)
         diff = False
         if column != 0 and column != -1:
             return
-            
+
         checkState = item.checkState(0)
         self.updateCheckCache(item, checkState)
-            
-        if item.childCount() !=0 and item.checkState(0) != Qt.PartiallyChecked and column != -1:
-            for i in range( item.childCount() ):
+
+        if item.childCount() != 0 and item.checkState(0) != Qt.PartiallyChecked and column != -1:
+            for i in range(item.childCount()):
                 if item.child(i).checkState != checkState:
                     item.child(i).setCheckState(0, checkState)
-                    self.updateCheckCache( item.child(i), checkState )
-                    self.updateChecks( item.child(i), column, recursing=True )
+                    self.updateCheckCache(item.child(i), checkState)
+                    self.updateChecks(item.child(i), column, recursing=True)
 
         elif item.childCount() == 0 or column == -1:
             if item.parent() is None:
                 return
-                
+
             for j in range(item.parent().childCount()):
                 if j != item.parent().indexOfChild(item) and item.checkState(0) != item.parent().child(j).checkState(0):
                     diff = True
 
             if diff:
                 item.parent().setCheckState(0, Qt.PartiallyChecked)
-                self.updateCheckCache( item.parent(),  Qt.PartiallyChecked )
+                self.updateCheckCache(item.parent(), Qt.PartiallyChecked)
             else:
                 item.parent().setCheckState(0, checkState)
-                self.updateCheckCache( item.parent(), checkState )
-                
+                self.updateCheckCache(item.parent(), checkState)
+
             if item.parent() is not None:
-                self.updateChecks(item.parent(),-1, recursing=True)
-                
+                self.updateChecks(item.parent(), -1, recursing=True)
+
         if recursing == False:
             self.blockSignals(False)
             self.itemCheckedChanged.emit()
-            
+
             
 class QBioCycPathwayTreeWidget(QCheckTreeWidget):
-    
+
     def __init__(self, pathways, *args, **kwargs):
         super(QBioCycPathwayTreeWidget, self).__init__(*args, **kwargs)
         from biocyc import biocyc
-        
+
         top_level_items = []
         for p in pathways:
             o = biocyc.get(p)
@@ -2272,14 +2258,14 @@ class QBioCycPathwayTreeWidget(QCheckTreeWidget):
             i.setText(0, str(o))
             i.biocyc = o
             top_level_items.append(i)
-    
+
         self.addTopLevelItems(top_level_items)
         self.setHeaderLabels(['Pathway'])
 
         current_queue = top_level_items
         items_added_this_loop = None
         while len(current_queue) > 0:
-    
+
             items_added_this_loop = 0
             next_queue = []
             for i in current_queue[:]:
@@ -2292,10 +2278,9 @@ class QBioCycPathwayTreeWidget(QCheckTreeWidget):
                     c.setText(0, str(pw))
                     c.biocyc = pw
                     cl.append(c)
-            
+
                 i.addChildren(cl)
                 next_queue.extend(cl)
             current_queue = next_queue
 
         self.sortItems(0, Qt.AscendingOrder)
-            

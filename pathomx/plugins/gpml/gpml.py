@@ -10,8 +10,7 @@ from matplotlib.colors import rgb2hex
 from pathomx.utils import luminahex
 
 from biocyc import biocyc
-biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
-
+biocyc.secondary_cache_paths.append(os.path.join(_pathomx_database_path, 'biocyc'))
 
 xref_urls = {
     'BioCyc compound': 'pathomx://db/compound/%s/view',
@@ -30,8 +29,8 @@ def build_xref_list(data):
         'NCBI-GENE': ['Entrez Gene'],
         'HMDB': ['HMDB'],
 
-        }    
-    
+        }
+
     xrefs = {}
 
     # Use BioCyc first (dblinks)
@@ -48,7 +47,7 @@ def build_xref_list(data):
 
                     for dbi in dbl:
                         xrefs[(dbi, dbid)] = ('PATHOMX%d' % id(data), n)
-    
+
     # Use other columns
     for namen, name in enumerate(data.columns.names):
         if name in xref_translate:
@@ -61,10 +60,8 @@ def build_xref_list(data):
                 for n, c in enumerate(thisrow):
                     if c is not None:
                         xrefs[(sn, c)] = ('PATHOMX%d' % id(data), n)
-        
+
     return xrefs
-
-
 
 node_colors = {}
 xref_syns = {}
@@ -77,28 +74,29 @@ if compound_data is not None or gene_data is not None or protein_data is not Non
             continue
 
         datasets.append(data)
-    
+
     analysis = {}
     mins, maxes = [], []
     for data in datasets:
         # Find mapping ranges
-        mins.append( np.min(data.values) )
-        maxes.append( np.max(data.values) )
-    
+        mins.append(np.min(data.values))
+        maxes.append(np.max(data.values))
+
     overall_min = min(mins)
     overall_max = max(maxes)
-    
+
     print("Range %.2f..%.2f" % (overall_min, overall_max))
-    data = None; # Prevent export
+    data = None
+    # Prevent export
 
     if overall_min < 0 and overall_max > 0:
-        # If crossing zero use a diverging map; else use a linear            
+        # If crossing zero use a diverging map; else use a linear
         colormap = cm.RdBu_r
         # Set min/max to the negative and positive of the max abs of both
         # so extends in both directions equally
-        overall_max = max( abs(overall_min), overall_max )
+        overall_max = max(abs(overall_min), overall_max)
         overall_min = -(overall_max)
-        
+
     elif overall_min < 0:
         colormap = cm.Blues_r
 
@@ -107,31 +105,29 @@ if compound_data is not None or gene_data is not None or protein_data is not Non
 
     norm = mpl.colors.SymLogNorm(linthresh=0.001, vmin=overall_min, vmax=overall_max, clip=True)
     mapper = cm.ScalarMappable(norm=norm, cmap=colormap)
-    
+
     for data in datasets:
         # We can only use a single row at the moment, so process through fold change etc. first
         values = data.iloc[0]
         for n, v in enumerate(values):
-            color = rgb2hex( mapper.to_rgba(v) )
+            color = rgb2hex(mapper.to_rgba(v))
             if luminahex(color) < 0.5:
                 contrast = "#FFFFFF"
             else:
                 contrast = "#000000"
-                
-            node_colors[('PATHOMX%d' % id(data) , n)] = (color, contrast)
-            
-        xref_syns = dict( xref_syns.items() + build_xref_list(data).items() )
-                
+
+            node_colors[('PATHOMX%d' % id(data), n)] = (color, contrast)
+
+        xref_syns = dict(xref_syns.items() + build_xref_list(data).items())
+
 else:
     node_colors = None
-                        
     #for n, m in enumerate(dso.entities[1]):
     #    xref = self.get_xref(m)
     #    ecol = utils.calculate_rdbu9_color(scale, dso.data[0, n])
     #    #print xref, ecol
     #    if xref is not None and ecol is not None:
     #        node_colors[xref] = ecol
-
 
 from gpml2svg import gpml2svg
 from IPython.core.display import SVG
@@ -165,11 +161,11 @@ elif config['gpml_wikipathways_id']:
         raise Exception("Error loading GPML from WikiPathways (%d)" % r.status_code)
 else:
     raise Exception("Select a source for GPML")
-        
+
 if gpml:
-    
-    # xref_synonyms_fn=get_extended_xref_via_unification_list,
-    svg, metadata = gpml2svg.gpml2svg(gpml, xref_urls=xref_urls, xref_synonyms=xref_syns, node_colors=node_colors) 
+
+# xref_synonyms_fn=get_extended_xref_via_unification_list,
+    svg, metadata = gpml2svg.gpml2svg(gpml, xref_urls=xref_urls, xref_synonyms=xref_syns, node_colors=node_colors)
 
     View = SVG(svg)
 

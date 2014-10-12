@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import copy
 import math
 from .. import utils
@@ -6,7 +7,6 @@ from ..globals import settings
 from ..qt import *
 
 from pyqtconfig import ConfigManager
-
 
 TEXT_COLOR = "#000000"
 SHADOW_COLOR = QColor(63, 63, 63, 100)
@@ -241,7 +241,7 @@ class ToolItem(BaseItem):
             self.app.delete()
         else:
             return super(ToolItem, self).keyPressEvent(e)
-            
+
     def contextMenuEvent(self, e):
         e.accept()
 
@@ -280,10 +280,10 @@ class ToolItem(BaseItem):
     def onShow(self):
         self.app.show()
         self.app.raise_()
-    
+
     def onHide(self):
         self.app.hide()
-        
+
     def onRun(self):
         self.app.autogenerate()
 
@@ -313,9 +313,9 @@ class ToolItem(BaseItem):
                 self.icon.graphicsEffect().setEnabled(False)
                 self.onHide()
                 self.icon._effects_locked = False
-                
+
             return value
-                
+
         return super(ToolItem, self).itemChange(change, value)
 
 
@@ -394,7 +394,7 @@ class ToolInterfaceHandler(BaseItem):
         angle_increment = 15.
         angle_start = self.setup[0] - (items - 1) * (angle_increment / 2)
 
-        for n, interface in enumerate( sorted( self.interfaces.keys() ) ):
+        for n, interface in enumerate(sorted(self.interfaces.keys())):
             angle = angle_start + (n * angle_increment)
             x = x0 + r * math.cos(2 * math.pi * (angle / 360.)) - 4
             y = y0 + r * math.sin(2 * math.pi * (angle / 360.))
@@ -403,7 +403,7 @@ class ToolInterfaceHandler(BaseItem):
                 self.interface_items[interface] = ToolInterface(self.app, self.interfaces[interface], interface, self.interface_type, self)
                 self.interface_items[interface].setPos(x, y)
                 t = QTransform()
-                t.rotate(n*angle_increment)
+                t.rotate(n * angle_increment)
                 self.interface_items[interface].setTransform(t)
             else:
                 # Updating
@@ -412,25 +412,23 @@ class ToolInterfaceHandler(BaseItem):
 
     def update_interface_status(self, i):
         if i in self.interface_items.keys():
-            self.interface_items[i].update_interface_color() # Redraw
-            
-            for l in self.interface_items[i]._links: # Redraw links
+            self.interface_items[i].update_interface_color()  # Redraw
+
+            for l in self.interface_items[i]._links:  # Redraw links
                 l.updateLine()
-                
 
     def paint(self, painter, option, widget):
         pass
 
 
-class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
+class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
     def __init__(self, app=None, interface=None, interface_name='', interface_type='input', parent=None):
         super(ToolInterface, self).__init__(parent=parent)
-
         #self.setAcceptHoverEvents(True)
         #self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
         #self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
-        
+
         self.app = app
 
         self.interface = interface
@@ -452,34 +450,33 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
         self.setAcceptDrops(True)
         self._linkInProgress = None
         self._offset = QPointF(4, 4)
-        
+
         self.update_interface_color()
         #self.updateShape( len(interface_name) * 8)
-        
+
     def update_interface_color(self, color=None):
         if color:
             self.color = color
         else:
-            self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]
-            
+            self.color = INTERFACE_ACTIVE_COLOR[self.get_interface_status()]
+
         self.update()
 
     def get_interface_status(self):
-        if self.interface_type == 'input':  
-            return (self.app.data.i[ self.interface_name ] is not None) and \
-                   (self.app.data.get( self.interface_name ) is not None )
-        
+        if self.interface_type == 'input':
+            return (self.app.data.i[self.interface_name] is not None) and \
+                   (self.app.data.get(self.interface_name) is not None)
+
         elif self.interface_type == 'output':
-            return not self.app.data.o[ self.interface_name ] is None
+            return not self.app.data.o[self.interface_name] is None
         
-        
-    def updateShape(self, l): 
+    def updateShape(self, l):
         ''' Update polygon shape to the specified length (to match inner text) '''
         w = 5
-        points = [QPoint(0, 0), QPoint(w*2, -w), QPoint(l, -w), 
-        QPoint(l-w, 0), 
-        QPoint(l, w), QPoint(w*2, w), QPoint(0, 0)]
-        self.setPolygon( QPolygonF(points) )
+        points = [QPoint(0, 0), QPoint(w * 2, -w), QPoint(l, -w),
+        QPoint(l - w, 0),
+        QPoint(l, w), QPoint(w * 2, w), QPoint(0, 0)]
+        self.setPolygon(QPolygonF(points))
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
@@ -496,9 +493,9 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
                 self.scene().addItem(self._linkInProgress)
                 # Highlight all targets that are acceptable
                 for i in self.scene().items():
-                    if isinstance(i, ToolInterface) and i.interface_type == 'input': # and \
+                    if isinstance(i, ToolInterface) and i.interface_type == 'input':  # and \
                         # i.app.data.i[i.interface_name] is None:
-                
+
                         source_manager = self._linkInProgress.source.app.data
                         source_interface = self._linkInProgress.source.interface_name
                         dest_manager = i.app.data
@@ -506,7 +503,7 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
 
                         if dest_manager.can_consume(source_manager, source_interface, interface=dest_interface):
                             i.update_interface_color(CAN_CONSUME_COLOR)
-            
+
                         else:
                             i.update_interface_color(CANNOT_CONSUME_COLOR)
 
@@ -518,12 +515,12 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
     def mouseReleaseEvent(self, event):
         if self._linkInProgress:
             self.ungrabMouse()
-            
+
             # Reset apperance
             for i in self.scene().items():
                 if isinstance(i, ToolInterface) and i.interface_type == 'input':
                     i.update_interface_color()
-            
+
             targets = [x for x in self.scene().items(event.scenePos()) if isinstance(x, ToolInterface) and x.interface_type == 'input']
             if targets:
                 target = targets[0]
@@ -534,15 +531,15 @@ class ToolInterface(BaseInteractiveItem): #QGraphicsPolygonItem):
                 dest_manager = target.app.data
                 dest_interface = target.interface_name
 
-                logging.debug("Data link: %s %s %s %s " % (source_manager, source_interface, dest_manager, dest_interface) )
+                logging.debug("Data link: %s %s %s %s " % (source_manager, source_interface, dest_manager, dest_interface))
 
                 if dest_manager.can_consume(source_manager, source_interface, interface=dest_interface) or \
-                    event.modifiers() == Qt.ControlModifier: # force connection with modifier key
-                    
-                    # FIXME: This is horrible; simplify the data manager
+                    event.modifiers() == Qt.ControlModifier:  # force connection with modifier key
+
+                # FIXME: This is horrible; simplify the data manager
                     c = dest_manager._consume_action(source_manager, source_interface, dest_interface)
                     dest_manager.source_updated.emit(dest_interface)
-                
+
             self.scene().removeItem(self._linkInProgress)
             self._linkInProgress = None
 
@@ -595,14 +592,14 @@ class LinkItem(QGraphicsPathItem):
 
         p1 = sourcePoint + QPointF(pi, 0)
         p2 = sinkPoint - QPointF(pi, 0)
-        
+
         bezierPath.cubicTo(p1, p2, sinkPoint)
         self.bezierPath = bezierPath
         self.setPath(bezierPath)  # source.x(), source.y(), self.sink.x(), self.sink.y() )
 
         self.updateText()
-        
-        self.setLineColor( INTERFACE_ACTIVE_COLOR[ self.source.get_interface_status() ] )
+
+        self.setLineColor(INTERFACE_ACTIVE_COLOR[self.source.get_interface_status()])
 
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
@@ -615,15 +612,15 @@ class LinkItem(QGraphicsPathItem):
             if dataobj is not None:
                 strs = [source_interface]
                 if hasattr(dataobj, 'shape'):
-                    strs.append( "(%s)" % "x".join([str(x) for x in dataobj.shape]) )
+                    strs.append("(%s)" % "x".join([str(x) for x in dataobj.shape]))
                 else:
                     try:
-                        obj_len = len( dataobj )
+                        obj_len = len(dataobj)
                     except:
                         pass
                     else:
-                        strs.append( "(%s)" % obj_len )
-            
+                        strs.append("(%s)" % obj_len)
+
                 text = ''
                 for s in strs:
                     if len(text + s) < max_length:
@@ -657,7 +654,7 @@ class LinkItem(QGraphicsPathItem):
         pen.setWidth(4)
         self.pen = pen
         self.setPen(self.pen)
-    
+
 
 class ToolProgressItem(BaseItem):
     """

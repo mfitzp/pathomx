@@ -7,7 +7,8 @@ from collections import defaultdict
 
 from biocyc import biocyc
 biocyc.set_organism('HUMAN')
-biocyc.secondary_cache_paths.append( os.path.join(_pathomx_database_path, 'biocyc') )
+biocyc.secondary_cache_paths.append(os.path.join(_pathomx_database_path, 'biocyc'))
+
 
 def preprocess_soft(reader, f=None):
     # Preprocess into the chunks (then can manageable process them in turn)
@@ -19,6 +20,7 @@ def preprocess_soft(reader, f=None):
         soft_data[section].append(row)
 
     return soft_data
+
 
 def get_soft_metadata(rows, while_starts_with='!'):
 
@@ -33,6 +35,7 @@ def get_soft_metadata(rows, while_starts_with='!'):
 
     return metadata
 
+
 def get_float(x):
     try:
         x = float(x)
@@ -40,6 +43,7 @@ def get_float(x):
         if x == 'null':
             x = None
     return x
+
 
 def get_soft_data(rows, starts, ends):
     headers = False
@@ -102,7 +106,7 @@ with open(config['filename'], 'rU') as f:
     sample_ids = []
     for k, subset in list(subsets.items()):
         sample_ids.extend(subset['subset_sample_id'])
-    sample_ids = sorted( list( set(sample_ids) ) )   # Get the samples sorted so we keep everything lined up
+    sample_ids = sorted(list(set(sample_ids)))   # Get the samples sorted so we keep everything lined up
 
     class_lookup = {}
     for class_id, s in list(subsets.items()):
@@ -119,10 +123,9 @@ for xn, gene_id in enumerate(gene_ids):
     for yn, sample_id in enumerate(sample_ids):
 
         try:
-            data[yn, xn] = float( dataset_data[gene_id][sample_id] )
+            data[yn, xn] = float(dataset_data[gene_id][sample_id])
         except:
             data[yn, xn] = np.nan
-            
 # = Entrez Gene identifier
 #UniGene title = Entrez UniGene name
 #UniGene symbol = Entrez UniGene symbol
@@ -131,7 +134,7 @@ for xn, gene_id in enumerate(gene_ids):
 #GI = GenBank identifier
 
 output_data = pd.DataFrame(data)
-output_data.index = pd.MultiIndex.from_tuples( zip( sample_ids, [class_lookup[s_id] for s_id in sample_ids]), names=['Sample','Class'] )
+output_data.index = pd.MultiIndex.from_tuples(zip(sample_ids, [class_lookup[s_id] for s_id in sample_ids]), names=['Sample', 'Class'])
 # build column index from possible sets
 index_tuples = []
 passthru = lambda x: x
@@ -139,19 +142,20 @@ headers = [
     ('IDENTIFIER', passthru, 'Label'),
     ('Gene ID', passthru, 'Entrez Gene'),
     ('UniGene ID', passthru, 'UNIGENE'),
-    ('IDENTIFIER', lambda x: biocyc.find_gene_by_name(x),'BioCyc') # Auto-map to BioCyc
+    ('IDENTIFIER', lambda x: biocyc.find_gene_by_name(x), 'BioCyc')  # Auto-map to BioCyc
 ]
 for n, gene_id in enumerate(gene_ids):
-    
-    t = tuple([n,] + [ fn(dataset_data[gene_id][cl]) for cl, fn, ci in headers if cl in dataset_data[gene_id]])
+
+    t = tuple([n, ] + [fn(dataset_data[gene_id][cl]) for cl, fn, ci in headers if cl in dataset_data[gene_id]])
     index_tuples.append(t)
 
 index_names = ['Measurement'] + [ci for cl, fn, ci in headers if cl in dataset_data[gene_id]]
-output_data.columns = pd.MultiIndex.from_tuples( index_tuples, names=index_names )
+output_data.columns = pd.MultiIndex.from_tuples(index_tuples, names=index_names)
 #output_data.columns = [dataset_data[gene_id]['IDENTIFIER'] for gene_id in gene_ids]
 output_data
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-View = spectra(output_data, styles=styles);
+View = spectra(output_data, styles=styles)
+

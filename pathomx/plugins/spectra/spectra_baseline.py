@@ -9,7 +9,7 @@ from collections import defaultdict
 # Get the target region from the spectra (will be using this for all calculations;
 # then applying the result to the original data)
 if type(input_data.columns) == pd.MultiIndex:
-    scale = input_data.columns.labels[ b.columns.names.index('Scale') ]
+    scale = input_data.columns.labels[b.columns.names.index('Scale')]
 else:
     scale = input_data.columns.values
 
@@ -39,11 +39,11 @@ for n, dr in enumerate(input_data.values):
         dr = ng.process.proc_bl.cbf_explicit(dr, calc=slice(cbf_explicit_start, cbf_explicit_end))
 
     input_data.values[n, :] = dr
-
     
 output_data = input_data
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
-View = spectra(output_data, styles=styles);
+View = spectra(output_data, styles=styles)
+

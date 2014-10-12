@@ -20,7 +20,6 @@ class MetabolightsConfigPanel(ui.SimpleFileOpenConfigPanel):
     description = "Open experimental data from Metabolights experimental datasets"
 
 
-
 class ImportMetabolightsApp(ui.GenericTool):
 
     shortname = 'metabolights'
@@ -36,6 +35,7 @@ class ImportMetabolightsApp(ui.GenericTool):
         self.data.add_output('output_data')  # Add output slot        
 
         self.addConfigPanel(MetabolightsConfigPanel, 'Settings')
+
 
 class ImportMetabolights(ImportPlugin):
 

@@ -35,15 +35,15 @@ class ImportDataConfigPanel(ui.ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Open file')
         grid = QGridLayout()
-        self.filename = ui.QFileOpenLineEdit(filename_filter = "All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)",
-                             description = "Open experimental data from text file data file")
+        self.filename = ui.QFileOpenLineEdit(filename_filter="All compatible files (*.csv *.txt *.tsv);;Comma Separated Values (*.csv);;Plain Text Files (*.txt);;Tab Separated Values (*.tsv);;All files (*.*)",
+                             description="Open experimental data from text file data file")
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
         gb.setLayout(grid)
-        
+
         self.layout.addWidget(gb)
-        
+
         gb = QGroupBox('Autodetect')
         grid = QGridLayout()
         self.cb_autodetect = QCheckBox()
@@ -103,7 +103,7 @@ class ImportDataConfigPanel(ui.ConfigPanel):
 class ImportTextApp(ui.GenericTool):
 
     shortname = 'import_text'
-    
+
     legacy_outputs = {'output': 'output_data'}
     autoconfig_name = "{filename}"
 

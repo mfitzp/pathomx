@@ -39,25 +39,30 @@ class TransformMeanCenter(TransformApp):
     notebook = 'mean_center.ipynb'
     shortname = 'mean_center'
 
+
 class TransformLog2(TransformApp):
     name = "Log2"
     notebook = 'log2.ipynb'
     shortname = 'log2'
+
 
 class TransformLog10(TransformApp):
     name = "Log10"
     notebook = 'log10.ipynb'
     shortname = 'log10'
 
+
 class TransformZeroBaseline(TransformApp):
     name = "Zero baseline"
     notebook = 'zero_baseline.ipynb'
     shortname = 'zero_baseline'
 
+
 class TransformGlobalMinima(TransformApp):
     name = "Global minima"
     notebook = 'global_minima.ipynb'
     shortname = 'global_minima'
+
 
 class TransformLocalMinima(TransformApp):
     name = "Local minima"
@@ -76,6 +81,7 @@ class TransformTranspose(TransformApp):
     notebook = 'transpose.ipynb'
     shortname = 'transpose'
 
+
 class TransformSplitImaginary(ui.GenericTool):
     name = "Split real/imaginary numbers"
     notebook = 'split_imaginary.ipynb'
@@ -93,7 +99,7 @@ class TransformSplitImaginary(ui.GenericTool):
         self.data.consumer_defs.append(
             DataDefinition('input_data', {  # Accept anything!
             })
-        )    
+        )
 
 
 class Transform(ProcessingPlugin):

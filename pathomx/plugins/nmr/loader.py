@@ -22,7 +22,6 @@ from pathomx.qt import *
 import nmrglue as ng
 
 
-
 # Dialog box for Metabohunter search options
 class BrukerImportConfigPanel(ui.ConfigPanel):
 
@@ -39,13 +38,13 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Parent folder')
         grid = QGridLayout()
-        self.filename = ui.QFolderLineEdit(description = 'Import spectra from Bruker format files')
+        self.filename = ui.QFolderLineEdit(description='Import spectra from Bruker format files')
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
         gb.setLayout(grid)
         self.layout.addWidget(gb)
-        
+
         gb = QGroupBox('Phase correction')
         grid = QGridLayout()
 
@@ -82,7 +81,7 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
 
         self.le_zf_to = QLineEdit()
         grid.addWidget(self.le_zf_to, 4, 1)
-        self.config.add_handler('zero_fill_to', self.le_zf_to, mapper=(lambda x: int(x), lambda x: str(x) ))
+        self.config.add_handler('zero_fill_to', self.le_zf_to, mapper=(lambda x: int(x), lambda x: str(x)))
 
         gb.setLayout(grid)
 
@@ -96,7 +95,7 @@ class BrukerImport(ui.GenericTool):
     name = "Import Bruker"
     shortname = 'bruker_import'
     autoconfig_name = "{filename}"
-    
+
     legacy_launchers = ['NMRGlue.NMRApp']
     legacy_outputs = {'output': 'output_data'}
     icon = 'bruker.png'
@@ -116,9 +115,8 @@ class BrukerImport(ui.GenericTool):
 
         self.addConfigPanel(BrukerImportConfigPanel, 'Settings')
 
-        self.data.add_output('output_data')  # Add output slot        
+        self.data.add_output('output_data')  # Add output slot
         self.data.add_output('output_dic')  # Add output slot        
-
 
     def onImportBruker(self):
         """ Open a data file"""
@@ -140,9 +138,8 @@ class BrukerExport(ui.ExportDataApp):
 
     notebook = 'bruker_export.ipynb'
     shortname = 'bruker_export'
-    
-    icon = 'bruker.png'
 
+    icon = 'bruker.png'
 
     def __init__(self, *args, **kwargs):
         super(BrukerExport, self).__init__(*args, **kwargs)
@@ -172,7 +169,6 @@ class BrukerExport(ui.ExportDataApp):
         if folder:
             self.config.set('filename', folder)
             self.autogenerate()
-
 
 
 class NMRGlue(ImportPlugin):

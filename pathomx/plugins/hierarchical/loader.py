@@ -24,7 +24,8 @@ METHOD_TYPES = {
     'WPGMC': 'median',
     'Incremental (Ward)': 'ward',
 }
-    
+
+
 class HierarchicalClusterConfigPanel(ui.ConfigPanel):
 
     def __init__(self, *args, **kwargs):
@@ -37,6 +38,7 @@ class HierarchicalClusterConfigPanel(ui.ConfigPanel):
         self.layout.addWidget(self.cb_method)
 
         self.finalise()
+
 
 class HierarchicalClusterTool(ui.GenericTool):
 
@@ -55,10 +57,10 @@ class HierarchicalClusterTool(ui.GenericTool):
         )
 
         self.config.set_defaults({
-            'method':'complete',
+            'method': 'complete',
         })
 
-        self.addConfigPanel( HierarchicalClusterConfigPanel, 'Settings')
+        self.addConfigPanel(HierarchicalClusterConfigPanel, 'Settings')
 
 
 class HierarchicalCluster(AnalysisPlugin):

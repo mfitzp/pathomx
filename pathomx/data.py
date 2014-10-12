@@ -17,6 +17,7 @@ import logging
 import pandas as pd
 import numpy as np
 
+
 class DataTreeItem(object):
     '''
     a python object used to return row/column data, and keep note of
@@ -184,7 +185,7 @@ class DataManager(QObject):
     # Signals
     source_updated = pyqtSignal(object)
     output_updated = pyqtSignal(object)
-    
+
     consumed = pyqtSignal(tuple, tuple)
     unconsumed = pyqtSignal(tuple, tuple)
 
@@ -307,7 +308,7 @@ class DataManager(QObject):
             consumer_defs = self.consumer_defs
 
         if interface:
-            consumer_defs = [d for d in consumer_defs if d.target == interface] 
+            consumer_defs = [d for d in consumer_defs if d.target == interface]
 
         # Don't add data from self manager (infinite loop trigger)
         if source_manager == self:
@@ -335,10 +336,10 @@ class DataManager(QObject):
     def _unconsume(self, interface):
         if self.i[interface] is not None:
             source_manager, source_interface = self.i[interface]
-            
+
             if self in source_manager.watchers[source_interface]:
                 source_manager.watchers[source_interface].remove(self)
-    
+
             del self.i[interface]
             self.unconsumed.emit((source_manager, source_interface), (self, interface))
 
@@ -442,10 +443,10 @@ class DataDefinition(object):
     def can_consume(self, data):
         logging.debug("Checking can consume object on %s" % self.target)
         return self.check(data)
-        
+
     def check(self, o):
         return o is not None
-        
+
     def get_cmp_fn(self, s):
         if type(s) == list:
             return self.cmp_map['aloeic'], s
@@ -454,17 +455,16 @@ class DataDefinition(object):
         for k, v in list(self.cmp_map.items()):
             if k in s:
                 return v, s.replace(k, '')
-        
-        return self.cmp_map['='], s 
-        
 
-        
-class NumpyArrayDataDefinition( DataDefinition ):
+        return self.cmp_map['='], s
+
+
+class NumpyArrayDataDefinition(DataDefinition):
     ''' Custom matching definition for numpy arrays '''
 
     def check(self, o):
         return self._check_instance(o) and \
-               self._check_dimensionality(o)  
+               self._check_dimensionality(o)
 
     def _check_instance(self, o):
         return isinstance(o, np.ndarray)
@@ -473,14 +473,14 @@ class NumpyArrayDataDefinition( DataDefinition ):
         if 'shape' not in self.definition:
             logging.debug("  not checking shape")
             return True
-            
+
         shape = o.shape
         d = self.definition['shape']
-        
+
         if len(shape) != len(d):
             logging.debug("  dimensionality failure %s %s" % (len(shape), len(d)))
             return False
-        
+
         for n, cr in enumerate(d):
             if cr == None:  # No restriction on this definition
                 logging.debug('  pass')
@@ -489,19 +489,18 @@ class NumpyArrayDataDefinition( DataDefinition ):
             cmp_fn, crr = self.get_cmp_fn(cr)
             if not cmp_fn(shape[n], int(crr)):
                 logging.debug("  comparison failure %s %s %s" % (shape[n], cmp_fn, crr))
-                return False        
-                
+                return False
+
         return True
 
-class PandasDataDefinition( NumpyArrayDataDefinition ):
+
+class PandasDataDefinition(NumpyArrayDataDefinition):
     ''' Custom matching definition for pandas dataframes '''
 
     def check(self, o):
         return self._check_instance(o) and \
-               self._check_dimensionality(o)  
+               self._check_dimensionality(o)
 
     def _check_instance(self, o):
         logging.debug("  check instance")
         return isinstance(o, pd.DataFrame)
-
-

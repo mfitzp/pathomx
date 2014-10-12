@@ -4,8 +4,8 @@ import nmrglue as ng
 
 total_fids = len(dic_list)
 
-for n,dic in enumerate(dic_list):
-    data = input_data.values[n,:].flatten()
+for n, dic in enumerate(dic_list):
+    data = input_data.values[n, :].flatten()
 
     data = ng.proc_base.rev(data)               # reverse the data
     data = ng.proc_base.ifft(data)   # Inverse Fourier transform
@@ -28,13 +28,13 @@ for n,dic in enumerate(dic_list):
         grpdly = dic['acqus']['GRPDLY']
 
 
-    if grpdly > 0: # use group delay value if provided (not 0 or -1)
+    if grpdly > 0:  # use group delay value if provided (not 0 or -1)
         phase = grpdly
     # determind the phase correction
     else:
-        if dspfvs >= 14: # DSPFVS greater than 14 give no phase correction.
+        if dspfvs >= 14:  # DSPFVS greater than 14 give no phase correction.
             phase = 0.
-        else: # loop up the phase in the table
+        else:  # loop up the phase in the table
             if dspfvs not in ng.bruker.bruker_dsp_table:
                 raise ValueError("dspfvs not in lookup table")
             if decim not in ng.bruker.bruker_dsp_table[dspfvs]:
@@ -45,10 +45,10 @@ for n,dic in enumerate(dic_list):
     # Remove phase correcton
     if 'PATHOMX_PHASE_CORRECT' in dic:
         data = ng.process.proc_base.ps(data, p0=-dic['PATHOMX_PHASE_CORRECT'][0], p1=-dic['PATHOMX_PHASE_CORRECT'][1])
-        
+
     data = ng.proc_base.fsh2(data, -phase)
     data = data[0:16384]
 
-    ng.bruker.write( os.path.join(config['filename'],str(n+1)),dic,data,overwrite=True)
-    
-    progress(float(n)/total_fids) # Emit progress update    
+    ng.bruker.write(os.path.join(config['filename'], str(n + 1)), dic, data, overwrite=True)
+
+    progress(float(n) / total_fids)  # Emit progress update    

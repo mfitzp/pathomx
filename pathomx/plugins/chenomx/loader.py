@@ -18,7 +18,8 @@ class ChenomxConfigPanel(ui.SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.csv *.txt *.tsv);;All files (*.*)"
     description = "Open a mapped metabolite file from Chenomx"
-    
+
+
 class ChenomxApp(ui.GenericTool):
 
     shortname = 'chenomx'
@@ -32,8 +33,9 @@ class ChenomxApp(ui.GenericTool):
         })
 
         self.data.add_output('output_data')  # Add output slot
-        
+
         self.addConfigPanel(ChenomxConfigPanel, 'Settings')
+
 
 class Chenomx(ImportPlugin):
 

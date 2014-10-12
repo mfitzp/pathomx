@@ -22,7 +22,6 @@ class PeakMLConfigPanel(ui.SimpleFileOpenConfigPanel):
     description = "Open experimental data from PeakML data files"
 
 
-
 class ImportPeakMLApp(ui.GenericTool):
 
     shortname = 'import_peakml'
@@ -40,6 +39,7 @@ class ImportPeakMLApp(ui.GenericTool):
         self.data.add_output('output_data')  # Add output slot
 
         self.addConfigPanel(PeakMLConfigPanel, 'Settings')
+
 
 class ImportPeakML(ImportPlugin):
 

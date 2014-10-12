@@ -26,8 +26,8 @@ class KEGGPathwayApp(ui.AnalysisApp):
     shortname = 'kegg_pathway'
 
     legacy_outputs = {'output': 'output_data'}
-    
-    default_pause_analysis=True
+
+    default_pause_analysis = True
 
     def __init__(self, *args, **kwargs):
         super(KEGGPathwayApp, self).__init__(*args, **kwargs)

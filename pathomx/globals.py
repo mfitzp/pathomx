@@ -59,10 +59,9 @@ if not ON_RTD:
 
         'Editor/Snap_to_grid': False,
         'Editor/Show_grid': True,
-    })    
+    })
 
-
-    mono_fontFamilies = {'Windows':'Courier New',
+    mono_fontFamilies = {'Windows': 'Courier New',
                     'Darwin': 'Menlo'}
     mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
 
@@ -88,21 +87,24 @@ if not ON_RTD:
     plugin_objects = {}
     plugin_metadata = {}
 
+
     def _get_QLineEdit(self):
         return self._get_map(self.text())
 
+
     def _set_QLineEdit(self, v):
-        self.setText( unicode(self._set_map(v)) )
+        self.setText(unicode(self._set_map(v)))
+
 
     def _event_QLineEdit(self):
         return self.textChanged
-    
+
     custom_pyqtconfig_hooks = {
         'QFileOpenLineEdit': (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
         'QFileSaveLineEdit': (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
         'QFolderLineEdit': (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
-    }    
-    
+    }
+
 else:
 
     styles = None
@@ -114,7 +116,7 @@ else:
     MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES = [], [], [], []
     StyleDefinition = None
     ClassMatchDefinition = None
-    
+
     plugin_manager = None
     plugin_objects = None
     plugin_metadata = None

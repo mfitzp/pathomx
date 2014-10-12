@@ -28,21 +28,22 @@ from .translate import tr
 
 from pyqtconfig import ConfigManager
 
-def get_available_plugins(plugin_places = None, include_deactivated=False):
+
+def get_available_plugins(plugin_places=None, include_deactivated=False):
     global available_tools_by_category
-    
+
     if plugin_places == None:
         plugin_places = settings.get('Plugins/Paths')[:]
-        
-    disabled_plugins =  settings.get('Plugins/Disabled')
-        
+
+    disabled_plugins = settings.get('Plugins/Disabled')
+
     # Append the core path search so always available
     core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
     plugin_places.append(core_plugin_path)
-    
+
     if '' in plugin_places:
-        plugin_places.remove('') # Strip the empty string
-        
+        plugin_places.remove('')  # Strip the empty string
+
     logging.info("Searching for plugins...")
 
     plugin_manager.setPluginPlaces(plugin_places)
@@ -59,7 +60,7 @@ def get_available_plugins(plugin_places = None, include_deactivated=False):
            }
     plugin_manager.setCategoriesFilter(categories_filter)
     plugin_manager.collectPlugins()
-    
+
     available_tools_by_category = defaultdict(list)
 
     # Loop round the plugins and print their names.
@@ -86,15 +87,13 @@ def get_available_plugins(plugin_places = None, include_deactivated=False):
             'info': plugin,
             'path': os.path.dirname(plugin.path),
             'module': os.path.basename(plugin.path),
-            'shortname': os.path.basename( os.path.dirname( plugin.path ) ),
+            'shortname': os.path.basename(os.path.dirname(plugin.path)),
         }
 
         plugin_metadata[metadata['shortname']] = metadata
         installed_plugin_names[id(plugin.plugin_object)] = plugin.name
 
         plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
-
-
 
 
 class pluginListDelegate(QAbstractItemDelegate):
@@ -149,7 +148,7 @@ class pluginListDelegate(QAbstractItemDelegate):
 class dialogPluginManagement(ui.GenericDialog):
 
     def populate_plugin_list(self):
-        
+
         disabled_plugins = self.config.get('Plugins/Disabled')
 
         while self.plugins_lw.count() > 0:  # Empty list
@@ -172,41 +171,39 @@ class dialogPluginManagement(ui.GenericDialog):
 
             self.plugins_lw.addItem(item)
 
-
     def onActivate(self):
         items = self.plugins_lw.selectedItems()
         disabled_plugins = self.config.get('Plugins/Disabled')
 
         for i in items:
-            plugin_path = plugin_metadata[ i.plugin_shortname ]['path']
+            plugin_path = plugin_metadata[i.plugin_shortname]['path']
             if plugin_path in disabled_plugins:
-                disabled_plugins.remove( plugin_path )
-        
+                disabled_plugins.remove(plugin_path)
+
         self.config.set('Plugins/Disabled', disabled_plugins)
         self.populate_plugin_list()
 
     def onDeactivate(self):
         items = self.plugins_lw.selectedItems()
         disabled_plugins = self.config.get('Plugins/Disabled')
-        
+
         for i in items:
-            plugin_path = plugin_metadata[ i.plugin_shortname ]['path']
+            plugin_path = plugin_metadata[i.plugin_shortname]['path']
             if plugin_path not in disabled_plugins:
-                disabled_plugins.append( plugin_path )
+                disabled_plugins.append(plugin_path)
 
         self.config.set('Plugins/Disabled', disabled_plugins)
         self.populate_plugin_list()
 
-
     def onRefresh(self):
-        get_available_plugins( self.config.get('Plugins/Paths')[:], include_deactivated=True )
+        get_available_plugins(self.config.get('Plugins/Paths')[:], include_deactivated=True)
         self.populate_plugin_list()
 
     def __init__(self, parent, **kwargs):
         super(dialogPluginManagement, self).__init__(parent, **kwargs)
 
         self.setWindowTitle(tr("Manage Plugins"))
-    
+
         self.config = ConfigManager()
         self.config.defaults = {
             'Plugins/Paths': settings.get('Plugins/Paths'),
@@ -225,7 +222,7 @@ class dialogPluginManagement(ui.GenericDialog):
         paths = QHBoxLayout()
 
         self.pathlist = QLineEdit()
-        self.config.add_handler('Plugins/Paths', self.pathlist, (lambda x: x.split(';'), lambda x: ';'.join(x) ) )
+        self.config.add_handler('Plugins/Paths', self.pathlist, (lambda x: x.split(';'), lambda x: ';'.join(x)))
 
         paths.addWidget(QLabel('Search Paths:'))
         paths.addWidget(self.pathlist)
@@ -251,7 +248,6 @@ class dialogPluginManagement(ui.GenericDialog):
 
         box.addLayout(buttons, 1, 1)
         page.setLayout(box)
-
 
         self.layout.addWidget(page)
 
@@ -465,4 +461,3 @@ class MiscPlugin(BasePlugin):
     '''
     default_workspace_category = 'Misc'
     pass
-

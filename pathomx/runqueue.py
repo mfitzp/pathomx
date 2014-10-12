@@ -25,12 +25,13 @@ STATUS_RUNNING = 1
 STATUS_COMPLETE = 2
 STATUS_ERROR = 3
 
+
 # FIXME; we need to base-class the runner code
 def setup_languages(execute, language):
     if language == 'r':
         # Init R library loader (will take time first time; but instant thereafter)
         execute(r'''%load_ext rpy2.ipython''')
-        
+
     elif language == 'matlab':
         # Init MATLAB
         execute(r'''%load_ext pymatbridge''')
@@ -42,10 +43,10 @@ class ClusterRunner(QObject):
     parallel processing without blocking the UI.
     '''
     pass
-    
+
     def __init__(self, e, *args, **kwargs):
         super(ClusterRunner, self).__init__(*args, **kwargs)
-        
+
         self.e = e
         self.ar = None
         self.aro = None
@@ -58,50 +59,50 @@ class ClusterRunner(QObject):
                 - last-run kernel [check for lookup/push requirement before starting]
                 - 
         '''
-        
+
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.check_status)
-        self.status_timer.start(100) # 0.1 sec
-        
+        self.status_timer.start(100)  # 0.1 sec
+
         self.progress_timer = QTimer()
         self.progress_timer.timeout.connect(self.check_progress)
-        self.progress_timer.start(1000) # 1 sec
-        
+        self.progress_timer.start(1000)  # 1 sec
+
     @property
     def is_active(self):
         return self._is_active or self.e.queue_status()['queue'] > 0
-        
+
     @property
     def status(self):
         if self._status == STATUS_READY and self.e.queue_status()['queue'] > 0:
             return STATUS_BLOCKED
         else:
             return self._status
-    
+
     def run(self, tool, varsi, progress_callback=None, result_callback=None):
         code = tool.code
 
         self._is_active = True
         self._status = STATUS_RUNNING
         self.stdout = ""
-                
+
         self._progress_callback = progress_callback
         self._result_callback = result_callback
-        
+
         # Check metadata to see if this kernel has the outputs for the previous tool
         self.e.execute('%reset_selective -f [^_]')
-        self.e.push({'varsi':varsi})
+        self.e.push({'varsi': varsi})
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
-        
-        setup_languages( self.e.execute, tool.language )
+
+        setup_languages(self.e.execute, tool.language)
 
         self.ar = self.e.execute(code)
-        self.e.execute(r'''pathomx_notebook_stop(vars());''') # This will queue directly above the main code block
-    
+        self.e.execute(r'''pathomx_notebook_stop(vars());''')  # This will queue directly above the main code block
+
     def check_status(self):
         result = {}
-    
+
         if self.ar:
             self.stdout = self.ar.stdout
             try:
@@ -111,40 +112,40 @@ pathomx_notebook_start(varsi, vars());''')
             except RemoteError as e:
                 # Handle all code exceptions and pass back the exception
                 result['status'] = -1
-                result['traceback'] = '\n'.join( e.render_traceback() )
-                result['stdout'] = self.stdout                                
+                result['traceback'] = '\n'.join(e.render_traceback())
+                result['stdout'] = self.stdout
                 self._result_callback(result)
                 self.ar = None
-                self._is_active = False # Release this kernel
+                self._is_active = False  # Release this kernel
                 self._status = STATUS_ERROR
-                
+
             else:
                 self.ar = None
                 self.aro = self.e.pull('varso', block=False)
                 self._status = STATUS_COMPLETE
-                
+
         elif self.aro:
             try:
-                varso = self.aro.get(0)                
+                varso = self.aro.get(0)
             except TimeoutError:
                 pass
             except RemoteError as e:
                 result['status'] = -1
-                result['traceback'] = '\n'.join( e.render_traceback() )
+                result['traceback'] = '\n'.join(e.render_traceback())
                 result['stdout'] = self.stdout
                 result['varso'] = []
                 self._result_callback(result)
                 self.aro = None
-                self._is_active = False # Release this kernel
+                self._is_active = False  # Release this kernel
                 self._status = STATUS_ERROR
 
             else:
                 self.aro = None
                 result['status'] = 0
                 result['varso'] = varso
-                result['stdout'] = self.stdout                
+                result['stdout'] = self.stdout
                 self._result_callback(result)
-                self._is_active = False # Release this kernel
+                self._is_active = False  # Release this kernel
                 self._status = STATUS_READY
 
     def check_progress(self):
@@ -154,9 +155,10 @@ pathomx_notebook_start(varsi, vars());''')
             for l in lines:
                 m = cre.match(l)
                 if m:
-                    self._progress_callback( float(m.group(1)) )
+                    self._progress_callback(float(m.group(1)))
             else:
-                return None        
+                return None
+
 
 class InProcessRunner(BaseFrontendMixin, QObject):
     '''
@@ -177,7 +179,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
 
     # Execute next cell
     execute_next = pyqtSignal()
-    
+
     # Emit current cell number
     progress = pyqtSignal(object)
 
@@ -186,7 +188,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
     _ExecutionRequest = namedtuple('_ExecutionRequest', ['id', 'kind'])
     _local_kernel = False
     _hidden = False
-    
+
     MIME_MAP = {
         'image/jpeg': 'jpeg',
         'image/png': 'png',
@@ -195,8 +197,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         'text/latex': 'latex',
         'application/javascript': 'html',
         'image/svg+xml': 'svg',
-    }    
-
+    }
     #---------------------------------------------------------------------------
     # 'object' interface
     #---------------------------------------------------------------------------
@@ -207,18 +208,19 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self._kernel_manager = None
         self._kernel_client = None
         self._request_info = {}
-        self._request_info['execute'] = {};
-        self._callback_dict = {}
+        self._request_info['execute'] = {}
         
+        self._callback_dict = {}
+
         self._result_queue = []
         self._final_msg_id = None
         self._cell_execute_ids = {}
-        
+
         self.is_active = False
         self.status = STATUS_READY
 
         self._executing = False
-        
+
         # Set flag for whether we are connected via localhost.
         self._local_kernel = kwargs.get('local_kernel',
                                     InProcessRunner._local_kernel)
@@ -235,7 +237,6 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         if self.kernel_manager:
             self.kernel_manager.shutdown_kernel()
 
-
     def run(self, tool, varsi, progress_callback=None, result_callback=None):
         '''
         Run all the cells of a notebook in order and update
@@ -243,27 +244,27 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         '''
         self.is_active = True
         self.varsi = varsi
-        
+
         self._progress_callback = progress_callback
         self._result_callback = result_callback
 
-        self._result_queue = [] # Cache for unhandled messages
+        self._result_queue = []  # Cache for unhandled messages
         self._cell_execute_ids = {}
         self._execute_start = datetime.now()
 
-        self._execute('%reset_selective -f [^_]')        
-        self.kernel_manager.kernel.shell.push({'varsi':varsi})
+        self._execute('%reset_selective -f [^_]')
+        self.kernel_manager.kernel.shell.push({'varsi': varsi})
         self._execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
 
-        setup_languages( self._execute, tool.language )
-        
+        setup_languages(self._execute, tool.language)
+
         msg_id = self._execute(tool.code)
-        self._cell_execute_ids[ msg_id ] = (tool.code, 1, 100) # Store cell and progress        
+        self._cell_execute_ids[msg_id] = (tool.code, 1, 100)  # Store cell and progress
         self._final_msg_id = self._execute(r'''pathomx_notebook_stop(vars());''')
 
     def run_completed(self, error=False, traceback=None):
-        logging.info("Notebook run took %s" % ( datetime.now() - self._execute_start ) )
+        logging.info("Notebook run took %s" % (datetime.now() - self._execute_start))
         result = {}
         if error:
             result['status'] = -1
@@ -272,7 +273,7 @@ pathomx_notebook_start(varsi, vars());''')
             # Apply unhandled results
             for msg in self._result_queue:
                 self._handle_execute_result(msg)
-        
+
             result['status'] = 0
             # Return input; temp
             result['varso'] = self.kernel_manager.kernel.shell.user_ns['varso']
@@ -280,7 +281,6 @@ pathomx_notebook_start(varsi, vars());''')
         self.is_active = False
         if self._result_callback:
             self._result_callback(result)
-    
 
     def _execute(self, source):
         """ Execute 'source'. If 'hidden', do not show any output.
@@ -304,27 +304,26 @@ pathomx_notebook_start(varsi, vars());''')
             else:
                 self.clear_output()
 
-
     def _handle_execute_reply(self, msg):
         """ Handles replies for code execution.
         """
         logging.debug("execute: %s", msg.get('content', ''))
         msg_id = msg['parent_header']['msg_id']
-        
+
         if msg_id == self._final_msg_id:
             return self.run_completed()
-            
+
         if msg_id not in self._cell_execute_ids:
             return
-        
+
         (self._current_cell, n, pc) = self._cell_execute_ids[msg_id]
 
-        logging.info("Execute cell %d complete in %s" % (n, datetime.now() - self._execute_start) )
-        
+        logging.info("Execute cell %d complete in %s" % (n, datetime.now() - self._execute_start))
+
         #self.progress.emit( pc )
         if self._progress_callback:
-            self._progress_callback( pc )
-    
+            self._progress_callback(pc)
+
         info = self._request_info['execute'].get(msg_id)
         # unset reading flag, because if execute finished, raw_input can't
         # still be pending.
@@ -352,7 +351,7 @@ pathomx_notebook_start(varsi, vars());''')
             self._request_info['execute'].pop(msg_id)
         else:
             super(FrontendWidget, self)._handle_execute_reply(msg)
-    
+
     def _process_execute_abort(self, msg):
         """ Process a reply for an aborted execution request.
         """
@@ -365,14 +364,14 @@ pathomx_notebook_start(varsi, vars());''')
         # If a SystemExit is passed along, this means exit() was called - also
         # all the ipython %exit magic syntax of '-k' to be used to keep
         # the kernel running
-        if content['ename']=='SystemExit':
-            keepkernel = content['evalue']=='-k' or content['evalue']=='True'
+        if content['ename'] == 'SystemExit':
+            keepkernel = content['evalue'] == '-k' or content['evalue'] == 'True'
             self._keep_kernel_on_exit = keepkernel
             self.exit_requested.emit(self)
         else:
             traceback = '\n'.join(content['traceback'])
             self.run_completed(error=True, traceback=traceback)
-            
+
     def _process_execute_ok(self, msg):
         """ Process a reply for a successful execution request.
         """
@@ -383,7 +382,7 @@ pathomx_notebook_start(varsi, vars());''')
         """
         logging.warn("kernel died")
         self.reset()
-        
+
     def _handle_kernel_info_reply(self, *args, **kwargs):
         pass
 
@@ -403,10 +402,10 @@ pathomx_notebook_start(varsi, vars());''')
         if not self._hidden and self._is_from_this_session(msg):
             msg_id = msg['parent_header']['msg_id']
 
-            if msg_id not in self._cell_execute_ids: # Only on the in-process kernel can this happen
+            if msg_id not in self._cell_execute_ids:  # Only on the in-process kernel can this happen
                 self._result_queue.append(msg)
                 return
-                 
+
             (cell, n, pc) = self._cell_execute_ids[msg_id]
 
             #out = NotebookNode(output_type='display_data')
@@ -415,9 +414,8 @@ pathomx_notebook_start(varsi, vars());''')
                     attr = self.MIME_MAP[mime]
                 except KeyError:
                     raise NotImplementedError('unhandled mime type: %s' % mime)
+                #setattr(out, attr, data)
 
-                #setattr(out, attr, data)            
-            
             #cell['outputs'].append(out)
 
     def _handle_stream(self, msg):
@@ -454,7 +452,6 @@ pathomx_notebook_start(varsi, vars());''')
             pass
         elif state == 'busy':
             pass
-
     #---------------------------------------------------------------------------
     # 'FrontendWidget' public interface
     #---------------------------------------------------------------------------
@@ -489,13 +486,12 @@ class RunManager(QObject):
 
     start = pyqtSignal()
     is_parallel = False
-    
+
     # Store metadata about tools' last run for variable passing etc.
     run_metadata = {}
-    
-    
+
     def __init__(self):
-        super(RunManager, self).__init__() 
+        super(RunManager, self).__init__()
 
         self.runners = []
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
@@ -511,24 +507,23 @@ class RunManager(QObject):
         # We take a copy of the notebook, so changes aren't applied back to the source
         # ensuring each run starts with blank slate
         self.jobs.append((tool, varsi, progress_callback, result_callback))
-        self.start.emit() # Auto-start on every add job
+        self.start.emit()  # Auto-start on every add job
 
     @property
     def no_of_kernels(self):
         return len(self.runners)
-        
+
     @property
     def no_of_active_kernels(self):
         return sum([1 if k.is_active else 0 for k in self.runners])
-
 
     def run(self):
         # Check for jobs
         if not self.jobs:
             return False
-            
+
         logging.info('Currently %d jobs remaining' % len(self.jobs))
-        
+
         # We have job, get it
         tool, varsi, progress_callback, result_callback = self.jobs.pop(0)  # Remove from the beginning
 
@@ -538,37 +533,37 @@ class RunManager(QObject):
         # - which source(s) have the largest data size
         for runner in self.runners:
             if not runner.is_active:
-                # That'll do for now    
+                # That'll do for now
                 break
         else:
             self.jobs.insert(0, (tool, varsi, progress_callback, result_callback))
             return False
-        
+
         varsi['_pathomx_expected_output_vars'] = tool.data.o.keys()
-        
+
         # Build the IO magic
         # - if the source did not run on the current runner we'll need to push the data over
-        io = {'input':{},'output':{},}
+        io = {'input': {}, 'output': {}, }
         for i, sm in tool.data.i.items():
             if sm:
                 mo, mi = sm
                 io['input'][i] = "_%s_%s" % (mi, id(mo.v))
-                
+
                 # Check if the last run of this occurred on the selected runner
                 if id(mo.v) in self.run_metadata and \
-                    self.run_metadata[ id(mo.v) ]['last_runner'] != id(runner):
+                    self.run_metadata[id(mo.v)]['last_runner'] != id(runner):
 
                     # We need to push the actual data; this should do it?
                     varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
             else:
                 io['input'][i] = None
-            
+
         for o in tool.data.o.keys():
             io['output'][o] = "_%s_%s" % (o, id(tool))
 
         varsi['_io'] = io
 
-        self.run_metadata[ id(tool) ] = {
+        self.run_metadata[id(tool)] = {
             'last_runner': id(runner)
         }
 
@@ -579,13 +574,13 @@ class RunManager(QObject):
 
     def restart(self):
         self.runner.restart_kernel('Restarting...', now=True)
-        
+
     def interrupt(self):
         self.runner.interrupt_kernel()
-        
+
     def create_runners(self):
         # First try with ipcluster; fall back to inprocess if not available
-        
+
         try:
             self.client = Client(timeout=1)
         except:
@@ -603,25 +598,24 @@ class RunManager(QObject):
                 e = self.client[id]
                 runner = ClusterRunner(e)
                 self.runners.append(runner)
-            
+
         else:
             self.is_parallel = False
             runner = InProcessRunner()
-            runner.kernel_client.execute('%reset -f') 
+            runner.kernel_client.execute('%reset -f')
             runner.kernel_client.execute('%matplotlib inline')
             self.runners.append(runner)
-            
+
     def create_user_kernel(self):
         if self.is_parallel:
             # Create an in-process user kernel to provide dynamic access to variables
             self.user_kernel_manager = KernelManager()
             self.user_kernel_manager.start_kernel()
             self.user_kernel_client = self.user_kernel_manager.client()
-            self.user_kernel_client.start_channels()    
+            self.user_kernel_client.start_channels()
             # self.user_kernel_client.execute('%matplotlib inline')
-            
+
         else:
             # Create an in-process user kernel to provide dynamic access to variables
             self.user_kernel_manager = self.runners[0].kernel_manager
             self.user_kernel_client = self.runners[0].kernel_client
-    

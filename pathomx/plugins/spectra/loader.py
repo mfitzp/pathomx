@@ -57,7 +57,7 @@ class SpectraNormApp(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
@@ -163,7 +163,7 @@ class PeakAdjApp(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
@@ -244,7 +244,7 @@ class PeakPickingApp(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
@@ -305,7 +305,7 @@ class BinningApp(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
@@ -456,7 +456,7 @@ class BaselineCorrectionTool(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
@@ -481,8 +481,6 @@ class BaselineCorrectionTool(ui.IPythonApp):
         self.addConfigPanel(BaselineCorrectionConfigPanel, 'Settings')
 
 
-
-
 # Dialog box for spectra exclusion options
 class SpectraExclusionConfigPanel(ui.ConfigPanel):
 
@@ -493,8 +491,8 @@ class SpectraExclusionConfigPanel(ui.ConfigPanel):
 
 
         for n in range(4):
-            i = n+1
-            
+            i = n + 1
+
             vw = QGridLayout()
 
             excl_spin_start = QDoubleSpinBox()
@@ -509,7 +507,6 @@ class SpectraExclusionConfigPanel(ui.ConfigPanel):
 
             excl_enable = QCheckBox()
             self.config.add_handler('exclude_%d' % i, excl_enable)
-
 
             tl = QLabel('Active')
             vw.addWidget(tl, 0, 0)
@@ -528,7 +525,6 @@ class SpectraExclusionConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-
 class SpectraExclusionTool(ui.IPythonApp):
 
     name = "Spectra Exclusion"
@@ -545,36 +541,35 @@ class SpectraExclusionTool(ui.IPythonApp):
         # Setup data consumer options
         self.data.consumer_defs.append(
             PandasDataDefinition('input_data', {
-                'shape':['>0','>0']
+                'shape': ['>0', '>0']
             })
         )
 
         # Define default settings for pathway rendering
         self.config.set_defaults({
-            'exclude_1':True,
+            'exclude_1': True,
             'exclude_1_start': -2,
             'exclude_1_end': 0.2,
 
-            'exclude_2':True,
+            'exclude_2': True,
             'exclude_2_start': 4.5,
             'exclude_2_end': 5,
 
-            'exclude_3':True,
+            'exclude_3': True,
             'exclude_3_start': 10,
             'exclude_3_end': 12,
 
-            'exclude_4':False,
+            'exclude_4': False,
             'exclude_4_start': 0,
             'exclude_4_end': 0,
 
-            'exclude_5':False,
+            'exclude_5': False,
             'exclude_5_start': 0,
             'exclude_5_end': 0,
 
         })
 
         self.addConfigPanel(SpectraExclusionConfigPanel, 'Settings')
-
 
 
 class Spectra(ProcessingPlugin):

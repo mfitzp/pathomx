@@ -210,7 +210,6 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
     name = "Align NMR spectra (TMSP)"
     notebook = "nmrlab_tmsp_align.ipynb"
     shortname = 'nmrlab_tmsp_align'
-    
     # function [mat_out,shift] = spcalign_tmsp(mat_in, refspc, maxshift, ref, SILENT)
     # spcalign_tmsp - Align spectra using TMSP signal, data must be in columns of mat_in
     #            refspc:   no of reference spectrum in matrix
@@ -289,7 +288,6 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
     name = "Align NMR spectra (whole)"
     notebook = "nmrlab_spectra_align.ipynb"
     shortname = 'nmrlab_spectra_align'
-    
     # function [mat_out,shift] = spcalign(mat_in, refspc, maxshift, alg, SILENT)
     # spcalign - Align spectra, data must be in columns of mat_in
     #            refspc:   no of reference spectrum in matrix
@@ -377,7 +375,6 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
     name = "Variance stabilisation"
     notebook = "nmrlab_variance_stabilisation.ipynb"
     shortname = 'nmrlab_variance_stabilisation'
-
     # function mat_out = glogtrans(mat_in,lambda,y0)
     # glogtrans - Modified log-transform with lambda scaling for high values
     #             and a y0 shift to reduce scaling in the noise region of signals.
@@ -449,7 +446,6 @@ class BinningMetabolabTool(NMRLabMetabolabTool):
     name = "Bucket spectra"
     notebook = "nmrlab_bucket_spectra.ipynb"
     shortname = 'nmrlab_bucket_spectra'
-    
     # function mat_out=spcbucket(mat_in,bucketsize)
     # spcbucket - spectra binning for NMRLab
 
