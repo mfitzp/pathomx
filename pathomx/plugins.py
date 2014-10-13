@@ -216,6 +216,7 @@ class dialogPluginManagement(ui.GenericDialog):
         self.plugins_lw = QListWidget()
         self.plugins_lw.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.plugins_lw.setItemDelegate(pluginListDelegate(self.plugins_lw))
+        self.plugins_lw.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         page = QWidget()
         box = QGridLayout()

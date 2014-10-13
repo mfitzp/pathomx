@@ -50,7 +50,7 @@ class PLSDAConfigPanel(ui.ConfigPanel):
 
 class PLSDATool(ui.AnalysisApp):
 
-    name = "PLSDA"
+    name = "PLS-DA"
     notebook = 'pls_da.ipynb'
     shortname = 'pls_da'
 
