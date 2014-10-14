@@ -231,15 +231,12 @@ class DataManager(QObject):
     def put(self, interface, dso, update_consumers=True):
         if interface in self.o:
 
-            try:
-                self.o[interface] = dso
-                # Update consumers / refresh views
-                #self.o[interface].refresh_interfaces()
-                #self.o[interface].previously_managed_by.append(self)
-                self.notify_watchers(interface)
-                self.output_updated.emit(interface)
-            except:
-                pass
+            self.o[interface] = dso
+            # Update consumers / refresh views
+            #self.o[interface].refresh_interfaces()
+            #self.o[interface].previously_managed_by.append(self)
+            self.notify_watchers(interface)
+            self.output_updated.emit(interface)
 
             return True
 
@@ -296,9 +293,10 @@ class DataManager(QObject):
     def notify_watchers(self, interface):
         for manager in self.watchers[interface]:
             for dest_interface, mi in manager.i.items():
-                m, i = mi
-                if m == self:
-                    manager.source_updated.emit(dest_interface)
+                if mi:
+                    m, i = mi
+                    if m == self:
+                        manager.source_updated.emit(dest_interface)
 
     # Handle consuming of a data object; assignment to internal tables and processing triggers (plus child-triggers if appropriate)
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
@@ -346,7 +344,7 @@ class DataManager(QObject):
     # This is an unchecked consume action; for loading mainly
     def _consume_action(self, source_manager, source_interface, interface):
 
-    # Remove consumed data to update the source watchers
+        # Remove consumed data to update the source watchers
         if interface in self.i:
             self._unconsume(interface)
 

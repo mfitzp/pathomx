@@ -117,8 +117,7 @@ class KernelStatusWidget(QWidget):
         if len(runners) != self.layout.count():
 
             # Clear and re-paint; otherwise get artefacts
-            items = []
-            for i in range(self.layout.count()):
+            while self.layout.count():
                 self.layout.itemAt(0).widget().setParent(None)
 
             for i in range(len(runners)):
@@ -1983,33 +1982,32 @@ class AnalysisApp(IPythonApp):
         class_idx = data.index.names.index('Class')
         classes = list(data.index.levels[class_idx])
 
-        if _control not in classes or _test not in classes:
-            # Block signals so no trigger of update
-            self.configpanels['Experiment'].cb_control.blockSignals(True)
-            self.configpanels['Experiment'].cb_test.blockSignals(True)
-            # Empty the toolbar controls
-            self.configpanels['Experiment'].cb_control.clear()
-            self.configpanels['Experiment'].cb_test.clear()
-            # Data source change; update the experimental control with the data input source
-            self.configpanels['Experiment'].cb_control.addItems(classes)
-            self.configpanels['Experiment'].cb_test.addItem("*")
-            self.configpanels['Experiment'].cb_test.addItems(classes)
-            # Reset to previous values (-if possible)
-            self.configpanels['Experiment'].cb_control.setCurrentIndex(self.configpanels['Experiment'].cb_control.findText(_control))  # PyQt4 compat
-            self.configpanels['Experiment'].cb_test.setCurrentIndex(self.configpanels['Experiment'].cb_test.findText(_test))  # PyQt4 compat
-            # Unblock
-            self.configpanels['Experiment'].cb_control.blockSignals(False)
-            self.configpanels['Experiment'].cb_test.blockSignals(False)
-            # If previously nothing set; now set it to something
-            _control = _control if _control in classes else classes[0]
-            _test = _test if _test in classes else '*'
+        # Block signals so no trigger of update
+        self.configpanels['Experiment'].cb_control.blockSignals(True)
+        self.configpanels['Experiment'].cb_test.blockSignals(True)
+        # Empty the toolbar controls
+        self.configpanels['Experiment'].cb_control.clear()
+        self.configpanels['Experiment'].cb_test.clear()
+        # Data source change; update the experimental control with the data input source
+        self.configpanels['Experiment'].cb_control.addItems(classes)
+        self.configpanels['Experiment'].cb_test.addItem("*")
+        self.configpanels['Experiment'].cb_test.addItems(classes)
+        # Reset to previous values (-if possible)
+        self.configpanels['Experiment'].cb_control.setCurrentIndex(self.configpanels['Experiment'].cb_control.findText(_control))  # PyQt4 compat
+        self.configpanels['Experiment'].cb_test.setCurrentIndex(self.configpanels['Experiment'].cb_test.findText(_test))  # PyQt4 compat
+        # Unblock
+        self.configpanels['Experiment'].cb_control.blockSignals(False)
+        self.configpanels['Experiment'].cb_test.blockSignals(False)
+        # If previously nothing set; now set it to something
+        _control = _control if _control in classes else classes[0]
+        _test = _test if _test in classes else '*'
 
-            is_updated = self.config.set_many({
-                'experiment_control': _control,
-                'experiment_test': _test,
-            }, trigger_update=False)
+        is_updated = self.config.set_many({
+            'experiment_control': _control,
+            'experiment_test': _test,
+        }, trigger_update=False)
 
-            self.logger.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
+        self.logger.debug('Update experiment toolbar for %s, %s' % (self.name, is_updated))
 
     def onDataChanged(self):
         self.repopulate_experiment_classes()

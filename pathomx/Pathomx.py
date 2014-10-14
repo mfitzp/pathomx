@@ -683,7 +683,7 @@ class MainWindow(QMainWindow):
     def updateProgressBar(self):
         self.kernelStatus.update(notebook_queue)
         #self.threadCount.setText('%d' % (notebook_queue.no_of_active_runners, notebook_queue.no_of_runners))
-        self.jobQueue.setText('%d/%d' % (notebook_queue.no_of_active_kernels, notebook_queue.no_of_kernels))
+        self.jobQueue.setText('%d' % len(notebook_queue.jobs))
 
     def onDoRegister(self):
         # Pop-up a registration window; take an email address and submit to
