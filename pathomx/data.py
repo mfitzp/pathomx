@@ -499,7 +499,37 @@ class PandasDataDefinition(NumpyArrayDataDefinition):
 
     def check(self, o):
         return self._check_instance(o) and \
-               self._check_dimensionality(o)
+            self._check_dimensionality(o) and \
+            self._check_columns(o) and \
+            self._check_index(o)
+
+    def _check_columns(self, o):
+        if 'columns' not in self.definition:
+            logging.debug("  not checking columns")
+            return True
+
+        vl = []
+        for m in self.definition['columns']:
+            if not isinstance(m, tuple):
+                m = (m, )
+            for i in m:
+                vl.append(i in o.columns.names)
+
+        return all(vl)
+
+    def _check_index(self, o):
+        if 'index' not in self.definition:
+            logging.debug("  not checking index")
+            return True
+
+        vl = []
+        for m in self.definition['index']:
+            if not isinstance(m, tuple):
+                m = (m, )
+            for i in m:
+                vl.append( m in o.columns.names )
+
+        return all(vl)
 
     def _check_instance(self, o):
         logging.debug("  check instance")

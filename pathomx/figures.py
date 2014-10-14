@@ -502,7 +502,7 @@ def heatmap(data, figure=None, ax=None, styles=None):
     datav = np.float64(data.values.T)
     log2data = np.log2(datav)
 
-    ax.imshow(log2data, interpolation='none', aspect='auto', cmap=cm.RdBu_r)  #vmin=-ylim, vmax=+ylim, )
+    ax.imshow(log2data, interpolation='none', aspect='auto', cmap=cm.RdBu_r)  # vmin=-ylim, vmax=+ylim, )
     # turn off the frame
     ax.set_frame_on(False)
 

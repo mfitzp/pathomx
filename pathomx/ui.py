@@ -36,8 +36,7 @@ from matplotlib import rcParams
 
 import logging
 
-import IPython
-ipython_css = os.path.join(os.path.dirname(os.path.realpath(IPython.__file__)), 'html', 'static', 'style', 'style.min.css')
+css = os.path.join(utils.scriptdir, 'html', 'css', 'style.css')
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
 from IPython.core import display
@@ -398,7 +397,7 @@ class DialogAbout(QDialog):
             md = f.read()
 
         html = '''<html>
-<head><title>About</title><link rel="stylesheet" href="{ipython_css}"></head>
+<head><title>About</title><link rel="stylesheet" href="{css}"></head>
 <body>
 <div class="container" id="notebook-container">
 <div class="cell border-box-sizing text_cell rendered">
@@ -409,7 +408,7 @@ class DialogAbout(QDialog):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css': 'file://' + ipython_css, 'html': markdown2html_mistune(md)})
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'css': 'file://' + css, 'html': markdown2html_mistune(md)})
 
         self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
@@ -1441,7 +1440,7 @@ class GenericApp(QObject):
         self.load_source()
 
         html = '''<html>
-<head><title>About</title><link rel="stylesheet" href="{ipython_css}"></head>
+<head><title>About</title><link rel="stylesheet" href="{css}"></head>
 <body>
 <div class="container" id="notebook-container">
 <div class="cell border-box-sizing text_cell rendered">
@@ -1452,7 +1451,7 @@ class GenericApp(QObject):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'ipython_css': 'file://' + ipython_css, 'html': markdown2html_mistune(self.notes)})
+        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'css': 'file://' + css, 'html': markdown2html_mistune(self.notes)})
 
         self.notes_viewer.setHtml(unicode(html))
 

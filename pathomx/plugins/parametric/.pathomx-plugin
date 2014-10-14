@@ -1,9 +1,9 @@
 [Core]
-Name = Hierarchical cluster analysis
+Name = Parametric tests
 Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Hierarchical cluster analysis tool with dendrogram output
+Description = Parametric statistical tests

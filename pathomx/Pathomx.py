@@ -165,16 +165,12 @@ class MainWindow(QMainWindow):
             logging.info('Done')
 
         # Do version upgrade availability check
-        # FIXME: Do check here; if not done > 2 weeks
+        # FIXME: Do check for new download here; if not done > 2 weeks
         if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(__version__):
             # We've got an upgrade
             logging.warning('A new version (v%s) is available' % settings.get('Pathomx/Update/Latest_version'))
 
         self.fonts = QFontDatabase()
-
-        self.datasets = []  # List of instances of data.datasets() // No data loaded by default
-
-        self.layout = None  # No map by default
 
         self.url_handlers = defaultdict(list)
         self.app_launcher_categories = defaultdict(list)
@@ -717,8 +713,8 @@ class MainWindow(QMainWindow):
             t.views.style_updated.emit()
 
     def onBrowserNav(self, url):
-        # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar interface
-        # then block the continued loading
+        # Interpret internal URLs for message passing to display Compound, Reaction, Pathway data in the sidebar
+        # interface then block the continued loading
         if url.isRelative() and url.hasFragment():
             # Local #url; pass to default handler
             pass
@@ -726,15 +722,8 @@ class MainWindow(QMainWindow):
         if url.scheme() == 'pathomx':
             # Take string from pathomx:// onwards, split on /
             app = url.host()
-            if app == 'app-manager':
-                app, action = url.path().strip('/').split('/')
-                if action == 'add':
-                    app_launchers[app]()
 
-                # Update workspace viewer
-                self.workspace_updated.emit()  # Notify change to workspace layout
-
-            elif app == 'db':
+            if app == 'db':
                 kind, id, action = url.path().strip('/').split('/')
                             # View an object
                 if action == 'view':
@@ -836,18 +825,21 @@ class MainWindow(QMainWindow):
 
     def onOpenDemoWorkflow(self, fn):
         reply = QMessageBox.question(self, "Open demo workflow", "Are you sure you want to open the demo workflow? Your current workflow will be lost.",
-                            QMessageBox.Yes | QMessageBox.No)
+                                     QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.openWorkflow(fn)
 
     ### RESET WORKSPACE
     def onClearWorkspace(self):
         reply = QMessageBox.question(self, "Clear Workspace", "Are you sure you want to clear the workspace? Everything will be deleted.",
-                            QMessageBox.Yes | QMessageBox.No)
+                                     QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.clearWorkspace()
 
     def clearWorkspace(self):
+
+        global current_tools, current_tools_by_id, current_datasets
+
         for t in current_tools[:]:
             try:
                 t.deleteLater()
@@ -861,8 +853,10 @@ class MainWindow(QMainWindow):
             except:
                 self.editor.removeItem(i)
 
-        # Remove all workspace datasets
-        del self.datasets[:]
+        # Really wipe everything
+        current_tools = []
+        current_tools_by_id = {}
+        current_datasets = []
 
         # Completely wipe the scene
         self.editView.resetScene()
@@ -1129,6 +1123,7 @@ class MainWindow(QMainWindow):
     #
     #    else:
     #        return super(QApplicationExtend, self).event(e)
+
 
 def main():
 

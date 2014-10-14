@@ -18,13 +18,12 @@ from . import utils
 # Pathomx global variables
 current_tools = []
 current_tools_by_id = {}
-
-available_tools_by_category = defaultdict(list)
+current_datasets = []
 
 plugin_categories = ["Import", "Processing", "Filter", "Identification", "Analysis", "Visualisation", "Export", "Scripting"]
-
 installed_plugin_names = {}
-current_datasets = []
+available_tools_by_category = defaultdict(list)
+
 app_launchers = {}
 file_handlers = {}
 url_handlers = defaultdict(list)

@@ -4,7 +4,6 @@ import sys
 import errno
 import csv
 import codecs
-import logging
 
 try:
     from cStringIO import StringIO

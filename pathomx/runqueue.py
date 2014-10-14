@@ -10,11 +10,9 @@ from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 from IPython.parallel import Client, TimeoutError, RemoteError
 
-from copy import deepcopy
 from datetime import datetime
 import re
-import traceback
-import random
+
 
 # Kernel is busy but not because of us
 STATUS_BLOCKED = -1
@@ -24,6 +22,10 @@ STATUS_READY = 0
 STATUS_RUNNING = 1
 STATUS_COMPLETE = 2
 STATUS_ERROR = 3
+
+# from pkg_resources import load_entry_point
+# load_entry_point('ipython==3.0.0-dev', 'console_scripts', 'ipcluster')()
+# IPython.parallel.apps.ipclusterapp:launch_new_instance'
 
 
 # FIXME; we need to base-class the runner code
@@ -38,10 +40,10 @@ def setup_languages(execute, language):
 
 
 class ClusterRunner(QObject):
-    '''
+    """
     A runner object that handles running IPython code on an IPython cluster for 
     parallel processing without blocking the UI.
-    '''
+    """
     pass
 
     def __init__(self, e, *args, **kwargs):
@@ -207,8 +209,9 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         # FrontendWidget protected variables.
         self._kernel_manager = None
         self._kernel_client = None
-        self._request_info = {}
-        self._request_info['execute'] = {}
+        self._request_info = {
+            'execute': {}
+        }
         
         self._callback_dict = {}
 
@@ -592,7 +595,8 @@ class RunManager(QObject):
         if no_of_kernels > 0:
             self.is_parallel = True
             self.client[:].execute('%reset')
-            #FIXME: We can't use inline plots until the pickling is fixed https://github.com/matplotlib/matplotlib/issues/3614
+            # FIXME: Inline plots are fine as long as we don't do it on the cluster+the interactive kernel; this results
+            # in an image cache being generated that breaks the pickle
             self.client[:].execute('%matplotlib inline')
             for id in range(no_of_kernels):
                 e = self.client[id]
