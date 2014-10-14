@@ -1,5 +1,6 @@
 from pathomx.displayobjects import Html
 import scipy as sp
+from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
 
