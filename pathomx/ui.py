@@ -112,16 +112,21 @@ class KernelStatusWidget(QWidget):
 
     def update(self, runmanager):
         runners = runmanager.runners
+
         # Ensure we've got enough items
-        if len(runners) > self.layout.count():
-            for i in range(self.layout.count(), len(runners)):
+        if len(runners) != self.layout.count():
+
+            # Clear and re-paint; otherwise get artefacts
+            items = []
+            for i in range(self.layout.count()):
+                self.layout.itemAt(0).widget().setParent(None)
+
+            for i in range(len(runners)):
                 w = QWidget()
                 w.setMinimumSize(QSize(10, 10))
                 w.setAutoFillBackground(True)
                 self.layout.addWidget(w)
-        elif len(runners) < self.layout.count():
-            for i in range(len(runners), self.layout.count()):
-                self.layout.takeAt(i)
+
 
         for i, k in enumerate(runners):
             w = self.layout.itemAt(i).widget()
@@ -139,6 +144,7 @@ class KernelStatusWidget(QWidget):
                 p.setColor(w.backgroundRole(), QColor(0, 255, 0, 63))
 
             w.setPalette(p)
+
 
     def sizeHint(self):
         return QSize(self.layout.count() * 10, 10)
@@ -1565,7 +1571,7 @@ class GenericApp(QObject):
             #                             will be fixed by setting status through downstream network once proper queue in effect
 
         # Set into the workspace of user kernel
-        notebook_queue.user_kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
+        notebook_queue.in_process_runner.kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)

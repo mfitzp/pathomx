@@ -1,5 +1,6 @@
 import logging
 
+
 from collections import namedtuple
 
 from .qt import *
@@ -12,6 +13,10 @@ from IPython.parallel import Client, TimeoutError, RemoteError
 
 from datetime import datetime
 import re
+
+import os, sys
+from subprocess import Popen
+from IPython.parallel.apps import ipclusterapp
 
 
 # Kernel is busy but not because of us
@@ -501,10 +506,20 @@ class RunManager(QObject):
 
         self.start.connect(self.run)
 
+        self.p = None
+        self.client = None
+
+    def __del__(self):
+        self.terminate_cluster()
+
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
         self._run_timer.start(1000)  # Auto-check for pending jobs every 1 second; this shouldn't be needed but some jobs get stuck(?)
+
+        self._cluster_timer = QTimer()
+        self._cluster_timer.timeout.connect(self.create_runners)
+        self._cluster_timer.start(5000)  # Re-check runners every 5 seconds
 
     def add_job(self, tool, varsi, progress_callback=None, result_callback=None):
         # We take a copy of the notebook, so changes aren't applied back to the source
@@ -576,50 +591,75 @@ class RunManager(QObject):
         runner.run(tool, varsi, progress_callback=progress_callback, result_callback=result_callback)
 
     def restart(self):
-        self.runner.restart_kernel('Restarting...', now=True)
+        self.stop_cluster()
 
     def interrupt(self):
         self.runner.interrupt_kernel()
 
+        
+    def start_cluster(self):
+        # Start IPython ipcluster with 4 engines
+        self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'])
+        
+    def stop_cluster(self):
+        # Stop the ipcluster
+        Popen([sys.executable, ipclusterapp.__file__, 'stop'])
+        self.p = None
+        self.client = None
+        self.runners = [self.in_process_runner]
+
+    def terminate_cluster(self):
+        if self.p:
+            self.p.terminate()
+            self.stop_cluster()  # Clearup
+
     def create_runners(self):
-        # First try with ipcluster; fall back to inprocess if not available
+        # Check the status of runners and the cluster process
+        # If cluster process dead (non-None return to p.poll)
+        # kill and re-start (add config for this?) and then
+        # create an in-process kernel and pop it on the queue
+        # to keep things ticking
 
-        try:
-            self.client = Client(timeout=1)
-        except:
-            self.client = None
-            no_of_kernels = 0
+        if self.p is None:
+            # Use the in-process runner for now
+            self.runners = [self.in_process_runner]
+            self.start_cluster()
+
+        elif self.p.poll() is None:
+            # Create matching runners for the client
+            # note that these may already exist; we need to check
+            if self.client is None:
+                self.client = Client(timeout=5)
+                # FIXME: Inline plots are fine as long as we don't do it on the cluster+the interactive kernel; this results
+                # in an image cache being generated that breaks the pickle
+
+            for e in self.client:
+                found = False
+                for r in self.runners:
+                    if r is not self.in_process_runner and e.targets == r.e.targets:
+                        found = True
+
+                if not found:
+                    runner = ClusterRunner(e)
+                    runner.e.execute('%reset -f')
+                    runner.e.execute('%matplotlib inline')
+                    self.runners.append(runner)
+
+            if len(self.runners) > 1:
+                # We've got a running cluster
+                # remove the in-process kernel from the queue
+                if self.in_process_runner in self.runners:
+                    self.runners.remove( self.in_process_runner )
+
         else:
-            no_of_kernels = len(self.client.ids)
+            # We've got a -value for poll; it's terminated this will trigger restart on next poll
+            self.stop_cluster()
 
-        if no_of_kernels > 0:
-            self.is_parallel = True
-            self.client[:].execute('%reset')
-            # FIXME: Inline plots are fine as long as we don't do it on the cluster+the interactive kernel; this results
-            # in an image cache being generated that breaks the pickle
-            self.client[:].execute('%matplotlib inline')
-            for id in range(no_of_kernels):
-                e = self.client[id]
-                runner = ClusterRunner(e)
-                self.runners.append(runner)
 
-        else:
-            self.is_parallel = False
-            runner = InProcessRunner()
-            runner.kernel_client.execute('%reset -f')
-            runner.kernel_client.execute('%matplotlib inline')
-            self.runners.append(runner)
 
     def create_user_kernel(self):
-        if self.is_parallel:
-            # Create an in-process user kernel to provide dynamic access to variables
-            self.user_kernel_manager = KernelManager()
-            self.user_kernel_manager.start_kernel()
-            self.user_kernel_client = self.user_kernel_manager.client()
-            self.user_kernel_client.start_channels()
-            # self.user_kernel_client.execute('%matplotlib inline')
-
-        else:
-            # Create an in-process user kernel to provide dynamic access to variables
-            self.user_kernel_manager = self.runners[0].kernel_manager
-            self.user_kernel_client = self.runners[0].kernel_client
+        # Create an in-process user kernel to provide dynamic access to variables
+         # Start an in-process runner for the time being
+        self.in_process_runner = InProcessRunner()
+        self.in_process_runner.kernel_client.execute('%reset -f')
+        #self.in_process_runner.kernel_client.execute('%matplotlib inline')

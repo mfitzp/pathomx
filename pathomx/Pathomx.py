@@ -25,7 +25,7 @@ if sys.version_info < (3, 0) and ON_RTD == False:  # Python 2 only
 
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.inprocess import QtInProcessKernelManager as KernelManager
+
 
 from collections import defaultdict
 
@@ -400,8 +400,8 @@ class MainWindow(QMainWindow):
         # IPython Widget for internal (user) console
         self.console = RichIPythonWidget()
         self.console._call_tip = lambda: None
-        self.console.kernel_manager = notebook_queue.user_kernel_manager
-        self.console.kernel_client = notebook_queue.user_kernel_client
+        self.console.kernel_manager = notebook_queue.in_process_runner.kernel_manager
+        self.console.kernel_client = notebook_queue.in_process_runner.kernel_client
 
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
@@ -529,8 +529,8 @@ class MainWindow(QMainWindow):
         export_reportAction.triggered.connect(self.onExportReport)
         #t.addAction(export_reportAction)
 
-        interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Interrupt kernels…', self)
-        interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing')
+        interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart cluster…', self)
+        interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing and restart cluster')
         interrupt_kernelsAction.triggered.connect(self.onInterruptKernels)
         t.addAction(interrupt_kernelsAction)
 
@@ -1107,7 +1107,7 @@ class MainWindow(QMainWindow):
         }))
 
     def onInterruptKernels(self):
-        notebook_queue.interrupt()
+        notebook_queue.restart()
 
 #class QApplicationExtend(QApplication):
     #def event(self, e):
@@ -1150,11 +1150,13 @@ def main():
     app.installTranslator(translator_mp)
 
     # We've got a qApp instance going, set up timers
-    notebook_queue.create_runners()
     notebook_queue.create_user_kernel()
+    notebook_queue.create_runners()
     notebook_queue.start_timers()
 
     MainWindow()
     logging.info('Ready.')
     app.exec_()  # Enter Qt application main loop
+
+    notebook_queue.terminate_cluster()
     logging.info('Exiting.')
