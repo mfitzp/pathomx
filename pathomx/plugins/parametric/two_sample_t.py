@@ -27,14 +27,13 @@ else:
 
 if config['plot_distribution']:
     bins = bins = np.linspace(min( np.min(a.values), np.min(b.values) ), max( np.max(a.values), np.max(b.values) ), 10)
-    print bins
     # Plot a histogram distribution for the source data (both)
     Distribution = plt.figure()
     ax = Distribution.add_subplot(1,1,1)
     ax.hist(a.values, bins, facecolor=styles.get_style_for_class(config['experiment_control']).color, alpha=0.75, label=config['experiment_control'])
     ax.hist(b.values, bins, facecolor=styles.get_style_for_class(config['experiment_test']).color, alpha=0.75, label=config['experiment_test'])
 
-ax.legend(loc='upper right')
+    ax.legend(loc='upper right')
 
 Result = Html('''
 <table>

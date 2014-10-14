@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm -r ./dist/
+rm -r ../pathomx/dist/
 #python setup.installers.py bdist_mac --qt-menu-nib=/usr/local/Cellar/qt5/5.2.1/plugins/platforms/
 python setup.mac.py py2app
 
