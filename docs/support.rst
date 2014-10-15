@@ -7,8 +7,8 @@ can be improved, there are a number of ways you can get help.
 BioStars & MetaStars
 ====================
 
-Support is available on the `BioStars <http://biostars.org>`_ and `MetaStars <http://metastars.org>`_ Q&A
-sites. Post your question using the `pathomx` tag and it will be answered.
+Support is available on the `BioStars <http://biostars.org>`_ (bioinformatics) and `MetaStars <http://metastars.org>`_ (metabolomics)
+Q&A sites. Post your question using the `pathomx` tag and it will be answered.
 
 Mailing list
 ============
