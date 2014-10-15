@@ -615,7 +615,7 @@ class RunManager(QObject):
     def terminate_cluster(self):
         if self.p:
             self.p.terminate()
-            self.stop_cluster()  # Clearup
+            self.p = None
 
     def create_runners(self):
         # Check the status of runners and the cluster process
