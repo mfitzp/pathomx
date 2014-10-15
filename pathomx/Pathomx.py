@@ -242,7 +242,6 @@ class MainWindow(QMainWindow):
         export_reportAction.triggered.connect(self.onExportReport)
         #self.menuBars['file'].addAction(export_reportAction)
 
-
         #printAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'printer.png')), tr('&Print…'), self)
         #printAction.setShortcut('Ctrl+P')
         #printAction.setStatusTip(tr('Print current figure'))
@@ -584,7 +583,7 @@ class MainWindow(QMainWindow):
         self.editor.config.add_handler('mode', editormodeag)
 
     def addEditStyleToolBar(self):
-    # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
+        # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
 
         t = self.addToolBar('Style')
         t.setIconSize(QSize(16, 16))
