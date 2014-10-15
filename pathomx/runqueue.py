@@ -604,7 +604,10 @@ class RunManager(QObject):
         
     def stop_cluster(self):
         # Stop the ipcluster
-        Popen([sys.executable, ipclusterapp.__file__, 'stop'])
+        p = Popen([sys.executable, ipclusterapp.__file__, 'stop'])
+        while p.poll() is None:  # Wait for the above to exit
+            pass
+
         self.p = None
         self.client = None
         self.runners = [self.in_process_runner]

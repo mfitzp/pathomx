@@ -2,24 +2,12 @@
 from __future__ import unicode_literals
 
 from pathomx.plugins import AnalysisPlugin
-
-from collections import defaultdict
-import os
-import time
-from copy import copy
-
 from itertools import combinations
-
-import numpy as np
-import scipy as sp
 import pandas as pd
 
 import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
 
 from pathomx.data import DataDefinition
-from pathomx.views import MplScatterView, MplSpectraView
 from pathomx.qt import *
 
 

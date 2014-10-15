@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
-
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-
 import pathomx.ui as ui
-import pathomx.db as db
-
-import pathomx.utils as utils
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
-from pathomx.views import MplSpectraView, IPyMplView
 
 
 class TransformApp(ui.GenericTool):

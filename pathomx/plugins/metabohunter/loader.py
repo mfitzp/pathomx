@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
-import re
-import math
-import logging
 
 import pathomx.ui as ui
-import pathomx.utils as utils
 
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataDefinition
-from pathomx.views import MplSpectraView
 from pathomx.qt import *
-
-from collections import OrderedDict
-import csv
 
 
 # Dialog box for Metabohunter search options

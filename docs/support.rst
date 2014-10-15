@@ -28,7 +28,7 @@ Twitter
 Releases and announcements are available via `@pathomx`_ on `twitter`_.
 
 Email
-=======
+=====
 
 If you would like to get in touch directly, you can email `Martin Fitzpatrick`_ (Lead Developer) directly. 
 Pathomx is currently a spare-time project, please bear with me.

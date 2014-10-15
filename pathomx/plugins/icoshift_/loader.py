@@ -7,12 +7,9 @@ import numpy as np
 #from icoshift import icoshift
 
 import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
-from pathomx.views import MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 
 

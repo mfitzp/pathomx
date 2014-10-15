@@ -1,20 +1,8 @@
 # -*- coding: utf-8 -*-
-from pathomx.qt import *
-import os
-import copy
-
 from pathomx.plugins import ProcessingPlugin
-
-import numpy as np
-import nmrglue as ng
-
 import pathomx.ui as ui
-import pathomx.db as db
-
-import pathomx.utils as utils
 
 from pathomx.data import DataDefinition, PandasDataDefinition
-from pathomx.views import MplSpectraView, MplDifferenceView
 from pathomx.qt import *
 
 
