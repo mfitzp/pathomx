@@ -4,10 +4,16 @@ Support
 If you're having trouble getting Pathomx doing what you want or you have an idea how it
 can be improved, there are a number of ways you can get help.
 
+BioStars & MetaStars
+====================
+
+Support is available on the `BioStars <http://biostars.org>`_ and `MetaStars <http://metastars.org>`_ Q&A
+sites. Post your question using the `pathomx` tag and it will be answered.
+
 Mailing list
 ============
 
-Post a message to the `mailing list`_ (hosted on Google Groups) for support.
+A low-traffic `mailing list`_ is available (hosted on Google Groups) for support and new release announcements.
 
 Bugs, Issues & Suggestions
 ==========================
@@ -25,7 +31,7 @@ Email
 =======
 
 If you would like to get in touch directly, you can email `Martin Fitzpatrick`_ (Lead Developer) directly. 
-Pathomx is a spare-time project and I may take a while to respond if busy elsehwere, please bear with me.
+Pathomx is currently a spare-time project, please bear with me.
 
 
 .. _Github: http://github.com/pathomx/pathomx

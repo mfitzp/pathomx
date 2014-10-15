@@ -25,6 +25,16 @@ else:
     raise Exception('Invalid t-test type.')
 
 
+Result = Html('''
+<table>
+<tr><th>t statistic</th><td>%.4f</td></tr>
+<tr><th>p value</th><td>%.4f</td></tr>
+<tr><th>n</th><td>%d (a), %d (b)</td></tr>
+</table>
+<p>%s</p>
+ ''' % (t, prob, a.shape[0], b.shape[0], description ) )
+
+
 if config['plot_distribution']:
     bins = bins = np.linspace(min( np.min(a.values), np.min(b.values) ), max( np.max(a.values), np.max(b.values) ), 10)
     # Plot a histogram distribution for the source data (both)
@@ -35,14 +45,6 @@ if config['plot_distribution']:
 
     ax.legend(loc='upper right')
 
-Result = Html('''
-<table>
-<tr><th>t statistic</th><td>%.4f</td></tr>
-<tr><th>p value</th><td>%.4f</td></tr>
-<tr><th>n</th><td>%d (a), %d (b)</td></tr>
-</table>
-<p>%s</p>
- ''' % (t, prob, a.shape[0], b.shape[0], description ) )
 
 # Clear up output
 a, b = None, None

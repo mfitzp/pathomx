@@ -1601,7 +1601,7 @@ class GenericApp(QObject):
 
                 result_dict[k] = {'svg': v}
 
-            elif type(v) == displayobjects.Html:
+            elif type(v) == displayobjects.Html or type(v) == displayobjects.Markdown:
                 if self.views.get_type(k) != HTMLView:
                     self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
 

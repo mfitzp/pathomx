@@ -1,6 +1,7 @@
 import os
 from copy import copy
 from . import utils
+from IPython.nbconvert.filters.markdown import markdown2html_mistune
 
 css = os.path.join(utils.scriptdir, 'html', 'css', 'style.css')
 
@@ -45,3 +46,9 @@ class Html(BaseObj):
 </div>
         </body>
         </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'css': 'file://' + css, 'html': html_data})
+
+
+class Markdown(Html):
+
+    def __init__(self, data, **kwargs):
+        super(Markdown, self).__init__( markdown2html_mistune(data) )

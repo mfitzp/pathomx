@@ -111,6 +111,7 @@ pathomx_notebook_start(varsi, vars());''')
         result = {}
 
         if self.ar:
+
             self.stdout = self.ar.stdout
             try:
                 r = self.ar.get(0)

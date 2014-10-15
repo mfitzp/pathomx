@@ -23,7 +23,7 @@ MAGIC_TYPES = [
         Figure, Subplot,
         StylesManager,
         # View types
-        displayobjects.Svg, displayobjects.Html,
+        displayobjects.Svg, displayobjects.Html, displayobjects.Markdown,
         display.SVG
         ]
 

@@ -372,7 +372,7 @@ class WebView(QWebView, BaseView):
 
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+        # self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
 
         self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         #self.loadFinished.connect(self._loadFinished)
@@ -473,7 +473,7 @@ class NotebookView(QWebView, BaseView):
 
         self.page().setContentEditable(False)
         self.page().setLinkDelegationPolicy( QWebPage.DelegateExternalLinks )
-        self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
+        # self.page().settings().setAttribute( QWebSettings.JavascriptEnabled,False)
 
         if notebook:
             self.generate(notebook)
