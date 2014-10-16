@@ -1682,6 +1682,7 @@ class GenericApp(QObject):
 
     def hide(self):
         self.parent().toolDock.setWidget(self.parent().toolbox)
+        self.parent().activetoolDock.setWidget( QWidget() ) # Empty
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
