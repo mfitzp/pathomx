@@ -159,7 +159,6 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
         # Central variable for storing application configuration (load/save from file?
-        settings.set('Pathomx/Is_setup', False)
         if settings.get('Pathomx/Is_setup') == False:
             logging.info("Setting up initial configuration...")
             # Defaults are now set in the globals; but we can auto-create the plugin folder
@@ -172,7 +171,7 @@ class MainWindow(QMainWindow):
 
         # Do version upgrade availability check
         # FIXME: Do check for new download here; if not done > 1 weeks
-        if settings.get('Pathomx/Update/Last_check') < (int(time.time()) - 604800):  # 1 week in seconds
+        if settings.get('Pathomx/Update/Last_checked') < (int(time.time()) - 604800):  # 1 week in seconds
             try:
                 r = requests.get('https://raw.githubusercontent.com/pathomx/pathomx/master/VERSION')
 
@@ -183,7 +182,7 @@ class MainWindow(QMainWindow):
                 if r.status_code == 200:
                     settings.set('Pathomx/Update/Latest_version', r.text)
 
-            settings.set('Pathomx/Update/Last_check', int(time.time()))
+            settings.set('Pathomx/Update/Last_checked', int(time.time()))
 
 
         self.fonts = QFontDatabase()

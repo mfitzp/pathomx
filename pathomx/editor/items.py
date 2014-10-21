@@ -134,9 +134,8 @@ class ToolItem(BaseItem):
     additional visual elements. Treated as a single entity by Scene
     """
 
-    def __init__(self, scene=None, app=None, position=None):
+    def __init__(self, app, position=None):
         super(ToolItem, self).__init__()
-        self.scene = scene
         self.app = app
         app.editorItem = self
         #self.viewertest = ToolViewItem(self, 'View')
@@ -180,6 +179,8 @@ class ToolItem(BaseItem):
         if position:
             self.setPos(position)
 
+        self.app.deleted.connect(self.delete)
+
     @property
     def name(self):
         if self.app:
@@ -188,7 +189,7 @@ class ToolItem(BaseItem):
             return "Untitled"
 
     def centerSelf(self):
-        for v in self.scene.views():
+        for v in self.scene().views():
             v.centerOn(self)
 
     def getName(self):
@@ -209,11 +210,13 @@ class ToolItem(BaseItem):
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
         # (data.manager, data.manager_interface), (self, interface)
 
+
         linker = LinkItem(o, i)  # , o.output.settings[1], i.input.settings[1])
         linker.data = (datao[0], datao[1])  # Get the dso from the interface
         linker.updateLine()
 
-        self.scene.addItem(linker)
+        self.prepareGeometryChange()
+        self.scene().addItem(linker)
 
         o._links.append(linker)
         i._links.append(linker)
@@ -222,14 +225,14 @@ class ToolItem(BaseItem):
 
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
-
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
 
+        self.prepareGeometryChange()
         if datai in self._links:
 
             linker = self._links[datai]
-            self.scene.removeItem(linker)
+            self.scene().removeItem(linker)
 
             linker.source._links.remove(linker)
             linker.sink._links.remove(linker)
@@ -245,7 +248,7 @@ class ToolItem(BaseItem):
     def contextMenuEvent(self, e):
         e.accept()
 
-        o = self.scene.parent()
+        o = self.scene().parent()
         menu = QMenu(o)
 
         run_action = QAction('&Run', o)
@@ -257,7 +260,7 @@ class ToolItem(BaseItem):
         menu.addAction(show_action)
 
         delete_action = QAction('&Delete', o)
-        delete_action.triggered.connect(self.onDelete)
+        delete_action.triggered.connect(self.app.delete)
         menu.addAction(delete_action)
 
         vmenu = menu.addMenu('&Views')
@@ -274,8 +277,9 @@ class ToolItem(BaseItem):
 
         menu.exec_(e.screenPos())
 
-    def onDelete(self):
-        self.app.delete()
+    def delete(self):
+        self.app = None
+        self.scene().removeItem(self)
 
     def onShow(self):
         self.app.show()
@@ -351,10 +355,7 @@ class ToolInterfaceHandler(BaseItem):
         super(ToolInterfaceHandler, self).__init__(parent=parent)
 
         self.app = app
-
-        self.parent = parent
         self.size = QSize(50, 100)
-
         self._links = []
 
         #self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -384,6 +385,16 @@ class ToolInterfaceHandler(BaseItem):
 
         self._linkInProgress = None
 
+    def delete(self):
+        self.prepareGeometryChange()
+        for interface in self.interfaces.keys():
+            self.interface_items[interface].prepareGeometryChange()
+            self.scene().removeItem( self.interface_items[interface] )
+            del self.interface_items[interface]
+
+        self.interfaces = {}
+        self.scene().removeItem(self)
+
     def update_interfaces(self):
 
         x0, y0 = self.setup[3], 44
@@ -394,6 +405,7 @@ class ToolInterfaceHandler(BaseItem):
         angle_increment = 15.
         angle_start = self.setup[0] - (items - 1) * (angle_increment / 2)
 
+        self.prepareGeometryChange()
         for n, interface in enumerate(sorted(self.interfaces.keys())):
             angle = angle_start + (n * angle_increment)
             x = x0 + r * math.cos(2 * math.pi * (angle / 360.)) - 4
@@ -404,10 +416,12 @@ class ToolInterfaceHandler(BaseItem):
                 self.interface_items[interface].setPos(x, y)
                 t = QTransform()
                 t.rotate(n * angle_increment)
+                self.interface_items[interface].prepareGeometryChange()
                 self.interface_items[interface].setTransform(t)
             else:
                 # Updating
                 self.interface_items[interface].interface = self.interfaces[interface]
+                self.interface_items[interface].prepareGeometryChange()
                 self.interface_items[interface].setPos(x, y)
 
     def update_interface_status(self, i):
@@ -433,14 +447,9 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         self.interface = interface
         self.interface_name = interface_name
-
-        self.parent = parent
         self.size = QSize(8, 8)
-
         self.interface_type = interface_type
-
         self.setToolTip(interface_name)
-
         self._links = []
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -581,6 +590,7 @@ class LinkItem(QGraphicsPathItem):
             self.updateLine()
 
     def updateLine(self):
+
         sourcePoint = self.source.scenePos() + self.source._offset
         sinkPoint = self.sink.scenePos() + self.sink._offset if hasattr(self.sink, '_offset') else self.sink.scenePos()
         bezierPath = QPainterPath()
@@ -595,10 +605,11 @@ class LinkItem(QGraphicsPathItem):
 
         bezierPath.cubicTo(p1, p2, sinkPoint)
         self.bezierPath = bezierPath
+
+        self.prepareGeometryChange()
         self.setPath(bezierPath)  # source.x(), source.y(), self.sink.x(), self.sink.y() )
 
         self.updateText()
-
         self.setLineColor(INTERFACE_ACTIVE_COLOR[self.source.get_interface_status()])
 
     def updateText(self):
@@ -724,6 +735,8 @@ class ToolViewItem(BaseInteractiveItem):
         self.setTransform(transform)
 
     def refreshView(self):
+        self.prepareGeometryChange()
+
         #self.view = self.app.views.widget(1)
         if self.view:
             self.pixmap = self.view.grab().scaled(self.size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -807,8 +820,8 @@ class ResizableGraphicsItem(QGraphicsItem):
         super(ResizableGraphicsItem, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self.updateResizeHandles()
         self.prepareGeometryChange()
+        self.updateResizeHandles()
         super(ResizableGraphicsItem, self).mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -833,9 +846,9 @@ class ResizableGraphicsItem(QGraphicsItem):
 
             r = minimalQRect(r, self.minSize)
 
+            self.prepareGeometryChange()
             self.setRect(r)
             self.updateResizeHandles()
-            self.prepareGeometryChange()
         else:
             super(ResizableGraphicsItem, self).mouseMoveEvent(event)
 
@@ -892,6 +905,7 @@ class BaseAnnotationItem(ResizableGraphicsItem):
         self.setZValue(-1)
 
     def delete(self):
+        self.prepareGeometryChange()
         self.scene().annotations.remove(self)
         self.scene().removeItem(self)
         self.removeHandlers()
