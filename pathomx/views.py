@@ -367,7 +367,7 @@ class WebView(QWebView, BaseView):
     def __init__(self, parent, **kwargs):
         super(WebView, self).__init__(None, **kwargs)        
         
-        #self.setPage( WebPageJSLog(self.w) )
+        #self.setPage( WebPageJSLog(parent) )
         self.setHtml(BLANK_DEFAULT_HTML,QUrl("~"))
 
         self.page().setContentEditable(False)

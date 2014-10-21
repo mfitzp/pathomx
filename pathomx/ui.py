@@ -413,9 +413,9 @@ class DialogAbout(QDialog):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'css': 'file://' + css, 'html': markdown2html_mistune(md)})
+        </html>'''.format(**{'baseurl': 'file:///' + os.path.join(utils.scriptdir), 'css': 'file:///' + css, 'html': markdown2html_mistune(md)})
 
-        self.help.setHtml(html, QUrl('file://' + os.path.join(utils.scriptdir)))
+        self.help.setHtml(html, QUrl('file:///' + os.path.join(utils.scriptdir)))
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.help)
 
@@ -1458,7 +1458,7 @@ class GenericApp(QObject):
 </div>
 </div>
         </body>
-        </html>'''.format(**{'baseurl': 'file://' + os.path.join(utils.scriptdir), 'css': 'file://' + css, 'html': markdown2html_mistune(self.notes)})
+        </html>'''.format(**{'baseurl': 'file:///' + os.path.join(utils.scriptdir), 'css': 'file:///' + css, 'html': markdown2html_mistune(self.notes)})
 
         self.notes_viewer.setHtml(unicode(html))
 
