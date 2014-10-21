@@ -37,7 +37,8 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
 
     disabled_plugins = settings.get('Plugins/Disabled')
 
-    # Append the core path search so always available
+    # Append the core path search so always available; but custom takes preference (allows downloaded
+    # updates to override)
     core_plugin_path = os.path.join(utils.scriptdir, 'plugins')
     plugin_places.append(core_plugin_path)
 

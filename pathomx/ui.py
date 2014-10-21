@@ -947,7 +947,7 @@ class MatchStyleManagerDialog(GenericDialog):
         vw.addWidget(self.edit_btn, 1, 1)
 
         self.delete_btn = QPushButton('Delete')
-        self.delete_btn.clicked.connect(self.onDelete)
+        self.delete_btn.clicked.connect(self.delete)
         vw.addWidget(self.delete_btn, 2, 1)
 
         self.up_btn = QPushButton('↑')
@@ -1299,6 +1299,8 @@ class GenericApp(QObject):
     progress = pyqtSignal(float)
     complete = pyqtSignal()
 
+    deleted = pyqtSignal()
+
     nameChanged = pyqtSignal(str)
     change_name = pyqtSignal(str)
 
@@ -1629,20 +1631,21 @@ class GenericApp(QObject):
         self.parent().register_url_handler(self.id, url_handler)
 
     def delete(self):
+        self.hide()
+        self.w.close() # Close the window
+
         # Tear down the config and data objects
         self.data.reset()
         self.data.deleteLater()
-
         self.config.reset()
         self.config.deleteLater()
-
-        # Close the window obj
-        self.parent().editor.removeApp(self)
-
         current_tools.remove(self)
+
         # Trigger notification for state change
-        self.w.close()
-        super(GenericApp, self).deleteLater()
+        self.editorItem = None # Remove reference to the GraphicsItem
+        self.deleteLater()
+
+        self.deleted.emit()
 
     def update_progress(self, progress):
         #FIXME: Disabled for the time being til we have a proper global job queue
@@ -1682,12 +1685,13 @@ class GenericApp(QObject):
 
     def hide(self):
         self.parent().toolDock.setWidget(self.parent().toolbox)
+        self.parent().activetoolDock.setWidget( QWidget() ) # Empty
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
 
     def onDelete(self):
-        self.deleteLater()
+        self.delete()
 
     def addConfigPanel(self, Panel, name):
         panel = Panel(self)

@@ -121,15 +121,15 @@ class QGraphicsSceneExtend(QGraphicsScene):
         self.image.save(f)
 
     def addApp(self, app, position=None):
-        i = ToolItem(self, app, position=position)
+        i = ToolItem(app, position=position)
         self.addItem(i)
+
         #i.onShow()
 
         return i
 
     def removeApp(self, app):
         i = app.editorItem
-        i.hide()
         self.removeItem(i)
         app.editorItem = None
 
@@ -224,6 +224,7 @@ class WorkspaceEditorView(QGraphicsView):
         self.setAcceptDrops(True)
 
         self.scene = QGraphicsSceneExtend(self)
+        self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
         self.setScene(self.scene)
 
         self.resetScene()
