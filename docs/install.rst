@@ -16,6 +16,7 @@ To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
+* `v3.0.0 (EXE installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-3.0.0.exe>`_
 * `v2.5.2 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.5.2-amd64.msi>`_
 * `v2.4.3 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.4.3-amd64.msi>`_
 * `v2.3.0 (MSI installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-2.3.0-amd64.msi>`_
@@ -34,13 +35,10 @@ To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
+* `v3.0.0 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-3.0.0.dmg>`_
 * `v2.5.2 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.5.2.dmg>`_
 * `v2.4.0 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.4.0.dmg>`_
 * `v2.3.0 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-2.3.0.dmg>`_
-
-The latest developer release for this platform is:
-
-* `v3.0.0rc1 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-3.0.0rc1.dmg>`_
 
 
 Linux
@@ -48,5 +46,5 @@ Linux
 
 Coming soon.
 
-.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-2.5.2-amd64.msi
-.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-2.5.2.dmg
+.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-latest.exe
+.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-latest.dmg
