@@ -40,13 +40,12 @@ class FilterConfigPanel(ui.ConfigPanel):
         gb.setLayout(vbox)
         self.layout.addWidget(gb)
 
-        self.dialogFinalise()
+        self.finalise()
 
 
 class FilterApp(ui.IPythonApp):
 
     name = "Filter"
-    notebook = 'filter.ipynb'
     shortname = 'filter'
 
     legacy_inputs = {'input': 'input_data'}
