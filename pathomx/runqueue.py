@@ -600,11 +600,11 @@ class RunManager(QObject):
         
     def start_cluster(self):
         # Start IPython ipcluster with 4 engines
-        self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'])
+        self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
         
     def stop_cluster(self):
         # Stop the ipcluster
-        p = Popen([sys.executable, ipclusterapp.__file__, 'stop'])
+        p = Popen([sys.executable, ipclusterapp.__file__, 'stop'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
         while p.poll() is None:  # Wait for the above to exit
             pass
 

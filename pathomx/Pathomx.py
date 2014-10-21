@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-
 import sys
+
+if (sys.platform == 'win32' and sys.executable.split('\\')[-1] == 'pythonw.exe'):
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
 import logging
 
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
