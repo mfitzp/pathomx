@@ -29,12 +29,13 @@ from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
 from collections import defaultdict
 
-from yapsy.PluginManager import PluginManagerSingleton
-
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
+
+import requests
+import time
 
 from .globals import styles, notebook_queue, \
                      current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
@@ -158,17 +159,32 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
         # Central variable for storing application configuration (load/save from file?
-
+        settings.set('Pathomx/Is_setup', False)
         if settings.get('Pathomx/Is_setup') == False:
             logging.info("Setting up initial configuration...")
-            #self.onResetConfig()
+            # Defaults are now set in the globals; but we can auto-create the plugin folder
+            try:
+                utils.mkdir_p(os.path.join(os.path.expanduser("~"), 'PathomxPlugins'))
+            except:
+                # Ignore all errors
+                pass
             logging.info('Done')
 
         # Do version upgrade availability check
-        # FIXME: Do check for new download here; if not done > 2 weeks
-        if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(__version__):
-            # We've got an upgrade
-            logging.warning('A new version (v%s) is available' % settings.get('Pathomx/Update/Latest_version'))
+        # FIXME: Do check for new download here; if not done > 1 weeks
+        if settings.get('Pathomx/Update/Last_check') < (int(time.time()) - 604800):  # 1 week in seconds
+            try:
+                r = requests.get('https://raw.githubusercontent.com/pathomx/pathomx/master/VERSION')
+
+            except:
+                pass
+
+            else:
+                if r.status_code == 200:
+                    settings.set('Pathomx/Update/Latest_version', r.text)
+
+            settings.set('Pathomx/Update/Last_check', int(time.time()))
+
 
         self.fonts = QFontDatabase()
 
@@ -445,14 +461,20 @@ class MainWindow(QMainWindow):
         # Do version upgrade check
         if StrictVersion(settings.get('Pathomx/Current_version')) < StrictVersion(__version__):
             # We've got an upgrade
-            logging.info('Upgrade to %s' % __version__)
+            logging.info('Upgraded Pathomx to %s' % __version__)
             self.onAbout()
             settings.set('Pathomx/Current_version', __version__)
         #if settings.value('/Pathomx/Offered_registration', False) != True:
         #    self.onDoRegister()
         #    settings.setValue('/Pathomx/Offered_registration', True)
 
-        self.statusBar().showMessage(tr('Ready'))
+        if StrictVersion(settings.get('Pathomx/Update/Latest_version')) > StrictVersion(__version__):
+            # We've got an upgrade
+            notify_version = 'A new version of Pathomx (v%s) is available' % settings.get('Pathomx/Update/Latest_version')
+            logging.info(notify_version)
+            self.statusBar().showMessage(notify_version)
+        else:
+            self.statusBar().showMessage(tr('Ready'))
 
     def buildToolbox(self):
 

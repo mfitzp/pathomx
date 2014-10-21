@@ -1,9 +1,9 @@
 [Core]
-Name = >
+Name = Custom Scripts
 Module = loader
 
 [Documentation]
 Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
-Description = Do nothing (passes through a dataset unchanged)
+Description = Custom scripting in Python, MATLAB or R

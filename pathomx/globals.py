@@ -1,9 +1,8 @@
 import logging
 logging.debug('Loading globals.py')
 
-import os
-import sys
 import platform
+import os
 
 from collections import defaultdict
 
@@ -51,7 +50,7 @@ if not ON_RTD:
         'Pathomx/Update/Last_checked': None,
         'Pathomx/Offered_registration': False,
 
-        'Plugins/Paths': [],
+        'Plugins/Paths': [os.path.join( os.path.expanduser("~"), 'PathomxPlugins' )],
         'Plugins/Disabled': [],
 
         'Resources/MATLAB_path': 'matlab',

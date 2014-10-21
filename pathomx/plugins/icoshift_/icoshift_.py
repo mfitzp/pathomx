@@ -24,6 +24,7 @@ xCS, ints, ind, target = icoshift(config['target'], spectra,
                                   coshift_preprocessing=config['coshift_preprocessing'],
                                   coshift_preprocessing_max_shift=config['coshift_preprocessing_max_shift'],
                                   average2_multiplier=config['average2_multiplier'],
+                                  fill_with_previous=config['fill_with_previous'],
                                                                )
 
 output_data = input_data

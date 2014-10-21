@@ -105,6 +105,18 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
 
         self.layout.addWidget(gb)
 
+
+        gb = QGroupBox('Miscellaneous')
+        gd = QGridLayout()
+        gb.setLayout(gd)
+
+        self.fill_previous = QCheckBox('Fill shifted regions with previous value')
+        #self.coshift_btn.setCheckable( True )
+        self.config.add_handler('fill_with_previous', self.fill_previous)
+        gd.addWidget(self.fill_previous, 0, 0)
+        self.layout.addWidget(gb)
+
+
         self.change_display() # Set starting state
         self.finalise()
 
@@ -176,6 +188,7 @@ class IcoshiftApp(ui.IPythonApp):
             'coshift_preprocessing_max_shift': None,
             'average2_multiplier': 3,
             'number_of_intervals': 50,
+            'fill_with_previous': True,
         })
 
         self.addConfigPanel(IcoshiftConfigPanel, 'Settings')
