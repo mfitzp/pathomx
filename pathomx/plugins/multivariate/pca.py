@@ -30,9 +30,13 @@ for n in range(0, pca.components_.shape[0]):
     weightsi.append("PC %d" % (n + 1))
 
 weights.index = weightsi
-Scores = scatterplot(scores, styles=styles)
+
+
+# Build scores plots for all combinations up to n
+score_combinations = set([ (a,b) for a in range(0,n) for b in range(a+1, n+1)])
+
+for sc in score_combinations:
+     vars()['Scores %dv%d' % (sc[0]+1, sc[1]+1)] = scatterplot(scores.iloc[:,sc], styles=styles)
 
 pcd = None
 # Clean up
-
-Scores
