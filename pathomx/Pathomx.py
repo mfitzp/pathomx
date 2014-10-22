@@ -2,16 +2,23 @@
 from __future__ import unicode_literals
 import os
 import sys
-
-if (sys.platform == 'win32' and sys.executable.split('\\')[-1] == 'pythonw.exe'):
-    sys.stdout = open(os.devnull, 'w')
-    sys.stderr = open(os.devnull, 'w')
-
 import logging
 
+frozen = getattr(sys, 'frozen', False)
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
-frozen = getattr(sys, 'frozen', False)
+if sys.platform == 'win32' and sys.executable.split('\\')[-1] == 'pythonw.exe':
+    # Dump all output when running without a console; otherwise will hang
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+    frozen = True
+
+elif sys.version_info < (3, 0) and ON_RTD is False:  # Python 2 only; unicode output fixes
+    import codecs
+    UTF8Writer = codecs.getwriter('utf8')
+    sys.stdout = UTF8Writer(sys.stdout)
+    reload(sys).setdefaultencoding('utf8')
+
 if frozen:
     logging.basicConfig(level=logging.INFO)
     os.environ['QT_API'] = 'pyqt5'
@@ -19,17 +26,10 @@ else:
     logging.basicConfig(level=logging.DEBUG)
 
 from .qt import *
-import codecs
 from copy import copy
-
-if sys.version_info < (3, 0) and ON_RTD == False:  # Python 2 only
-    UTF8Writer = codecs.getwriter('utf8')
-    sys.stdout = UTF8Writer(sys.stdout)
-    reload(sys).setdefaultencoding('utf8')
 
 # Console widget
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-
 
 from collections import defaultdict
 
