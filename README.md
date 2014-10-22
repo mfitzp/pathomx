@@ -1,6 +1,6 @@
 # Pathomx
 
-*Latest stable release v3.0.0 (21st October 2014).*
+*Latest stable release v3.0.1 (22nd October 2014).*
 
 Pathomx is an interactive tool for the analysis and visualisation of scientific data.
 Built on IPython it allows rapid, workflow-based exploration of complex datasets through
