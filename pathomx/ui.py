@@ -947,7 +947,7 @@ class MatchStyleManagerDialog(GenericDialog):
         vw.addWidget(self.edit_btn, 1, 1)
 
         self.delete_btn = QPushButton('Delete')
-        self.delete_btn.clicked.connect(self.delete)
+        self.delete_btn.clicked.connect(self.onDelete)
         vw.addWidget(self.delete_btn, 2, 1)
 
         self.up_btn = QPushButton('↑')
