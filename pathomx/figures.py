@@ -8,7 +8,7 @@ from . import utils
 
 # from matplotlib.figure import Figure
 from matplotlib.path import Path
-from matplotlib.patches import BoxStyle, Ellipse
+from matplotlib.patches import BoxStyle, Ellipse, Rectangle
 from matplotlib.transforms import Affine2D, Bbox, BboxBase
 import matplotlib.cm as cm
 
@@ -131,7 +131,7 @@ def find_linear_scale(data):
     return scale, linear_scale, scale_name
 
 
-def spectra(data, figure=None, ax=None, styles=None):
+def spectra(data, figure=None, ax=None, styles=None, regions=None):
     if figure is None:
         figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI)
 
@@ -263,6 +263,11 @@ def spectra(data, figure=None, ax=None, styles=None):
 
     if scale_name:
         ax.set_xlabel(scale_name)
+
+
+    if regions:  # Plot defined x0, y0, x1, y2 regions onto the plot
+        for x0, y0, x1, y1 in regions:
+            ax.add_patch( Rectangle( (x0, y0), x1-x0, y1-y0, facecolor="grey", alpha=0.3))
 
     return figure
 
@@ -416,7 +421,7 @@ def plot_cov_ellipse(cov, pos, nstd=2, **kwargs):
     return ellip
 
 
-def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
+def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=None):
     if figure is None:
         figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI)
 
@@ -484,6 +489,13 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[]):
     x0, x1 = ax.get_xlim()
     y0, y1 = ax.get_ylim()
     ax.set_aspect((x1 - x0) / (y1 - y0))
+
+    if label_index is not None and label_index in data.index.names:
+        idx = data.index.names.index(label_index)
+        labels = [v[idx] for v in data.index.values]
+        for label, x, y in zip(labels, data.iloc[:, 0], data.iloc[:, 1]):
+            ax.annotate(label, xy=(x, y), xytext=(-1, 1), textcoords='offset points', ha='right', va='bottom',
+                        size='small')
 
     return figure
 

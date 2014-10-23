@@ -33,7 +33,7 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         gd = QGridLayout()
         gb.setLayout(gd)
         self.target_cb = QComboBox()
-        self.target_cb.addItems(['average', 'median', 'max', 'average2', 'input_target'])
+        self.target_cb.addItems(['average', 'median', 'max', 'average2', 'input_target', 'spectra_number'])
         self.config.add_handler('target', self.target_cb)
         gd.addWidget(self.target_cb, 0, 0)
 
@@ -43,6 +43,17 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         gd.addWidget(average2_sb, 1, 1)
         self.config.add_handler('average2_multiplier', average2_sb)
         self.display_options['target']['average2'] = (average2_l, average2_sb)
+
+
+        spectran_l = QLabel('Spectra number')
+        spectran_sb = QSpinBox()
+        spectran_sb.setMinimum(0)
+        gd.addWidget(spectran_l, 2, 0)
+        gd.addWidget(spectran_sb, 2, 1)
+        self.config.add_handler('spectra_number', spectran_sb)
+        self.display_options['target']['spectra_number'] = (spectran_l, spectran_sb)
+
+
         self.layout.addWidget(gb)
 
         gb = QGroupBox('Intervals')
@@ -50,7 +61,7 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         gb.setLayout(gd)
         self.mode_cb = QComboBox()
 
-        self.mode_cb.addItems(['whole', 'number_of_intervals', 'length_of_intervals'])  #, 'define', 'reference_signal'])
+        self.mode_cb.addItems(['whole', 'number_of_intervals', 'length_of_intervals', 'selected_intervals'])  #, 'define', 'reference_signal'])
         self.config.add_handler('intervals', self.mode_cb)
         gd.addWidget(self.mode_cb, 0, 0)
 
@@ -189,10 +200,13 @@ class IcoshiftApp(ui.IPythonApp):
             'average2_multiplier': 3,
             'number_of_intervals': 50,
             'fill_with_previous': True,
+            'spectra_number': 0,
+
+            'selected_data_regions': [],
         })
 
         self.addConfigPanel(IcoshiftConfigPanel, 'Settings')
-
+        self.addConfigPanel(ui.RegionConfigPanel, 'Regions')
 
 class Icoshift(ProcessingPlugin):
 

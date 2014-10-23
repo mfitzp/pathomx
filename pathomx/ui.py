@@ -259,8 +259,8 @@ class QListWidgetAddRemove(QListWidget):
         self.itemAddedOrRemoved.emit()
         return r
 
-    def removeItem(self, *args, **kwargs):
-        r = super(QListWidgetAddRemove, self).removeItem(*args, **kwargs)
+    def removeItemAt(self, row, *args, **kwargs):
+        super(QListWidgetAddRemove, self).takeItem( row  )
         self.itemAddedOrRemoved.emit()
         return r
 
@@ -1815,7 +1815,8 @@ class GenericApp(QObject):
         if 'figure' in self.toolbars:
             return False
 
-        t = self.w.addToolBar('Editor')
+        t = self.w.addToolBar('Figure')
+        t.tool = self
         t.setIconSize(QSize(16, 16))
 
         export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self.w)
@@ -1823,6 +1824,7 @@ class GenericApp(QObject):
         export_imageAction.triggered.connect(self.onSaveImage)
         t.addAction(export_imageAction)
 
+        t.addSeparator()
         toolitems = (
             ('Home', 'Reset original view', 'home.png', 'home'),
             ('Back', 'Back to  previous view', 'back.png', 'back'),
@@ -1855,9 +1857,24 @@ class GenericApp(QObject):
             act.setEnabled(False)  # Disable by default; nonstandard
             t.addAction(act)
 
+
+        # Add custom toolbar option for selecting regions of matplotlib plots
+        select_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone-select.png')), tr('Select regions from plot…'), self)
+        select_regionAction.setCheckable(True)
+        select_regionAction.setStatusTip(tr('Select regions in current plot'))
+        select_regionAction.triggered.connect(make_callback('select_region'))
+        t.addAction(select_regionAction)
+        t._checkable_actions['select_region'] = select_regionAction
+        select_regionAction.setActionGroup(t.modeActionGroup)
+        select_regionAction.setEnabled(False)
+
+        t._mpl_selection_region_action = select_regionAction
+
+
         self.views.currentChanged.connect(self.onMplToolBarCanvasChanged)
 
         self.toolbars['figure'] = t
+
 
     def dispatchMplEvent(self, e, callback):
         selected_view = self.views.widget(self.views.currentIndex())
@@ -1873,9 +1890,24 @@ class GenericApp(QObject):
 
             for act in self.toolbars['figure']._mpl_specific_actions:
                 act.setEnabled(True)
+
+            if self.config.get('selected_data_regions') is not None:
+                self.toolbars['figure']._mpl_selection_region_action.setEnabled(True)
+
+            selected_view.navigation.add_region_callback = self.onAddRegion
+            # Pass these values for the region selection
         else:
             for act in self.toolbars['figure']._mpl_specific_actions:
                 act.setEnabled(False)
+            self.toolbars['figure']._mpl_selection_region_action.setEnabled(False)
+
+    def onAddRegion(self, *args):
+        selected_view = self.views.widget(self.views.currentIndex())
+        if selected_view and self.config.get('selected_data_regions') is not None:
+            # FIXME: Copy; list mutable will fudge config - fix in pyqtconfig
+            current_regions = self.config.get('selected_data_regions')[:]
+            current_regions.append( tuple([selected_view.name] + list(args)) )
+            self.config.set('selected_data_regions', current_regions)
 
     def onWatchSourceDataToggle(self, checked):
         self._autoload_source_files_on_change = checked
@@ -2113,6 +2145,56 @@ class SimpleFileOpenConfigPanel(ConfigPanel):
 
         self.finalise()
 
+class RegionConfigPanel(ConfigPanel):
+    ''' Automatic config panel for selecting regions in data, e.g. for icoshift
+
+        This simple config panel lists currently defined data regions, currently defineable
+        via drag-drop in output views. Manual definition should also be possible.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        super(RegionConfigPanel, self).__init__(*args, **kwargs)
+
+        self.fwd_map_cache = {}
+
+        # Correlation variables
+        gb = QGroupBox('Regions')
+        vbox = QVBoxLayout()
+        # Populate the list boxes
+        self.lw_variables = QListWidgetAddRemove()
+        self.lw_variables.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        vbox.addWidget(self.lw_variables)
+
+        vboxh = QHBoxLayout()
+        remfr = QPushButton('Remove')
+        remfr.clicked.connect(self.onRegionRemove)
+
+        #remfr = QPushButton('Add')
+        #remfr.clicked.connect(self.onRegressionAdd)
+
+        #vboxh.addWidget(addfr)
+        vboxh.addWidget(remfr)
+        vbox.addLayout(vboxh)
+
+        gb.setLayout(vbox)
+        self.layout.addWidget(gb)
+
+        self.config.add_handler('selected_data_regions', self.lw_variables, (self.map_list_fwd, self.map_list_rev))
+
+        self.finalise()
+
+    def onRegionRemove(self):
+        self.lw_variables.removeItemAt( self.lw_variables.currentRow() )
+
+    def map_list_fwd(self, s):
+        " Receive text name, return the indexes "
+        return self.fwd_map_cache[s]
+
+    def map_list_rev(self, x):
+        " Receive the indexes, return the label"
+        s = "\t".join([str(e) for e in x])
+        self.fwd_map_cache[s] = x
+        return s
 
 class ConfigTablePanel(QTableWidget):
 

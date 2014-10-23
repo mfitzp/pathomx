@@ -173,11 +173,6 @@ class RegressionConfigPanel(ui.ConfigPanel):
         " Receive the indexes, return the label"
         if not self.l:
             self.onRefreshData()
-        
-        print "===="
-        print x
-        print self.l
-        print "===="
 
         x1, x2 = x
         x1l = make_label_for_entry(*[li[x1] for li in self.l])

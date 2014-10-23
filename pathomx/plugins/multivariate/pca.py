@@ -32,11 +32,16 @@ for n in range(0, pca.components_.shape[0]):
 weights.index = weightsi
 
 
+if config['plot_sample_numbers']:
+    label_index = 'Sample'
+else:
+    label_index = None
+
 # Build scores plots for all combinations up to n
 score_combinations = set([ (a,b) for a in range(0,n) for b in range(a+1, n+1)])
 
 for sc in score_combinations:
-     vars()['Scores %dv%d' % (sc[0]+1, sc[1]+1)] = scatterplot(scores.iloc[:,sc], styles=styles)
+     vars()['Scores %dv%d' % (sc[0]+1, sc[1]+1)] = scatterplot(scores.iloc[:,sc], styles=styles, label_index=label_index)
 
 pcd = None
 # Clean up

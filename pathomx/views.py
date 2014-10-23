@@ -528,6 +528,194 @@ class MplNavigationHandler(NavigationToolbar2):
         rect = [int(val)for val in (min(x0, x1), min(y0, y1), w, h)]
         self.canvas.drawRectangle(rect)
 
+    def select_region(self, *args):
+        """Activate zoom to rect mode"""
+        if self._active == 'REGION':
+            self._active = None
+        else:
+            self._active = 'REGION'
+
+        if self._idPress is not None:
+            self._idPress = self.canvas.mpl_disconnect(self._idPress)
+            self.mode = ''
+
+        if self._idRelease is not None:
+            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
+            self.mode = ''
+
+        if self._active:
+            self._idPress = self.canvas.mpl_connect('button_press_event',
+                                                    self.press_region)
+            self._idRelease = self.canvas.mpl_connect('button_release_event',
+                                                      self.release_region)
+            self.mode = 'region rect'
+            self.canvas.widgetlock(self)
+        else:
+            self.canvas.widgetlock.release(self)
+
+        for a in self.canvas.figure.get_axes():
+            a.set_navigate_mode(self._active)
+
+        self.set_message(self.mode)
+
+    def press_region(self, event):
+        """the press mouse button in zoom to rect mode callback"""
+        # If we're already in the middle of a zoom, pressing another
+        # button works to "cancel"
+        if self._ids_zoom != []:
+            for zoom_id in self._ids_zoom:
+                self.canvas.mpl_disconnect(zoom_id)
+            self.release(event)
+            self.draw()
+            self._xypress = None
+            self._button_pressed = None
+            self._ids_zoom = []
+            return
+
+        if event.button == 1:
+            self._button_pressed = 1
+        elif event.button == 3:
+            self._button_pressed = 3
+        else:
+            self._button_pressed = None
+            return
+
+        x, y = event.x, event.y
+
+        # push the current view to define home if stack is empty
+        if self._views.empty():
+            self.push_current()
+
+        self._xypress = []
+        for i, a in enumerate(self.canvas.figure.get_axes()):
+            if (x is not None and y is not None and a.in_axes(event) and
+                    a.get_navigate() and a.can_zoom()):
+                self._xypress.append((x, y, a, i, a.viewLim.frozen(),
+                                      a.transData.frozen()))
+
+        id1 = self.canvas.mpl_connect('motion_notify_event', self.drag_region)
+        id2 = self.canvas.mpl_connect('key_press_event',
+                                      self._switch_on_zoom_mode)
+        id3 = self.canvas.mpl_connect('key_release_event',
+                                      self._switch_off_zoom_mode)
+
+        self._ids_zoom = id1, id2, id3
+        self._zoom_mode = event.key
+
+        self.press(event)
+
+    def release_region(self, event):
+        """the release mouse button callback in select region mode"""
+        if not self._xypress:
+            return
+
+        last_a = []
+
+        for cur_xypress in self._xypress:
+            x, y = event.x, event.y
+            lastx, lasty, a, ind, lim, trans = cur_xypress
+            # ignore singular clicks - 5 pixels is a threshold
+            if abs(x - lastx) < 5 or abs(y - lasty) < 5:
+                self._xypress = None
+                self.release(event)
+                self.draw()
+                return
+
+            x0, y0, x1, y1 = lim.extents
+
+            # zoom to rect
+            inverse = a.transData.inverted()
+            lastx, lasty = inverse.transform_point((lastx, lasty))
+            x, y = inverse.transform_point((x, y))
+            Xmin, Xmax = a.get_xlim()
+            Ymin, Ymax = a.get_ylim()
+
+            # detect twinx,y axes and avoid double zooming
+            twinx, twiny = False, False
+            if last_a:
+                for la in last_a:
+                    if a.get_shared_x_axes().joined(a, la):
+                        twinx = True
+                    if a.get_shared_y_axes().joined(a, la):
+                        twiny = True
+            last_a.append(a)
+
+            if twinx:
+                x0, x1 = Xmin, Xmax
+            else:
+                if Xmin < Xmax:
+                    if x < lastx:
+                        x0, x1 = x, lastx
+                    else:
+                        x0, x1 = lastx, x
+                    if x0 < Xmin:
+                        x0 = Xmin
+                    if x1 > Xmax:
+                        x1 = Xmax
+                else:
+                    if x > lastx:
+                        x0, x1 = x, lastx
+                    else:
+                        x0, x1 = lastx, x
+                    if x0 > Xmin:
+                        x0 = Xmin
+                    if x1 < Xmax:
+                        x1 = Xmax
+
+            if twiny:
+                y0, y1 = Ymin, Ymax
+            else:
+                if Ymin < Ymax:
+                    if y < lasty:
+                        y0, y1 = y, lasty
+                    else:
+                        y0, y1 = lasty, y
+                    if y0 < Ymin:
+                        y0 = Ymin
+                    if y1 > Ymax:
+                        y1 = Ymax
+                else:
+                    if y > lasty:
+                        y0, y1 = y, lasty
+                    else:
+                        y0, y1 = lasty, y
+                    if y0 > Ymin:
+                        y0 = Ymin
+                    if y1 < Ymax:
+                        y1 = Ymax
+
+        self.add_region_callback(x0, y0, x1, y1)
+
+        self._xypress = None
+        self._button_pressed = None
+
+        self._zoom_mode = None
+
+        self.push_current()
+        self.release(event)
+
+
+    def drag_region(self, event):
+        """the drag callback in zoom mode"""
+
+        if self._xypress:
+            x, y = event.x, event.y
+            lastx, lasty, a, ind, lim, trans = self._xypress[0]
+
+            # adjust x, last, y, last
+            x1, y1, x2, y2 = a.bbox.extents
+            x, lastx = max(min(x, lastx), x1), min(max(x, lastx), x2)
+            y, lasty = max(min(y, lasty), y1), min(max(y, lasty), y2)
+
+            if self._zoom_mode == "x":
+                x1, y1, x2, y2 = a.bbox.extents
+                y, lasty = y1, y2
+            elif self._zoom_mode == "y":
+                x1, y1, x2, y2 = a.bbox.extents
+                x, lastx = x1, x2
+
+            self.draw_rubberband(event, x, y, lastx, lasty)
+
 
 # Matplotlib-based views handler. Extend render call for update/refresh(?)
 class MplView(FigureCanvas, BaseView):

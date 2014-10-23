@@ -35,6 +35,11 @@ class PLSDAConfigPanel(ui.ConfigPanel):
         self.config.add_handler('number_of_components', cb)
         self.layout.addLayout(row)
 
+        cb = QCheckBox('Plot sample numbers')
+        self.config.add_handler('plot_sample_numbers', cb)
+        self.layout.addWidget(cb)
+
+
         self.finalise()
 
 
@@ -58,6 +63,8 @@ class PLSDATool(ui.AnalysisApp):
             'number_of_components': 2,
             'autoscale': False,
             'algorithm': 'NIPALS',
+
+            'plot_sample_numbers': False,
         })
 
         self.addConfigPanel(PLSDAConfigPanel, 'PLSDA')
@@ -82,6 +89,10 @@ class PCAConfigPanel(ui.ConfigPanel):
         row.addWidget(cb)
         self.config.add_handler('number_of_components', cb)
         self.layout.addLayout(row)
+
+        cb = QCheckBox('Plot sample numbers')
+        self.config.add_handler('plot_sample_numbers', cb)
+        self.layout.addWidget(cb)
 
         self.finalise()
 
@@ -113,6 +124,8 @@ class PCATool(ui.IPythonApp):
 
         self.config.set_defaults({
             'number_of_components': 2,
+
+            'plot_sample_numbers': False,
         })
 
         self.addConfigPanel(PCAConfigPanel, 'PCA')
