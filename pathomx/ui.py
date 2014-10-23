@@ -1477,11 +1477,11 @@ class GenericApp(QObject):
 
     def load_notes(self):
         with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rU') as f:
-            self.notes = f.read()
+            self.notes = f.read().decode('utf-8')
 
     def load_source(self):
         with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
-            self.default_code = f.read()
+            self.default_code = f.read().decode('utf-8')
 
         if self.code == "":
             self.code = self.default_code
