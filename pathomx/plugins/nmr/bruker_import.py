@@ -3,6 +3,7 @@ import pandas as pd
 import nmrglue as ng
 import numpy as np
 import scipy as sp
+import re
 
 
 def load_bruker_fid(fn, pc_init=None, config={}):
@@ -12,7 +13,6 @@ def load_bruker_fid(fn, pc_init=None, config={}):
         # read in the bruker formatted data
         dic, data = ng.bruker.read(fn, read_prog=False)
     except Exception as e:
-        print(fn, e)
         return None, None, None
     else:
 
@@ -119,6 +119,18 @@ def autophase_PeakMinima(x, s):
 
     return np.abs(mina - minb)
 
+
+if config['path_filter_regexp']:
+    path_filter_regexp = re.compile(config['path_filter_regexp'])
+else:
+    path_filter_regexp = None
+
+if config['sample_id_regexp']:
+    sample_id_regexp = re.compile(config['sample_id_regexp'])
+else:
+    sample_id_regexp = None
+
+
 # We should have a folder name; so find all files named fid underneath it (together with path)
 # Extract the path, and the parent folder name (for sample label)
 nmr_data = []
@@ -132,9 +144,17 @@ for r, d, files in os.walk(config['filename']):  # filename contains a folder fo
         print('Read Bruker:', r, scan)
         if scan == '99999' or scan == '9999':  # Dummy Bruker thing
             continue
+
+        if path_filter_regexp:
+            m = path_filter_regexp.search(r)
+            if not m:
+                continue
+
+
         # The following is a hack; need some interface for choosing between processed/raw data
         # and for various formats of NMR data input- but simple
         fids.append(r)
+
 
 total_fids = len(fids)
 pc_init = None
@@ -148,7 +168,33 @@ for n, fid in enumerate(fids):
         pc_history.append(pc)
         pc_init = np.median(np.array(pc_history), axis=0)
 
-        label = os.path.basename(fid)
+        # Generate sample id for this spectra
+        # ['Scan number', 'Experiment name', 'Experiment (regexp)', 'Path (regexp)']
+        if config['sample_id_from'] == 'Scan number':
+            label = os.path.basename(fid)
+
+        elif config['sample_id_from'] == 'Experiment name':
+            label = dic['acqus']['EXP']
+
+        elif config['sample_id_from'] == 'Experiment (regexp)' and sample_id_regexp is not None:
+            m = sample_id_regexp.search(dic['acqus']['EXP'])
+            if m:
+               label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+
+            else:  # Fallback
+                label = dic['acqus']['EXP']
+
+        elif config['sample_id_from'] == 'Path (regexp)' and sample_id_regexp is not None:
+            m = sample_id_regexp.search(fid)
+            if m:
+               label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+
+            else: # Fallback
+                label = os.path.basename(fid)
+
+        else:
+            label = os.path.basename(fid)
+
         #if 'AUTOPOS' in dic['acqus']:
         #    label = label + " %s" % dic['acqus']['AUTOPOS']
         sample_labels.append(label)
@@ -187,7 +233,7 @@ if _ppm_real_scan_folder:
 
     print("Processing spectra to Pandas DataFrame...")
     output_data = pd.DataFrame(nmr_data)
-    output_data.index = pd.MultiIndex.from_tuples([(l, None) for l in sample_labels], names=['Sample', 'Class'])
+    output_data.index = pd.MultiIndex.from_tuples([(l, '') for l in sample_labels], names=['Sample', 'Class'])
     output_data.columns = pd.MultiIndex.from_tuples([(s, ) for s in nmr_ppms], names=['Scale'])
 
     # Export the dictionary parameters for all sets
@@ -197,7 +243,8 @@ if _ppm_real_scan_folder:
     from pathomx.figures import spectra
 
     View = spectra(output_data, styles=styles)
-    
+
 
 else:
     raise Exception("No valid data found")
+

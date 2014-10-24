@@ -36,52 +36,75 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
 
         self.v = parent
         self.config = parent.config
-        gb = QGroupBox('Parent folder')
+        gb = QGroupBox('Search path')
         grid = QGridLayout()
-        self.filename = ui.QFolderLineEdit(description='Import spectra from Bruker format files')
+        self.filename = ui.QFolderLineEdit(description='Select parent folder to import Bruker spectra')
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
         gb.setLayout(grid)
         self.layout.addWidget(gb)
 
+
         gb = QGroupBox('Phase correction')
         grid = QGridLayout()
 
-        self.cb_phasealg = QComboBox()
-        self.cb_phasealg.addItems(self.autophase_algorithms.keys())
+        cb_phasealg = QComboBox()
+        cb_phasealg.addItems(self.autophase_algorithms.keys())
         grid.addWidget(QLabel('Algorithm'), 2, 0)
-        grid.addWidget(self.cb_phasealg, 2, 1)
-        self.config.add_handler('autophase_algorithm', self.cb_phasealg, self.autophase_algorithms)
+        grid.addWidget(cb_phasealg, 2, 1)
+        self.config.add_handler('autophase_algorithm', cb_phasealg, self.autophase_algorithms)
 
         gb.setLayout(grid)
         self.layout.addWidget(gb)
 
+        gb = QGroupBox('Sample filter')
+        grid = QGridLayout()
+        pathfreg_le = QLineEdit()
+        grid.addWidget(QLabel('Path filter (regexp)'), 1, 0)
+        grid.addWidget(pathfreg_le, 1, 1)
+        self.config.add_handler('path_filter_regexp', pathfreg_le)
+
+        cb_sampleidfrom = QComboBox()
+        cb_sampleidfrom.addItems(['Scan number', 'Experiment name', 'Experiment (regexp)', 'Path (regexp)'])
+        grid.addWidget(QLabel('Sample ID from'), 2, 0)
+        grid.addWidget(cb_sampleidfrom, 2, 1)
+        self.config.add_handler('sample_id_from', cb_sampleidfrom)
+
+        sample_regexp_le = QLineEdit()
+        grid.addWidget(QLabel('Sample ID regexp'), 3, 0)
+        grid.addWidget(sample_regexp_le, 3, 1)
+        self.config.add_handler('sample_id_regexp', sample_regexp_le)
+
+        gb.setLayout(grid)
+        self.layout.addWidget(gb)
+
+
         gb = QGroupBox('Advanced')
         grid = QGridLayout()
-        self.cb_delimag = QCheckBox()
+        cb_delimag = QCheckBox()
         grid.addWidget(QLabel('Delete imaginaries'), 0, 0)
-        grid.addWidget(self.cb_delimag, 0, 1)
-        self.config.add_handler('delete_imaginaries', self.cb_delimag)
+        grid.addWidget(cb_delimag, 0, 1)
+        self.config.add_handler('delete_imaginaries', cb_delimag)
 
-        self.cb_reverse = QCheckBox()
+        cb_reverse = QCheckBox()
         grid.addWidget(QLabel('Reverse spectra'), 1, 0)
-        grid.addWidget(self.cb_reverse, 1, 1)
-        self.config.add_handler('reverse_spectra', self.cb_reverse)
+        grid.addWidget(cb_reverse, 1, 1)
+        self.config.add_handler('reverse_spectra', cb_reverse)
 
-        self.cb_remdf = QCheckBox()
+        cb_remdf = QCheckBox()
         grid.addWidget(QLabel('Remove digital filter'), 2, 0)
-        grid.addWidget(self.cb_remdf, 2, 1)
-        self.config.add_handler('remove_digital_filter', self.cb_remdf)
+        grid.addWidget(cb_remdf, 2, 1)
+        self.config.add_handler('remove_digital_filter', cb_remdf)
 
-        self.cb_zf = QCheckBox()
+        cb_zf = QCheckBox()
         grid.addWidget(QLabel('Zero fill'), 3, 0)
-        grid.addWidget(self.cb_zf, 3, 1)
-        self.config.add_handler('zero_fill', self.cb_zf)
+        grid.addWidget(cb_zf, 3, 1)
+        self.config.add_handler('zero_fill', cb_zf)
 
-        self.le_zf_to = QLineEdit()
-        grid.addWidget(self.le_zf_to, 4, 1)
-        self.config.add_handler('zero_fill_to', self.le_zf_to, mapper=(lambda x: int(x), lambda x: str(x)))
+        le_zf_to = QLineEdit()
+        grid.addWidget(le_zf_to, 4, 1)
+        self.config.add_handler('zero_fill_to', le_zf_to, mapper=(lambda x: int(x), lambda x: str(x)))
 
         gb.setLayout(grid)
 
@@ -111,6 +134,10 @@ class BrukerImport(ui.GenericTool):
             'reverse_spectra': True,
             'zero_fill': True,
             'zero_fill_to': 32768,
+
+            'path_filter_regexp': '',
+            'sample_id_from': 'Scan number',  # Experiment name, Path regexp,
+            'sample_id_regexp': '',
         })
 
         self.addConfigPanel(BrukerImportConfigPanel, 'Settings')
