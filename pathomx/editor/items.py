@@ -1018,12 +1018,13 @@ class AnnotationTextItem(QGraphicsRectItem, BaseAnnotationItem):
             self.setBrush(QBrush(Qt.NoBrush))
 
     def setRect(self, r):
+
         self.text.setTextWidth(r.width() - RESIZE_HANDLE_SIZE * 2)
         # Add size padding
         tr = self.text.boundingRect()
         nr = QRect(0, 0, tr.width() + RESIZE_HANDLE_SIZE * 2, tr.height() + RESIZE_HANDLE_SIZE * 2)
         super(AnnotationTextItem, self).setRect(minimalQRect(r, nr))
-        self.text.setPos(QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE))
+        self.text.setPos(QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) + QPointF( self.rect().x(), self.rect().y() ) )
 
     def _createFromMousePressEvent(self, e):
         r = QRectF(QPointF(0, 0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE))
