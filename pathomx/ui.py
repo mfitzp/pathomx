@@ -1304,6 +1304,8 @@ class GenericApp(QObject):
     nameChanged = pyqtSignal(str)
     change_name = pyqtSignal(str)
 
+    pause_status_changed = pyqtSignal(bool)
+
     legacy_launchers = []
     legacy_inputs = {}
     legacy_outputs = {}
@@ -1914,6 +1916,7 @@ class GenericApp(QObject):
 
     def onAutoAnalysisToggle(self, checked):
         self._pause_analysis_flag = checked
+        self.pause_status_changed.emit(checked)
 
     def onFileChanged(self, file):
         if self._autoload_source_files_on_change:

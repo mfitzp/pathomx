@@ -147,6 +147,8 @@ class ToolItem(BaseItem):
         self.app.data.consumed.connect(self.addDataLink)
         self.app.data.unconsumed.connect(self.removeDataLink)
 
+        self.app.pause_status_changed.connect(self.onPauseChange)
+
         self._links = {}
 
         self.size = QSize(64, 64)
@@ -175,6 +177,9 @@ class ToolItem(BaseItem):
 
         self.app.progress.connect(self.progressBar.updateProgress)
         self.app.status.connect(self.progressBar.updateStatus)
+
+        self.status_icon = QGraphicsPixmapItem(self)
+        self.status_icon.setPos(48, 48)
 
         if position:
             self.setPos(position)
@@ -327,6 +332,13 @@ class ToolItem(BaseItem):
             return value
 
         return super(ToolItem, self).itemChange(change, value)
+
+    def onPauseChange(self, is_paused):
+        if is_paused:
+            self.status_icon.setPixmap(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')).pixmap( QSize(16,16)))
+        else:
+            self.status_icon.setPixmap(QPixmap())
+
 
 
 class ToolIcon(BaseInteractiveItem):
