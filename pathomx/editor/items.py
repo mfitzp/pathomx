@@ -666,6 +666,23 @@ class LinkItem(QGraphicsPathItem):
         self.pen = pen
         self.setPen(self.pen)
 
+    def contextMenuEvent(self, e):
+        e.accept()
+
+        o = self.scene().parent()
+        menu = QMenu(o)
+
+        delete_action = QAction('&Delete', o)
+        delete_action.triggered.connect(self.onDelete)
+        menu.addAction(delete_action)
+
+        menu.exec_(e.screenPos())
+
+    def onDelete(self):
+        if self.sink:
+            self.sink.app.data.unget(self.sink.interface_name)
+
+
 
 class ToolProgressItem(BaseItem):
     """
