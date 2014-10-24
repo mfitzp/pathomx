@@ -66,7 +66,7 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.config.add_handler('path_filter_regexp', pathfreg_le)
 
         cb_sampleidfrom = QComboBox()
-        cb_sampleidfrom.addItems(['Scan number', 'Experiment name', 'Experiment (regexp)', 'Path (regexp)'])
+        cb_sampleidfrom.addItems(['Scan number', 'Experiment (regexp)', 'Path (regexp)'])
         grid.addWidget(QLabel('Sample ID from'), 2, 0)
         grid.addWidget(cb_sampleidfrom, 2, 1)
         self.config.add_handler('sample_id_from', cb_sampleidfrom)
@@ -75,6 +75,17 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         grid.addWidget(QLabel('Sample ID regexp'), 3, 0)
         grid.addWidget(sample_regexp_le, 3, 1)
         self.config.add_handler('sample_id_regexp', sample_regexp_le)
+
+        cb_classfrom = QComboBox()
+        cb_classfrom.addItems(['None', 'Experiment (regexp)', 'Path (regexp)'])
+        grid.addWidget(QLabel('Class from'), 4, 0)
+        grid.addWidget(cb_classfrom, 4, 1)
+        self.config.add_handler('class_from', cb_classfrom)
+
+        class_regexp_le = QLineEdit()
+        grid.addWidget(QLabel('Class regexp'), 5, 0)
+        grid.addWidget(class_regexp_le, 5, 1)
+        self.config.add_handler('class_regexp', class_regexp_le)
 
         gb.setLayout(grid)
         self.layout.addWidget(gb)
@@ -138,6 +149,9 @@ class BrukerImport(ui.GenericTool):
             'path_filter_regexp': '',
             'sample_id_from': 'Scan number',  # Experiment name, Path regexp,
             'sample_id_regexp': '',
+
+            'class_from': 'None',  # Experiment name, Path regexp,
+            'class_regexp': '',
         })
 
         self.addConfigPanel(BrukerImportConfigPanel, 'Settings')

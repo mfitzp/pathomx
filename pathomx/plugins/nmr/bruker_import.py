@@ -130,12 +130,18 @@ if config['sample_id_regexp']:
 else:
     sample_id_regexp = None
 
+if config['class_regexp']:
+    class_regexp = re.compile(config['class_regexp'])
+else:
+    class_regexp = None
 
 # We should have a folder name; so find all files named fid underneath it (together with path)
 # Extract the path, and the parent folder name (for sample label)
 nmr_data = []
 nmr_dic = []
 sample_labels = []
+sample_classes = []
+
 _ppm_real_scan_folder = False
 fids = []
 for r, d, files in os.walk(config['filename']):  # filename contains a folder for Bruker data
@@ -173,31 +179,75 @@ for n, fid in enumerate(fids):
         if config['sample_id_from'] == 'Scan number':
             label = os.path.basename(fid)
 
-        elif config['sample_id_from'] == 'Experiment name':
-            label = dic['acqus']['EXP']
+        elif config['sample_id_from'] == 'Sequential':
+            label = str(n+1)
 
-        elif config['sample_id_from'] == 'Experiment (regexp)' and sample_id_regexp is not None:
-            m = sample_id_regexp.search(dic['acqus']['EXP'])
-            if m:
-               label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
-
-            else:  # Fallback
+        elif config['sample_id_from'] == 'Experiment (regexp)':
+            if sample_id_regexp is None:
                 label = dic['acqus']['EXP']
 
-        elif config['sample_id_from'] == 'Path (regexp)' and sample_id_regexp is not None:
-            m = sample_id_regexp.search(fid)
-            if m:
-               label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+            else:
+                m = sample_id_regexp.search(dic['acqus']['EXP'])
+                if m:
+                    label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
 
-            else: # Fallback
+                else:  # Fallback
+                    label = dic['acqus']['EXP']
+
+        elif config['sample_id_from'] == 'Path (regexp)':
+            if sample_id_regexp is None:
                 label = os.path.basename(fid)
+
+            else:
+                m = sample_id_regexp.search(fid)
+                if m:
+                    label = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+
+                else:  # Fallback
+                    label = fid
 
         else:
             label = os.path.basename(fid)
 
+
+        # Generate sample id for this spectra
+        # ['Scan number', 'Experiment name', 'Experiment (regexp)', 'Path (regexp)']
+        if config['class_from'] == 'None':
+            classn = ''
+
+        elif config['class_from'] == 'Experiment (regexp)':
+            if class_regexp is None:
+                classn = dic['acqus']['EXP']
+
+            else:
+                m = class_regexp.search(dic['acqus']['EXP'])
+                if m:
+                    classn = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+
+                else:  # Fallback
+                    classn = dic['acqus']['EXP']
+
+        elif config['class_from'] == 'Path (regexp)':
+            if class_regexp is None:
+                classn = os.path.basename(fid)
+
+            else:
+                m = class_regexp.search(fid)
+                if m:
+                    classn = m.group(0) if m.lastindex is None else m.group(m.lastindex)
+
+                else:  # Fallback
+                    classn = fid
+
+        else:
+            classn = ''
+
         #if 'AUTOPOS' in dic['acqus']:
         #    label = label + " %s" % dic['acqus']['AUTOPOS']
+
         sample_labels.append(label)
+        sample_classes.append(classn)
+
         nmr_data.append(data)
         nmr_dic.append(dic)
         _ppm_real_scan_folder = fid
@@ -233,7 +283,7 @@ if _ppm_real_scan_folder:
 
     print("Processing spectra to Pandas DataFrame...")
     output_data = pd.DataFrame(nmr_data)
-    output_data.index = pd.MultiIndex.from_tuples([(l, '') for l in sample_labels], names=['Sample', 'Class'])
+    output_data.index = pd.MultiIndex.from_tuples([(l, c) for l, c in zip(sample_labels, sample_classes)], names=['Sample', 'Class'])
     output_data.columns = pd.MultiIndex.from_tuples([(s, ) for s in nmr_ppms], names=['Scale'])
 
     # Export the dictionary parameters for all sets

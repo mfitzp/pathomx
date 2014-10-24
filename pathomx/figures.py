@@ -459,7 +459,7 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=N
             df = data
 
         s = ls.markersize ** 2 if ls.markersize != None else 20  #default
-        plots[c] = ax.scatter(df.iloc[:, 0], df.iloc[:, 1], color=ls.markerfacecolor, marker=ls.marker, s=s)
+        plots[c] = ax.scatter(df.iloc[:, 0].values, df.iloc[:, 1].values, color=ls.markerfacecolor, marker=ls.marker, s=s)
 
 
         # Calculate 95% confidence interval for data but only if points >1
