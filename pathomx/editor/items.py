@@ -252,8 +252,14 @@ class ToolItem(BaseItem):
         menu = QMenu(o)
 
         run_action = QAction('&Run', o)
-        run_action.triggered.connect(self.onRun)
+        run_action.triggered.connect(self.app.onRecalculate)
         menu.addAction(run_action)
+
+        pause_action = QAction('&Pause', o)
+        pause_action.setCheckable(True)
+        pause_action.setChecked(self.app.pause_analysisAction.isChecked())
+        pause_action.toggled.connect(self.app.pause_analysisAction.setChecked)
+        menu.addAction(pause_action)
 
         show_action = QAction('&Show', o)
         show_action.triggered.connect(self.onShow)
@@ -289,7 +295,7 @@ class ToolItem(BaseItem):
         self.app.hide()
 
     def onRun(self):
-        self.app.autogenerate()
+        self.app.onRecalculate()
 
     def onAddView(self, e, wid):
         self.viewertest = ToolViewItem(self, self.app.views.widget(wid))

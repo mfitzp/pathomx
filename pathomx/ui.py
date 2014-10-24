@@ -1719,12 +1719,12 @@ class GenericApp(QObject):
         select_dataAction.triggered.connect(self.onRecalculate)
         t.addAction(select_dataAction)
 
-        pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.w)
-        pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
-        pause_analysisAction.setCheckable(True)
-        pause_analysisAction.setChecked(self.default_pause_analysis)
-        pause_analysisAction.toggled.connect(self.onAutoAnalysisToggle)
-        t.addAction(pause_analysisAction)
+        self.pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.w)
+        self.pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
+        self.pause_analysisAction.setCheckable(True)
+        self.pause_analysisAction.setChecked(self.default_pause_analysis)
+        self.pause_analysisAction.toggled.connect(self.onAutoAnalysisToggle)
+        t.addAction(self.pause_analysisAction)
         self._pause_analysis_flag = self.default_pause_analysis
 
         select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self.w)
