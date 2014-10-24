@@ -469,49 +469,6 @@ class BaselineCorrectionTool(ui.IPythonApp):
         self.addConfigPanel(BaselineCorrectionConfigPanel, 'Settings')
 
 
-# Dialog box for spectra exclusion options
-class SpectraExclusionConfigPanel(ui.ConfigPanel):
-
-    def __init__(self, *args, **kwargs):
-        super(SpectraExclusionConfigPanel, self).__init__(*args, **kwargs)
-
-        self.excl = {}
-
-
-        for n in range(4):
-            i = n + 1
-
-            vw = QGridLayout()
-
-            excl_spin_start = QDoubleSpinBox()
-            excl_spin_start.setRange(-2, 12)
-            excl_spin_start.setSuffix('ppm')
-            self.config.add_handler('exclude_%d_start' % i, excl_spin_start)
-
-            excl_spin_end = QDoubleSpinBox()
-            excl_spin_end.setRange(-2, 12)
-            excl_spin_end.setSuffix('ppm')
-            self.config.add_handler('exclude_%d_end' % i, excl_spin_end)
-
-            excl_enable = QCheckBox()
-            self.config.add_handler('exclude_%d' % i, excl_enable)
-
-            tl = QLabel('Active')
-            vw.addWidget(tl, 0, 0)
-            vw.addWidget(excl_enable, 0, 1)
-            tl = QLabel('Start')
-            vw.addWidget(tl, 1, 0)
-            vw.addWidget(excl_spin_start, 1, 1)
-            tl = QLabel('End')
-            vw.addWidget(tl, 2, 0)
-            vw.addWidget(excl_spin_end, 2, 1)
-
-            gb = QGroupBox('Region %d' % i)
-            gb.setLayout(vw)
-            self.layout.addWidget(gb)
-
-        self.finalise()
-
 
 class SpectraExclusionTool(ui.IPythonApp):
 
@@ -535,29 +492,15 @@ class SpectraExclusionTool(ui.IPythonApp):
 
         # Define default settings for pathway rendering
         self.config.set_defaults({
-            'exclude_1': True,
-            'exclude_1_start': -2,
-            'exclude_1_end': 0.2,
 
-            'exclude_2': True,
-            'exclude_2_start': 4.5,
-            'exclude_2_end': 5,
-
-            'exclude_3': True,
-            'exclude_3_start': 10,
-            'exclude_3_end': 12,
-
-            'exclude_4': False,
-            'exclude_4_start': 0,
-            'exclude_4_end': 0,
-
-            'exclude_5': False,
-            'exclude_5_start': 0,
-            'exclude_5_end': 0,
-
+            'selected_data_regions': [
+                ('TMSP', -2, 0, 0.2, 0),
+                ('Water', 4.5, 0, 5, 0),
+                ('Far', 10, 0, 12, 0),
+            ],
         })
 
-        self.addConfigPanel(SpectraExclusionConfigPanel, 'Settings')
+        self.addConfigPanel(ui.RegionConfigPanel, 'Regions')
 
 
 class Spectra(ProcessingPlugin):

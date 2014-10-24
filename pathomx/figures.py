@@ -104,8 +104,8 @@ def extend_limits(a, b):
 
 
 def find_linear_scale(data):
-    scale = None
-    scale_name = None
+    scale = []
+    scale_name = []
     linear_scale = False
     longest = None
     if type(data.columns) == pd.MultiIndex:
@@ -118,6 +118,10 @@ def find_linear_scale(data):
                 linear_scale = True
                 scale = [v[n] for v in data.columns.values]
                 scale_name = data.columns.names[n]
+
+                if np.issubdtype(l.dtype, np.float):
+                    # Prefer float scales, assume more accurate
+                    break
     else:
         scale = []
         linear_scale = True
