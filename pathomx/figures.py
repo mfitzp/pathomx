@@ -462,10 +462,11 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=N
         plots[c] = ax.scatter(df.iloc[:, 0], df.iloc[:, 1], color=ls.markerfacecolor, marker=ls.marker, s=s)
 
 
-        # Calculate 95% confidence interval for data
-        ellip = plot_point_cov(df.values, nstd=2, linestyle='dashed', linewidth=0.5, edgecolor=ls.color,
-                               alpha=0.5)  #**kwargs for ellipse styling
-        ax.add_artist(ellip)
+        # Calculate 95% confidence interval for data but only if points >1
+        if df.values.shape[0] > 1:
+            ellip = plot_point_cov(df.values, nstd=2, linestyle='dashed', linewidth=0.5, edgecolor=ls.color,
+                                   alpha=0.5)  #**kwargs for ellipse styling
+            ax.add_artist(ellip)
 
     # If overlay lines are defined; plot + annotation           
     for x, y, label in lines:

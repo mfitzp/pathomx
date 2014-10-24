@@ -44,6 +44,42 @@ class ImportDataConfigPanel(ui.ConfigPanel):
 
         self.layout.addWidget(gb)
 
+        gb = QGroupBox('Layout')
+        grid = QGridLayout()
+
+        self.colh_sb = QSpinBox()
+        self.colh_sb.setMinimum(0)
+        grid.addWidget(QLabel('Column headers'), 0, 0)
+        grid.addWidget(self.colh_sb, 0, 1)
+        self.config.add_handler('column_headers', self.colh_sb)
+
+        self.colh_def_le = QLineEdit()
+        grid.addWidget(QLabel('Column defaults'), 1, 0)
+        grid.addWidget(self.colh_def_le, 1, 1)
+        self.config.add_handler('column_header_defaults', self.colh_def_le)
+
+        self.rowh_sb = QSpinBox()
+        self.rowh_sb.setMinimum(0)
+        grid.addWidget(QLabel('Row headers'), 2, 0)
+        grid.addWidget(self.rowh_sb, 2, 1)
+        self.config.add_handler('row_headers', self.rowh_sb)
+
+        self.rowh_def_le = QLineEdit()
+        grid.addWidget(QLabel('Row defaults'), 3, 0)
+        grid.addWidget(self.rowh_def_le, 3, 1)
+        self.config.add_handler('row_header_defaults', self.rowh_def_le)
+
+
+        self.transpose_cb = QCheckBox()
+        grid.addWidget(QLabel('Transpose (samples across)'), 4, 0)
+        grid.addWidget(self.transpose_cb, 4, 1)
+        self.config.add_handler('transpose', self.transpose_cb)
+
+
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
         gb = QGroupBox('Autodetect')
         grid = QGridLayout()
         self.cb_autodetect = QCheckBox()
@@ -119,6 +155,13 @@ class ImportTextApp(ui.GenericTool):
             'escapechar': b'',
             'quoting': csv.QUOTE_MINIMAL,
             'skipinitialspace': False,
+
+            'transpose': False,
+            'row_headers': 2,
+            'row_header_defaults': 'Sample,Class',
+            'column_headers': 1,
+            'column_header_defaults': 'Label',
+
         })
 
         self.addConfigPanel(ImportDataConfigPanel, 'Settings')
