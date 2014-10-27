@@ -150,7 +150,6 @@ def nonull(stream):
         yield line.replace('\x00', '')
 
 
-
 if sys.version_info < (3, 0):  # Python 2 only
 
 
@@ -263,14 +262,14 @@ def find_packager():
         return 'py2exe'
     elif frozen in ('macosx_app', ):
         return 'py2app'
-    elif frozen is True:
+    elif frozen:
         return True  # it doesn't ALWAYS set this return 'cx_Freeze' 
     else:
         return '<unknown packager: %r>' % (frozen, )
 
 # Get current running script folder (Pathomx app folder)
 pkg = find_packager()
-if pkg == None:
+if pkg is None:
     scriptdir = os.path.dirname(os.path.realpath(__file__))  # .rpartition('/')[0]
     # Check if Windows NSIST installed (are we running from Program Files
     if "pkgs" in scriptdir:
@@ -279,7 +278,7 @@ if pkg == None:
     else:
         # Really not a release package, carry on
         basedir = os.path.join(scriptdir, '..')
-elif pkg == True:
+elif pkg is True:
     scriptdir = os.path.dirname(sys.executable)
     basedir = scriptdir
 elif pkg == 'py2app':

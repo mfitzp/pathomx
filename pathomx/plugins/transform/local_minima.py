@@ -11,11 +11,9 @@ output_data[:] = data
 
 data = None
 
-
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
 View = spectra(output_data)
-
 
 output_data

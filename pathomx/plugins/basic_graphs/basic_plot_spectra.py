@@ -2,4 +2,3 @@
 from pathomx.figures import spectra
 
 View = spectra(input_data, styles=styles)
-

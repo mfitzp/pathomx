@@ -10,4 +10,3 @@ output_data = input_data
 from pathomx.figures import spectra
 
 View = spectra(output_data)
-

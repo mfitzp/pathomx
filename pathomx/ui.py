@@ -15,7 +15,6 @@ from collections import OrderedDict
 from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
-from . import db
 from . import displayobjects
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
@@ -144,7 +143,6 @@ class KernelStatusWidget(QWidget):
 
             w.setPalette(p)
 
-
     def sizeHint(self):
         return QSize(self.layout.count() * 10, 10)
 
@@ -225,7 +223,7 @@ class QNoneDoubleSpinBox(QDoubleSpinBox):
             return super(QNoneDoubleSpinBox, self).value()
 
     def setValue(self, v):
-        if v == None:
+        if v is None:
             self.is_None = True
             self.setEnabled(False)
             self.valueChanged.emit(-65535)  # Dummy value
@@ -260,7 +258,7 @@ class QListWidgetAddRemove(QListWidget):
         return r
 
     def removeItemAt(self, row, *args, **kwargs):
-        super(QListWidgetAddRemove, self).takeItem( row  )
+        super(QListWidgetAddRemove, self).takeItem(row)
         self.itemAddedOrRemoved.emit()
         return r
 
@@ -1065,10 +1063,8 @@ class MatchStyleManagerDialog(GenericDialog):
         item.setText(9, ls.fillstyle)
         item.setText(10, ls.hatch)
 
-        #item.setSizeHint(0, QSize(50,30) )
-
         for c, s, v in [(3, '▬', ls.color), (7, '▩', ls.markerfacecolor), (8, '▩', ls.markeredgecolor)]:
-            if v != None:
+            if v is not None:
                 item.setText(c, s)
                 item.setForeground(c, QColor(v))
 
@@ -1350,7 +1346,7 @@ class GenericApp(QObject):
         self.logger = logging.getLogger(self.id)
         self.logger.addHandler(logHandler)
 
-        if name == None:
+        if name is None:
             name = getattr(self, 'name', installed_plugin_names[id(self.plugin)])
         self.set_name(name)
 
@@ -1634,7 +1630,7 @@ class GenericApp(QObject):
 
     def delete(self):
         self.hide()
-        self.w.close() # Close the window
+        self.w.close()  # Close the window
 
         # Tear down the config and data objects
         self.data.reset()
@@ -1644,7 +1640,7 @@ class GenericApp(QObject):
         current_tools.remove(self)
 
         # Trigger notification for state change
-        self.editorItem = None # Remove reference to the GraphicsItem
+        self.editorItem = None  # Remove reference to the GraphicsItem
         self.deleteLater()
 
         self.deleted.emit()
@@ -1656,7 +1652,7 @@ class GenericApp(QObject):
         # self.parent().update_progress( id(self), progress)
 
     def autoconfig(self, signal):
-        if signal == RECALCULATE_ALL or self._latest_generator_result == None:
+        if signal == RECALCULATE_ALL or self._latest_generator_result is None:
             self.autogenerate()
 
         elif signal == RECALCULATE_VIEW:
@@ -1687,7 +1683,7 @@ class GenericApp(QObject):
 
     def hide(self):
         self.parent().toolDock.setWidget(self.parent().toolbox)
-        self.parent().activetoolDock.setWidget( QWidget() ) # Empty
+        self.parent().activetoolDock.setWidget(QWidget())  # Empty
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)
@@ -1859,7 +1855,6 @@ class GenericApp(QObject):
             act.setEnabled(False)  # Disable by default; nonstandard
             t.addAction(act)
 
-
         # Add custom toolbar option for selecting regions of matplotlib plots
         select_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone-select.png')), tr('Select regions from plot…'), self)
         select_regionAction.setCheckable(True)
@@ -1872,11 +1867,9 @@ class GenericApp(QObject):
 
         t._mpl_selection_region_action = select_regionAction
 
-
         self.views.currentChanged.connect(self.onMplToolBarCanvasChanged)
 
         self.toolbars['figure'] = t
-
 
     def dispatchMplEvent(self, e, callback):
         selected_view = self.views.widget(self.views.currentIndex())
@@ -1908,7 +1901,7 @@ class GenericApp(QObject):
         if selected_view and self.config.get('selected_data_regions') is not None:
             # FIXME: Copy; list mutable will fudge config - fix in pyqtconfig
             current_regions = self.config.get('selected_data_regions')[:]
-            current_regions.append( tuple([selected_view.name] + list(args)) )
+            current_regions.append(tuple([selected_view.name] + list(args)))
             self.config.set('selected_data_regions', current_regions)
 
     def onWatchSourceDataToggle(self, checked):
@@ -2148,6 +2141,7 @@ class SimpleFileOpenConfigPanel(ConfigPanel):
 
         self.finalise()
 
+
 class RegionConfigPanel(ConfigPanel):
     ''' Automatic config panel for selecting regions in data, e.g. for icoshift
 
@@ -2187,7 +2181,7 @@ class RegionConfigPanel(ConfigPanel):
         self.finalise()
 
     def onRegionRemove(self):
-        self.lw_variables.removeItemAt( self.lw_variables.currentRow() )
+        self.lw_variables.removeItemAt(self.lw_variables.currentRow())
 
     def map_list_fwd(self, s):
         " Receive text name, return the indexes "
@@ -2198,6 +2192,7 @@ class RegionConfigPanel(ConfigPanel):
         s = "\t".join([str(e) for e in x])
         self.fwd_map_cache[s] = x
         return s
+
 
 class ConfigTablePanel(QTableWidget):
 
@@ -2331,7 +2326,7 @@ class QCheckTreeWidget(QTreeWidget):
             if item.parent() is not None:
                 self.updateChecks(item.parent(), -1, recursing=True)
 
-        if recursing == False:
+        if not recursing:
             self.blockSignals(False)
             self.itemCheckedChanged.emit()
 

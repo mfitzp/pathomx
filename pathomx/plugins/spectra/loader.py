@@ -119,7 +119,7 @@ class PeakAdjConfigPanel(ui.ConfigPanel):
         self.finalise()
 
     def onSetCustomTarget(self):
-        if self._automated_update_config == False:
+        if self._automated_update_config is False:
             self.peak_target_cb.setCurrentText('Custom')
 
     def onSetPredefinedTarget(self):
@@ -467,7 +467,6 @@ class BaselineCorrectionTool(ui.IPythonApp):
         })
 
         self.addConfigPanel(BaselineCorrectionConfigPanel, 'Settings')
-
 
 
 class SpectraExclusionTool(ui.IPythonApp):

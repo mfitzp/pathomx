@@ -1,25 +1,8 @@
 # -*- coding: utf-8 -*-
-
-
-#import nmrglue as ng
-
-import csv
-import os
-import pprint
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-import scipy as sp
-
 import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
 
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
-
-import nmrglue as ng
 
 
 # Dialog box for Metabohunter search options
@@ -44,7 +27,6 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.config.add_handler('filename', self.filename)
         gb.setLayout(grid)
         self.layout.addWidget(gb)
-
 
         gb = QGroupBox('Phase correction')
         grid = QGridLayout()
@@ -89,7 +71,6 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
 
         gb.setLayout(grid)
         self.layout.addWidget(gb)
-
 
         gb = QGroupBox('Advanced')
         grid = QGridLayout()

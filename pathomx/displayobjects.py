@@ -5,6 +5,7 @@ from IPython.nbconvert.filters.markdown import markdown2html_mistune
 
 css = os.path.join(utils.scriptdir, 'html', 'css', 'style.css')
 
+
 class BaseObj(object):
 
     def __unicode__(self):
@@ -51,4 +52,4 @@ class Html(BaseObj):
 class Markdown(Html):
 
     def __init__(self, data, **kwargs):
-        super(Markdown, self).__init__( markdown2html_mistune(data) )
+        super(Markdown, self).__init__(markdown2html_mistune(data))

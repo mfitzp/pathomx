@@ -27,7 +27,7 @@ elif config['algorithm'] == 'PQN':
     #Apply to the entire considered spectrum
     output_data = input_data.T * scaling
     output_data = output_data.T
-    
+
 data = None
 # Clear so not expored
 data_a = None
@@ -41,7 +41,6 @@ scaling = None
 spectra_r = None
 
 tsa_data = None
-
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra

@@ -5,4 +5,3 @@ output_data.dropna(axis=1, inplace=True)
 from pathomx.figures import spectra
 
 View = spectra(output_data)
-

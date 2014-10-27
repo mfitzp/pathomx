@@ -56,4 +56,3 @@ output_data
 test_data = None
 
 control_data = None
-

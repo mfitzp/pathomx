@@ -53,7 +53,7 @@ with open(datafile, 'r') as f:
         if lead_protein_col:
             entity = row[lead_protein_col]
 
-        if entity == None and proteins_col:
+        if entity is None and proteins_col:
             entity = row[proteins_col].split(';')[0]
 
         entities.append(entity)
@@ -68,4 +68,3 @@ output_data
 from pathomx.figures import spectra
 
 View = spectra(output_data, styles=styles)
-

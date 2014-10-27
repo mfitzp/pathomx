@@ -14,4 +14,3 @@ from pathomx.figures import spectra
 Real = spectra(real)
 
 Imag = spectra(imag)
-

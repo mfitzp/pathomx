@@ -2,4 +2,3 @@
 from pathomx.figures import category_bar
 
 View = category_bar(input_data, styles=styles)
-

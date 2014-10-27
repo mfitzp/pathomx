@@ -1,6 +1,5 @@
 import logging
 
-
 from collections import namedtuple
 
 from .qt import *
@@ -13,11 +12,10 @@ from IPython.parallel import Client, TimeoutError, RemoteError
 
 from datetime import datetime
 import re
-
-import os, sys
+import os
+import sys
 from subprocess import Popen
 from IPython.parallel.apps import ipclusterapp
-
 
 # Kernel is busy but not because of us
 STATUS_BLOCKED = -1
@@ -27,6 +25,7 @@ STATUS_READY = 0
 STATUS_RUNNING = 1
 STATUS_COMPLETE = 2
 STATUS_ERROR = 3
+
 
 # from pkg_resources import load_entry_point
 # load_entry_point('ipython==3.0.0-dev', 'console_scripts', 'ipcluster')()
@@ -218,7 +217,7 @@ class InProcessRunner(BaseFrontendMixin, QObject):
         self._request_info = {
             'execute': {}
         }
-        
+
         self._callback_dict = {}
 
         self._result_queue = []
@@ -596,12 +595,11 @@ class RunManager(QObject):
 
     def interrupt(self):
         self.runner.interrupt_kernel()
-
         
     def start_cluster(self):
         # Start IPython ipcluster with 4 engines
         self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-        
+
     def stop_cluster(self):
         # Stop the ipcluster
         p = Popen([sys.executable, ipclusterapp.__file__, 'stop'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
@@ -653,17 +651,15 @@ class RunManager(QObject):
                 # We've got a running cluster
                 # remove the in-process kernel from the queue
                 if self.in_process_runner in self.runners:
-                    self.runners.remove( self.in_process_runner )
+                    self.runners.remove(self.in_process_runner)
 
         else:
             # We've got a -value for poll; it's terminated this will trigger restart on next poll
             self.stop_cluster()
 
-
-
     def create_user_kernel(self):
         # Create an in-process user kernel to provide dynamic access to variables
-         # Start an in-process runner for the time being
+        # Start an in-process runner for the time being
         self.in_process_runner = InProcessRunner()
         self.in_process_runner.kernel_client.execute('%reset -f')
         #self.in_process_runner.kernel_client.execute('%matplotlib inline')

@@ -67,7 +67,7 @@
         <ul class="large-block-grid-4">
             @for label, entity in entities:
                 <li>
-                    @if entity == None:
+                    @if entity is None:
                     <div href="pathomx://entities/" class="entity entity-not-mapped">
                     @else:
                     <a href="pathomx://db/@entity.type/@entity.id/view" class="entity">
@@ -76,7 +76,7 @@
                         <img src="file:///@entity.image">
                     @endif
                     <h3>@label!s</h3>
-                    @if entity == None:
+                    @if entity is None:
                         <span class="entity-no-mapped-text">Entity not mapped</span>
                         </div>
                     @else:

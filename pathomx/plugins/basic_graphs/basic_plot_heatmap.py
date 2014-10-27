@@ -2,4 +2,3 @@
 from pathomx.figures import heatmap
 
 View = heatmap(input_data, styles=styles)
-

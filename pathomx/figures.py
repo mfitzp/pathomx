@@ -289,7 +289,7 @@ def category_bar(data, figure=None, styles=None):
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
 
-    if data == None:
+    if data is None:
         assert False
 
     # Build x positions; we're grouping by X (entity) then plotting the classes
@@ -305,7 +305,7 @@ def category_bar(data, figure=None, styles=None):
 
     plots = OrderedDict()
     classes = dso.classes[0]
-    #labels = [e if e != None else dso.labels[1][n] for n,e in enumerate(dso.entities[1][0:limit_to]) ]
+    #labels = [e if e is not None else dso.labels[1][n] for n,e in enumerate(dso.entities[1][0:limit_to]) ]
     #data = dso.data[:,0:limit_to]
     data = np.array([dso.data[:, dso.labels[1].index(l)] for l in labels]).T[:, :limit_to]
 
@@ -462,7 +462,7 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=N
         else:
             df = data
 
-        s = ls.markersize ** 2 if ls.markersize != None else 20  #default
+        s = ls.markersize ** 2 if ls.markersize is not None else 20  #default
         plots[c] = ax.scatter(df.iloc[:, 0].values, df.iloc[:, 1].values, color=ls.markerfacecolor, marker=ls.marker, s=s)
 
 

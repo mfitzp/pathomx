@@ -75,7 +75,7 @@ for n, l in enumerate(labels):
     if hasattr(o, 'id'):
         current_biocyc[n] = o
         count += 1
-        
+
 
     elif type(o) is str:
         try:
@@ -84,7 +84,7 @@ for n, l in enumerate(labels):
             current_biocyc[n] = None
         else:
             count += 1
-            
+
 
     else:
         current_biocyc[n] = None

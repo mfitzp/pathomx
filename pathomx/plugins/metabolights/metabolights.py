@@ -62,4 +62,3 @@ output_data
 from pathomx.figures import spectra
 
 View = spectra(output_data, styles=styles)
-

@@ -32,7 +32,7 @@ from pyqtconfig import ConfigManager
 def get_available_plugins(plugin_places=None, include_deactivated=False):
     global available_tools_by_category
 
-    if plugin_places == None:
+    if plugin_places is None:
         plugin_places = settings.get('Plugins/Paths')[:]
 
     disabled_plugins = settings.get('Plugins/Disabled')
@@ -342,7 +342,7 @@ class BasePlugin(IPlugin):
         key = "%s.%s" % (self.id, tool.__name__)
         app_launchers[key] = tool
 
-        if workspace_category == None:
+        if workspace_category is None:
             workspace_category = self.default_workspace_category
 
         available_tools_by_category[workspace_category].append({
@@ -364,7 +364,7 @@ class BasePlugin(IPlugin):
     def register_menus(self, menu, entries):
 
         for entry in entries:
-            if entry == None:
+            if entry is None:
                 self.m.menuBars[menu].addSeparator()
             else:
                 menuAction = QAction(entry['title'], self.m)

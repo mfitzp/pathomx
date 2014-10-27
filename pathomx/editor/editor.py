@@ -123,7 +123,6 @@ class QGraphicsSceneExtend(QGraphicsScene):
     def addApp(self, app, position=None):
         i = ToolItem(app, position=position)
         self.addItem(i)
-
         #i.onShow()
 
         return i

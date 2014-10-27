@@ -7,6 +7,7 @@ from pathomx.plugins import AnalysisPlugin
 from pathomx.data import DataDefinition
 from pathomx.qt import *
 
+
 class TwoSampleConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, *args, **kwargs):
@@ -16,7 +17,6 @@ class TwoSampleConfigPanel(ui.ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Sample groups')
         grid = QGridLayout()
-
 
         self.cb_independent = QComboBox()
         self.cb_independent.addItems(['Independent', 'Related'])
@@ -34,8 +34,6 @@ class TwoSampleConfigPanel(ui.ConfigPanel):
         self.config.add_handler('plot_distribution', self.cb_histogram)
         grid.addWidget(QLabel('Plot distribution?'), 2, 0)
         grid.addWidget(self.cb_histogram, 2, 1)
-
-
 
         gb.setLayout(grid)
         self.layout.addWidget(gb)

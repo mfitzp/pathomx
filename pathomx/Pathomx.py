@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
         # Central variable for storing application configuration (load/save from file?
-        if settings.get('Pathomx/Is_setup') == False:
+        if settings.get('Pathomx/Is_setup') is False:
             logging.info("Setting up initial configuration...")
             # Defaults are now set in the globals; but we can auto-create the plugin folder
             try:
@@ -187,7 +187,6 @@ class MainWindow(QMainWindow):
                     settings.set('Pathomx/Update/Latest_version', r.text)
 
             settings.set('Pathomx/Update/Last_checked', int(time.time()))
-
 
         self.fonts = QFontDatabase()
 
@@ -523,7 +522,7 @@ class MainWindow(QMainWindow):
             item.sortChildren(0, Qt.AscendingOrder)
 
         self.toolbox.expandAll()
-    
+
     def addFileToolBar(self):
         t = self.addToolBar('File')
         t.setIconSize(QSize(16, 16))
@@ -1023,7 +1022,7 @@ class MainWindow(QMainWindow):
                 output, resources = IPyexport(IPyexporter_map[export_format], notebook)
                 with open(filename, 'w') as f:
                     f.write(output)
-                
+
     def export_to_notebook(self, include_outputs=True):
         '''
         Export an IPython notebook representing the entire workflow
@@ -1147,7 +1146,6 @@ class MainWindow(QMainWindow):
     #
     #    else:
     #        return super(QApplicationExtend, self).event(e)
-
 
 def main():
 

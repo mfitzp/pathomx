@@ -22,7 +22,7 @@ else:
 
 if config['column_headers'] == 1:
     column_headers = 0
-elif config['column_headers'] >1:
+elif config['column_headers'] > 1:
     column_headers = range(config['column_headers'])
 else:
     column_headers = None
@@ -36,7 +36,6 @@ else:
 with open(config['filename'], 'rU') as f:
 
     if config['transpose']:
-
 
         # We're samples across
         output_data = pd.read_csv(f,
@@ -55,13 +54,13 @@ with open(config['filename'], 'rU') as f:
 # Check if we've got a singluar index (not multiindex) and convert
 if not isinstance(output_data.index, pd.MultiIndex):
     output_data.index = pd.MultiIndex.from_tuples(
-        zip(output_data.index.values, range(1, len(output_data.index.values)+1) ),
+        zip(output_data.index.values, range(1, len(output_data.index.values) + 1)),
         names=['Sample'])
 
 
 if not isinstance(output_data.columns, pd.MultiIndex):
     output_data.columns = pd.MultiIndex.from_tuples(
-        zip(output_data.columns.values, range(1, len(output_data.columns.values)+1) ),
+        zip(output_data.columns.values, range(1, len(output_data.columns.values) + 1)),
         names=['Label', 'Measurement'])
 
 

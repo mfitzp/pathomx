@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import copy
-
-import numpy as np
-#from icoshift import icoshift
-
 import pathomx.ui as ui
 
 from pathomx.plugins import ProcessingPlugin
@@ -19,6 +13,7 @@ def icoshift(xt,  xp,  inter='whole',  n='f', scale=None, coshift_preprocessing=
              coshift_preprocessing_max_shift=None, fill_with_previous=True, average2_multiplier=3):
 
 '''
+
 
 # Dialog box for Metabohunter search options
 class IcoshiftConfigPanel(ui.ConfigPanel):
@@ -44,7 +39,6 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         self.config.add_handler('average2_multiplier', average2_sb)
         self.display_options['target']['average2'] = (average2_l, average2_sb)
 
-
         spectran_l = QLabel('Spectra number')
         spectran_sb = QSpinBox()
         spectran_sb.setMinimum(0)
@@ -53,7 +47,6 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         self.config.add_handler('spectra_number', spectran_sb)
         self.display_options['target']['spectra_number'] = (spectran_l, spectran_sb)
 
-
         self.layout.addWidget(gb)
 
         gb = QGroupBox('Intervals')
@@ -61,7 +54,7 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         gb.setLayout(gd)
         self.mode_cb = QComboBox()
 
-        self.mode_cb.addItems(['whole', 'number_of_intervals', 'length_of_intervals', 'selected_intervals'])  #, 'define', 'reference_signal'])
+        self.mode_cb.addItems(['whole', 'number_of_intervals', 'length_of_intervals', 'selected_intervals'])  # , 'define', 'reference_signal'])
         self.config.add_handler('intervals', self.mode_cb)
         gd.addWidget(self.mode_cb, 0, 0)
 
@@ -81,16 +74,13 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         self.layout.addWidget(gb)
         self.display_options['intervals']['length_of_intervals'] = (length_intervals_l, length_intervals_sb)
 
-
-
-
         gb = QGroupBox('Maximum shift')
         gd = QGridLayout()
         gb.setLayout(gd)
         self.mode_cb = QComboBox()
         self.mode_cb.addItems(['n', 'b', 'f'])
         self.config.add_handler('maximum_shift', self.mode_cb)
-        gd.addWidget(self.mode_cb,0,0)
+        gd.addWidget(self.mode_cb, 0, 0)
 
         maxshift_l = QLabel('Max shift (n)')
         maxshift_sb = QSpinBox()
@@ -116,7 +106,6 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
 
         self.layout.addWidget(gb)
 
-
         gb = QGroupBox('Miscellaneous')
         gd = QGridLayout()
         gb.setLayout(gd)
@@ -127,8 +116,7 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
         gd.addWidget(self.fill_previous, 0, 0)
         self.layout.addWidget(gb)
 
-
-        self.change_display() # Set starting state
+        self.change_display()  # Set starting state
         self.finalise()
 
     def change_display(self, *args):
@@ -140,7 +128,6 @@ class IcoshiftConfigPanel(ui.ConfigPanel):
                         oo.show()
                     else:
                         oo.hide()
-
 
 '''
 ALL OPTIONS
@@ -207,6 +194,7 @@ class IcoshiftApp(ui.IPythonApp):
 
         self.addConfigPanel(IcoshiftConfigPanel, 'Settings')
         self.addConfigPanel(ui.RegionConfigPanel, 'Regions')
+
 
 class Icoshift(ProcessingPlugin):
 

@@ -5,4 +5,3 @@ output_data = np.log10(input_data)
 from pathomx.figures import spectra
 
 View = spectra(output_data)
-

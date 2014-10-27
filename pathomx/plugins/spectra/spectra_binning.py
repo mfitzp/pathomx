@@ -59,4 +59,3 @@ from pathomx.figures import spectra, difference
 View = spectra(output_data, styles=styles)
 
 Difference = difference(input_data, output_data, styles=styles)
-

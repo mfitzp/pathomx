@@ -39,7 +39,6 @@ class PLSDAConfigPanel(ui.ConfigPanel):
         self.config.add_handler('plot_sample_numbers', cb)
         self.layout.addWidget(cb)
 
-
         self.finalise()
 
 

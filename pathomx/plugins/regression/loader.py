@@ -12,7 +12,7 @@ from pathomx.qt import *
 
 
 def make_label_for_entry(*args):
-    return '\t'.join(map(str, [s for s in args if s != None]))
+    return '\t'.join(map(str, [s for s in args if s is not None]))
 
 
 # Dialog box for Metabohunter search options

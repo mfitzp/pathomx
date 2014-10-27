@@ -48,7 +48,7 @@ def load_bruker_fid(fn, pc_init=None, config={}):
 
 
 def autophase(nmr_data, pc_init=None, algorithm='Peak_minima'):
-    if pc_init == None:
+    if pc_init is None:
         pc_init = [0, 0]
 
     fn = {
@@ -156,11 +156,9 @@ for r, d, files in os.walk(config['filename']):  # filename contains a folder fo
             if not m:
                 continue
 
-
         # The following is a hack; need some interface for choosing between processed/raw data
         # and for various formats of NMR data input- but simple
         fids.append(r)
-
 
 total_fids = len(fids)
 pc_init = None
@@ -180,7 +178,7 @@ for n, fid in enumerate(fids):
             label = os.path.basename(fid)
 
         elif config['sample_id_from'] == 'Sequential':
-            label = str(n+1)
+            label = str(n + 1)
 
         elif config['sample_id_from'] == 'Experiment (regexp)':
             if sample_id_regexp is None:
@@ -241,7 +239,6 @@ for n, fid in enumerate(fids):
 
         else:
             classn = ''
-
         #if 'AUTOPOS' in dic['acqus']:
         #    label = label + " %s" % dic['acqus']['AUTOPOS']
 
@@ -297,4 +294,3 @@ if _ppm_real_scan_folder:
 
 else:
     raise Exception("No valid data found")
-

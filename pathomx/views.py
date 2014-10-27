@@ -145,7 +145,7 @@ class ViewManager( QTabWidget ):
     def onRefreshAll(self): #, to_refresh=None):
         to_delete = []
         
-        #if to_refresh == None:
+        #if to_refresh is None:
         #    others = set( range(self.count()) )
         #    others.discard(self.currentIndex())
         #    self._refresh_later.update( others )
@@ -225,10 +225,10 @@ class BaseView(object):
         self.generate( **self.vm.data[ self.name ] )
         
     def _build_entity_cmp(self,s,e,l):
-        return e == None
+        return e is None
 
     def _build_label_cmp(self,s,e,l):
-        return e != None or l == None or str(s) == l
+        return e is not None or l is None or str(s) == l
 
     def build_markers(self, zo, i, cmp_fn):
         accumulator = []
@@ -240,7 +240,7 @@ class BaseView(object):
                 last_v = None
                 continue
             no += 1
-            if last_v == None or v != accumulator[-1][2]:
+            if last_v is None or v != accumulator[-1][2]:
                 accumulator.append( [s,s,v] )
             else:
                 accumulator[-1][1] = s

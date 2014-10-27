@@ -39,11 +39,10 @@ for n, dr in enumerate(input_data.values):
         dr = ng.process.proc_bl.cbf_explicit(dr, calc=slice(cbf_explicit_start, cbf_explicit_end))
 
     input_data.values[n, :] = dr
-    
+
 output_data = input_data
 
 # Generate simple result figure (using pathomx libs)
 from pathomx.figures import spectra
 
 View = spectra(output_data, styles=styles)
-

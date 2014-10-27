@@ -46,7 +46,7 @@ with open(os.path.join(_pathomx_tempdir, 'kegg-pathway-data.txt'), 'w') as tmp:
     tmp.write('#hsa\tData\n')
     for k, c in list(node_colors.items()):
         tmp.write('%s\t%s\n' % (k, c[0]))
-    
+
 m = MultipartEncoder(
         fields={
           'map': config['kegg_pathway_id'],

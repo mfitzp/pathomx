@@ -302,7 +302,7 @@ class DataManager(QObject):
     # Build import/hooks for this consumable object (need interface logic here; standardise where things will end up)
     def can_consume(self, source_manager, source_interface, consumer_defs=None, interface=None):
 
-        if consumer_defs == None:
+        if consumer_defs is None:
             consumer_defs = self.consumer_defs
 
         if interface:
@@ -356,7 +356,7 @@ class DataManager(QObject):
 
     # Check if we can consume some data, then do it
     def _consume(self, source_manager, source_interface, consumer_defs=None):
-        if consumer_defs == None:
+        if consumer_defs is None:
             consumer_defs = self.consumer_defs
 
         # Check whether this is allowed (checks manager, checks hierarchy (infinite loopage) )
@@ -480,7 +480,7 @@ class NumpyArrayDataDefinition(DataDefinition):
             return False
 
         for n, cr in enumerate(d):
-            if cr == None:  # No restriction on this definition
+            if cr is None:  # No restriction on this definition
                 logging.debug('  pass')
                 continue
 
@@ -525,7 +525,7 @@ class PandasDataDefinition(NumpyArrayDataDefinition):
             if not isinstance(m, tuple):
                 m = (m, )
             for i in m:
-                vl.append( m in o.columns.names )
+                vl.append(m in o.columns.names)
 
         return all(vl)
 

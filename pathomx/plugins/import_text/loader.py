@@ -69,12 +69,10 @@ class ImportDataConfigPanel(ui.ConfigPanel):
         grid.addWidget(self.rowh_def_le, 3, 1)
         self.config.add_handler('row_header_defaults', self.rowh_def_le)
 
-
         self.transpose_cb = QCheckBox()
         grid.addWidget(QLabel('Transpose (samples across)'), 4, 0)
         grid.addWidget(self.transpose_cb, 4, 1)
         self.config.add_handler('transpose', self.transpose_cb)
-
 
         gb.setLayout(grid)
 

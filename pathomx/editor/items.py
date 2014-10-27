@@ -1,6 +1,5 @@
 import os
-import sys
-import copy
+
 import math
 from .. import utils
 from ..globals import settings
@@ -113,7 +112,7 @@ class BaseInteractiveItem(BaseItem):
         self.setAcceptHoverEvents(True)
 
     def hoverEnterEvent(self, e):
-        if self._effects_locked == False:
+        if not self._effects_locked:
             shadow = QGraphicsDropShadowEffect(
                 blurRadius=10,
                 color=QColor(SHADOW_COLOR),
@@ -124,7 +123,7 @@ class BaseInteractiveItem(BaseItem):
             self.graphicsEffect().setEnabled(True)
 
     def hoverLeaveEvent(self, e):
-        if self._effects_locked == False:
+        if not self._effects_locked:
             self.graphicsEffect().setEnabled(False)
 
 
@@ -215,7 +214,6 @@ class ToolItem(BaseItem):
         i = datai[0].v.editorItem.input.interface_items[datai[1]]
         # (data.manager, data.manager_interface), (self, interface)
 
-
         linker = LinkItem(o, i)  # , o.output.settings[1], i.input.settings[1])
         linker.data = (datao[0], datao[1])  # Get the dso from the interface
         linker.updateLine()
@@ -278,7 +276,7 @@ class ToolItem(BaseItem):
         vc = {}
         for wid in range(self.app.views.count()):
             if hasattr(self.app.views.widget(wid), 'is_floatable_view') and \
-               self.app.views.widget(wid).is_floatable_view == True:
+               self.app.views.widget(wid).is_floatable_view:
                 def make_callback(i):
                     return lambda n: self.onAddView(n, i)
 
@@ -314,7 +312,7 @@ class ToolItem(BaseItem):
             return snapPos
 
         elif change == QGraphicsItem.ItemSelectedChange:
-            if value == True:
+            if value:
                 selected_shadow = QGraphicsColorizeEffect(
                     color=QColor(SELECT_COLOR),
                     strength=1,
@@ -335,10 +333,9 @@ class ToolItem(BaseItem):
 
     def onPauseChange(self, is_paused):
         if is_paused:
-            self.status_icon.setPixmap(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')).pixmap( QSize(16,16)))
+            self.status_icon.setPixmap(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')).pixmap(QSize(16, 16)))
         else:
             self.status_icon.setPixmap(QPixmap())
-
 
 
 class ToolIcon(BaseInteractiveItem):
@@ -407,7 +404,7 @@ class ToolInterfaceHandler(BaseItem):
         self.prepareGeometryChange()
         for interface in self.interfaces.keys():
             self.interface_items[interface].prepareGeometryChange()
-            self.scene().removeItem( self.interface_items[interface] )
+            self.scene().removeItem(self.interface_items[interface])
             del self.interface_items[interface]
 
         self.interfaces = {}
@@ -496,7 +493,7 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         elif self.interface_type == 'output':
             return not self.app.data.o[self.interface_name] is None
-        
+
     def updateShape(self, l):
         ''' Update polygon shape to the specified length (to match inner text) '''
         w = 5
@@ -514,7 +511,7 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
     def mouseMoveEvent(self, event):
 
-        if self._linkInProgress == None:
+        if self._linkInProgress is None:
             if self.interface_type == 'output':
                 self._linkInProgress = LinkItem(self, event)  # source_offset=self.scenePos())
                 self.scene().addItem(self._linkInProgress)
@@ -576,7 +573,7 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
         """
         #super(ToolInterface, self).paint(painter, option, widget)
 
-        #self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface == None or self.interface.is_empty) ]
+        #self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface is None or self.interface.is_empty) ]
 
         brush = QBrush(QColor(self.color))
         painter.setBrush(brush)
@@ -699,7 +696,6 @@ class LinkItem(QGraphicsPathItem):
     def onDelete(self):
         if self.sink:
             self.sink.app.data.unget(self.sink.interface_name)
-
 
 
 class ToolProgressItem(BaseItem):
@@ -966,11 +962,11 @@ class BaseAnnotationItem(ResizableGraphicsItem):
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedChange:
-            if value == False:
+            if not value:
                 self.removeHandlers()
 
         elif change == QGraphicsItem.ItemSelectedHasChanged:
-            if value == True:
+            if value:
                 self.addHandlers()
 
         return super(BaseAnnotationItem, self).itemChange(change, value)
@@ -1042,7 +1038,7 @@ class AnnotationTextItem(QGraphicsRectItem, BaseAnnotationItem):
         tr = self.text.boundingRect()
         nr = QRect(0, 0, tr.width() + RESIZE_HANDLE_SIZE * 2, tr.height() + RESIZE_HANDLE_SIZE * 2)
         super(AnnotationTextItem, self).setRect(minimalQRect(r, nr))
-        self.text.setPos(QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) + QPointF( self.rect().x(), self.rect().y() ) )
+        self.text.setPos(QPointF(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE) + QPointF(self.rect().x(), self.rect().y()))
 
     def _createFromMousePressEvent(self, e):
         r = QRectF(QPointF(0, 0), QPointF(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE))

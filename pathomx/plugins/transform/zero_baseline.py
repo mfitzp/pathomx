@@ -7,4 +7,3 @@ output_data = input_data + -minima
 from pathomx.figures import spectra
 
 View = spectra(output_data)
-
