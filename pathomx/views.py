@@ -49,7 +49,7 @@ progversion = "0.1"
 
         
 # Web views default HTML
-BLANK_DEFAULT_HTML = '''
+BLANK_DEFAULT_HTML = """
 <html>
 <style>
     * {
@@ -60,7 +60,7 @@ BLANK_DEFAULT_HTML = '''
     }
 </style>
 <body>&nbsp;</body></html>
-'''
+"""
 
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
@@ -101,7 +101,7 @@ class ViewManager( QTabWidget ):
     
     # A few wrappers to 
     def addView(self, widget, name, color=None, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
-        '''
+        """
         Add a view to this view manager.
 
         Adds the specified widget to the ViewManager under a named tab.
@@ -111,7 +111,7 @@ class ViewManager( QTabWidget ):
         :param name: The name of the widget, will be shown on the tab and used as a data-redirector selector.
         :type name: str
         :rtype: int tab/view index     
-        '''
+        """
         
         widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if we're refreshing a more interesting one
@@ -136,7 +136,7 @@ class ViewManager( QTabWidget ):
         return t
     
     def get_type(self, name):
-        ''' Return the type of a current view (by name) used to check whether to re-add/replace widget '''
+        """ Return the type of a current view (by name) used to check whether to re-add/replace widget """
         if name in self.views:
             return type(self.views[name])
         else:
@@ -183,18 +183,18 @@ class ViewManager( QTabWidget ):
     #    self._refresh_later.clear()
         
     def addTab(self, widget, name, **kwargs):
-        '''
+        """
         Overridden to redirect addTab calls to addView method. Do not use.
-        '''
+        """
         self.addView(widget, name, **kwargs)
     
     def autoSelect(self):
-        '''
+        """
         Autoselect one of the current views.
 
         Iterates through all current views and selects the first that is not flagged `_unfocus_on_refresh`. 
         This is used primarily to unfocus the help tabs following successful data calculation.
-        '''    
+        """    
         if self._auto_unfocus_tabs:
             cw = self.currentWidget()
             if cw._unfocus_on_refresh:
@@ -394,12 +394,12 @@ class WebView(QWebView, BaseView):
        
     def _loadFinished(self, ok):
         # FIXME for ref to parent; will need to pass something as obj parent
-        '''
+        """
         sizer = self.w.views.size()
         self.page().currentFrame().addToJavaScriptWindowObject("QtWebView", self)
         self.page().currentFrame().evaluateJavaScript( "QtViewportSize={'x':%s,'y':%s};" % ( sizer.width()-30, sizer.height()-80 ) ) #-magic number for scrollbars (ugh)        
         self.page().currentFrame().evaluateJavaScript( "_pathomx_render_trigger();" )
-        '''
+        """
  
     def saveAsImage(self,settings): # Size, dots per metre (for print), resample (redraw) image
         filename, _ = QFileDialog.getSaveFileName(self, 'Save current figure', '',  "Tagged Image File Format (*.tif);;\
@@ -753,7 +753,8 @@ class MplView(FigureCanvas, BaseView):
         # Install navigation handler; we need to provide a Qt interface that can handle multiple 
         # plots in a window under separate tabs
         self.navigation = MplNavigationHandler(self)
-        
+
+        self._current_axis_bounds = None
 
     def generate(self):
         pass
@@ -796,7 +797,7 @@ class MplView(FigureCanvas, BaseView):
     def extend_limits(self, a, b):
         # Extend a to meet b where applicable
         ax, ay = list(a[0]), list(a[1])
-        bx, by = b[:,0], b[:,1]
+        bx, by = b[:, 0], b[:, 1]
    
         ax[0] = bx[0] if bx[0] < ax[0] else ax[0]
         ax[1] = bx[1] if bx[1] > ax[1] else ax[1]
@@ -810,7 +811,7 @@ class MplView(FigureCanvas, BaseView):
 class IPyMplView(MplView):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def generate(self, fig=None):
-            
+
         if fig is None:
             return
         
@@ -820,6 +821,19 @@ class IPyMplView(MplView):
 
         fig.set_dpi(100)
 
+        lims = []
+        bounds = []
+        pos = []
+
+        # Reset the xlim and ylim to the previous figure
+        for a in self.fig.get_axes():
+            xmin, xmax = a.get_xlim()
+            ymin, ymax = a.get_ylim()
+
+            lims.append((xmin, xmax, ymin, ymax))
+            pos.append(a.get_position().frozen())
+
+
         self.ax = None
         del self.fig
         del self.figure
@@ -828,12 +842,31 @@ class IPyMplView(MplView):
         self.figure = fig
         self.fig.set_canvas(self)
 
+        boundsl = []
+        for i, a in enumerate(self.fig.get_axes()):
+            xmin, xmax, ymin, ymax = lims[i]
+            bounds = (a.get_xbound(), a.get_ybound())
+            if self._current_axis_bounds and self._current_axis_bounds[i] == bounds:
+                    a.set_xlim((xmin, xmax))
+                    a.set_ylim((ymin, ymax))
+                    a.set_position(pos[i], 'active')
+
+            else:
+                # Reset the view if we've gone too far
+                a.set_position(a.get_position().frozen(), 'original')
+
+            boundsl.append(bounds)
+
+        self._current_axis_bounds = boundsl
+
+
         self.redraw()
         self.draw()
- 
+
+        self.is_blank = False
 
 class DataFrameModel(QAbstractTableModel):
-    ''' data model for a DataFrame class '''
+    """ data model for a DataFrame class """
     def __init__(self):
         super(DataFrameModel, self).__init__()
         self.df = pd.DataFrame()
@@ -842,8 +875,8 @@ class DataFrameModel(QAbstractTableModel):
         self.df = dataFrame
 
     def signalUpdate(self):
-        ''' tell viewers to update their data (this is full update, not
-        efficient)'''
+        """ tell viewers to update their data (this is full update, not
+        efficient)"""
         self.layoutChanged.emit()
 
     #------------- table display functions -----------------
@@ -885,7 +918,7 @@ class DataFrameModel(QAbstractTableModel):
 
 
 class DataFrameWidget(QWidget, BaseView):
-    ''' a simple widget for using DataFrames in a gui '''
+    """ a simple widget for using DataFrames in a gui """
     def __init__(self, dataFrame, parent=None):
         super(DataFrameWidget, self).__init__(parent.w)
 

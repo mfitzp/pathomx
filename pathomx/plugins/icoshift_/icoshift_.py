@@ -65,11 +65,11 @@ xCS, ints, ind, target = icoshift(target, spc,
                                   fill_with_previous=config['fill_with_previous'],
                                                                )
 
-output_data = input_data
+output_data = input_data.copy()
 output_data[:] = xCS
 
 # Generate simple result figure (using pathomx libs)
-from pathomx.figures import spectra
+from pathomx.figures import spectra, difference
 
 regions = []
 ymin, ymax = np.min(spc.flatten()), np.max(spc.flatten())
@@ -78,4 +78,5 @@ for r in config['selected_data_regions']:
     regions.append((x0, ymax, x1, ymin))
 
 View = spectra(output_data, styles=styles, regions=regions)
+Difference = difference(input_data, output_data)
 spc = None
