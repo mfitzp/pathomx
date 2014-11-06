@@ -226,6 +226,9 @@ class ToolItem(BaseItem):
 
         self._links[datai] = linker
 
+        datao[0].v.editorItem.auto_position_children()
+
+
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
@@ -241,6 +244,26 @@ class ToolItem(BaseItem):
             linker.sink._links.remove(linker)
 
             del self._links[datai]
+
+        datao[0].v.editorItem.auto_position_children()
+
+
+    def auto_position_children(self):
+        if settings.get('Editor/Auto_position'):
+            # Iterate over the child data tools and distribute at least +200 in x, and evenly in y
+            x, y = [], []
+            items = []
+            for _, cs in self.app.data.watchers.items():
+                for c in cs:
+                    item = c.v.editorItem # Blimey
+                    items.append(item)
+
+            n = len(items)
+            center_y = float(n-1) * 200 / 2
+
+            for n, i in enumerate(items):
+                i.setPos( QPointF(i.x() if i.x() > self.x() + 200 else self.x() + 200, self.y() + (n * 200) - center_y ) )
+                i.auto_position_children()
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:

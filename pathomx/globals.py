@@ -58,6 +58,7 @@ if not ON_RTD:
 
         'Editor/Snap_to_grid': False,
         'Editor/Show_grid': True,
+        'Editor/Auto_position': True,
     })
 
     mono_fontFamilies = {'Windows': 'Courier New',

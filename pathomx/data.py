@@ -206,7 +206,6 @@ class DataManager(QObject):
         self.o = {}  # Outputs
 
         self.watchers = defaultdict(set)  # List of watchers on each output interface
-        self.viewers = defaultdict(set)  # List of watchers on each output interface
 
     # Get a dataset through input interface id;
     # This provides indirect access to a copy of the object (local link in self.i = {})

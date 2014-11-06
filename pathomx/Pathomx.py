@@ -579,6 +579,13 @@ class MainWindow(QMainWindow):
         show_gridAction.triggered.connect(self.onGridToggle)
         t.addAction(show_gridAction)
 
+        auto_placementAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'lightning.png')), tr('Auto position'), self)
+        auto_placementAction.setStatusTip('Automatically position tools in workflow editor')
+        auto_placementAction.setCheckable(True)
+        settings.add_handler('Editor/Auto_position', auto_placementAction)
+        t.addAction(auto_placementAction)
+
+
     def addEditModeToolBar(self):
         t = self.addToolBar('Edit mode')
         t.setIconSize(QSize(16, 16))
