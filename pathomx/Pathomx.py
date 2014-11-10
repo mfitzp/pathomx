@@ -124,6 +124,10 @@ PATHWAY_ROOTS = ['Activation-Inactivation-Interconversion', 'Biosynthesis', 'Deg
 
 class ToolTreeWidget(QTreeWidget):
 
+    def __init__(self, *args, **kwargs):
+        super(ToolTreeWidget, self).__init__(*args, **kwargs)
+        self.itemDoubleClicked.connect(self.double_click_launcher)
+
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.LeftButton:  # Possible fix for Windows hang bug https://bugreports.qt-project.org/browse/QTBUG-10180
             logging.debug('Starting drag-drop of workspace item.')
@@ -144,6 +148,10 @@ class ToolTreeWidget(QTreeWidget):
 
         else:
             e.ignore()
+
+    def double_click_launcher(self, item):
+        app_id = item.data['id']
+        self.m.editor.createApp(app_id)
 
 
 class MainWindow(QMainWindow):
@@ -371,6 +379,7 @@ class MainWindow(QMainWindow):
         self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
         self.toolbox.setHeaderLabels(['Available tools'])
         self.toolbox.setUniformRowHeights(True)
+        self.toolbox.m = self
         self.buildToolbox()
 
         self.toolDock = QDockWidget(tr('Toolbox'))

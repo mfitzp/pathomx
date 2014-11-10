@@ -251,7 +251,6 @@ class ToolItem(BaseItem):
     def auto_position_children(self):
         if settings.get('Editor/Auto_position'):
             # Iterate over the child data tools and distribute at least +200 in x, and evenly in y
-            x, y = [], []
             items = []
             for _, cs in self.app.data.watchers.items():
                 for c in cs:
@@ -262,8 +261,24 @@ class ToolItem(BaseItem):
             center_y = float(n-1) * 200 / 2
 
             for n, i in enumerate(items):
-                i.setPos( QPointF(i.x() if i.x() > self.x() + 200 else self.x() + 200, self.y() + (n * 200) - center_y ) )
+                i.setPos( i.calculate_auto_position_x(), self.y() + (n * 200) - center_y )
                 i.auto_position_children()
+
+    def calculate_auto_position_x(self):
+        """
+        Auto position at furthest x of parent +200
+        """
+        x = []
+        for _, cs in self.app.data.i.items():
+            if cs:
+                cm, ci = cs
+                x.append( cm.v.editorItem.x() )
+
+        if max:
+            return max(x) + 200
+        else:
+            return self.x()
+
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
@@ -328,11 +343,15 @@ class ToolItem(BaseItem):
 
     def itemChange(self, change, value):
         # Snap to grid in QGraphicsView (if enabled)
-        if change == QGraphicsItem.ItemPositionChange and settings.get('Editor/Snap_to_grid'):
-            newPos = value  # .toPointF()
-            snap = 100
-            snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
-            return snapPos
+
+        if change == QGraphicsItem.ItemPositionChange:
+            self.auto_position_children()
+            if settings.get('Editor/Snap_to_grid'):
+                newPos = value  # .toPointF()
+                snap = 100
+                snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
+                return snapPos
+
 
         elif change == QGraphicsItem.ItemSelectedChange:
             if value:

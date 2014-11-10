@@ -3,7 +3,7 @@ from .. import utils
 from ..qt import *
 
 from .items import *
-from ..globals import settings, app_launchers, file_handlers
+from ..globals import settings, app_launchers, file_handlers, current_tools
 from pyqtconfig import ConfigManager
 
 try:
@@ -164,6 +164,26 @@ class QGraphicsSceneExtend(QGraphicsScene):
                     a = file_handlers[ext](position=scenePos, auto_focus=False, filename=fn)
                     self.centerOn(a.editorItem)
                     e.accept()
+
+    def createApp(self, app_id):
+        # We have no position data, so auto-create at the furthest-right + 200
+        x, y = [], []
+        for a in current_tools:
+            i = a.editorItem
+            x.append(i.x())
+            y.append(i.y())
+
+        if len(x) > 0:
+            # Default position
+            target_x = max(x) + 200
+            target_y = sum(y) / len(y)
+        else:
+            target_x = 0
+            target_y = 0
+
+        a = app_launchers[app_id](self.m, position=QPointF(target_x, target_y), auto_focus=False)
+
+
 
     def getXMLAnnotations(self, root):
 
