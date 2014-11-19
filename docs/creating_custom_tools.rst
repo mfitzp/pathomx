@@ -190,7 +190,7 @@ following code to the file:
     # Repeat the gremlin action 'evilness' times
     for n in range( config['evilness'] ):
 
-        if config['gremlin_type'] == 1:
+        if config['gremlin_type'] == GREMLIN_RANDOM:
             gremlin_type = randint(1,5)
         else:
             gremlin_type = config['gremlin_type']
