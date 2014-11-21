@@ -183,8 +183,6 @@ class QGraphicsSceneExtend(QGraphicsScene):
 
         a = app_launchers[app_id](self.m, position=QPointF(target_x, target_y), auto_focus=False)
 
-
-
     def getXMLAnnotations(self, root):
 
     # Iterate over the entire set (in order) creating a XML representation of the MatchDef and Style
