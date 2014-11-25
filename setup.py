@@ -6,7 +6,7 @@ from copy import copy
 import collections
 from setuptools import setup, find_packages
 
-__version__ = open(os.path.join('pathomx','VERSION'),'rU').read()
+__version__ = open('VERSION','rU').read()
 sys.path.insert(0,'pathomx')
 setup(
 
@@ -49,7 +49,8 @@ setup(
     },
 
     install_requires = [
-            #'PyQt5',
+            'PyQt5',
+            'sip',
             'numpy>=1.5.0',
             'scipy>=0.14.0',
             'pandas>=0.14.0',
@@ -58,18 +59,31 @@ setup(
             'mplstyler',
             'pyqtconfig',
             'scikit-learn',
+            'sklearn',
             'requests',
             'yapsy',
+
+            'mistune',
+            'jsonschema',
+            'jsonpointer',
+            'dateutil',
+            'zmq',
+            'pygments',
+            'pyparsing',
+            'markupsafe',
+            'wheezy',
+            'pydot',
+            'jinja2',
+            'six',
+            'gpml2svg',
+            'biocyc',
+            'metaviz',
+            'mplstyler',
+            'icoshift',
+
+            'nmrglue',
             ],
 
-    install_recommends = [
-            'gpml2svg',
-            'icoshift',
-            'nmrglue',
-            'pydot',
-            'nmrglue',
-            'nmrglue.fileio.fileiobase',
-            ],
 
     keywords='bioinformatics data analysis metabolomics research science',
     license='GPL',

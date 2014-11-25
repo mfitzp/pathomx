@@ -16,9 +16,9 @@ You may need to install a copy of the `Visual C++ Redistributable Packages for V
 if it isn't already installed on your system. Follow the above link, click *Download* and select *vcredist_x64.exe*. Download and install
 as for any other package.
 
-To begin using Pathomx, take a look at :ref:`getting-started`.
-
 * `v3.0.2 (EXE installer) Windows Vista/7/8 (64bit) <http://download.pathomx.org/Pathomx-3.0.2.exe>`_
+
+To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
@@ -33,9 +33,9 @@ MacOS X
 Download the latest release as a `Mac Disk Image (.dmg)`_. Double-click to open, and drag
 the Pathomx application into your Applications folder. Launch for any other app.
 
-To begin using Pathomx, take a look at :ref:`getting-started`.
-
 * `v3.0.2 (Disk Image) MacOS X Mountain Lion <http://download.pathomx.org/Pathomx-3.0.2.dmg>`_
+
+To begin using Pathomx, take a look at :ref:`getting-started`.
 
 Previous releases are also available for download if required:
 
