@@ -45,18 +45,8 @@ class PathomxTool(object):
 
 def pathomx_notebook_start(varsi, vars):
 
-
-# Wipeout variables possibly hang around from previous runs
-#for k in list( vars.keys() ):
-#    if type(vars[k]) in MAGIC_TYPES and \
-#        not k.startswith('_'):
-#            del vars[k]
-
     for k, v in varsi.items():
         vars[k] = v
-
-    # _keep_input_vars = ['styles']
-    # vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
 
     # Handle IO magic
     for k, v in vars['_io']['input'].items():
