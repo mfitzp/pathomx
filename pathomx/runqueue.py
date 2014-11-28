@@ -607,6 +607,7 @@ class RunManager(QObject):
             pass
 
         self.p = None
+        self.client.shutdown()
         self.client = None
         self.runners = [self.in_process_runner]
 
@@ -632,6 +633,7 @@ class RunManager(QObject):
             # note that these may already exist; we need to check
             if self.client is None:
                 self.client = Client(timeout=5)
+
                 # FIXME: Inline plots are fine as long as we don't do it on the cluster+the interactive kernel; this results
                 # in an image cache being generated that breaks the pickle
 

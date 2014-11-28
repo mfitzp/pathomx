@@ -1197,4 +1197,5 @@ def main():
     app.exec_()  # Enter Qt application main loop
 
     notebook_queue.stop_cluster()
+
     logging.info('Exiting.')

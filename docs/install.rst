@@ -49,5 +49,5 @@ Linux
 
 Coming soon.
 
-.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-latest.exe
-.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-latest.dmg
+.. _Windows Installer (.exe): http://download.pathomx.org/Pathomx-3.0.2.exe
+.. _Mac Disk Image (.dmg): http://download.pathomx.org/Pathomx-3.0.2.dmg
