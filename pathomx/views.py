@@ -885,16 +885,34 @@ class DataFrameModel(QAbstractTableModel):
             return None #QVariant()
 
         if orientation == Qt.Horizontal:
-            try:
-                return self.df.columns.tolist()[section]
-            except (IndexError, ):
-                return None #QVariant()
+            if type(self.df.columns) == pd.MultiIndex:
+                try:
+                    return '\n'.join( [str(s) for s in self.df.columns.tolist()[section] ])
+                except (IndexError, ):
+                    pass
+
+            else:
+                try:
+                    return str( self.df.columns.tolist()[section] )
+                except (IndexError, ):
+                    pass
+
         elif orientation == Qt.Vertical:
-            try:
-                # return self.df.index.tolist()
-                return self.df.index.tolist()[section]
-            except (IndexError, ):
-                return None #QVariant()
+            if type(self.df.index) == pd.MultiIndex:
+                try:
+                    return '\t'.join( [str(s) for s in self.df.index.tolist()[section] ])
+                except (IndexError, ):
+                    pass
+
+            else:
+
+                try:
+                    # return self.df.index.tolist()
+                    return str( self.df.index.tolist()[section] )
+                except (IndexError, ):
+                    return None #QVariant()
+
+        return None
 
     def data(self, index, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
