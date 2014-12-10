@@ -647,12 +647,24 @@ def histogram(data, bins=100, figure=None, ax=None, styles=None, regions=None):
     if data is None:
         assert False
 
+    mean = np.nanmean( data.values.flatten() )
+    std = np.nanstd( data.values.flatten() )
+
     if 'Class' in data.index.names and len(data.index.levels[data.index.names.index('Class')]) > 1:
         class_idx = data.index.names.index('Class')
         classes = list(data.index.levels[class_idx])
     else:
         class_idx = None
         classes = False
+
+    ax.axvline(mean, c='k')
+
+    ax.axvline(mean+std, c='r')
+    ax.axvline(mean-std, c='r')
+
+    ax.axvline(mean+std*2, c='g')
+    ax.axvline(mean-std*2, c='g')
+
 
     if classes:
 
@@ -684,6 +696,7 @@ def histogram(data, bins=100, figure=None, ax=None, styles=None, regions=None):
         row = np.nanmean(data.values, axis=0)
         row = row[ ~np.isnan(row) ]
         ax.hist( np.nanmean( row, axis=0), bins=bins, alpha=0.5, color=utils.category10[0])
+
 
 
     if regions:  # Plot defined x0, y0, x1, y2 regions onto the plot

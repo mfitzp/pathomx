@@ -258,10 +258,10 @@ class ToolItem(BaseItem):
                     items.append(item)
 
             n = len(items)
-            center_y = float(n-1) * 200 / 2
+            center_y = float(n-1) * 100 / 2
 
             for n, i in enumerate(items):
-                i.setPos( i.calculate_auto_position_x(), self.y() + (n * 200) - center_y )
+                i.setPos( i.calculate_auto_position_x(), self.y() + (n * 100) - center_y )
                 i.auto_position_children()
 
     def calculate_auto_position_x(self):
