@@ -84,6 +84,32 @@ class HeatmapTool(ui.IPythonApp):
             })
         )
 
+
+
+# Graph a spectra
+class HistogramTool(ui.IPythonApp):
+
+    name = "Histogram"
+    notebook = 'basic_plot_histogram.ipynb'
+    shortname = 'basic_plot_histogram'
+
+    legacy_inputs = {'input': 'input_data'}
+    legacy_outputs = {'output': 'output_data'}
+
+    def __init__(self, *args, **kwargs):
+        super(HistogramTool, self).__init__(*args, **kwargs)
+
+        self.data.add_input('input_data')  # Add input slot        
+
+        # Setup data consumer options
+        self.data.consumer_defs.append(
+            DataDefinition('input_data', {
+            'labels_n': ('>0', None),
+            'entities_t': (None, None),
+            #'scales_t': (None, ['float']),
+            })
+        )
+
     
 class BasicGraph(VisualisationPlugin):
 
@@ -92,3 +118,4 @@ class BasicGraph(VisualisationPlugin):
         self.register_app_launcher(BarTool)
         self.register_app_launcher(SpectraTool)
         self.register_app_launcher(HeatmapTool)
+        self.register_app_launcher(HistogramTool)

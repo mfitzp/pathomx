@@ -627,3 +627,67 @@ def difference(data1, data2, figure=None, ax=None, styles=None):
         ax.set_xlabel(scale_name1)
 
     return figure
+
+
+def histogram(data, bins=100, figure=None, ax=None, styles=None, regions=None):
+    if figure is None:
+        figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI)
+
+    if ax is None:
+        ax = figure.add_subplot(111)
+
+    ax = figure.axes[0]
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    ax.cla()
+
+    if data is None:
+        assert False
+
+    if 'Class' in data.index.names and len(data.index.levels[data.index.names.index('Class')]) > 1:
+        class_idx = data.index.names.index('Class')
+        classes = list(data.index.levels[class_idx])
+    else:
+        class_idx = None
+        classes = False
+
+    if classes:
+
+        # More than one data row (class) so plot each class
+        # Calculate a mean for each class
+
+        plots = OrderedDict()
+        for n, c in enumerate(classes):
+
+
+            # FIXME: Need to define a subset of style features for histograms (mplstyler)
+            if styles:
+                ls = styles.get_style_for_class(c).line_kwargs
+            else:
+                ls = {}
+
+            row = np.nanmean( data.xs(c, level=class_idx).values, axis=0 )
+            row = row[ ~np.isnan(row) ]
+            n, b, plots[c] = ax.hist(row, bins=bins, alpha=0.5) #, **ls)
+
+        legend = ax.legend(list(plots.values()),
+                           list(plots.keys()),
+                           loc='best')  #, bbox_to_anchor=(1, 1))
+        legend.get_frame().set_facecolor('k')
+        legend.get_frame().set_alpha(0.05)
+
+    else:
+        # Only one data row (class) so plot all
+        row = np.nanmean(data.values, axis=0)
+        row = row[ ~np.isnan(row) ]
+        ax.hist( np.nanmean( row, axis=0), bins=bins, alpha=0.5, color=utils.category10[0])
+
+
+    if regions:  # Plot defined x0, y0, x1, y2 regions onto the plot
+        for x0, y0, x1, y1 in regions:
+            ax.add_patch( Rectangle( (x0, y0), x1-x0, y1-y0, facecolor="grey", alpha=0.3))
+
+    return figure

@@ -305,7 +305,7 @@ pathomx_notebook_start(varsi, vars());''')
     #---------------------------------------------------------------------------
     def _handle_clear_output(self, msg):
         """Handle clear output messages."""
-        if not self._hidden and self._is_from_this_session(msg):
+        if not self._hidden: # and self._is_from_this_session(msg):
             wait = msg['content'].get('wait', True)
             if wait:
                 self._pending_clearoutput = True
@@ -407,7 +407,7 @@ pathomx_notebook_start(varsi, vars());''')
         """
 
         logging.debug("execute_result: %s", msg.get('content', ''))
-        if not self._hidden and self._is_from_this_session(msg):
+        if not self._hidden: # and self._is_from_this_session(msg):
             msg_id = msg['parent_header']['msg_id']
 
             if msg_id not in self._cell_execute_ids:  # Only on the in-process kernel can this happen
@@ -430,15 +430,15 @@ pathomx_notebook_start(varsi, vars());''')
         """ Handle stdout, stderr, and stdin.
         """
         logging.debug("stream: %s", msg.get('content', ''))
-        if not self._hidden and self._is_from_this_session(msg):
-            logging.info(msg['content']['data'])
+        if not self._hidden: # and self._is_from_this_session(msg):
+            logging.info(msg['content']['text'])
 
     def _handle_shutdown_reply(self, msg):
         """ Handle shutdown signal, only if from other console.
         """
         logging.info("shutdown: %s", msg.get('content', ''))
         restart = msg.get('content', {}).get('restart', False)
-        if not self._hidden and not self._is_from_this_session(msg):
+        if not self._hidden: # and not self._is_from_this_session(msg):
             # got shutdown reply, request came from session other than ours
             if restart:
                 # someone restarted the kernel, handle it
