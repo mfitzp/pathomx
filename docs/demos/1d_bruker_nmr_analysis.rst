@@ -363,7 +363,7 @@ This is our new PLS-DA:
 .. image:: ../images/demos/thp1_1d_bruker/plsda_scores_excluded.png
     :alt: PLS-DA Scores plot following covariance exclusion
 
-Looking at the raw spectra we can see it is also cleaner:
+Looking at the processed spectra (post-normalisation) we can see it is also cleaner:
 
 .. image:: ../images/demos/thp1_1d_bruker/spectra_normalisation_zoomed_excluded.png
     :alt: Output of the spectral normalisation (zoomed in)
