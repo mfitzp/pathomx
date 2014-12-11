@@ -1316,6 +1316,7 @@ class GenericApp(QObject):
 
     def __init__(self, parent, name=None, code="", position=None, auto_focus=True, auto_consume_data=True, *args, **kwargs):
         super(GenericApp, self).__init__(parent)
+
         self.id = str(id(self))
 
         self.w = QMainWindow()

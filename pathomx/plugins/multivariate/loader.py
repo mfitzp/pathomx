@@ -93,6 +93,10 @@ class PCAConfigPanel(ui.ConfigPanel):
         self.config.add_handler('plot_sample_numbers', cb)
         self.layout.addWidget(cb)
 
+        cb = QCheckBox('Filter data by covariance (2sd)')
+        self.config.add_handler('filter_data', cb)
+        self.layout.addWidget(cb)
+
         self.finalise()
 
 
@@ -113,6 +117,7 @@ class PCATool(ui.IPythonApp):
 
         self.data.add_output('scores')
         self.data.add_output('weights')
+        self.data.add_output('filtered_data')
 
         # Setup data consumer options
         self.data.consumer_defs.append(

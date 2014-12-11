@@ -893,9 +893,9 @@ class MainWindow(QMainWindow):
                 self.editor.removeItem(i)
 
         # Really wipe everything
-        current_tools = []
-        current_tools_by_id = {}
-        current_datasets = []
+        del current_tools[:]
+        current_tools_by_id.clear()
+        del current_datasets[:]
 
         # Completely wipe the scene
         self.editView.resetScene()
