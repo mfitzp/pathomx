@@ -382,3 +382,5 @@ If you're feeling adventurous there are a few things you can experiment with the
 
 
 .. _completed workflow: http://download.pathomx.org/demos/thp1_1d_bruker.mpf
+.. _demo dataset: http://download.pathomx.org/demos/thp1_1d_bruker.zip
+.. _sample classification: http://download.pathomx.org/demos/1d_classifications.csv
