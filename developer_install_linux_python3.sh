@@ -10,7 +10,7 @@ cd $cwd
 
 # Now install all other dependencies via apt-get or pip
 sudo apt-get install python3-pyqt4 python3-numpy python3-scipy python3-pandas python3-yapsy python3-matplotlib python3-requests python3-pip ipython3 ipython3-qtconsole ipython3-notebook
-sudo pip3 install --upgrade pyqtconfig mplstyler
+sudo pip3 install --upgrade dill pyqtconfig mplstyler mistune biocyc jsonschema
 
 # The following may error, but is not essential
 sudo pip3 install scikits.learn 

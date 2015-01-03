@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 import re
+import io
 
 from matplotlib.figure import Figure, AxesStack
 from matplotlib.axes import Subplot
@@ -100,7 +101,7 @@ def progress(progress):
     print("____pathomx_execute_progress_%.2f____" % progress)
 
 
-class open_with_progress(file):
+class open_with_progress(io.IOBase):
 
     def __init__(self, f, *args, **kwargs):
         super(open_with_progress, self).__init__(f, *args, **kwargs)
