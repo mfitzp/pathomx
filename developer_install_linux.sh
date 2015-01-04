@@ -9,5 +9,6 @@ rm -rf /tmp/pathomx-install
 cd $cwd
 
 # Now install all other dependencies via apt-get or pip
-sudo apt-get install python-qt4 python-numpy python-scipy python-pandas python-yapsy python-requests python-matplotlib python-scikits-learn python-pip ipython ipython-notebook ipython-notebook-common ipython-qtconsole python-pygments
-sudo pip install --upgrade dill pyqtconfig mplstyler mistune biocyc pydot jsonschema
+sudo apt-get install python-qt4 python-numpy python-scipy python-yapsy python-requests python-matplotlib python-scikits-learn python-pip ipython ipython-notebook ipython-notebook-common ipython-qtconsole python-pygments
+sudo pip install --upgrade pandas dill pyqtconfig mplstyler mistune biocyc pydot jsonschema
+
