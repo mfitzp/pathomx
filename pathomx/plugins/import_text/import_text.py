@@ -8,7 +8,9 @@ if config['autodetect_format']:
         dialect = csv.Sniffer().sniff(f.read(1024))
         f.close()
     except:
-        pass
+        dialect = None
+        format_dict = dict()
+
     else:
         format_dict = dict()
 else:
@@ -23,14 +25,14 @@ else:
 if config['column_headers'] == 1:
     column_headers = 0
 elif config['column_headers'] > 1:
-    column_headers = range(config['column_headers'])
+    column_headers = list( range(config['column_headers']) )
 else:
     column_headers = None
 
 if config['row_headers'] == 0:
     row_headers = None
 else:
-    row_headers = range(config['row_headers'])
+    row_headers = list(range(config['row_headers']) )
 
 
 with open(config['filename'], 'rU') as f:
@@ -54,13 +56,13 @@ with open(config['filename'], 'rU') as f:
 # Check if we've got a singluar index (not multiindex) and convert
 if not isinstance(output_data.index, pd.MultiIndex):
     output_data.index = pd.MultiIndex.from_tuples(
-        zip(output_data.index.values, range(1, len(output_data.index.values) + 1)),
+        list( zip(output_data.index.values, range(1, len(output_data.index.values) + 1)) ),
         names=['Sample'])
 
 
 if not isinstance(output_data.columns, pd.MultiIndex):
     output_data.columns = pd.MultiIndex.from_tuples(
-        zip(output_data.columns.values, range(1, len(output_data.columns.values) + 1)),
+        list( zip(output_data.columns.values, range(1, len(output_data.columns.values) + 1)) ),
         names=['Label', 'Measurement'])
 
 
@@ -83,3 +85,4 @@ from pathomx.figures import spectra, heatmap
 
 Spectra = spectra(output_data, styles=styles)
 Heatmap = heatmap(output_data)
+
