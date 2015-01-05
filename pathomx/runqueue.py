@@ -104,7 +104,7 @@ pathomx_notebook_start(varsi, vars());''')
         setup_languages(self.e.execute, tool.language)
 
         self.ar = self.e.execute(code)
-        self.e.execute(r'''pathomx_notebook_stop(vars());''')  # This will queue directly above the main code block
+        self.e.execute(r'''pathomx_notebook_stop(vars());''')  # This will queue directly after the main code block
 
     def check_status(self):
         result = {}
@@ -121,7 +121,9 @@ pathomx_notebook_start(varsi, vars());''')
                 result['status'] = -1
                 result['traceback'] = '\n'.join(e.render_traceback())
                 result['stdout'] = self.stdout
-                self._result_callback(result)
+                if self._result_callback:
+                    self._result_callback(result)
+
                 self.ar = None
                 self._is_active = False  # Release this kernel
                 self._status = STATUS_ERROR
@@ -141,7 +143,9 @@ pathomx_notebook_start(varsi, vars());''')
                 result['traceback'] = '\n'.join(e.render_traceback())
                 result['stdout'] = self.stdout
                 result['varso'] = []
-                self._result_callback(result)
+                if self._result_callback:
+                    self._result_callback(result)
+
                 self.aro = None
                 self._is_active = False  # Release this kernel
                 self._status = STATUS_ERROR
@@ -151,7 +155,9 @@ pathomx_notebook_start(varsi, vars());''')
                 result['status'] = 0
                 result['varso'] = varso
                 result['stdout'] = self.stdout
-                self._result_callback(result)
+                if self._result_callback:
+                    self._result_callback(result)
+
                 self._is_active = False  # Release this kernel
                 self._status = STATUS_READY
 
@@ -557,35 +563,37 @@ class RunManager(QObject):
             self.jobs.insert(0, (tool, varsi, progress_callback, result_callback))
             return False
 
-        varsi['_pathomx_expected_output_vars'] = tool.data.o.keys()
+        if hasattr(tool, 'data'):
+            # We can run code without an associated tool (e.g. for central-setup)
+            varsi['_pathomx_expected_output_vars'] = tool.data.o.keys()
 
-        # Build the IO magic
-        # - if the source did not run on the current runner we'll need to push the data over
-        io = {'input': {}, 'output': {}, }
-        for i, sm in tool.data.i.items():
-            if sm:
-                mo, mi = sm
-                io['input'][i] = "_%s_%s" % (mi, id(mo.v))
+            # Build the IO magic
+            # - if the source did not run on the current runner we'll need to push the data over
+            io = {'input': {}, 'output': {}, }
+            for i, sm in tool.data.i.items():
+                if sm:
+                    mo, mi = sm
+                    io['input'][i] = "_%s_%s" % (mi, id(mo.v))
 
-                # Check if the last run of this occurred on the selected runner
-                if id(mo.v) in self.run_metadata and \
-                    self.run_metadata[id(mo.v)]['last_runner'] != id(runner):
+                    # Check if the last run of this occurred on the selected runner
+                    if id(mo.v) in self.run_metadata and \
+                        self.run_metadata[id(mo.v)]['last_runner'] != id(runner):
 
-                    # We need to push the actual data; this should do it?
-                    varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
-            else:
-                io['input'][i] = None
+                        # We need to push the actual data; this should do it?
+                        varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
+                else:
+                    io['input'][i] = None
 
-        for o in tool.data.o.keys():
-            io['output'][o] = "_%s_%s" % (o, id(tool))
+            for o in tool.data.o.keys():
+                io['output'][o] = "_%s_%s" % (o, id(tool))
 
-        varsi['_io'] = io
+            varsi['_io'] = io
 
-        self.run_metadata[id(tool)] = {
-            'last_runner': id(runner)
-        }
+            self.run_metadata[id(tool)] = {
+                'last_runner': id(runner)
+            }
 
-        tool.logger.info("Starting job....")
+            tool.logger.info("Starting job....")
 
         # Result callback gets the varso dict
         runner.run(tool, varsi, progress_callback=progress_callback, result_callback=result_callback)
@@ -625,7 +633,7 @@ class RunManager(QObject):
 
         if self.p is None:
             # Use the in-process runner for now
-            self.runners = [self.in_process_runner]
+            # self.runners = [self.in_process_runner]
             self.start_cluster()
 
         elif self.p.poll() is None:
@@ -640,7 +648,7 @@ class RunManager(QObject):
             for e in self.client:
                 found = False
                 for r in self.runners:
-                    if r is not self.in_process_runner and e.targets == r.e.targets:
+                    if e.targets == r.e.targets:
                         found = True
 
                 if not found:
@@ -648,12 +656,6 @@ class RunManager(QObject):
                     runner.e.execute('%reset -f')
                     runner.e.execute('%matplotlib inline')
                     self.runners.append(runner)
-
-            if len(self.runners) > 1:
-                # We've got a running cluster
-                # remove the in-process kernel from the queue
-                if self.in_process_runner in self.runners:
-                    self.runners.remove(self.in_process_runner)
 
         else:
             # We've got a -value for poll; it's terminated this will trigger restart on next poll
@@ -665,3 +667,11 @@ class RunManager(QObject):
         self.in_process_runner = InProcessRunner()
         self.in_process_runner.kernel_client.execute('%reset -f')
         #self.in_process_runner.kernel_client.execute('%matplotlib inline')
+
+
+class ExecuteOnly(object):
+    language = 'python'
+
+    def __init__(self, code):
+        self.code = code
+

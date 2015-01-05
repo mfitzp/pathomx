@@ -48,48 +48,54 @@ def pathomx_notebook_start(varsi, vars):
     for k, v in varsi.items():
         vars[k] = v
 
+    # _keep_input_vars = ['styles']
+    # vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
+
     # Handle IO magic
-    for k, v in vars['_io']['input'].items():
-        if v in vars:
-            vars[k] = deepcopy(vars[v])
-        else:
-            vars[k] = None
+    if '_io' in vars:
+        for k, v in vars['_io']['input'].items():
+            if v in vars:
+                vars[k] = deepcopy(vars[v])
+            else:
+                vars[k] = None
 
-    global rcParams
-    from matplotlib import rcParams
+    if 'rcParams' in vars:
+        global rcParams
+        from matplotlib import rcParams
 
-    # Block warnings from deprecated rcParams here
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        for k, v in vars['rcParams'].items():
-            rcParams[k] = v
+        # Block warnings from deprecated rcParams here
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for k, v in vars['rcParams'].items():
+                rcParams[k] = v
 
 
 def pathomx_notebook_stop(vars):
-    # Handle IO magic
-    for k, v in vars['_io']['output'].items():
-        if k in vars:
-            vars[v] = vars[k]
-        else:
-            vars[v] = None
-
     varso = {}
-    for k, v in vars.items():
-        # Check it's an accepted type for passing; and not private (starts with _)
-        if not k.startswith('_') and \
-            not k in vars['_io']['input'].keys():
+    if '_id' in vars:
+        # Handle IO magic
+        for k, v in vars['_io']['output'].items():
+            if k in vars:
+                vars[v] = vars[k]
+            else:
+                vars[v] = None
 
-            if type(v) in MAGIC_TYPES or k in vars['_pathomx_expected_output_vars']:
-                varso[k] = v
+        for k, v in vars.items():
+            # Check it's an accepted type for passing; and not private (starts with _)
+            if not k.startswith('_') and \
+                not k in vars['_io']['input'].keys():
 
-            elif hasattr(v, '_repr_html_'):
-                try:
-                    # Check if it is a bound method (not a class definition)
-                    v._repr_html_()
-                except:
-                    pass
-                else:
-                    varso[k] = displayobjects.Html(v)
+                if type(v) in MAGIC_TYPES or k in vars['_pathomx_expected_output_vars']:
+                    varso[k] = v
+
+                elif hasattr(v, '_repr_html_'):
+                    try:
+                        # Check if it is a bound method (not a class definition)
+                        v._repr_html_()
+                    except:
+                        pass
+                    else:
+                        varso[k] = displayobjects.Html(v)
 
     vars['varso'] = varso
 

@@ -7,3 +7,4 @@ Author = Martin Fitzpatrick
 Version = 1.0
 Website = http://martinfitzpatrick.name/
 Description = Multivariate analysis plugins
+Packages = scikit-learn>=0.15, pandas>=0.15, numpy>=1.9

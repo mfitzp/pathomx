@@ -32,10 +32,10 @@ build_py2app=dict(
         'sklearn',
         'sklearn.decomposition',
         'sklearn.cross_decomposition',
-        
+
         'nose',
         'nose.tools',
-        
+
         'nmrglue',
         'nmrglue.fileio.fileiobase',
 
@@ -44,25 +44,25 @@ build_py2app=dict(
         'mplstyler',
         'pyqtconfig',
         'custom_exceptions',
-        
+
         "zmq",
         "zmq.utils.garbage",
         "zmq.backend.cython",
 
-        
+
         "pygments",
         'pygments.styles',
         'pygments.styles.default',
 
         'sip',
         'pydot',
-        
+
         'jinja2',
         'jinja2.ext',
-        
+
         'rpy2',
         'pymatbridge',
-        
+
         ],
     excludes=[
         '_xmlplus',

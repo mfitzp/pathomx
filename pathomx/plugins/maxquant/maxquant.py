@@ -45,6 +45,7 @@ df.index = pd.MultiIndex.from_tuples(zip(df.index.values,classes), names=['Label
 
 output_data = df
 df = None
+ds = None
 
 from pathomx.figures import histogram
 Histogram = histogram(output_data)

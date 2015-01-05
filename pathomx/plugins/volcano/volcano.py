@@ -1,4 +1,4 @@
-iimport pandas as pd
+import pandas as pd
 import scipy as sp
 import scipy.stats
 import numpy as np

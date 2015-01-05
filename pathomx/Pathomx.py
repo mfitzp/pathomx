@@ -53,6 +53,7 @@ from .editor.editor import WorkspaceEditorView  # EDITOR_MODE_NORMAL, EDITOR_MOD
 
 # Translation (@default context)
 from .translate import tr
+from .runqueue import ExecuteOnly
 
 from distutils.version import StrictVersion
 
@@ -1170,6 +1171,7 @@ def main():
     locale = QLocale.system().name()
     #locale = 'nl'
 
+
     # Load base QT translations from the normal place (does not include _nl, or _it)
     translator_qt = QTranslator()
     if translator_qt.load("qt_%s" % locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath)):
@@ -1191,6 +1193,30 @@ def main():
     notebook_queue.create_user_kernel()
     notebook_queue.create_runners()
     notebook_queue.start_timers()
+    '''
+        exc = ExecuteOnly("""
+    import pip
+    for pkg in [
+        'numpy',ls
+
+        'scipy',
+        'pandas',
+        'matplotlib',
+        'requests',
+        'nmrglue',
+        'gpml2svg',
+        'icoshift',
+        'mplstyler',
+        'pyqtconfig',
+        "pygments",
+        'pydot',
+
+        'jinja2']:
+        pip.main(['install', pkg, '--upgrade'])
+    """)
+    notebook_queue.add_job(exc, {})
+    '''
+
 
     MainWindow()
     logging.info('Ready.')

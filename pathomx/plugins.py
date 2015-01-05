@@ -23,6 +23,8 @@ from . import ui
 from .globals import settings, app_launchers, file_handlers, url_handlers, available_tools_by_category, \
                      plugin_categories, plugin_manager, plugin_objects, plugin_metadata, installed_plugin_names
 
+import pip
+
 # Translation (@default context)
 from .translate import tr
 
@@ -64,6 +66,10 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
 
     available_tools_by_category = defaultdict(list)
 
+    # A list of the packages required for all found plugins (when to install?; via pip)
+    # pip is available since 2.7.9 via ensurepip (and/or we can package)
+    required_packages_all = set()
+
     # Loop round the plugins and print their names.
     for plugin in plugin_manager.getAllPlugins():
         plugin_image = os.path.join(os.path.dirname(plugin.path), 'icon.png')
@@ -75,6 +81,11 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
             resource_list = plugin.details.get('Documentation', 'Resources').split(',')
         except:
             resource_list = []
+
+        try:
+            required_packages = plugin.details.get('Documentation','Packages').split(',')
+        except:
+            required_packages = []
 
         metadata = {
             'id': type(plugin.plugin_object).__name__,  # __module__,
@@ -89,12 +100,19 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
             'path': os.path.dirname(plugin.path),
             'module': os.path.basename(plugin.path),
             'shortname': os.path.basename(os.path.dirname(plugin.path)),
+            'required_packages': required_packages,
         }
+
+        required_packages_all |= set(required_packages)
 
         plugin_metadata[metadata['shortname']] = metadata
         installed_plugin_names[id(plugin.plugin_object)] = plugin.name
 
         plugin.plugin_object.post_setup(path=os.path.dirname(plugin.path), name=plugin.name, metadata=metadata)
+
+    # Check and import all packages
+    # for pkg_ver in required_packages_all:
+    #    pip.main(['install', pkg_ver, '--upgrade'])
 
 
 class pluginListDelegate(QAbstractItemDelegate):
