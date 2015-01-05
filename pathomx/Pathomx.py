@@ -393,6 +393,7 @@ class MainWindow(QMainWindow):
         #self.dbBrowser = self.dbtool.dbBrowser
 
         self.setWindowTitle(tr('Pathomx'))
+        self.setWindowIcon(QIcon(os.path.join(utils.scriptdir, 'static', 'icon.png')))
 
         self.kernelStatus = ui.KernelStatusWidget()
         self.statusBar().addPermanentWidget(self.kernelStatus)

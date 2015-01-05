@@ -111,7 +111,7 @@ def find_linear_scale(data):
     if type(data.columns) == pd.MultiIndex:
         for n, l in enumerate(data.columns.levels):
             if l.dtype == np.dtype('O'):  # Object; maybe str?
-                if len(l) > longest:
+                if longest is None or len(l) > longest:
                     longest = len(l)
 
             elif np.issubdtype(l.dtype, np.integer) or np.issubdtype(l.dtype, np.float):
@@ -246,7 +246,6 @@ def spectra(data, figure=None, ax=None, styles=None, regions=None):
         anno_y = data_max[idx]
 
         for x, y, l in zip(anno_scale, anno_y, anno_label):
-            print "*", x, y, l
             if y >= 0:
                 r = '60'
             else:

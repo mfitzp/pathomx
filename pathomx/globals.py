@@ -14,6 +14,11 @@ from yapsy.PluginManager import PluginManagerSingleton
 import matplotlib as mpl
 from . import utils
 
+try:
+    unicode
+except:
+    unicode = str
+
 # Pathomx global variables
 current_tools = []
 current_tools_by_id = {}

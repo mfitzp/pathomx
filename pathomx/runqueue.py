@@ -97,6 +97,7 @@ class ClusterRunner(QObject):
 
         # Check metadata to see if this kernel has the outputs for the previous tool
         self.e.execute('%reset_selective -f [^_]')
+        print(varsi)
         self.e.push({'varsi': varsi})
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
@@ -565,7 +566,7 @@ class RunManager(QObject):
 
         if hasattr(tool, 'data'):
             # We can run code without an associated tool (e.g. for central-setup)
-            varsi['_pathomx_expected_output_vars'] = tool.data.o.keys()
+            varsi['_pathomx_expected_output_vars'] = list( tool.data.o.keys() )
 
             # Build the IO magic
             # - if the source did not run on the current runner we'll need to push the data over

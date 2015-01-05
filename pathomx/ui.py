@@ -49,6 +49,11 @@ try:
 except:
     Qutepart = None
 
+try:
+    unicode
+except:
+    unicode = str
+
 PX_INIT_SHOT = 50
 PX_RENDER_SHOT = 500
 
@@ -1374,8 +1379,9 @@ class GenericApp(QObject):
 
         self.logger.debug('Setup config manager...')
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
+
         # Add hooks for custom widgets
-        self.config.hooks = dict(self.config.hooks.items() + custom_pyqtconfig_hooks.items())
+        self.config.hooks.update( custom_pyqtconfig_hooks.items() )
 
         self.logger.debug('Create editor icon...')
         self.editorItem = self.parent().editor.addApp(self, position=position)
@@ -1475,11 +1481,11 @@ class GenericApp(QObject):
         self.load_source()
 
     def load_notes(self):
-        with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rU') as f:
+        with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rb') as f:
             self.notes = f.read().decode('utf-8')
 
     def load_source(self):
-        with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rU') as f:
+        with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rb') as f:
             self.default_code = f.read().decode('utf-8')
 
         if self.code == "":
