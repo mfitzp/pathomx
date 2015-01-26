@@ -16,7 +16,7 @@ import logging
 
 import pandas as pd
 import numpy as np
-
+from PIL import Image
 
 class DataTreeItem(object):
     '''
@@ -490,7 +490,6 @@ class NumpyArrayDataDefinition(DataDefinition):
 
         return True
 
-
 class PandasDataDefinition(NumpyArrayDataDefinition):
     ''' Custom matching definition for pandas dataframes '''
 
@@ -531,3 +530,13 @@ class PandasDataDefinition(NumpyArrayDataDefinition):
     def _check_instance(self, o):
         logging.debug("  check instance")
         return isinstance(o, pd.DataFrame)
+
+
+class ImageDataDefinition(DataDefinition):
+    ''' Custom matching definition for PIL Images '''
+
+    def check(self, o):
+        return self._check_instance(o)
+
+    def _check_instance(self, o):
+        return isinstance(o, Image.Image)

@@ -10,7 +10,7 @@ from pathomx.qt import *
 
 import pathomx.ui as ui
 import pathomx.utils as utils
-
+from pathomx.data import ImageDataDefinition
 
 COLORSPACES = {
     'None (use image default)': None,
@@ -98,6 +98,10 @@ class AdjustApp(ui.GenericTool):
         self.data.add_input('input_image')  # Add output slot
         self.data.add_output('output_image')  # Add output slot
 
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
 
 
 
@@ -167,6 +171,12 @@ class InvertApp(ui.GenericTool):
 
         self.data.add_input('input_image')
         self.data.add_output('output_image')
+        
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
+        
 
 
 class FilterConfigPanel(ui.ConfigPanel):
@@ -219,6 +229,11 @@ class FilterApp(ui.GenericTool):
         self.data.add_input('input_image')
         self.data.add_output('output_image')
 
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
+
 
 
 
@@ -264,6 +279,11 @@ class ColorspaceApp(ui.GenericTool):
 
         self.data.add_input('input_image')
         self.data.add_output('output_image')  # Add output slot
+
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
     
 
 

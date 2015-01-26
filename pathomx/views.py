@@ -430,7 +430,7 @@ class WebView(QWebView, BaseView):
         pass
 
 
-class ImageView(QScrollArea, BaseView):
+class ImageView(QGraphicsView, BaseView):
     """
     Use a QLabel object, embedded in a QScrollView as an image view window. Image will be shown full-size but should
     be able to be zoomed in/out and panned (add controls). Incoming data will be Image object from Pillow.
@@ -438,12 +438,9 @@ class ImageView(QScrollArea, BaseView):
     def __init__(self, parent, **kwargs):
         super(ImageView, self).__init__(None, **kwargs)
 
-        self.canvas = QLabel()
-        self.canvas.setBackgroundRole(QPalette.Base)
-        self.canvas.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        self.canvas.setScaledContents(True)
-
-        self.setWidget(self.canvas)
+        self.scene = QGraphicsScene()
+        self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
+        self.setScene(self.scene)
 
     def generate(self, image):
         # Image comes in as a Pillow image
@@ -453,8 +450,11 @@ class ImageView(QScrollArea, BaseView):
 
         # Create QT compatible image
         image = ImageQt.ImageQt(image)
-        self.canvas.setPixmap(QPixmap.fromImage(image))
-        self.canvas.resize(self.canvas.pixmap().size())
+        self.scene.clear()
+        self.scene.addPixmap(QPixmap.fromImage(image))
+        #self.canvas.resize(self.canvas.pixmap().size())
+
+
 
     
 
