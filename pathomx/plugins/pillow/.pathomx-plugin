@@ -1,0 +1,9 @@
+[Core]
+Name = Pillow (PIL fork)
+Module = loader
+
+[Documentation]
+Author = Martin Fitzpatrick
+Version = 1.0
+Website = http://martinfitzpatrick.name/
+Description = Python Imaging Library image processing tools

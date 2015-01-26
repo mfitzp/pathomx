@@ -1,10 +1,12 @@
 Image
 =====
 Import image from file. By [Martin A. Fitzpatrick][]
+
 Introduction
 ------------
 This plugin supports loading images from a number of standard file types. Loading is performed
 by the PILlow Python library.
+
 File Formats
 ------------
 The supported file formats are as follows:
