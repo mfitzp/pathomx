@@ -44,6 +44,9 @@ import matplotlib.cm as cm
 from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
+
+from PIL import Image, ImageQt
+
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
 
@@ -425,7 +428,29 @@ class WebView(QWebView, BaseView):
         
     def generate(self):
         pass
-        
+
+
+class ImageView(QScrollArea, BaseView):
+    """
+    Use a QLabel object, embedded in a QScrollView as an image view window. Image will be shown full-size but should
+    be able to be zoomed in/out and panned (add controls). Incoming data will be Image object from Pillow.
+    """
+    def __init__(self, parent, **kwargs):
+        super(ImageView, self).__init__(None, **kwargs)
+
+        self.canvas = QLabel()
+        self.canvas.setBackgroundRole(QPalette.Base)
+        self.canvas.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.canvas.setScaledContents(True)
+
+        self.setWidget(self.canvas)
+
+    def generate(self, image):
+        # Image comes in as a Pillow image
+        image = ImageQt.ImageQt(image)
+        self.canvas.setPixmap(QPixmap.fromImage(image))
+        self.canvas.resize(self.canvas.pixmap().size())
+
     
 
 class D3View(WebView):

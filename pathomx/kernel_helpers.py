@@ -73,7 +73,7 @@ def pathomx_notebook_start(varsi, vars):
 
 def pathomx_notebook_stop(vars):
     varso = {}
-    if '_id' in vars:
+    if '_io' in vars:
         # Handle IO magic
         for k, v in vars['_io']['output'].items():
             if k in vars:

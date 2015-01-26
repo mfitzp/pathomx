@@ -24,7 +24,7 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
 
 import tempfile
 
-from .views import HTMLView, StaticHTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView
+from .views import HTMLView, StaticHTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView, ImageView
 # Translation (@default context)
 from .translate import tr
 
@@ -43,6 +43,8 @@ from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
 from .kernel_helpers import PathomxTool
+
+from PIL import Image
 
 try:
     from qutepart import Qutepart
@@ -1597,28 +1599,34 @@ class GenericApp(QObject):
             }
 
         for k, v in kwargs.items():
-            if type(v) == Figure:
+            if isinstance(v, Figure):
                 if self.views.get_type(k) != IPyMplView:
                     self.views.addView(IPyMplView(self), k, color=FIGURE_COLOR)
                 result_dict[k] = {'fig': v}
 
-            elif type(v) == displayobjects.Svg or type(v) == display.SVG:
+            elif isinstance(v, displayobjects.Svg) or isinstance(v, display.SVG):
                 if self.views.get_type(k) != SVGView:
                     self.views.addView(SVGView(self), k, color=FIGURE_COLOR)
 
                 result_dict[k] = {'svg': v}
 
-            elif type(v) == displayobjects.Html or type(v) == displayobjects.Markdown:
+            elif isinstance(v, displayobjects.Html) or isinstance(v, displayobjects.Markdown):
                 if self.views.get_type(k) != HTMLView:
                     self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
 
                 result_dict[k] = {'html': v}
 
-            elif type(v) == pd.DataFrame:
+            elif isinstance(v,pd.DataFrame):
                 if self.views.get_type(k) != DataFrameWidget:
                     self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k, color=DATA_COLOR)
 
                 result_dict[k] = {'data': v}
+
+            elif isinstance(v, Image.Image):
+                if self.views.get_type(k) != ImageView:
+                    self.views.addView(ImageView(parent=self), k, color=FIGURE_COLOR)
+
+                result_dict[k] = {'image': v}
 
             elif hasattr(v, '_repr_html_'):
                 # on IPython notebook aware objects to generate Html views
