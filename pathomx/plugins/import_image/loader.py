@@ -11,8 +11,22 @@ from pathomx.qt import *
 import pathomx.ui as ui
 import pathomx.utils as utils
 
+COLORSPACES = {
+    'None (use image default)': None,
+    'I (1-bit pixels, black and white, stored with one pixel per byte)': 'I',
+    'L (8-bit pixels, black and white)': 'L',
+    'P (8-bit pixels, mapped to any other mode using a color palette)': 'P',
+    'RGB (3x8-bit pixels, true color)': 'RGB',
+    'RGBA (4x8-bit pixels, true color with transparency mask)': 'RGBA',
+    'CMYK (4x8-bit pixels, color separation)': 'CMYK',
+    'YCbCr (3x8-bit pixels, color video format)': 'YCbCr',
+    'LAB (3x8-bit pixels, the L*a*b color space)': 'LAB',
+    'HSV (3x8-bit pixels, Hue, Saturation, Value color space)': 'HSV',
+    'I (32-bit signed integer pixels)': 'I',
+    'F (32-bit floating point pixels)': 'F',
+}
 
-# Dialog box for Metabohunter search options
+
 class ImportImageConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
@@ -38,6 +52,13 @@ X Bitmap (*.xbm);;X Pixmap (*.xpm);;All files (*.*)""",description="Open image f
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
+        
+        self.cb_color = QComboBox()
+        self.cb_color.addItems(list(COLORSPACES.keys()))
+        grid.addWidget(QLabel('Mode'), 2, 0)
+        grid.addWidget(self.cb_color, 2, 1)
+        self.config.add_handler('colorspace', self.cb_color, COLORSPACES)
+        
         gb.setLayout(grid)
 
         self.layout.addWidget(gb)
@@ -55,11 +76,14 @@ class ImportImageApp(ui.GenericTool):
 
         self.config.set_defaults({
             'filename': None,
+            'colorspace': None,
         })
 
         self.addConfigPanel(ImportImageConfigPanel, 'Settings')
 
         self.data.add_output('output_image')  # Add output slot
+
+
 
 
 class ImportImage(ImportPlugin):

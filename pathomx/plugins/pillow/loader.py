@@ -12,6 +12,23 @@ import pathomx.ui as ui
 import pathomx.utils as utils
 
 
+COLORSPACES = {
+    'None (use image default)': None,
+    'I (1-bit pixels, black and white, stored with one pixel per byte)': 'I',
+    'L (8-bit pixels, black and white)': 'L',
+    'P (8-bit pixels, mapped to any other mode using a color palette)': 'P',
+    'RGB (3x8-bit pixels, true color)': 'RGB',
+    'RGBA (4x8-bit pixels, true color with transparency mask)': 'RGBA',
+    'CMYK (4x8-bit pixels, color separation)': 'CMYK',
+    'YCbCr (3x8-bit pixels, color video format)': 'YCbCr',
+    'LAB (3x8-bit pixels, the L*a*b color space)': 'LAB',
+    'HSV (3x8-bit pixels, Hue, Saturation, Value color space)': 'HSV',
+    'I (32-bit signed integer pixels)': 'I',
+    'F (32-bit floating point pixels)': 'F',
+}
+
+
+
 class EnhanceConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
@@ -127,7 +144,7 @@ class ChopsApp(ui.GenericTool):
         super(ChopsApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
-            'operation': 'add'
+            'operation': 'add_modulo'
         })
 
         self.addConfigPanel(ChopsConfigPanel, 'Settings')
@@ -136,6 +153,20 @@ class ChopsApp(ui.GenericTool):
         self.data.add_input('image2')
         self.data.add_output('output_image')
 
+
+class InvertApp(ui.GenericTool):
+
+    name = "Invert Image"
+    shortname = 'invert'
+
+    def __init__(self, *args, **kwargs):
+        super(InvertApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+        })
+
+        self.data.add_input('input_image')
+        self.data.add_output('output_image')
 
 
 class FilterConfigPanel(ui.ConfigPanel):
@@ -173,7 +204,7 @@ class FilterConfigPanel(ui.ConfigPanel):
 
 class FilterApp(ui.GenericTool):
 
-    name = "Image Filter"
+    name = "Basic Filter"
     shortname = 'filter'
 
     def __init__(self, *args, **kwargs):
@@ -191,11 +222,60 @@ class FilterApp(ui.GenericTool):
 
 
 
+
+# Dialog box for Metabohunter search options
+class ColorspaceConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, parent, filename=None, *args, **kwargs):
+        super(ColorspaceConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Modify Colorspace')
+        grid = QGridLayout()
+
+        self.cb_color = QComboBox()
+        self.cb_color.addItems(list(COLORSPACES.keys()))
+        grid.addWidget(QLabel('Colorspace'), 1, 0)
+        grid.addWidget(self.cb_quoting, 1, 1)
+        self.config.add_handler('colorspace', self.cb_color, COLORSPACES)
+        
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
+
+class ColorspaceApp(ui.GenericTool):
+    
+    name = "Convert Colorspace/Mode"
+    shortname = 'colorspace'
+    icon = 'colorspace.png'
+
+    def __init__(self, *args, **kwargs):
+        super(ColorspaceApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+            'colorspace': None,
+        })
+
+        self.addConfigPanel(ColorspaceConfigPanel, 'Settings')
+
+        self.data.add_input('input_image')
+        self.data.add_output('output_image')  # Add output slot
+    
+
+
+
+
 class Pillow(ProcessingPlugin):
 
     def __init__(self, *args, **kwargs):
         super(Pillow, self).__init__(*args, **kwargs)
         self.register_app_launcher(AdjustApp)
         self.register_app_launcher(ChopsApp)
+        self.register_app_launcher(InvertApp)
         self.register_app_launcher(FilterApp)
+        self.register_app_launcher(ColorspaceApp)
 

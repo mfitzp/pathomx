@@ -447,6 +447,11 @@ class ImageView(QScrollArea, BaseView):
 
     def generate(self, image):
         # Image comes in as a Pillow image
+        # Convert to RGB for display if not already
+        if image.mode not in ['RGB', 'RGBA']:
+            image = image.convert(mode='RGB')
+
+        # Create QT compatible image
         image = ImageQt.ImageQt(image)
         self.canvas.setPixmap(QPixmap.fromImage(image))
         self.canvas.resize(self.canvas.pixmap().size())
