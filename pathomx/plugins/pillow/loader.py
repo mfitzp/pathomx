@@ -12,7 +12,6 @@ import pathomx.ui as ui
 import pathomx.utils as utils
 
 
-# Dialog box for Metabohunter search options
 class EnhanceConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
@@ -83,9 +82,67 @@ class AdjustApp(ui.GenericTool):
         self.data.add_output('output_image')  # Add output slot
 
 
+
+
+
+class ChopsConfigPanel(ui.ConfigPanel):
+    operation_types = {
+        'Add (Modulo)': 'add_modulo',
+        'Darker': 'darker',
+        'Difference': 'difference',
+        'Lighter': 'lighter',
+        'Logical AND': 'logical_and',
+        'Logical OR': 'logical_or',
+        'Multiply': 'multiply',
+        'Screen': 'screen',
+        'Subtract (Modulo)': 'subtract_modulo',
+    }
+
+    def __init__(self, parent, filename=None, *args, **kwargs):
+        super(ChopsConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Channel Operations')
+        grid = QGridLayout()
+
+        self.cb_op = QComboBox()
+        self.cb_op.addItems(list(self.operation_types.keys()))
+        grid.addWidget(QLabel('Operation'), 1, 0)
+        grid.addWidget(self.cb_op, 1, 1)
+        self.config.add_handler('operation', self.cb_op, self.operation_types)
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
+
+class ChopsApp(ui.GenericTool):
+
+    name = "Channel Operations"
+    shortname = 'chops'
+
+    def __init__(self, *args, **kwargs):
+        super(ChopsApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+            'operation': 'add'
+        })
+
+        self.addConfigPanel(ChopsConfigPanel, 'Settings')
+
+        self.data.add_input('image1')
+        self.data.add_input('image2')
+        self.data.add_output('output_image')
+
+
+
+
 class Pillow(ProcessingPlugin):
 
     def __init__(self, *args, **kwargs):
         super(Pillow, self).__init__(*args, **kwargs)
         self.register_app_launcher(AdjustApp)
+        self.register_app_launcher(ChopsApp)
 
