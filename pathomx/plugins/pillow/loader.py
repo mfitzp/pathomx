@@ -63,7 +63,7 @@ class EnhanceConfigPanel(ui.ConfigPanel):
 
 class AdjustApp(ui.GenericTool):
 
-    name = "Adjust Image"
+    name = "Image Adjust"
     shortname = 'adjust'
 
     def __init__(self, *args, **kwargs):
@@ -98,7 +98,7 @@ class ChopsConfigPanel(ui.ConfigPanel):
         'Subtract (Modulo)': 'subtract_modulo',
     }
 
-    def __init__(self, parent, filename=None, *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
         super(ChopsConfigPanel, self).__init__(parent, *args, **kwargs)
 
         self.v = parent
@@ -138,6 +138,58 @@ class ChopsApp(ui.GenericTool):
 
 
 
+class FilterConfigPanel(ui.ConfigPanel):
+    filter_types = {
+        'Contour': 'contour',
+        'Detail': 'detail',
+        'Edge Enhance': 'edge_enhance',
+        'Edge Enhance (More)': 'edge_enhance_more',
+        'Emboss': 'emboss',
+        'Find Edges': 'find_edges',
+        'Smooth': 'smooth',
+        'Smooth (More)': 'smooth_more',
+        'Sharpen': 'sharpen',
+    }
+
+    def __init__(self, parent, *args, **kwargs):
+        super(FilterConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Apply Filter')
+        grid = QGridLayout()
+
+        self.cb_op = QComboBox()
+        self.cb_op.addItems(list(self.filter_types.keys()))
+        grid.addWidget(QLabel('Filter'), 1, 0)
+        grid.addWidget(self.cb_op, 1, 1)
+        self.config.add_handler('filter', self.cb_op, self.filter_types)
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
+
+class FilterApp(ui.GenericTool):
+
+    name = "Image Filter"
+    shortname = 'filter'
+
+    def __init__(self, *args, **kwargs):
+        super(FilterApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+            'filter': 'smooth'
+        })
+
+        self.addConfigPanel(FilterConfigPanel, 'Settings')
+
+        self.data.add_input('input_image')
+        self.data.add_output('output_image')
+
+
+
 
 class Pillow(ProcessingPlugin):
 
@@ -145,4 +197,5 @@ class Pillow(ProcessingPlugin):
         super(Pillow, self).__init__(*args, **kwargs)
         self.register_app_launcher(AdjustApp)
         self.register_app_launcher(ChopsApp)
+        self.register_app_launcher(FilterApp)
 
