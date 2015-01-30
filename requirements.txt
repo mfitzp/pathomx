@@ -1,5 +1,5 @@
 numpy
-hdf5
+h5py
 libpng
 zeromq
 freetype
