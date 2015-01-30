@@ -15,10 +15,8 @@ scikit-learn
 pyqtconfig
 mplstyler
 ipython[all]
-pandas
 dill
 pyqtconfig
-mplstyler
 mistune
 biocyc
 pydot
