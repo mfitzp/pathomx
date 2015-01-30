@@ -1,7 +1,6 @@
 numpy
 h5py
-libpng
-zeromq
+pyzmq
 freetype
 pandoc
 scipy
