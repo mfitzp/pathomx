@@ -1,4 +1,5 @@
 numpy
+Cython
 h5py
 pyzmq
 scipy
