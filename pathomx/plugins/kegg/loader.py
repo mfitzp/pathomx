@@ -29,6 +29,10 @@ class KEGGPathwayApp(ui.AnalysisApp):
 
     default_pause_analysis = True
 
+    category = "Visualisation"
+    subcategory = "Pathways"
+
+
     def __init__(self, *args, **kwargs):
         super(KEGGPathwayApp, self).__init__(*args, **kwargs)
 
@@ -79,4 +83,4 @@ class KEGG(VisualisationPlugin):
     def __init__(self, *args, **kwargs):
         super(KEGG, self).__init__(*args, **kwargs)
         KEGGPathwayApp.plugin = self
-        self.register_app_launcher(KEGGPathwayApp)
+        self.register_app_launcher(KEGGPathwayApp, 'Visualisation', 'Pathways')

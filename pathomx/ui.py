@@ -2386,3 +2386,127 @@ class QBioCycPathwayTreeWidget(QCheckTreeWidget):
             current_queue = next_queue
 
         self.sortItems(0, Qt.AscendingOrder)
+
+
+
+
+
+class RibbonSection( QGroupBox ):
+
+    maximum_rows = 3
+    maximum_items_before_icon_only = 9
+
+    def __init__(self, *args, **kwargs):
+        super(RibbonSection, self).__init__(*args, **kwargs)
+        self.layout = QGridLayout()
+        self.layout.setSpacing(1)
+        self.setLayout(self.layout)
+
+        self.setAlignment( Qt.AlignHCenter )
+
+
+        for r in range(self.maximum_rows):
+            self.layout.setRowStretch(r, 1)
+
+        font = self.font()
+        font.setPointSize(10)
+        self.setFont(font)
+
+        self.items = []
+        self.mode = Qt.ToolButtonTextBesideIcon
+
+        self.layout.setContentsMargins( QMargins(0,20,5,0) )
+
+
+    def addAction(self, action):
+
+        btn = QToolButton()
+        btn.setDefaultAction(action)
+
+        toolbuttonSizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setSizePolicy(toolbuttonSizePolicy)
+        btn.setToolButtonStyle(self.mode)
+
+        x, y = len(self.items) % self.maximum_rows, len(self.items) // self.maximum_rows
+        self.layout.addWidget(btn, x, y)
+        self.items.append(btn)
+
+        if len(self.items) > self.maximum_items_before_icon_only and self.mode == Qt.ToolButtonTextBesideIcon:
+            self.mode = Qt.ToolButtonIconOnly
+            for i in self.items:
+                i.setToolButtonStyle(self.mode)
+
+
+
+
+
+
+class RibbonPage( QWidget ):
+
+    def __init__(self, *args, **kwargs):
+        super(RibbonPage, self).__init__(*args, **kwargs)
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addStretch(100)
+        self.layout.setContentsMargins( QMargins(5,5,5,5) )
+
+        self.current_sections = {}
+
+        self.setStyleSheet("QGroupBox { border:none; border-right: 1px solid rgba(0,0,0,0.1); }");
+
+    def addSection(self, section):
+        if section not in self.current_sections.keys():
+            s = RibbonSection(section)
+            self.layout.insertWidget( len(self.current_sections), s) # So we come to the left of Stretch
+            self.current_sections[section] = s
+            return s
+        else:
+            return self.current_sections[section]
+
+class RibbonWidget( QTabWidget ):
+
+    default_tabs = ['Home', 'Import', 'Processing', 'Filter', 'Identification', 'Analysis', 'Visualisation', 'Export', 'Scripting']
+    tab_icons = {
+           "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
+           "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
+           "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
+           "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
+           "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
+           "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
+           "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
+           "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'scripts-text.png')),
+           }
+
+    def __init__(self, *args, **kwargs):
+        super(RibbonWidget, self).__init__(*args, **kwargs)
+
+        self.setDocumentMode(True)
+        self.setTabPosition( QTabWidget.North )
+
+        self.pages = {}
+        for t in self.default_tabs:
+            p = self.addPage(t)
+            if t in self.tab_icons:
+                self.setTabIcon(p.index, self.tab_icons[t])
+
+
+    def addPage(self, page):
+        if page not in self.pages:
+            w = RibbonPage()
+            i = self.addTab( w, page )
+            w.index = i
+            self.pages[page] = w
+            return w
+        else:
+            return self.pages[page]
+
+    def addAction(self, action, page, section):
+        # Adds a widget to the Ribbon using the tab:section address to locate it
+        # If the tab does not exist, it is created. If the section does not exist it is created
+        # once both exist the widget is added
+
+        p = self.addPage(page)
+        s = p.addSection(section)
+        s.addAction(action)
+
+        # FIXME: Add hooks to track % active objects in tab; disable (hide) tabs where all widgets are disabled

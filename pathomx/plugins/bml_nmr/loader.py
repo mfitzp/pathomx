@@ -27,6 +27,10 @@ class BMLNMRApp(ui.GenericTool):
     shortname = 'bml_nmr'
     autoconfig_name = "{filename}"
 
+    category = "Import"
+    subcategory = "Metabolomics"
+
+
     def __init__(self, *args, **kwargs):
         super(BMLNMRApp, self).__init__(*args, **kwargs)
 

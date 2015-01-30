@@ -25,6 +25,10 @@ class ImportMetabolightsApp(ui.GenericTool):
     shortname = 'metabolights'
     autoconfig_name = "{filename}"
 
+    category = "Import"
+    subcategory = "Metabolomics"
+
+
     def __init__(self, *args, **kwargs):
         super(ImportMetabolightsApp, self).__init__(*args, **kwargs)
 

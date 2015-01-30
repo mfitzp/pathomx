@@ -45,6 +45,8 @@ class HierarchicalClusterTool(ui.GenericTool):
     name = "Hierarchical Cluster"
     shortname = 'hierarchical'
 
+    subcategory = "Clustering"
+
     def __init__(self, *args, **kwargs):
         super(HierarchicalClusterTool, self).__init__(*args, **kwargs)
 

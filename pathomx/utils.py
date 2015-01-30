@@ -19,10 +19,12 @@ rdbu9 = [0, '#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#cccccc', '#d1e5f0', '#
 rdbu9c = [0, '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']
 category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
-
-def luminahex(hex):
+def hexrgb(hex, scale=1):
     hex = hex.strip('#')
-    R, G, B = int(hex[0:2], 16) / 255., int(hex[2:4], 16) / 255., int(hex[4:6], 16) / 255.
+    return (int(hex[0:2], 16) / 255.) * scale , (int(hex[2:4], 16) / 255.) * scale, (int(hex[4:6], 16) / 255.) * scale
+
+def luminahex(hex, scale=1):
+    R, G, B = hexrgb(hex, scale)
     return lumina(R, G, B)
 
 

@@ -25,6 +25,9 @@ class MaxQuantApp(ui.GenericTool):
     shortname = 'maxquant'
     autoconfig_name = "{filename}"
 
+    category = "Import"
+    subcategory = "Proteomics"
+
     def __init__(self, *args, **kwargs):
         super(MaxQuantApp, self).__init__(*args, **kwargs)
 

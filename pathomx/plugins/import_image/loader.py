@@ -71,12 +71,15 @@ class ImportImageApp(ui.GenericTool):
     shortname = 'import_image'
     autoconfig_name = "{filename}"
 
+    category = "Import"
+    subcategory = "Imaging"
+
     def __init__(self, *args, **kwargs):
         super(ImportImageApp, self).__init__(*args, **kwargs)
 
         self.config.set_defaults({
             'filename': None,
-            'colorspace': None,
+            'colorspace': 'RGB',
         })
 
         self.addConfigPanel(ImportImageConfigPanel, 'Settings')

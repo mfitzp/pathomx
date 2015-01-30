@@ -160,6 +160,8 @@ class IcoshiftApp(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
+    subcategory = "Spectra"
+
     def __init__(self, *args, **kwargs):
         super(IcoshiftApp, self).__init__(*args, **kwargs)
 

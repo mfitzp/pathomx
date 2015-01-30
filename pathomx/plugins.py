@@ -289,7 +289,7 @@ class BasePlugin(IPlugin):
     Sub-classes simply override the default workspace category for each.
     '''
 
-    default_workspace_category = None
+    default_category = None
     is_active = True
 
     def __init__(self, **kwargs):
@@ -302,7 +302,7 @@ class BasePlugin(IPlugin):
         self.id = type(self).__name__  # self.__module__
         self.module = self.__module__
         plugin_objects[self.id] = self
-        #self.name = "%s %s " % (self.default_workspace_category, "Plugin")
+        #self.name = "%s %s " % (self.default_category, "Plugin")
 
     def post_setup(self, path=None, name=None, metadata={}):  # Post setup hook
 
@@ -314,7 +314,7 @@ class BasePlugin(IPlugin):
         if name:
             self.name = name
         else:
-            self.name = "%s %s " % (self.default_workspace_category, "Plugin")
+            self.name = "%s %s " % (self.default_category, "Plugin")
 
         self.name = name
         self.metadata = metadata
@@ -355,23 +355,28 @@ class BasePlugin(IPlugin):
     def register_app_launcher(self, *args, **kwargs):
         self.register_tool_launcher(*args, **kwargs)
 
-    def register_tool_launcher(self, tool, workspace_category=None):
+    def register_tool_launcher(self, tool, category=None, subcategory=None):
         tool.plugin = self
         key = "%s.%s" % (self.id, tool.__name__)
         app_launchers[key] = tool
 
-        if workspace_category is None:
-            workspace_category = self.default_workspace_category
+        if category is None:
+            category = getattr(tool, 'category', self.default_category)
 
-        available_tools_by_category[workspace_category].append({
+        if subcategory is None:
+            subcategory = getattr(tool, 'subcategory', type(self).__name__ )
+
+        available_tools_by_category[category].append({
             'id': key,
             'app': tool,
             'plugin': self,
+            'subcategory': subcategory,
         })
 
         # Support legacy app launchers (so moving apps between plugins doesn't kill them)
         for lkey in tool.legacy_launchers:
             app_launchers[lkey] = tool
+
 
     def register_file_handler(self, app, ext):
         file_handlers[ext] = app
@@ -415,7 +420,7 @@ class ImportPlugin(BasePlugin):
     '''
     Import plugin.
     '''
-    default_workspace_category = 'Import'
+    default_category = 'Import'
     pass
 
 
@@ -423,7 +428,7 @@ class ProcessingPlugin(BasePlugin):
     '''
     Processing plugin.
     '''
-    default_workspace_category = 'Processing'
+    default_category = 'Processing'
     pass
 
 
@@ -431,7 +436,7 @@ class IdentificationPlugin(BasePlugin):
     '''
     Identification plugin.
     '''
-    default_workspace_category = 'Identification'
+    default_category = 'Identification'
     pass
 
 
@@ -439,7 +444,7 @@ class AnalysisPlugin(BasePlugin):
     '''
     Analysis plugin.
     '''
-    default_workspace_category = 'Analysis'
+    default_category = 'Analysis'
     pass
 
 
@@ -447,7 +452,7 @@ class FilterPlugin(BasePlugin):
     '''
     Filter plugin.
     '''
-    default_workspace_category = 'Filter'
+    default_category = 'Filter'
     pass
 
 
@@ -455,7 +460,7 @@ class VisualisationPlugin(BasePlugin):
     '''
     Visualisation plugin.
     '''
-    default_workspace_category = 'Visualisation'
+    default_category = 'Visualisation'
     pass
 
 
@@ -463,7 +468,7 @@ class ExportPlugin(BasePlugin):
     '''
     Export plugin.
     '''
-    default_workspace_category = 'Export'
+    default_category = 'Export'
     pass
 
 
@@ -471,7 +476,7 @@ class ScriptingPlugin(BasePlugin):
     '''
     Scripting plugin.
     '''
-    default_workspace_category = 'Scripting'
+    default_category = 'Scripting'
     pass
 
 
@@ -479,5 +484,5 @@ class MiscPlugin(BasePlugin):
     '''
     Misc plugin.
     '''
-    default_workspace_category = 'Misc'
+    default_category = 'Misc'
     pass

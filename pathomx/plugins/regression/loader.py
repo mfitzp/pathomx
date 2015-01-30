@@ -192,6 +192,8 @@ class RegressionTool(ui.AnalysisApp):
     notebook = 'regression.ipynb'
     shortname = 'regression'
 
+    subcategory = "Regression"
+
     def __init__(self, *args, **kwargs):
         super(RegressionTool, self).__init__(*args, **kwargs)
 
@@ -210,9 +212,8 @@ class RegressionTool(ui.AnalysisApp):
         self.addConfigPanel(RegressionConfigPanel, 'Settings')
 
 
-class RegressionPlugin(AnalysisPlugin):
+class Regression(AnalysisPlugin):
 
     def __init__(self, *args, **kwargs):
-        super(RegressionPlugin, self).__init__(*args, **kwargs)
-        RegressionTool.plugin = self
+        super(Regression, self).__init__(*args, **kwargs)
         self.register_app_launcher(RegressionTool)

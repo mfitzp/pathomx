@@ -79,6 +79,8 @@ class MapEntityApp(ui.GenericTool):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
+    subcategory = "Map Identifiers"
+
     def __init__(self, *args, **kwargs):
         super(MapEntityApp, self).__init__(*args, **kwargs)
         # Define automatic mapping (settings will determine the route; allow manual tweaks later)

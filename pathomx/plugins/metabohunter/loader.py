@@ -101,6 +101,8 @@ class MetaboHunterApp(ui.GenericTool):
 
     default_pause_analysis = True
 
+    subcategory = "NMR"
+
     def __init__(self, *args, **kwargs):
         super(MetaboHunterApp, self).__init__(*args, **kwargs)
 

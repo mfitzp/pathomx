@@ -29,6 +29,9 @@ class ImportPeakMLApp(ui.GenericTool):
 
     legacy_outputs = {'output': 'output_data'}
 
+    category = "Import"
+    subcategory = "Mass Spectrometry"
+
     def __init__(self, *args, **kwargs):
         super(ImportPeakMLApp, self).__init__(*args, **kwargs)
 

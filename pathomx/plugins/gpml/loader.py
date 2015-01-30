@@ -53,6 +53,8 @@ class GPMLPathwayApp(ui.AnalysisApp):
 
     legacy_inputs = {'input': 'compound_data'}
 
+    subcategory = 'Pathways'
+
     def __init__(self, *args, **kwargs):
         super(GPMLPathwayApp, self).__init__(*args, **kwargs)
 

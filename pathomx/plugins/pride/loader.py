@@ -30,6 +30,10 @@ class ImportPRIDETool(ui.GenericTool):
 
     legacy_outputs = {'output': 'output_data'}
 
+    category = "Import"
+    subcategory = "Proteomics"
+
+
     def __init__(self, *args, **kwargs):
         super(ImportPRIDETool, self).__init__(*args, **kwargs)
 

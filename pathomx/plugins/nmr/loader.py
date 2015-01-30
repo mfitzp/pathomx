@@ -115,6 +115,9 @@ class BrukerImport(ui.GenericTool):
     legacy_outputs = {'output': 'output_data'}
     icon = 'bruker.png'
 
+    category = "Import"
+    subcategory = "NMR"
+
     def __init__(self, *args, **kwargs):
         super(BrukerImport, self).__init__(*args, **kwargs)
 
@@ -158,10 +161,12 @@ class BrukerExport(ui.ExportDataApp):
     export_description = "Export Bruker fid format spectra"
     export_type = "data"
 
-    notebook = 'bruker_export.ipynb'
     shortname = 'bruker_export'
 
     icon = 'bruker.png'
+
+    category = "Export"
+    subcategory = "NMR"
 
     def __init__(self, *args, **kwargs):
         super(BrukerExport, self).__init__(*args, **kwargs)
@@ -197,5 +202,5 @@ class NMRGlue(ImportPlugin):
 
     def __init__(self, *args, **kwargs):
         super(NMRGlue, self).__init__(*args, **kwargs)
-        self.register_app_launcher(BrukerImport, workspace_category='Import')
-        self.register_app_launcher(BrukerExport, workspace_category='Export')
+        self.register_app_launcher(BrukerImport)
+        self.register_app_launcher(BrukerExport)

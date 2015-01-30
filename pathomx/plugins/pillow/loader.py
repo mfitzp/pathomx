@@ -83,6 +83,8 @@ class AdjustApp(ui.GenericTool):
     name = "Image Adjust"
     shortname = 'adjust'
 
+    subcategory = "Image"
+
     def __init__(self, *args, **kwargs):
         super(AdjustApp, self).__init__(*args, **kwargs)
 
@@ -144,6 +146,8 @@ class ChopsApp(ui.GenericTool):
     name = "Channel Operations"
     shortname = 'chops'
 
+    subcategory = "Image"
+
     def __init__(self, *args, **kwargs):
         super(ChopsApp, self).__init__(*args, **kwargs)
 
@@ -162,6 +166,8 @@ class InvertApp(ui.GenericTool):
 
     name = "Invert Image"
     shortname = 'invert'
+
+    subcategory = "Image"
 
     def __init__(self, *args, **kwargs):
         super(InvertApp, self).__init__(*args, **kwargs)
@@ -217,6 +223,8 @@ class FilterApp(ui.GenericTool):
     name = "Basic Filter"
     shortname = 'filter'
 
+    subcategory = "Image"
+
     def __init__(self, *args, **kwargs):
         super(FilterApp, self).__init__(*args, **kwargs)
 
@@ -252,7 +260,7 @@ class ColorspaceConfigPanel(ui.ConfigPanel):
         self.cb_color = QComboBox()
         self.cb_color.addItems(list(COLORSPACES.keys()))
         grid.addWidget(QLabel('Colorspace'), 1, 0)
-        grid.addWidget(self.cb_quoting, 1, 1)
+        grid.addWidget(self.cb_color, 1, 1)
         self.config.add_handler('colorspace', self.cb_color, COLORSPACES)
         
         gb.setLayout(grid)
@@ -264,9 +272,11 @@ class ColorspaceConfigPanel(ui.ConfigPanel):
 
 class ColorspaceApp(ui.GenericTool):
     
-    name = "Convert Colorspace/Mode"
+    name = "Convert Colorspace"
     shortname = 'colorspace'
     icon = 'colorspace.png'
+
+    subcategory = "Image"
 
     def __init__(self, *args, **kwargs):
         super(ColorspaceApp, self).__init__(*args, **kwargs)
@@ -286,6 +296,84 @@ class ColorspaceApp(ui.GenericTool):
         )
     
 
+class HistogramApp(ui.GenericTool):
+    
+    name = "Image Histogram"
+    shortname = 'histogram'
+
+    category = "Analysis"
+    subcategory = "Image"
+
+    def __init__(self, *args, **kwargs):
+        super(HistogramApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+        })
+
+        self.data.add_input('input_image')
+        self.data.add_output('output_image')  # Add output slot
+
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
+
+
+
+
+class ColorizeConfigPanel(ui.ConfigPanel):
+
+    def __init__(self, parent, filename=None, *args, **kwargs):
+        super(ColorizeConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.v = parent
+        self.config = parent.config
+        gb = QGroupBox('Colorize')
+        grid = QGridLayout()
+
+        self.cb_black = ui.QColorButton()
+        grid.addWidget(QLabel('Black'), 0, 0)
+        grid.addWidget(self.cb_black, 0, 1)
+        self.config.add_handler('black', self.cb_black)
+
+        self.cb_white = ui.QColorButton()
+        grid.addWidget(QLabel('White'), 1, 0)
+        grid.addWidget(self.cb_white, 1, 1)
+        self.config.add_handler('white', self.cb_white)
+
+        gb.setLayout(grid)
+
+        self.layout.addWidget(gb)
+
+        self.finalise()
+
+
+class ColorizeApp(ui.GenericTool):
+
+    name = "Colorize"
+    shortname = 'colorize'
+    icon = 'colorize.png'
+
+    subcategory = "Image"
+
+    def __init__(self, *args, **kwargs):
+        super(ColorizeApp, self).__init__(*args, **kwargs)
+
+        self.config.set_defaults({
+            'black': '#000000',
+            'white': '#ffffff',
+        })
+
+        self.addConfigPanel(ColorizeConfigPanel, 'Settings')
+
+        self.data.add_input('input_image')
+        self.data.add_output('output_image')
+
+        self.data.consumer_defs.append(
+            ImageDataDefinition('input_image', {
+            })
+        )
+
 
 
 
@@ -298,4 +386,6 @@ class Pillow(ProcessingPlugin):
         self.register_app_launcher(InvertApp)
         self.register_app_launcher(FilterApp)
         self.register_app_launcher(ColorspaceApp)
+        self.register_app_launcher(HistogramApp)
+        self.register_app_launcher(ColorizeApp)
 

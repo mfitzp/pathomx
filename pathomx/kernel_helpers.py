@@ -16,17 +16,20 @@ from .utils import scriptdir, basedir
 from IPython.core import display
 from copy import deepcopy
 
-MAGIC_TYPES = [
+from PIL import Image
+
+MAGIC_TYPES = (
         # Numpy
-        np.array, np.ndarray,
+        np.ndarray,
         # Pandas
         pd.Series, pd.DataFrame,
         Figure, Subplot,
         StylesManager,
         # View types
         displayobjects.Svg, displayobjects.Html, displayobjects.Markdown,
-        display.SVG
-        ]
+        display.SVG,
+        Image.Image,
+)
 
 
 class PathomxTool(object):
@@ -86,7 +89,7 @@ def pathomx_notebook_stop(vars):
             if not k.startswith('_') and \
                 not k in vars['_io']['input'].keys():
 
-                if type(v) in MAGIC_TYPES or k in vars['_pathomx_expected_output_vars']:
+                if k in vars['_pathomx_expected_output_vars'] or isinstance(v, MAGIC_TYPES):
                     varso[k] = v
 
                 elif hasattr(v, '_repr_html_'):

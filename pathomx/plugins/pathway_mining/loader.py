@@ -147,6 +147,8 @@ class PathwayMiningApp(ui.AnalysisApp):
     notebook = "pathway_mining.ipynb"
     shortname = 'pathway_mining'
 
+    subcategory = "Pathway Analysis"
+
     def __init__(self, *args, **kwargs):
         super(PathwayMiningApp, self).__init__(*args, **kwargs)
 

@@ -30,6 +30,9 @@ class GEOApp(ui.GenericTool):
 
     legacy_outputs = {'output': 'output_data'}
 
+    category = "Import"
+    subcategory = "Transcriptomics"
+
     def __init__(self, *args, **kwargs):
         super(GEOApp, self).__init__(*args, **kwargs)
 

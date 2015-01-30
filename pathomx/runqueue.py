@@ -94,10 +94,8 @@ class ClusterRunner(QObject):
 
         self._progress_callback = progress_callback
         self._result_callback = result_callback
-
         # Check metadata to see if this kernel has the outputs for the previous tool
         self.e.execute('%reset_selective -f [^_]')
-        print(varsi)
         self.e.push({'varsi': varsi})
         self.e.execute(r'''from pathomx.kernel_helpers import pathomx_notebook_start, pathomx_notebook_stop, progress, open_with_progress
 pathomx_notebook_start(varsi, vars());''')
@@ -135,6 +133,7 @@ pathomx_notebook_start(varsi, vars());''')
                 self._status = STATUS_COMPLETE
 
         elif self.aro:
+
             try:
                 varso = self.aro.get(0)
             except TimeoutError:
@@ -150,7 +149,6 @@ pathomx_notebook_start(varsi, vars());''')
                 self.aro = None
                 self._is_active = False  # Release this kernel
                 self._status = STATUS_ERROR
-
             else:
                 self.aro = None
                 result['status'] = 0
@@ -412,7 +410,6 @@ pathomx_notebook_start(varsi, vars());''')
     def _handle_execute_result(self, msg):
         """ Handle display hook output.
         """
-
         logging.debug("execute_result: %s", msg.get('content', ''))
         if not self._hidden: # and self._is_from_this_session(msg):
             msg_id = msg['parent_header']['msg_id']
@@ -601,13 +598,14 @@ class RunManager(QObject):
 
     def restart(self):
         self.stop_cluster()
+        self.create_runners()
 
     def interrupt(self):
         self.runner.interrupt_kernel()
         
     def start_cluster(self):
         # Start IPython ipcluster with 4 engines
-        self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+        self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=3'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
 
     def stop_cluster(self):
         # Stop the ipcluster
@@ -616,9 +614,8 @@ class RunManager(QObject):
             pass
 
         self.p = None
-        self.client.shutdown()
         self.client = None
-        self.runners = [self.in_process_runner]
+        self.runners = [] # [self.in_process_runner]
 
     def terminate_cluster(self):
         if self.p:

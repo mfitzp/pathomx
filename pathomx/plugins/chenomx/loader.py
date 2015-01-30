@@ -25,6 +25,9 @@ class ChenomxApp(ui.GenericTool):
     shortname = 'chenomx'
     autoconfig_name = "{filename}"
 
+    category = "Import"
+    subcategory = "Metabolomics"
+
     def __init__(self, *args, **kwargs):
         super(ChenomxApp, self).__init__(*args, **kwargs)
 

@@ -171,6 +171,12 @@ class MainWindow(QMainWindow):
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
+
+        self.ribbon = ui.RibbonWidget()
+        t = self.addToolBar('Ribbon')
+        t.addWidget(self.ribbon)
+        t.setMovable(False)
+
         # Central variable for storing application configuration (load/save from file?
         if settings.get('Pathomx/Is_setup') is False:
             logging.info("Setting up initial configuration...")
@@ -454,20 +460,28 @@ class MainWindow(QMainWindow):
         self.workspaceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
 
-        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+
+        self.setCorner(Qt.TopLeftCorner, Qt.TopDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.activetoolDock)
 
+
         self.addFileToolBar()
+
         self.addEditorToolBar()
         self.addEditModeToolBar()
         self.addEditStyleToolBar()
+
+        self.addReportsToolBar()
+        self.addExportToolBar()
+
+        self.addAdvancedToolBar()
 
         self.showMaximized()
 
@@ -507,6 +521,7 @@ class MainWindow(QMainWindow):
 
         self.toolbox.clear()
         for category in plugin_categories:
+
             item = QTreeWidgetItem()
             item.setText(0, category)
             item.setIcon(0, tool_category_icons[category])
@@ -526,6 +541,15 @@ class MainWindow(QMainWindow):
 
                 tool['icon'] = QIcon(icon_path)
 
+
+                def make_callback(i):
+                    return lambda n: self.editor.createApp(i)
+
+                act = QAction(tool['icon'], getattr(tool['app'], 'name', tool['plugin'].name), self )
+                act.setToolTip("%s\n%s" % (getattr(tool['app'], 'name', tool['plugin'].name), tool['plugin'].metadata['description']) )
+                act.triggered.connect(make_callback(tool['id']))
+                self.ribbon.addAction(act, category, tool['subcategory'])
+
                 ti.setIcon(0, tool['icon'])
                 ti.setToolTip(0, tool['plugin'].metadata['description'])
                 ti.data = tool
@@ -535,72 +559,73 @@ class MainWindow(QMainWindow):
         self.toolbox.expandAll()
 
     def addFileToolBar(self):
-        t = self.addToolBar('File')
-        t.setIconSize(QSize(16, 16))
 
         clear_workspaceAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'document.png')), 'New workspace…', self)
         clear_workspaceAction.setStatusTip('Create new workspace (clear current)')
         clear_workspaceAction.triggered.connect(self.onClearWorkspace)
-        t.addAction(clear_workspaceAction)
+        self.ribbon.addAction(clear_workspaceAction, 'Home', 'File')
 
         open_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Open workflow…', self)
         open_workflowAction.setStatusTip('Open a saved workflow')
         open_workflowAction.triggered.connect(self.onOpenWorkflow)
-        t.addAction(open_workflowAction)
+        self.ribbon.addAction(open_workflowAction, 'Home','File')
 
         save_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), 'Save workflow As…', self)
         save_workflowAction.setStatusTip('Save workflow for future re-use')
         save_workflowAction.triggered.connect(self.onSaveWorkflowAs)
-        t.addAction(save_workflowAction)
+        self.ribbon.addAction(save_workflowAction, 'Home', 'File')
 
-        export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export IPython notebook…', self)
+
+    def addExportToolBar(self):
+
+        export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export to Notebook…', self)
         export_ipythonnbAction.setStatusTip('Export workflow as IPython notebook')
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
-        #t.addAction(export_ipythonnbAction)
-
-        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Export report…', self)
-        export_reportAction.setStatusTip('Export workflow as report')
-        export_reportAction.triggered.connect(self.onExportReport)
-        #t.addAction(export_reportAction)
-
-        interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart cluster…', self)
-        interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing and restart cluster')
-        interrupt_kernelsAction.triggered.connect(self.onInterruptKernels)
-        t.addAction(interrupt_kernelsAction)
-
-    def addEditorToolBar(self):
-        t = self.addToolBar('Editor')
-        t.setIconSize(QSize(16, 16))
+        self.ribbon.addAction(export_ipythonnbAction, 'Home', 'Export')
 
         save_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Save workflow image…'), self)
         save_imageAction.setStatusTip('Show grid in workspace editor')
         save_imageAction.triggered.connect(self.editor.onSaveAsImage)
-        t.addAction(save_imageAction)
+        self.ribbon.addAction(save_imageAction, 'Home', 'Export')
+
+    def addReportsToolBar(self):
+
+        export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Save report…', self)
+        export_reportAction.setStatusTip('Export workflow as report')
+        export_reportAction.triggered.connect(self.onExportReport)
+        self.ribbon.addAction(export_reportAction, 'Home', 'Reports')
+
+
+    def addAdvancedToolBar(self):
+
+        interrupt_kernelsAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'server--exclamation.png')), 'Restart cluster…', self)
+        interrupt_kernelsAction.setStatusTip('Interrupt kernel(s), stop processing and restart cluster')
+        interrupt_kernelsAction.triggered.connect(self.onInterruptKernels)
+        self.ribbon.addAction(interrupt_kernelsAction, 'Home', 'Advanced')
+
+    def addEditorToolBar(self):
 
         snap_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid-snap.png')), tr('Snap to grid'), self)
         snap_gridAction.setStatusTip('Snap tools to grid')
         snap_gridAction.setCheckable(True)
         settings.add_handler('Editor/Snap_to_grid', snap_gridAction)
-        t.addAction(snap_gridAction)
+        self.ribbon.addAction(snap_gridAction, 'Home', 'Editor')
 
         show_gridAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'grid.png')), tr('Show grid'), self)
         show_gridAction.setStatusTip('Show grid in workspace editor')
         show_gridAction.setCheckable(True)
         settings.add_handler('Editor/Show_grid', show_gridAction)
         show_gridAction.triggered.connect(self.onGridToggle)
-        t.addAction(show_gridAction)
+        self.ribbon.addAction(show_gridAction, 'Home', 'Editor')
 
         auto_placementAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'lightning.png')), tr('Auto position'), self)
         auto_placementAction.setStatusTip('Automatically position tools in workflow editor')
         auto_placementAction.setCheckable(True)
         settings.add_handler('Editor/Auto_position', auto_placementAction)
-        t.addAction(auto_placementAction)
+        self.ribbon.addAction(auto_placementAction, 'Home', 'Editor')
 
 
     def addEditModeToolBar(self):
-        t = self.addToolBar('Edit mode')
-        t.setIconSize(QSize(16, 16))
-
         editormodeag = QActionGroup(self)
 
         normalAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'cursor.png')), tr('Edit mode'), self)
@@ -608,76 +633,85 @@ class MainWindow(QMainWindow):
         normalAction.setChecked(True)
         normalAction.setStatusTip('Default edit mode')
         normalAction.setActionGroup(editormodeag)
-        t.addAction(normalAction)
+        self.ribbon.addAction(normalAction, 'Home', 'Mode')
 
         add_textAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'layer-shape-text.png')), tr('Add text annotation…'), self)
         add_textAction.setCheckable(True)
         add_textAction.setStatusTip('Add text annotations to workflow')
         add_textAction.setActionGroup(editormodeag)
-        t.addAction(add_textAction)
+        self.ribbon.addAction(add_textAction, 'Home', 'Mode')
 
         add_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone.png')), tr('Add region annotation…'), self)
         add_regionAction.setCheckable(True)
         add_regionAction.setStatusTip('Add region annotations to workflow')
         add_regionAction.setActionGroup(editormodeag)
-        t.addAction(add_regionAction)
+        self.ribbon.addAction(add_regionAction, 'Home', 'Mode')
 
         self.editor.config.add_handler('mode', editormodeag)
 
     def addEditStyleToolBar(self):
         # ['font-family', 'font-size', 'text-bold', 'text-italic', 'text-underline', 'text-color', 'color-border', 'color-background']
 
-        t = self.addToolBar('Style')
-        t.setIconSize(QSize(16, 16))
+        page = self.ribbon.addPage('Home')
+        section = page.addSection('Style')
+
         self.styletoolbarwidgets = {}
 
         font_listcb = QComboBox()
         font_listcb.addItems(self.fonts.families(QFontDatabase.Any))
         self.editor.config.add_handler('font-family', font_listcb)
-        t.addWidget(font_listcb)
+        section.layout.addWidget(font_listcb, 0, 0, 1, 7)
         self.styletoolbarwidgets['font-family'] = font_listcb
 
         font_sizecb = QComboBox()
         font_sizecb.addItems(['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'])
         font_sizecb.setEditable(True)
         self.editor.config.add_handler('font-size', font_sizecb)
-        t.addWidget(font_sizecb)
+        section.layout.addWidget(font_sizecb, 1, 6)
         self.styletoolbarwidgets['font-size'] = font_sizecb
 
         text_colorcb = ui.QColorButton()
         self.editor.config.add_handler('text-color', text_colorcb)
-        t.addWidget(text_colorcb)
+        section.layout.addWidget(text_colorcb, 1, 0)
         self.styletoolbarwidgets['text-color'] = text_colorcb
+
 
         text_boldAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-bold.png')), tr('Bold'), self)
         text_boldAction.setStatusTip('Set text bold')
         text_boldAction.setCheckable(True)
+        btn = QToolButton()
+        btn.setDefaultAction(text_boldAction)
         self.editor.config.add_handler('text-bold', text_boldAction)
-        t.addAction(text_boldAction)
+        section.layout.addWidget(btn, 1, 1)
         self.styletoolbarwidgets['text-bold'] = text_boldAction
 
         text_italicAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-italic.png')), tr('Italic'), self)
         text_italicAction.setStatusTip('Set text italic')
         text_italicAction.setCheckable(True)
+        btn = QToolButton()
+        btn.setDefaultAction(text_italicAction)
         self.editor.config.add_handler('text-italic', text_italicAction)
-        t.addAction(text_italicAction)
+        section.layout.addWidget(btn, 1, 2)
         self.styletoolbarwidgets['text-italic'] = text_italicAction
 
         text_underlineAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-underline.png')), tr('Underline'), self)
         text_underlineAction.setStatusTip('Set text underline')
         text_underlineAction.setCheckable(True)
+        btn = QToolButton()
+        btn.setDefaultAction(text_underlineAction)
         self.editor.config.add_handler('text-underline', text_underlineAction)
-        t.addAction(text_underlineAction)
+        section.layout.addWidget(btn, 1, 3)
         self.styletoolbarwidgets['text-underline'] = text_underlineAction
+
 
         border_colorcb = ui.QColorButton()
         self.editor.config.add_handler('color-border', border_colorcb)
-        t.addWidget(border_colorcb)
+        section.layout.addWidget(border_colorcb, 1, 4)
         self.styletoolbarwidgets['color-border'] = border_colorcb
 
         background_colorcb = ui.QColorButton()
         self.editor.config.add_handler('color-background', background_colorcb)
-        t.addWidget(background_colorcb)
+        section.layout.addWidget(background_colorcb, 1, 5)
         self.styletoolbarwidgets['color-background'] = background_colorcb
 
     def onGridToggle(self):

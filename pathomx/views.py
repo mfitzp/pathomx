@@ -444,14 +444,17 @@ class ImageView(QGraphicsView, BaseView):
 
     def generate(self, image):
         # Image comes in as a Pillow image
+
         # Convert to RGB for display if not already
         if image.mode not in ['RGB', 'RGBA']:
             image = image.convert(mode='RGB')
 
         # Create QT compatible image
-        image = ImageQt.ImageQt(image)
+        image = QImage(np.array(image), image.size[0], image.size[1], QImage.Format_RGB888)
+
         self.scene.clear()
         self.scene.addPixmap(QPixmap.fromImage(image))
+        self.scene.setSceneRect( QRectF(image.rect() ) )
         #self.canvas.resize(self.canvas.pixmap().size())
 
 
