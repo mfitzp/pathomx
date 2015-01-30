@@ -6,7 +6,6 @@ libpng
 zeromq
 freetype
 pandoc
-numpy
 scipy
 pandas
 yapsy
