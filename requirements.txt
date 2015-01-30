@@ -16,7 +16,6 @@ pyqtconfig
 mplstyler
 ipython[all]
 dill
-pyqtconfig
 mistune
 biocyc
 pydot
