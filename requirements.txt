@@ -1,5 +1,4 @@
 numpy
-pyqt
 hdf5
 libpng
 zeromq
