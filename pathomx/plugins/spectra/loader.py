@@ -36,6 +36,8 @@ class SpectraNormApp(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
+    autoconfig_name = "{algorithm}"
+
     def __init__(self, *args, **kwargs):
         super(SpectraNormApp, self).__init__(*args, **kwargs)
 
@@ -223,6 +225,8 @@ class PeakPickingApp(ui.IPythonApp):
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
 
+    autoconfig_name = "{peak_algorithm} ≥{peak_threshold} ·{peak_separation}"
+
     def __init__(self, *args, **kwargs):
         super(PeakPickingApp, self).__init__(*args, **kwargs)
 
@@ -283,6 +287,8 @@ class BinningApp(ui.IPythonApp):
     legacy_launchers = ['Binning.BinningApp']
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
+
+    autoconfig_name = "{bin_size}ppm {bin_offset}ppm"
 
     def __init__(self, *args, **kwargs):
         super(BinningApp, self).__init__(*args, **kwargs)
@@ -434,6 +440,8 @@ class BaselineCorrectionTool(ui.IPythonApp):
     legacy_launchers = ['BaselineCorrection.BaselineCorrectionTool']
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
+
+    autoconfig_name = "{algorithm}"
 
     def __init__(self, *args, **kwargs):
         super(BaselineCorrectionTool, self).__init__(*args, **kwargs)

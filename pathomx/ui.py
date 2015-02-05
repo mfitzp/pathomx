@@ -1305,6 +1305,7 @@ class GenericApp(QObject):
     deleted = pyqtSignal()
 
     nameChanged = pyqtSignal(str)
+    configNameChanged = pyqtSignal(str)
     change_name = pyqtSignal(str)
 
     pause_status_changed = pyqtSignal(bool)
@@ -1331,6 +1332,9 @@ class GenericApp(QObject):
 
         self._lock = False
         self._previous_size = None
+        self._is_active = False
+
+        self._is_auto_focusable = auto_focus
 
         current_tools.append(self)
         current_tools_by_id[self.id] = self
@@ -1357,6 +1361,7 @@ class GenericApp(QObject):
         if name is None:
             name = getattr(self, 'name', installed_plugin_names[id(self.plugin)])
         self.set_name(name)
+        self.configname = None
 
         self.logger.debug('Creating tool: %s' % name)
 
@@ -1364,7 +1369,9 @@ class GenericApp(QObject):
         self.data = data.DataManager(self.parent(), self)
 
         self.logger.debug('Setting up view manager...')
+
         self.views = ViewManager(self)
+        self.dataViews = ViewManager(self)
 
         self.logger.debug('Setting up file watcher manager...')
         self.file_watcher = QFileSystemWatcher()
@@ -1421,14 +1428,23 @@ class GenericApp(QObject):
         self.code = code
 
         # Trigger finalise once we're back to the event loop
-        self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
+        self._init_timer1 = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
+        self._init_timer2 = QTimer.singleShot(PX_INIT_SHOT, self.init_notebook)
 
     def init_auto_consume_data(self):
         self.logger.debug('Post-init: init_auto_consume_data')
 
         self._is_autoconsume_success = False
         if self._auto_consume_data:
-            self._is_autoconsume_success = self.data.consume_any_app(current_tools[::-1])  # Try consume from any app; work backwards
+            # Check if a particular tool is selected FIXME: Also check for a specific data frame
+            tools_to_check = current_tools[::-1]
+            active_tools = [t for t in tools_to_check if t._is_active]
+
+            # If any tool is currently selected, add it to the front of the list
+            tools_to_check = active_tools + tools_to_check
+
+            # Try to autoconsume from current tools
+            self._is_autoconsume_success = self.data.consume_any_app(tools_to_check)  # Try consume from any app; work backwards
 
         self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
         self.config.updated.connect(self.autoconfig)  # Auto-regenerate if the configuration changes
@@ -1436,7 +1452,12 @@ class GenericApp(QObject):
         if self.autoconfig_name:
             self.config.updated.connect(self.autoconfig_rename)  # Auto-rename if it is set
 
-        self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.init_notebook)
+        if self._is_auto_focusable: # Needs to occur after the above
+            self.editorItem.setSelected(True)
+            for i in self.editorItem.scene().selectedItems():
+                if i != self.editorItem:
+                    i.setSelected(False)
+
 
     def init_notebook(self):
         self.logger.debug('Post-init: init_notebook')
@@ -1453,7 +1474,28 @@ class GenericApp(QObject):
         self.load_notes()
         self.load_source()
 
-        html = '''<html>
+        #self.views.addView(self.code_editor, '&#', unfocus_on_refresh=True)
+        #self.views.addView(self.log_viewer, '&=', unfocus_on_refresh=True)
+        #self.views.addView( self.logView, 'Log')
+
+        if self._is_autoconsume_success is not False:
+            # This will fire after the notebook has completed above
+            self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
+
+        # Set the autoconfig name string
+        self.autoconfig_rename()
+
+        self.configPanels.addTab(self.notes_viewer, '&?')
+
+    def reload(self):
+        self.load_notes()
+        self.load_source()
+
+    def load_notes(self):
+        with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rb') as f:
+            self.notes = f.read().decode('utf-8')
+
+        self.notes_as_html = '''<html>
 <head><title>About</title><link rel="stylesheet" href="{css}"></head>
 <body>
 <div class="container" id="notebook-container">
@@ -1467,24 +1509,6 @@ class GenericApp(QObject):
         </body>
         </html>'''.format(**{'baseurl': 'file:///' + os.path.join(utils.scriptdir), 'css': 'file:///' + css, 'html': markdown2html_mistune(self.notes)})
 
-        self.notes_viewer.setHtml(unicode(html))
-
-        self.views.addView(self.notes_viewer, '&?', unfocus_on_refresh=True)
-        self.views.addView(self.code_editor, '&#', unfocus_on_refresh=True)
-        self.views.addView(self.log_viewer, '&=', unfocus_on_refresh=True)
-        #self.views.addView( self.logView, 'Log')
-
-        if self._is_autoconsume_success is not False:
-            # This will fire after the notebook has completed above
-            self._init_timer = QTimer.singleShot(PX_INIT_SHOT, self.autogenerate)
-
-    def reload(self):
-        self.load_notes()
-        self.load_source()
-
-    def load_notes(self):
-        with open(os.path.join(self.plugin.path, "%s.md" % self.shortname), 'rb') as f:
-            self.notes = f.read().decode('utf-8')
 
     def load_source(self):
         with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rb') as f:
@@ -1584,10 +1608,12 @@ class GenericApp(QObject):
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
         self.views.data = self.prerender(**kwargs_dict)
+        self.dataViews.data = self.prerender(**kwargs_dict)
+
         # Delay this 1/2 second so next processing gets underway
         # FIXME: when we've got a better runner system
         QTimer.singleShot(PX_RENDER_SHOT, self.views.source_data_updated.emit)
-        #self.views.source_data_updated.emit()
+        QTimer.singleShot(PX_RENDER_SHOT, self.dataViews.source_data_updated.emit)
 
     def prerender(self, *args, **kwargs):
 
@@ -1673,8 +1699,10 @@ class GenericApp(QObject):
         elif signal == RECALCULATE_VIEW:
             self.autoprerender(self._latest_generator_result)
 
-    def autoconfig_rename(self, signal):
-        self.set_name(self.autoconfig_name.format(**self.config.as_dict()))
+    def autoconfig_rename(self, signal=None):
+        if self.autoconfig_name:
+            self.configname = self.autoconfig_name.format(**self.config.as_dict())
+            self.configNameChanged.emit(self.configname)
 
     def store_views_data(self, kwargs_dict):
         self.views.source_data = kwargs_dict
@@ -1685,20 +1713,23 @@ class GenericApp(QObject):
         self.nameChanged.emit(name)
 
     def show(self):
-        self.parent().activetoolDock.setWidget(self.w)
-        self.parent().activetoolDock.setWindowTitle(self.name)
-        self.parent().activetoolDock.show()
+        self._is_active = True
+        self.parent().viewerDock.setWidget(self.views)
+        self.parent().viewerDock.setWindowTitle(self.name)
+        self.parent().viewerDock.show()
 
         self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
-        self.parent().activetoolDock.setWidget(self.w)
-        self.parent().activetoolDock.setWindowTitle(self.name)
-        self.parent().activetoolDock.raise_()
+        self._is_active = True
+        self.parent().viewerDock.setWidget(self.views)
+        self.parent().viewerDock.setWindowTitle(self.name)
+        self.parent().viewerDock.raise_()
 
     def hide(self):
-        self.parent().toolDock.setWidget(self.parent().toolbox)
-        self.parent().activetoolDock.setWidget(QWidget())  # Empty
+        self._is_active = False
+        self.parent().toolDock.setWidget(self.parent().queue)
+        self.parent().viewerDock.setWidget(QWidget())  # Empty
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)

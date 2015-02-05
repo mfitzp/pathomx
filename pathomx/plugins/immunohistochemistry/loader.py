@@ -76,7 +76,7 @@ class SeperateStainsApp(ui.GenericTool):
                     'FastRed', 'FastBlue', 'MethylGreen', 'Hematoxylin', 'AEC',
                     'AnillineBlue', 'Azocarmine', 'OrangeG', 'MethylBlue',
                     'PonceauFuchsin', 'AlcianBlue', 'Hematoxylin', 'PAS'):
-            pass #self.data.add_output(o) FIXME: Need to be able to auto-hide some outputs (auto-delete; ? needs modifications in the editor)
+            self.data.add_output(o) # FIXME: Auto-hide some outputs (auto-delete; only if unconnected; etc. ? needs modifications in the editor)
 
 
 

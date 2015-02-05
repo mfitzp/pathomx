@@ -1,6 +1,8 @@
 from sklearn.decomposition import PCA
 
-pca = PCA(n_components=config['number_of_components'])
+number_of_components = config['number_of_components']
+
+pca = PCA(n_components=number_of_components)
 pca.fit(input_data.values)
 
 import pandas as pd
@@ -38,14 +40,33 @@ if config['plot_sample_numbers']:
 else:
     label_index = None
 
+
+# Build a combined grid plot showing all PCA combinations
 # Build scores plots for all combinations up to n
-score_combinations = list( set([ (a,b) for a in range(0,n) for b in range(a+1, n+1)]) )
+#score_combinations = list( set([ (a,b) for a in range(0,nc) for b in range(a+1, nc+1)]) )
 
-for sc in score_combinations:
-     vars()['Scores %dv%d' % (sc[0]+1, sc[1]+1)] = scatterplot(scores.iloc[:,sc], styles=styles, label_index=label_index)
+if number_of_components == 2:
+    Scores = scatterplot(scores.iloc[:,(0,1)], styles=styles, label_index=label_index)
 
-pcd = None
+else:
+    from pathomx.figures import Figure
+    Scores = Figure()
+    
+    for y in range(0, pca.components_.shape[0]):
+        for x in range(0, pca.components_.shape[0]):
+
+            ax = Scores.add_subplot(number_of_components, number_of_components, y*number_of_components+(x+1))
+
+            scatterplot(scores.iloc[:,(x,y)], styles=styles, label_index=label_index, figure=Scores, ax=ax, show_legend=False)
+                
+            if x > 0:
+                ax.axes.get_yaxis().set_visible(False)
+            if y < number_of_components-1:
+                ax.axes.get_xaxis().set_visible(False)
+
+
 # Clean up
+pcd = None
 
 if config['filter_data']:
     ffilter = None

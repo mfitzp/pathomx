@@ -85,6 +85,8 @@ class AdjustApp(ui.GenericTool):
 
     subcategory = "Image"
 
+    autoconfig_name = "Br{brightness} Ct{contrast} Co{color} Sh{sharpness}"
+
     def __init__(self, *args, **kwargs):
         super(AdjustApp, self).__init__(*args, **kwargs)
 
@@ -121,6 +123,7 @@ class ChopsConfigPanel(ui.ConfigPanel):
         'Subtract (Modulo)': 'subtract_modulo',
     }
 
+
     def __init__(self, parent, *args, **kwargs):
         super(ChopsConfigPanel, self).__init__(parent, *args, **kwargs)
 
@@ -147,6 +150,9 @@ class ChopsApp(ui.GenericTool):
     shortname = 'chops'
 
     subcategory = "Image"
+
+    autoconfig_name = "{operation}"
+
 
     def __init__(self, *args, **kwargs):
         super(ChopsApp, self).__init__(*args, **kwargs)
@@ -225,6 +231,9 @@ class FilterApp(ui.GenericTool):
 
     subcategory = "Image"
 
+    autoconfig_name = "{filter}"
+
+
     def __init__(self, *args, **kwargs):
         super(FilterApp, self).__init__(*args, **kwargs)
 
@@ -278,6 +287,9 @@ class ColorspaceApp(ui.GenericTool):
 
     subcategory = "Image"
 
+    autoconfig_name = "{colorspace}"
+
+
     def __init__(self, *args, **kwargs):
         super(ColorspaceApp, self).__init__(*args, **kwargs)
 
@@ -303,6 +315,7 @@ class HistogramApp(ui.GenericTool):
 
     category = "Analysis"
     subcategory = "Image"
+
 
     def __init__(self, *args, **kwargs):
         super(HistogramApp, self).__init__(*args, **kwargs)
@@ -355,6 +368,9 @@ class ColorizeApp(ui.GenericTool):
     icon = 'colorize.png'
 
     subcategory = "Image"
+
+    autoconfig_name = "{black}…{white}"
+
 
     def __init__(self, *args, **kwargs):
         super(ColorizeApp, self).__init__(*args, **kwargs)

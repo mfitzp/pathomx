@@ -383,14 +383,12 @@ class MainWindow(QMainWindow):
         # be available for loading
         plugin_manager.m = self
 
-        self.toolbox = ToolTreeWidget(self)  # QToolBox(self)
-        self.toolbox.setHeaderLabels(['Available tools'])
-        self.toolbox.setUniformRowHeights(True)
-        self.toolbox.m = self
+        self.queue = QWidget()
+
         self.buildToolbox()
 
         self.toolDock = QDockWidget(tr('Toolbox'))
-        self.toolDock.setWidget(self.toolbox)
+        self.toolDock.setWidget(self.queue)
         self.toolDock.setMinimumWidth(300)
         self.toolDock.setMaximumWidth(300)
 
@@ -445,31 +443,40 @@ class MainWindow(QMainWindow):
         self.central.addTab(self.console, '&Console')
         self.central.addTab(self.logView, '&Log')
 
-        self.workspaceDock = QDockWidget(tr('Workspace'))
-        self.workspaceDock.setWidget(self.central)
-        self.workspaceDock.setMinimumHeight(300)
+
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
+
+        self.viewerDock = QDockWidget(tr('Viewer'))
+        self.viewerDock.setWidget(QWidget(None))
+        self.viewerDock.setMinimumWidth(300)
+        self.viewerDock.setMinimumHeight(300)
+        self.viewerDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.viewerDock)
+
+        self.dataDock = QDockWidget(tr('Data'))
+        self.dataDock.setWidget(QWidget(None))
+        self.dataDock.setMinimumWidth(300)
+        self.dataDock.setMinimumHeight(300)
+        self.dataDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
+
+
 
         self.activetoolDock = QDockWidget(tr('Active'))
         self.activetoolDock.setWidget(QWidget(None))
         self.activetoolDock.setMinimumHeight(300)
+        self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
         self.dummy = QWidget()
         self.dummy.hide()
-        self.setCentralWidget(self.dummy)
-
-        self.workspaceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
-        self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
-
-
-        self.setCorner(Qt.TopLeftCorner, Qt.TopDockWidgetArea)
-        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-
-        self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)
-        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
-
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.workspaceDock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.activetoolDock)
+        self.setCentralWidget(self.central)
 
 
         self.addFileToolBar()
@@ -508,31 +515,12 @@ class MainWindow(QMainWindow):
         plugins.get_available_plugins()
         disabled_plugins = settings.get('Plugins/Disabled')
 
-        tool_category_icons = {
-               "Import": QIcon(os.path.join(utils.scriptdir, 'icons', 'folder-open-document.png')),
-               "Processing": QIcon(os.path.join(utils.scriptdir, 'icons', 'ruler-triangle.png')),
-               "Filter": QIcon(os.path.join(utils.scriptdir, 'icons', 'funnel.png')),
-               "Identification": QIcon(os.path.join(utils.scriptdir, 'icons', 'target.png')),
-               "Analysis": QIcon(os.path.join(utils.scriptdir, 'icons', 'calculator.png')),
-               "Visualisation": QIcon(os.path.join(utils.scriptdir, 'icons', 'star.png')),
-               "Export": QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')),
-               "Scripting": QIcon(os.path.join(utils.scriptdir, 'icons', 'scripts-text.png')),
-               }
-
-        self.toolbox.clear()
         for category in plugin_categories:
 
-            item = QTreeWidgetItem()
-            item.setText(0, category)
-            item.setIcon(0, tool_category_icons[category])
-            self.toolbox.addTopLevelItem(item)
             for tool in available_tools_by_category[category]:
                 if tool['plugin'].metadata['path'] in disabled_plugins:
                     # Skip deactivated plugins
                     continue
-
-                ti = QTreeWidgetItem()
-                ti.setText(0, getattr(tool['app'], 'name', tool['plugin'].name))
 
                 if tool['app'].icon:
                     icon_path = os.path.join(tool['plugin'].path, tool['app'].icon)
@@ -540,7 +528,6 @@ class MainWindow(QMainWindow):
                     icon_path = os.path.join(tool['plugin'].path, 'icon.png')
 
                 tool['icon'] = QIcon(icon_path)
-
 
                 def make_callback(i):
                     return lambda n: self.editor.createApp(i)
@@ -550,13 +537,6 @@ class MainWindow(QMainWindow):
                 act.triggered.connect(make_callback(tool['id']))
                 self.ribbon.addAction(act, category, tool['subcategory'])
 
-                ti.setIcon(0, tool['icon'])
-                ti.setToolTip(0, tool['plugin'].metadata['description'])
-                ti.data = tool
-                item.addChild(ti)
-            item.sortChildren(0, Qt.AscendingOrder)
-
-        self.toolbox.expandAll()
 
     def addFileToolBar(self):
 
@@ -859,7 +839,7 @@ class MainWindow(QMainWindow):
         self.generateGraphView()
 
     def deselectTool(self):
-        self.toolDock.setWidget(self.toolbox)
+        self.toolDock.setWidget(self.queue)
 
     def selectTool(self, t):
         t.show()

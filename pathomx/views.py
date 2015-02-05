@@ -7,7 +7,7 @@ logging.debug('Loading views.py')
 # Import PyQt5 classes
 from .qt import *
 
-import os, re, sys, logging
+import os, re, sys, logging, traceback
 from collections import OrderedDict
 
 # Pathomx classes
@@ -162,6 +162,10 @@ class ViewManager( QTabWidget ):
                     self.widget(n).autogenerate()
                 except Exception as e:
                     logging.error(e)
+                    ex_type, ex, tb = sys.exc_info()
+                    logging.error( traceback.format_exc() )
+                    del(tb)
+
                     # Failure; disable the tab or delete
                     if self._auto_delete_on_no_data:
                         to_delete.append( self.widget(n) )
@@ -461,33 +465,6 @@ class ImageView(QGraphicsView, BaseView):
 
     
 
-class D3View(WebView):
-
-    """
-    Modified QWebView (via WebView) with d3 generated SVG image saving handler.
-    
-    Use this as a basis for any custom d3-based rendering views.
-    """
-
-    d3_template = 'd3/figure.svg'
-    _offers_rerender_on_save = True
-
-    def setSVG(self, svg):
-        super(D3View, self).setHtml(svg, QUrl('file:///') )             
-
-
-    def generate_d3(self, metadata):
-        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-
-# D3 legacy figure views (single js/svg; needs extracting)
-class D3LegacyView(D3View):
-
-    d3_template = 'figure.svg'
-
-    def generate(self, metadata):
-        metadata['htmlbase'] = os.path.join( utils.scriptdir,'html')
-
-
 class HTMLView(WebView):
     """
     Convenience wrapper for WebView for HTML viewing.
@@ -534,7 +511,7 @@ class StaticHTMLView(HTMLView):
     autogenerate = False
 
 
-class SVGView(D3View):
+class SVGView(HTMLView):
     
     def generate(self, svg):
         self.setSVG( svg.data )
@@ -858,6 +835,7 @@ class IPyMplView(MplView):
         bounds = []
         pos = []
 
+
         # Reset the xlim and ylim to the previous figure
         for a in self.fig.get_axes():
             xmin, xmax = a.get_xlim()
@@ -877,7 +855,11 @@ class IPyMplView(MplView):
 
         boundsl = []
         for i, a in enumerate(self.fig.get_axes()):
-            xmin, xmax, ymin, ymax = lims[i]
+            try:
+                xmin, xmax, ymin, ymax = lims[i]
+            except IndexError:
+                continue
+
             bounds = (a.get_xbound(), a.get_ybound())
             if self._current_axis_bounds and self._current_axis_bounds[i] == bounds:
                     a.set_xlim((xmin, xmax))
@@ -992,87 +974,9 @@ class DataFrameWidget(QWidget, BaseView):
         if data is not None:
             self.setDataFrame(data)
 
-    
-class D3PrerenderedView(D3View):
-    
-    def generate(self, metadata, template):
-        self.d3_template = template
-        self.generate_d3( metadata )
+
     
 
-class D3ForceView(D3View):
-
-
-    def generate(self):
-        current_pathways = [db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',') if db.dbm.pathway(p) is not None]
-        # Iterate pathways and get a list of all metabolites (list, for index)
-        metabolites = []
-        reactions = []
-        metabolite_pathway_groups = {}
-        for p in current_pathways:
-
-            for r in p.reactions:
-                ms = r.mtins + r.mtouts
-                for m in ms:
-                    if m not in metabolites:
-                        metabolites.append(m)
-
-                for m in ms:
-                    metabolite_pathway_groups[m] = current_pathways.index(p)
-
-                for mi in r.mtins:
-                    for mo in r.mtouts:
-                        reactions.append( [ metabolites.index(mi), metabolites.index(mo) ] )
-                
-        
-        # Get list of all reactions
-        # In template:
-        # Loop metabolites (nodes; plus their groups)
-    
-        metadata = { 'htmlbase': os.path.join( utils.scriptdir,'html'),
-                     'pathways':[db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',')],
-                     'metabolites':metabolites,
-                     'metabolite_pathway_groups':metabolite_pathway_groups, 
-                     'reactions':reactions,
-                     }
-
-
-# D3 Based bargraph view
-class D3SpectraView(D3View):
-
-    d3_template = 'd3/spectra.svg'
-
-    def generate(self, dso=None):
-        if dso is None or not float in [type(t) for t in dso.scales[1]]:   
-            assert False # Can't continue
-            
-        # If we have scale data, enable and render the Viewer tab
-        #FIXME: Must be along the top axis 
-        print("Scale data up top; make a spectra view")
-        metadata = {'htmlbase': os.path.join( utils.scriptdir,'html')}
-    
-        dso_z = list(zip( dso.scales[1], dso.entities[1], dso.labels[1] ))
-
-        # Compress data along the 0-dimensions by class (reduce the number of data series; too large)                
-        dsot = dso.as_summary(dim=0, match_attribs=['classes'])
-
-        # Copy to sort without affecting original
-        scale = np.array(dso.scales[1])
-        data = np.array(dsot.data)
-        
-        # Sort along x axis
-        sp = np.argsort( scale )
-        scale = scale[sp]
-        data = data[:,sp]
-        
-        metadata['figure'] = {
-            'data':list(zip( scale, data.T )), # (ppm, [data,data,data])
-            'compounds': self.build_markers( dso_z, 1, self._build_entity_cmp ),
-            'labels': self.build_markers( dso_z, 2, self._build_label_cmp ),
-        }
-
-        
-        
 class EntityBoxStyle(BoxStyle._Base):
     """
     A simple box.
@@ -1132,177 +1036,3 @@ class EntityBoxStyle(BoxStyle._Base):
 # register the custom style
 BoxStyle._style_list["entity-tip"] = EntityBoxStyle
 
-        
-        
-        
-class D3DifferenceView(D3View):
-    """
-    A matplotlib-based difference-lineplot viewer.
-    
-    Takes two inputs - line A and B and plots both, highlighting the regions where they differ.
-    """
-    
-    d3_template = 'd3/difference.svg'
-    
-    def generate(self, dso_a, dso_b):
-        metadata = {'htmlbase': os.path.join( utils.scriptdir,'html')}
-        
-        # Get common scales
-        datai = np.mean( dso_a.data, 0) # Mean flatten
-        datao = np.mean( dso_b.data, 0) # Mean flatten
-        
-        # Interpolate the data for shorter set
-        if len(datao) < len(datai):
-            datao = np.interp( dso_a.scales[1], dso_b.scales[1], datao)
-
-        metadata['figure'] = {
-            'data':list(zip( dso_a.scales[1], datai.T, datao.T )), # (ppm, [dataa,datab])
-        }
-        
-
-
-# Class for analysis views, using graph-based visualisations of defined datasets
-# associated layout and/or analysis
-class AnalysisHeatmapView(D3LegacyView):
-
-    #self.build_heatmap_buckets( labelsX, labelsY, self.build_log2_change_table_of_classtypes( self.phosphate, labelsX ), remove_empty_rows=True, sort_data=True  )
-    def build_heatmap_buckets(self, labelsX, labelsY, data, remove_empty_rows=False, remove_incomplete_rows=False, sort_data=False):
-        buckets = []
-
-        if remove_empty_rows:
-            mask = ~np.isnan(data).all(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-        elif remove_incomplete_rows:
-            mask = ~np.isnan(data).any(axis=1)
-            data = data[mask]
-            labelsY = [l for l,m in zip(labelsY,mask) if m]
-
-
-        # Broken, fix if needed
-        #if remove_empty_cols:
-        #    mask = ~np.isnan(data).all(axis=0)
-        #    data = data.T[mask.T]
-        #    labelsX = [l for l,m in zip(labelsX,mask) if m]
-
-        if sort_data:
-            # Preferable would be to sort by the total for each row
-            # can then use that to sort the labels list also
-            totals = np.ma.masked_invalid(data).sum(1).data # Get sum for rows, ignoring NaNs
-            si = totals.argsort()[::-1]
-            data = data[si] # Sort
-            labelsY = list( np.array( labelsY )[si] ) # Sort Ylabels via numpy array.
-        
-        for x, xL in enumerate(labelsX):
-            for y, yL in enumerate(labelsY):  
-
-                if data[y][x] != np.nan:
-                    buckets.append([ xL, yL, data[y][x] ] )
-
-        return buckets    
-
-
-
-
-
-
-
-# D3 Based bargraph view
-class D3CircosView(D3View):
-
-    d3_template = 'd3/circos.svg'
-
-    def generate(self, dso=None):
-        print(dso)
-
-        self.generate_d3( {
-            'figure': {
-                            'type':'circos',
-                            'data': dso.data,
-                            'labels': dso.labels[1],
-                            'n':1,  
-                            'legend':('Metabolic pathway reaction interconnections','Links between pathways indicate proportions of shared reactions between the two pathways in MetaCyc database')                             
-                        },
-                    })
-        
-
-
-class AnalysisCircosPathwayView(D3LegacyView):
-
-    def generate(self):
-        pathways = [k for k,v in db.dbm.get_pathways()]
-        pathway_metabolites = dict()
-        
-        for k,p in db.dbm.pathways():
-            pathway_metabolites[p.id] = set( [m for m in p.metabolites] )
-
-        data_m, labels_m = self.build_matrix(pathways, pathway_metabolites)
-
-        pathway_reactions = dict()
-        
-        for k,p in db.dbm.pathways():
-            pathway_reactions[p.id] = set( [m for m in p.reactions] )
-
-        data_r, labels_r = self.build_matrix(pathways, pathway_reactions)
-
-
-        pathway_active_reactions = dict()
-        pathway_active_metabolites = dict()
-        active_pathways = [db.dbm.pathway(p) for p in self.parent.config.value('/Pathways/Show').split(',')]
-        active_pathways_id = []
-        
-        for p in active_pathways:
-            pathway_active_reactions[p.id] = set( [r for r in p.reactions] )
-            pathway_active_metabolites[p.id] = set( [r for r in p.metabolites] )
-            active_pathways_id.append(p.id)
-    
-
-        data_ar, labels_ar = self.build_matrix(active_pathways_id, pathway_active_reactions)
-        data_am, labels_am = self.build_matrix(active_pathways_id, pathway_active_metabolites)
-
-    
-class AppView(HTMLView):
-    pass
-    
-    
-    
-
-
-# D3 Based bargraph view
-class D3BarView(D3View):
-
-    d3_template = 'd3/bar.svg'
-
-    def generate(self, dso): 
-        fd = np.mean( dso.data, axis=0 )
-
-        fdm = list(zip( dso.labels[1], fd ))
-        sms = sorted(fdm,key=lambda x: abs(x[1]), reverse=True )
-        metabolites = [m for m,s in sms]
-
-        # Get mean version of dataset (or alternative; +/- error)
-        # Requires compressing dataset >1 for each alternative information set
-
-        dso_mean = dso.as_summary( fn=np.mean, dim=0, match_attribs=['classes']) # Get mean dataset/ Classes only
-        dso_std = dso.as_summary( fn=np.std, dim=0, match_attribs=['classes']) # Get std_dev/ Classes only
-        
-        classes = dso_mean.classes[0]
-        groups = metabolites[:10]
-
-        data = []
-        for g in groups:
-            
-            data.append(
-                ( g, 
-                    {c: dso_mean.data[n, dso_mean.labels[1].index(g)] for n,c in enumerate(classes)},
-                    {c: dso_std.data[n, dso_std.labels[1].index(g)] for n,c in enumerate(classes)} #2sd?
-                     )
-            )
-    
-        self.generate_d3( {
-            'figure':  {
-                            'type':'bar',
-                            'data': data,
-                        },                        
-        })

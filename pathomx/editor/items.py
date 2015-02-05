@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 import math
@@ -7,10 +8,12 @@ from ..qt import *
 
 from pyqtconfig import ConfigManager
 
+TOOL_BACKGROUND = QColor(63, 63, 63)
+
 TEXT_COLOR = "#000000"
-SHADOW_COLOR = QColor(63, 63, 63, 100)
+SHADOW_COLOR = QColor(63, 63, 63, 50)
 BORDER_COLOR = "#888888"
-SELECT_COLOR = QColor(63, 63, 255, 127)
+SELECT_COLOR = QColor(255, 255, 0)
 
 INTERFACE_COLOR_INPUT = "orange"
 INTERFACE_COLOR_INPUT_BORDER = BORDER_COLOR  # "darkorange"
@@ -23,8 +26,8 @@ CANNOT_CONSUME_COLOR = QColor(200, 0, 0, 127)
 CONNECTOR_COLOR = QColor(100, 100, 100, 127)  # Grey
 
 INTERFACE_ACTIVE_COLOR = {
-    True: QColor(0, 0, 255, 127),  # Grey-blue
-    False: CONNECTOR_COLOR,
+    True: QColor(0, 0, 255),  # Grey-blue
+    False: QColor(100, 100, 100),
 }
 
 STATUS_COLORS = {
@@ -36,7 +39,16 @@ STATUS_COLORS = {
     'done': 'blue'
 }
 
-ANNOTATION_MINIMUM_SIZE = 50
+STATUS_QCOLORS = {
+    'active': QColor(0, 255, 0),
+    'error': QColor(255, 0, 0),
+    'waiting': QColor(255, 255, 0),
+    'paused': QColor(63, 63, 63),
+    'render': QColor(128, 0, 128),
+    'done':  QColor(0, 0, 255),
+}
+
+ANNOTATION_MINIMUM_SIZE = 40
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
 
 RESIZE_HANDLE_SIZE = 8
@@ -127,6 +139,33 @@ class BaseInteractiveItem(BaseItem):
             self.graphicsEffect().setEnabled(False)
 
 
+class QGraphicsSingleLineTextItem(QGraphicsTextItem):
+    """
+    Modified QGraphicsTextItem that restricts itself to a single line
+    by cropping the middle of the text and placing an ellipsis.
+    """
+    def __init__(self, *args, **kwargs):
+        super(QGraphicsSingleLineTextItem, self).__init__(*args, **kwargs)
+
+        opt = QTextOption()
+        opt.setWrapMode(QTextOption.NoWrap)
+        self.document().setDefaultTextOption(opt)
+
+        self.document().contentsChanged.connect(self.processtext)
+
+    def processtext(self):
+        t = self.toPlainText()
+        r = t.replace('\n', '')
+
+        if self.document().size().width() > self.document().textWidth():
+            to_remove = int( (self.document().size().width() - self.document().textWidth()) / 7. ) # Should calculate this somehow
+            r = '…' + r[to_remove+1:]
+
+        if t != r:
+            self.setPlainText(r)
+
+
+
 class ToolItem(BaseItem):
     """
     A tool item constructed as an item group containing an icon and with 
@@ -150,35 +189,56 @@ class ToolItem(BaseItem):
 
         self._links = {}
 
-        self.size = QSize(64, 64)
 
-        self.label = QGraphicsTextItem(parent=self)
+
+        self.size = QSize(200, 40)
+
+        self.label = QGraphicsSingleLineTextItem(parent=self)
         self.label.setDefaultTextColor(QColor(TEXT_COLOR))
-        self.label.setTextInteractionFlags(Qt.TextEditable)
-        self.label.setTextWidth(100)
-        opt = QTextOption(Qt.AlignHCenter)
-        opt.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-        self.label.document().setDefaultTextOption(opt)
+        self.label.setTextWidth(145)
+        transform = QTransform()
+        transform.translate(50, 2)
+        self.label.setTransform(transform)
+
+        self.configlabel = QGraphicsSingleLineTextItem(parent=self)
+        self.configlabel.setDefaultTextColor(QColor(TEXT_COLOR))
+        self.configlabel.setTextWidth(145)
+        transform = QTransform()
+        transform.translate(50, 15)
+        self.configlabel.setTransform(transform)
+
+        font = QFont()
+        font.setPointSize(10)
+        self.configlabel.setFont(font)
+        font.setBold(True)
+        self.label.setFont(font)
 
         self.getName()
-        self.label.document().contentsChanged.connect(self.setName)
         self.app.nameChanged.connect(self.getName)
 
-        transform = QTransform()
-        transform.translate(32 - self.label.boundingRect().width() / 2, 64)
-        self.label.setTransform(transform)
+        self.getConfigName()
+        self.app.configNameChanged.connect(self.getConfigName)
+
 
         self.input = ToolInterfaceHandler(app, interface_type='input', parent=self)
         self.output = ToolInterfaceHandler(app, interface_type='output', parent=self)
+
         self.icon = ToolIcon(parent=self)
+        transform = QTransform()
+        transform.translate(2, 0)
+        self.icon.setTransform(transform)
 
         self.progressBar = ToolProgressItem(parent=self)
 
         self.app.progress.connect(self.progressBar.updateProgress)
         self.app.status.connect(self.progressBar.updateStatus)
 
+        self.status = None
+        self.app.status.connect(self.updateStatus)
+
+
         self.status_icon = QGraphicsPixmapItem(self)
-        self.status_icon.setPos(48, 48)
+        self.status_icon.setPos(40, 40)
 
         if position:
             self.setPos(position)
@@ -192,21 +252,49 @@ class ToolItem(BaseItem):
         else:
             return "Untitled"
 
+    @property
+    def configname(self):
+        if self.app and self.app.configname:
+            return self.app.configname
+        else:
+            return ""
+
+
+    def getName(self):
+        # FIXME: This feels a bit hacky
+        self.label.setPlainText(self.name)
+
+    def getConfigName(self):
+        # FIXME: This feels a bit hacky
+        self.configlabel.setPlainText(self.configname)
+
+
+    def updateStatus(self, status):
+        self.status = status
+        self.update()
+
     def centerSelf(self):
         for v in self.scene().views():
             v.centerOn(self)
 
-    def getName(self):
-        # FIXME: This feels a bit hacky
-        if self.label.toPlainText() != self.name:  # Prevent infinite loop get/set
-            self.label.prepareGeometryChange()
-            self.label.setPlainText(self.name)
 
-    def setName(self):
-        self.app.set_name(self.label.toPlainText())
 
     def paint(self, painter, option, widget):
-        pass
+
+        color = QColor( STATUS_QCOLORS[self.status] if self.status in STATUS_QCOLORS else TOOL_BACKGROUND )
+
+        pen = QPen(color)
+        pen.setWidthF(0.5)
+        painter.setPen(pen)
+
+        if self.isSelected():
+            color.setAlpha(30)
+        else:
+            color.setAlpha(10)
+
+        painter.setBrush(QBrush(color))
+
+        painter.drawRoundedRect(0, 0, self.size.width(), self.size.height(), 2, 2)
 
     def addDataLink(self, datao, datai):
 
@@ -258,26 +346,42 @@ class ToolItem(BaseItem):
                     items.append(item)
 
             n = len(items)
-            center_y = float(n-1) * 100 / 2
+            center_x = float(n-1) * 200 / 2
 
             for n, i in enumerate(items):
-                i.setPos( i.calculate_auto_position_x(), self.y() + (n * 100) - center_y )
+                i.setPos( self.x() + (n * 200) - center_x, i.calculate_auto_position_y())
                 i.auto_position_children()
 
-    def calculate_auto_position_x(self):
+    def calculate_auto_position_y(self):
         """
-        Auto position at furthest x of parent +200
+        Auto position at furthest y of parent +80
+
+        There is a special case where we are the only child of the parent, and
+        we have one input connected to the parent's only output. Here we can
+        safely shift to just +40.
         """
-        x = []
+
+        # Check we only have one parent
+        if len(self.app.data.i) == 1:
+
+            # Get the data manager for our sole parent
+            _, cs = self.app.data.i.items()[0]
+            cm, ci = cs
+
+            # If data manager of our parent only has one child, we can get closer
+            if len(cm.watchers[ci]) == 1:
+                return cm.v.editorItem.y() + 50
+
+        y = []
         for _, cs in self.app.data.i.items():
             if cs:
                 cm, ci = cs
-                x.append( cm.v.editorItem.x() )
+                y.append( cm.v.editorItem.y() )
 
         if max:
-            return max(x) + 200
+            return max(y) + 100
         else:
-            return self.x()
+            return self.y()
 
 
     def keyPressEvent(self, e):
@@ -348,26 +452,17 @@ class ToolItem(BaseItem):
             self.auto_position_children()
             if settings.get('Editor/Snap_to_grid'):
                 newPos = value  # .toPointF()
-                snap = 100
-                snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap, snap / 2 + (newPos.y() // snap) * snap)
+                snap = 50
+                x_offset = 8
+                y_offset = 8
+                snapPos = QPointF(snap / 2 + (newPos.x() // snap) * snap + x_offset, snap / 2 + (newPos.y() // snap) * snap + y_offset)
                 return snapPos
-
 
         elif change == QGraphicsItem.ItemSelectedChange:
             if value:
-                selected_shadow = QGraphicsColorizeEffect(
-                    color=QColor(SELECT_COLOR),
-                    strength=1,
-                    )
-                self.icon.setGraphicsEffect(selected_shadow)
-                self.icon.prepareGeometryChange()
-                self.icon.graphicsEffect().setEnabled(True)
                 self.onShow()
-                self.icon._effects_locked = True
             else:
-                self.icon.graphicsEffect().setEnabled(False)
                 self.onHide()
-                self.icon._effects_locked = False
 
             return value
 
@@ -380,7 +475,7 @@ class ToolItem(BaseItem):
             self.status_icon.setPixmap(QPixmap())
 
 
-class ToolIcon(BaseInteractiveItem):
+class ToolIcon(BaseItem):
     """
     A tool item constructed as an item group containing an icon and with 
     additional visual elements. Treated as a single entity by Scene
@@ -389,7 +484,7 @@ class ToolIcon(BaseInteractiveItem):
     def __init__(self, parent=None):
         super(ToolIcon, self).__init__(parent)
 
-        self.size = QSize(64, 64)
+        self.size = QSize(40, 40)
 
     def paint(self, painter, option, widget):
         """
@@ -412,7 +507,7 @@ class ToolInterfaceHandler(BaseItem):
         super(ToolInterfaceHandler, self).__init__(parent=parent)
 
         self.app = app
-        self.size = QSize(50, 100)
+        self.size = QSize(200, 10)
         self._links = []
 
         #self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -422,8 +517,8 @@ class ToolInterfaceHandler(BaseItem):
         self.setAcceptDrops(True)
 
         self.defaults = {
-            'input': (180, QPointF(0, 44), (-18, -12), 50),
-            'output': (0, QPointF(44, 44), (+32, -12), 0),
+            'input': (-8,), #(180, QPointF(0, 44), (-18, -12), 40),
+            'output': (40,), #(0, QPointF(44, 44), (+32, -12), 0),
         }
 
         self.setup = self.defaults[interface_type]
@@ -436,9 +531,9 @@ class ToolInterfaceHandler(BaseItem):
         app.data.output_updated.connect(self.update_interface_status)
         app.data.interfaces_changed.connect(self.update_interfaces)
 
-        transform = QTransform()
-        transform.translate(*self.setup[2])
-        self.setTransform(transform)
+        #transform = QTransform()
+        #transform.translate(*self.setup[2])
+        #self.setTransform(transform)
 
         self._linkInProgress = None
 
@@ -454,11 +549,27 @@ class ToolInterfaceHandler(BaseItem):
 
     def update_interfaces(self):
 
-        x0, y0 = self.setup[3], 44
-        r = 44
+        #x0, y0 = self.setup[3], 44
+        #r = 44
 
         items = len(self.interfaces.keys())
 
+        for n, interface in enumerate(sorted(self.interfaces.keys())):
+            x = float(self.width)/2 - ( float(items-1) / 2)*16 + n*16 -8
+            y = self.setup[0]
+
+            if interface not in self.interface_items:
+                # Creating
+                self.interface_items[interface] = ToolInterface(self.app, self.interfaces[interface], interface, self.interface_type, self)
+                self.interface_items[interface].prepareGeometryChange()
+                self.interface_items[interface].setPos(x, y)
+            else:
+                # Updating
+                self.interface_items[interface].interface = self.interfaces[interface]
+                self.interface_items[interface].prepareGeometryChange()
+                self.interface_items[interface].setPos(x, y)
+
+        '''
         angle_increment = 15.
         angle_start = self.setup[0] - (items - 1) * (angle_increment / 2)
 
@@ -480,6 +591,7 @@ class ToolInterfaceHandler(BaseItem):
                 self.interface_items[interface].interface = self.interfaces[interface]
                 self.interface_items[interface].prepareGeometryChange()
                 self.interface_items[interface].setPos(x, y)
+        '''
 
     def update_interface_status(self, i):
         if i in self.interface_items.keys():
@@ -504,7 +616,7 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         self.interface = interface
         self.interface_name = interface_name
-        self.size = QSize(8, 8)
+        self.size = QSize(16,8)
         self.interface_type = interface_type
         self.setToolTip(interface_name)
         self._links = []
@@ -515,10 +627,23 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         self.setAcceptDrops(True)
         self._linkInProgress = None
-        self._offset = QPointF(4, 4)
+        self._offset = QPointF(8, 4)
 
         self.update_interface_color()
         #self.updateShape( len(interface_name) * 8)
+
+        tri = QPolygonF()
+        if self.interface_type == 'input':
+            tri.append(QPointF(0,8))
+            tri.append(QPointF(8,0))
+            tri.append(QPointF(16,8))
+            tri.append(QPointF(0,8))
+        elif self.interface_type == 'output':
+            tri.append(QPointF(0,0))
+            tri.append(QPointF(8,8))
+            tri.append(QPointF(16,0))
+            tri.append(QPointF(0,0))
+        self.path = tri
 
     def update_interface_color(self, color=None):
         if color:
@@ -615,13 +740,10 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
         """
         #super(ToolInterface, self).paint(painter, option, widget)
 
-        #self.color = INTERFACE_ACTIVE_COLOR[ self.get_interface_status() ]  # INTERFACE_ACTIVE_COLOR[not (self.interface is None or self.interface.is_empty) ]
-
         brush = QBrush(QColor(self.color))
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
-
-        painter.drawEllipse(QRect(0, 0, 8, 8))
+        painter.drawPolygon(self.path)
 
 
 class LinkItem(QGraphicsPathItem):
@@ -654,11 +776,11 @@ class LinkItem(QGraphicsPathItem):
         bezierPath.moveTo(sourcePoint)
 
         pi = abs(sourcePoint.x() - sinkPoint.x()) / 2
-        if pi > 100:
-            pi = 100
+        if pi > 50:
+            pi = 50
 
-        p1 = sourcePoint + QPointF(pi, 0)
-        p2 = sinkPoint - QPointF(pi, 0)
+        p1 = sourcePoint + QPointF(0, pi)
+        p2 = sinkPoint - QPointF(0, pi)
 
         bezierPath.cubicTo(p1, p2, sinkPoint)
         self.bezierPath = bezierPath
@@ -671,10 +793,11 @@ class LinkItem(QGraphicsPathItem):
 
     def updateText(self):
         self.textLabelItem.prepareGeometryChange()
+        max_length = self.bezierPath.length() / 10
 
         if self.data is not None:
         # Determine maximum length of text by horribly kludge
-            max_length = self.bezierPath.length() / 10
+
             source_manager, source_interface = self.data
             dataobj = source_manager.o[source_interface]
             if dataobj is not None:
@@ -695,6 +818,8 @@ class LinkItem(QGraphicsPathItem):
                         text += ' ' + s
             else:
                 text = "empty"
+                if len(text) > max_length:
+                    text = ""
 
             self.textLabelItem.setPlainText(text)
 
@@ -741,7 +866,7 @@ class LinkItem(QGraphicsPathItem):
 
 
 class ToolProgressItem(BaseItem):
-    """
+    """ToolProgressItem
     Progress bar for tool calculation (individual)
     """
 
@@ -751,9 +876,9 @@ class ToolProgressItem(BaseItem):
         self.progress = None
         self.status = None
         self.thick = 6
-        self.size = QSize(64, self.thick)
+        self.size = QSize(200, self.thick)
         transform = QTransform()
-        transform.translate(0, 64 - self.thick)
+        transform.translate(0, 40 - self.thick)
         self.setTransform(transform)
 
         self.setOpacity(0.5)
@@ -766,6 +891,7 @@ class ToolProgressItem(BaseItem):
         self.status = status
         self.update()
 
+
     def paint(self, painter, option, widget):
         """
         Paint the tool object
@@ -777,7 +903,7 @@ class ToolProgressItem(BaseItem):
             #pen.setWidth(self.thick)
             painter.setBrush(brush)
             painter.drawRect(0, 0, progressSize, self.thick)
-            #painter.drawArc( QRect(0,0,64-self.thick,64-self.thick), 90*16, -self.progress * 5760)
+            #painter.drawArc( QRect(0,0,40-self.thick,40-self.thick), 90*16, -self.progress * 5760)
 
         #else:
         #    painter.setBrush( QBrush( QColor( Qt.gray ) ) )
@@ -792,7 +918,7 @@ class ToolViewItem(BaseInteractiveItem):
     def __init__(self, parent, view):
         super(ToolViewItem, self).__init__(parent)
         self.pixmap = None
-        self.size = QSize(225, 150)
+        self.size = QSize(225, 140)
 
         self.app = parent.app
 

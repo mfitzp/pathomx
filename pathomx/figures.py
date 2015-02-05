@@ -424,14 +424,13 @@ def plot_cov_ellipse(cov, pos, nstd=2, **kwargs):
     return ellip
 
 
-def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=None):
+def scatterplot(data, figure=None, ax=None, subplot=(1, 1, 1), styles=None, lines=[], label_index=None, show_legend=True):
     if figure is None:
         figure = Figure(figsize=FIGURE_SIZE, dpi=FIGURE_DPI)
 
     if ax is None:
-        ax = figure.add_subplot(111)
+        ax = figure.add_subplot(*subplot)
 
-    ax = figure.axes[0]
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.get_xaxis().tick_bottom()
@@ -477,7 +476,7 @@ def scatterplot(data, figure=None, ax=None, styles=None, lines=[], label_index=N
         ax.plot(x, y, **ls.line_kwargs)
         ax.annotate(label, xy=(x[-1], y[-1]))
 
-    if len(plots.keys()) > 1:
+    if show_legend and len(plots.keys()) > 1:
         # Only show a legend if there is >1 class (?)
         legend = ax.legend(list(plots.values()),
                            list(plots.keys()),
