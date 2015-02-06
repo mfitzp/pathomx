@@ -22,6 +22,11 @@ from .globals import styles
 # Translation (@default context)
 from .translate import tr
 
+# View object types
+from . import displayobjects
+from IPython.core import display
+from PIL import Image
+
 from .qt import USE_QT_PY, PYQT4, PYQT5
 
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -81,10 +86,12 @@ class ViewManager( QTabWidget ):
     style_updated = pyqtSignal()
     updated = pyqtSignal()
 
+    color = QColor(0,0,0)
+
     def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
         
-        self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+        #self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
             
         self.setDocumentMode(True)
         self.setTabsClosable(False)
@@ -116,11 +123,14 @@ class ViewManager( QTabWidget ):
         :rtype: int tab/view index     
         """
         
-        widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
+        #widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
         # Automagically unfocus the help (+any other equivalent) tabs if we're refreshing a more interesting one
         widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
         widget.name = name
+
+        if color is None:
+            color = self.color
 
         if name in self.views:
             # Already exists; we check if of the same type before calling this
@@ -211,6 +221,86 @@ class ViewManager( QTabWidget ):
                         self.setCurrentIndex( w )
                         self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
                         break
+
+    def sizeHint(self):
+        return QSize(600,300)
+
+    def process(self, **kwargs):
+        pass
+
+
+class DataViewManager(ViewManager):
+
+    color = QColor(0, 0, 127)
+
+    def process(self, **kwargs):
+
+        result = {}
+        unprocessed = {}
+
+        for k, v in kwargs.items():
+
+            if isinstance(v,pd.DataFrame):
+                if self.get_type(k) != DataFrameWidget:
+                    self.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k)
+
+                result[k] = {'data': v}
+
+            else:
+                unprocessed[k] = v
+
+        self.data = result
+
+        return unprocessed
+
+
+class ViewViewManager(ViewManager):
+
+    color = QColor(0, 127, 0)
+
+    def process(self, **kwargs):
+
+        result = {}
+        unprocessed = {}
+
+        for k, v in kwargs.items():
+            if isinstance(v, Figure):
+                if self.get_type(k) != IPyMplView:
+                    self.addView(IPyMplView(self), k)
+                result[k] = {'fig': v}
+
+            elif isinstance(v, displayobjects.Svg) or isinstance(v, display.SVG):
+                if self.get_type(k) != SVGView:
+                    self.addView(SVGView(self), k)
+
+                result[k] = {'svg': v}
+
+            elif isinstance(v, displayobjects.Html) or isinstance(v, displayobjects.Markdown):
+                if self.get_type(k) != HTMLView:
+                    self.addView(HTMLView(self), k)
+
+                result[k] = {'html': v}
+
+            elif isinstance(v, Image.Image):
+                if self.get_type(k) != ImageView:
+                    self.addView(ImageView(parent=self), k)
+
+                result[k] = {'image': v}
+
+            elif hasattr(v, '_repr_html_'):
+                # on IPython notebook aware objects to generate Html views
+                if self.get_type(k) != HTMLView:
+                    self.addView(HTMLView(self), k)
+
+                result_dict[k] = {'html': v._repr_html_()}
+
+            else:
+                unprocessed[k] = v
+
+        self.data = result
+
+        return unprocessed
+
 
 class BaseView(object):
     """
@@ -740,24 +830,9 @@ class MplView(FigureCanvas, BaseView):
     def __init__(self, parent, width=5, height=4, dpi=100, **kwargs):
 
         self.v = parent
-
         self.fig = Figure(figsize=(width, height), dpi=dpi)
-        self.ax = self.fig.add_subplot(111)
-        
-        self.ax.plot([1, 2, 3, 4])
-
-        self.ax.spines['top'].set_visible(False)
-        self.ax.spines['right'].set_visible(False)
-        self.ax.get_xaxis().tick_bottom()
-        self.ax.get_yaxis().tick_left()
 
         FigureCanvas.__init__(self, self.fig)
-
-        self.setParent(parent.views)
-
-        FigureCanvas.setSizePolicy(self,
-                                   QSizePolicy.Expanding,
-                                   QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         
         # Install navigation handler; we need to provide a Qt interface that can handle multiple 
@@ -953,7 +1028,7 @@ class DataFrameModel(QAbstractTableModel):
 class DataFrameWidget(QWidget, BaseView):
     """ a simple widget for using DataFrames in a gui """
     def __init__(self, dataFrame, parent=None):
-        super(DataFrameWidget, self).__init__(parent.w)
+        super(DataFrameWidget, self).__init__(parent)
 
         self.dataModel = DataFrameModel()
         self.dataTable = QTableView()

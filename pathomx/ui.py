@@ -15,7 +15,7 @@ from collections import OrderedDict
 from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
-from . import displayobjects
+
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition, notebook_queue, \
@@ -24,7 +24,7 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
 
 import tempfile
 
-from .views import HTMLView, StaticHTMLView, ViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView, ImageView
+from .views import StaticHTMLView, ViewViewManager, DataViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView, ImageView
 # Translation (@default context)
 from .translate import tr
 
@@ -38,13 +38,13 @@ import logging
 css = os.path.join(utils.scriptdir, 'html', 'css', 'style.css')
 from IPython.nbformat.current import read as read_notebook, NotebookNode
 from IPython.nbconvert.filters.markdown import markdown2html_mistune
-from IPython.core import display
+
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
 from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
 from .kernel_helpers import PathomxTool
 
-from PIL import Image
+
 
 try:
     from qutepart import Qutepart
@@ -1370,8 +1370,8 @@ class GenericApp(QObject):
 
         self.logger.debug('Setting up view manager...')
 
-        self.views = ViewManager(self)
-        self.dataViews = ViewManager(self)
+        self.views = ViewViewManager(self)
+        self.dataViews = DataViewManager(self)
 
         self.logger.debug('Setting up file watcher manager...')
         self.file_watcher = QFileSystemWatcher()
@@ -1453,10 +1453,10 @@ class GenericApp(QObject):
             self.config.updated.connect(self.autoconfig_rename)  # Auto-rename if it is set
 
         if self._is_auto_focusable: # Needs to occur after the above
-            self.editorItem.setSelected(True)
             for i in self.editorItem.scene().selectedItems():
                 if i != self.editorItem:
                     i.setSelected(False)
+            self.editorItem.setSelected(True)
 
 
     def init_notebook(self):
@@ -1607,61 +1607,16 @@ class GenericApp(QObject):
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
-        self.views.data = self.prerender(**kwargs_dict)
-        self.dataViews.data = self.prerender(**kwargs_dict)
+        kwargs_dict = self.dataViews.process(**kwargs_dict)
+        kwargs_dict = self.views.process(**kwargs_dict)
+
+        logging.info('%d variables were not displayed (%s)' % (len(kwargs_dict), kwargs_dict.keys()))
 
         # Delay this 1/2 second so next processing gets underway
         # FIXME: when we've got a better runner system
         QTimer.singleShot(PX_RENDER_SHOT, self.views.source_data_updated.emit)
         QTimer.singleShot(PX_RENDER_SHOT, self.dataViews.source_data_updated.emit)
 
-    def prerender(self, *args, **kwargs):
-
-        FIGURE_COLOR = QColor(0, 127, 0)
-        DATA_COLOR = QColor(0, 0, 127)
-
-        result_dict = {
-        #    'Notebook': {'notebook': kwargs['_pathomx_result_notebook']}
-            }
-
-        for k, v in kwargs.items():
-            if isinstance(v, Figure):
-                if self.views.get_type(k) != IPyMplView:
-                    self.views.addView(IPyMplView(self), k, color=FIGURE_COLOR)
-                result_dict[k] = {'fig': v}
-
-            elif isinstance(v, displayobjects.Svg) or isinstance(v, display.SVG):
-                if self.views.get_type(k) != SVGView:
-                    self.views.addView(SVGView(self), k, color=FIGURE_COLOR)
-
-                result_dict[k] = {'svg': v}
-
-            elif isinstance(v, displayobjects.Html) or isinstance(v, displayobjects.Markdown):
-                if self.views.get_type(k) != HTMLView:
-                    self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
-
-                result_dict[k] = {'html': v}
-
-            elif isinstance(v,pd.DataFrame):
-                if self.views.get_type(k) != DataFrameWidget:
-                    self.views.addView(DataFrameWidget(pd.DataFrame({}), parent=self), k, color=DATA_COLOR)
-
-                result_dict[k] = {'data': v}
-
-            elif isinstance(v, Image.Image):
-                if self.views.get_type(k) != ImageView:
-                    self.views.addView(ImageView(parent=self), k, color=FIGURE_COLOR)
-
-                result_dict[k] = {'image': v}
-
-            elif hasattr(v, '_repr_html_'):
-                # on IPython notebook aware objects to generate Html views
-                if self.views.get_type(k) != HTMLView:
-                    self.views.addView(HTMLView(self), k, color=FIGURE_COLOR)
-
-                result_dict[k] = {'html': v._repr_html_()}
-
-        return result_dict
 
     def onReloadScript(self):
         self.reload()
@@ -1709,27 +1664,33 @@ class GenericApp(QObject):
 
     def set_name(self, name):
         self.name = name
-        self.w.setWindowTitle(name)
+        #self.w.setWindowTitle(name)
         self.nameChanged.emit(name)
 
     def show(self):
         self._is_active = True
         self.parent().viewerDock.setWidget(self.views)
-        self.parent().viewerDock.setWindowTitle(self.name)
         self.parent().viewerDock.show()
+
+        self.parent().dataDock.setWidget(self.dataViews)
+        self.parent().dataDock.show()
 
         self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
         self._is_active = True
         self.parent().viewerDock.setWidget(self.views)
-        self.parent().viewerDock.setWindowTitle(self.name)
         self.parent().viewerDock.raise_()
+
+        self.parent().dataDock.setWidget(self.dataViews)
+        self.parent().dataDock.raise_()
+
 
     def hide(self):
         self._is_active = False
         self.parent().toolDock.setWidget(self.parent().queue)
         self.parent().viewerDock.setWidget(QWidget())  # Empty
+        self.parent().dataDock.setWidget(QWidget())  # Empty
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)

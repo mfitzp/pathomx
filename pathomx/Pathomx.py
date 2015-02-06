@@ -438,6 +438,7 @@ class MainWindow(QMainWindow):
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
         self.central.setTabPosition(QTabWidget.South)
+        self.central.setMinimumWidth(500)
 
         self.central.addTab(self.editView, '&Editor')
         self.central.addTab(self.console, '&Console')

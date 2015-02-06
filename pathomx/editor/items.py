@@ -219,7 +219,6 @@ class ToolItem(BaseItem):
         self.getConfigName()
         self.app.configNameChanged.connect(self.getConfigName)
 
-
         self.input = ToolInterfaceHandler(app, interface_type='input', parent=self)
         self.output = ToolInterfaceHandler(app, interface_type='output', parent=self)
 
