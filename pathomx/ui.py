@@ -1683,7 +1683,6 @@ class GenericApp(QObject):
         self.parent().viewerDock.setWidget(self.views)
         self.parent().dataDock.setWidget(self.dataViews)
 
-
     def hide(self):
         self._is_active = False
         self.parent().toolDock.setWidget(self.parent().queue)

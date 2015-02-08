@@ -70,6 +70,19 @@ BLANK_DEFAULT_HTML = """
 <body>&nbsp;</body></html>
 """
 
+class ViewDockWidget( QDockWidget ):
+
+    def __init__(self, title, manager, name="View", color=None, *args, **kwargs):
+        super(ViewDockWidget, self).__init__(name, *args, **kwargs)
+
+        self.manager = manager
+        self.name = name
+        self.color = color
+
+    def closeEvent(self, e):
+        self.manager.dock_floating_view( self.widget(), self.name, self.color )
+        return super(ViewDockWidget, self).closeEvent(e)
+
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
 class ViewManager( QTabWidget ):
@@ -117,10 +130,11 @@ class ViewManager( QTabWidget ):
 
     def float_current_view(self):
         # Convert the currently selected view (Tab) into a floating DockWidget
-        k = self.tabText( self.currentIndex() )
+        n = self.currentIndex()
+        k = self.tabText( n )
         w = self.currentWidget()
 
-        dw = QDockWidget("%s (%s)" % (self.t.name, k))
+        dw = ViewDockWidget("%s (%s)" % (self.t.name, k), manager=self, name=k, color=self.tabBar().tabTextColor(n) )
         dw.setMinimumWidth(300)
         dw.setMinimumHeight(300)
         dw.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
@@ -158,20 +172,32 @@ class ViewManager( QTabWidget ):
                 # We need to skip delete; we need the window to stay around
                 self.floating_views[name].setWindowTitle("%s (%s)" % (self.t.name, name))
                 self.floating_views[name].setWidget(widget)
+                if color:
+                    self.floating_views[name].color = color
+                t = None
+
             else:
                 t = self.indexOf( self.views[name] )
-                self.views[n].deleteLater()
+                self.views[name].deleteLater()
                 self.removeTab(t)
                 self.insertTab(t, widget, name, **kwargs)
         else:
             t = super(ViewManager, self).addTab(widget, name, **kwargs)
         self.views[name] = widget
         
-        if color:
+        if color and t:
             self.tabBar().setTabTextColor(t, color)
-            
+
         return t
-    
+
+    def dock_floating_view(self, widget, name, color=None):
+        del self.floating_views[name]
+        t = self.addTab(widget, name)
+        if color:
+            self.tabBar().setTabTextColor(t,color)
+        self.setCurrentWidget(widget)
+
+
     def get_type(self, name):
         """ Return the type of a current view (by name) used to check whether to re-add/replace widget """
         if name in self.views:
@@ -183,8 +209,6 @@ class ViewManager( QTabWidget ):
         to_delete = []
 
         for k, w in self.views.items():
-
-            n = self.indexOf(w)
             if hasattr(w,'autogenerate') and w.autogenerate:
                 try:
                     w.autogenerate()
@@ -195,31 +219,36 @@ class ViewManager( QTabWidget ):
                     del(tb)
 
                     # Failure; disable the tab or delete
+                    if k not in self.floating_views:
+                        self.setTabEnabled( self.indexOf(w), False)
+
                     if self._auto_delete_on_no_data:
-                        to_delete.append( w )
-                    else:
-                        self.setTabEnabled( n, False)
+                        to_delete.append( k )
+
                 else:
                     # Success; enable the tab
-                    self.setTabEnabled( n, True)
+                    if k not in self.floating_views:
+                        self.setTabEnabled( self.indexOf(w), True)
 
         # Do after so don't upset ordering on loop
-        for w in to_delete:
-            k = self.tabText( self.indexOf(w) )
-            del self.views[k]
-            w.deleteLater()
-            self.removeTab( self.indexOf(w) )
+        for k in to_delete:
+            if k in self.floating_views:
+                self.floating_views[k].setWidget( QWidget() ) # Blank the widget out
+                self.views[k] = None # Semi-blanked
+
+            else:
+                w = self.views[k]
+                n = self.indexOf(w)
+
+                del self.views[k]
+                w.deleteLater()
+
+                self.removeTab(n)
 
 
         self.updated.emit()
 
-        
-    def addTab(self, widget, name, **kwargs):
-        """
-        Overridden to redirect addTab calls to addView method. Do not use.
-        """
-        self.addView(widget, name, **kwargs)
-    
+
     def sizeHint(self):
         return QSize(600,300)
 
