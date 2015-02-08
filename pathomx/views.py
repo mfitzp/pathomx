@@ -80,7 +80,6 @@ class ViewManager( QTabWidget ):
     is overridden to wrap addView. All other QTabWidget methods and attributes are available.
     """
     
-    auto_unfocus_tabs = ['?']
     # Signals
     source_data_updated = pyqtSignal()
     style_updated = pyqtSignal()
@@ -88,29 +87,52 @@ class ViewManager( QTabWidget ):
 
     color = QColor(0,0,0)
 
-    def __init__(self, parent, auto_unfocus_tabs = True, auto_delete_on_no_data = True, **kwargs):
+    def __init__(self, parent, auto_delete_on_no_data = True, **kwargs):
         super(ViewManager, self).__init__()
         
         #self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
             
         self.setDocumentMode(True)
         self.setTabsClosable(False)
-        self.setTabPosition( QTabWidget.South )
-        #self.setMovable(True)
-            
-        self._auto_unfocus_tabs = auto_unfocus_tabs
+        self.setTabPosition( QTabWidget.North)
+
+        self.popoutbtn = QPushButton(QIcon(os.path.join(utils.scriptdir, 'icons', 'external-small.png')),"")
+        self.popoutbtn.setFlat(True)
+        self.popoutbtn.clicked.connect(self.float_current_view)
+        self.setCornerWidget(self.popoutbtn)
+        self.setMovable(True)
+
         self._auto_delete_on_no_data = auto_delete_on_no_data
         
         self.data = dict() # Stores data from which figures are rendered
         self.views = {}
-        
+        self.floating_views = {}
+
         self._refresh_later = set() # Indexes of views to update at some future point
     
         self.source_data_updated.connect(self.onRefreshAll)
         self.style_updated.connect(self.onRefreshAll)
-    
+
+        self.t = parent
+
+    def float_current_view(self):
+        # Convert the currently selected view (Tab) into a floating DockWidget
+        k = self.tabText( self.currentIndex() )
+        w = self.currentWidget()
+
+        dw = QDockWidget("%s (%s)" % (self.t.name, k))
+        dw.setMinimumWidth(300)
+        dw.setMinimumHeight(300)
+        dw.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+        self.t.parent().addDockWidget(Qt.RightDockWidgetArea, dw)
+        dw.setWidget(w)
+        dw.setFloating(True)
+
+        self.floating_views[k] = dw
+
+
     # A few wrappers to 
-    def addView(self, widget, name, color=None, createargs=[], focused=True, unfocus_on_refresh=False, **kwargs):
+    def addView(self, widget, name, color=None, createargs=[], focused=True, **kwargs):
         """
         Add a view to this view manager.
 
@@ -123,9 +145,6 @@ class ViewManager( QTabWidget ):
         :rtype: int tab/view index     
         """
         
-        #widget.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-        # Automagically unfocus the help (+any other equivalent) tabs if we're refreshing a more interesting one
-        widget._unfocus_on_refresh = unfocus_on_refresh
         widget.vm = self
         widget.name = name
 
@@ -135,10 +154,15 @@ class ViewManager( QTabWidget ):
         if name in self.views:
             # Already exists; we check if of the same type before calling this
             # so here we just replace
-            t = self.indexOf( self.views[name] )
-            self.widget(t).deleteLater()
-            self.removeTab(t)
-            self.insertTab(t, widget, name, **kwargs)
+            if name in self.floating_views:
+                # We need to skip delete; we need the window to stay around
+                self.floating_views[name].setWindowTitle("%s (%s)" % (self.t.name, name))
+                self.floating_views[name].setWidget(widget)
+            else:
+                t = self.indexOf( self.views[name] )
+                self.views[n].deleteLater()
+                self.removeTab(t)
+                self.insertTab(t, widget, name, **kwargs)
         else:
             t = super(ViewManager, self).addTab(widget, name, **kwargs)
         self.views[name] = widget
@@ -157,19 +181,13 @@ class ViewManager( QTabWidget ):
     
     def onRefreshAll(self): #, to_refresh=None):
         to_delete = []
-        
-        #if to_refresh is None:
-        #    others = set( range(self.count()) )
-        #    others.discard(self.currentIndex())
-        #    self._refresh_later.update( others )
-        #    self.postponed_refresh.emit()
-        #    to_refresh = [self.currentIndex()]
-        
-        for n in range(self.count()): #to_refresh:
 
-            if hasattr(self.widget(n),'autogenerate') and self.widget(n).autogenerate:
+        for k, w in self.views.items():
+
+            n = self.indexOf(w)
+            if hasattr(w,'autogenerate') and w.autogenerate:
                 try:
-                    self.widget(n).autogenerate()
+                    w.autogenerate()
                 except Exception as e:
                     logging.error(e)
                     ex_type, ex, tb = sys.exc_info()
@@ -178,7 +196,7 @@ class ViewManager( QTabWidget ):
 
                     # Failure; disable the tab or delete
                     if self._auto_delete_on_no_data:
-                        to_delete.append( self.widget(n) )
+                        to_delete.append( w )
                     else:
                         self.setTabEnabled( n, False)
                 else:
@@ -187,17 +205,14 @@ class ViewManager( QTabWidget ):
 
         # Do after so don't upset ordering on loop
         for w in to_delete:
-            k = self.views.keys()[ list( self.views.values() ).index( w ) ]
+            k = self.tabText( self.indexOf(w) )
             del self.views[k]
             w.deleteLater()
             self.removeTab( self.indexOf(w) )
 
 
         self.updated.emit()
-        
-    #def onRefreshLater(self):
-    #    self.onRefreshAll( to_refresh=self._refresh_later )
-    #    self._refresh_later.clear()
+
         
     def addTab(self, widget, name, **kwargs):
         """
@@ -205,23 +220,6 @@ class ViewManager( QTabWidget ):
         """
         self.addView(widget, name, **kwargs)
     
-    def autoSelect(self):
-        """
-        Autoselect one of the current views.
-
-        Iterates through all current views and selects the first that is not flagged `_unfocus_on_refresh`. 
-        This is used primarily to unfocus the help tabs following successful data calculation.
-        """    
-        if self._auto_unfocus_tabs:
-            cw = self.currentWidget()
-            if cw._unfocus_on_refresh:
-                for w in range(0, self.count()):
-                    uf = self.widget(w)._unfocus_on_refresh
-                    if not uf and self.widget(w).isEnabled():
-                        self.setCurrentIndex( w )
-                        self._unfocus_tabs_enabled = False # Don't do this again (so user can select whatever they want)
-                        break
-
     def sizeHint(self):
         return QSize(600,300)
 

@@ -1431,6 +1431,7 @@ class GenericApp(QObject):
         self._init_timer1 = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
         self._init_timer2 = QTimer.singleShot(PX_INIT_SHOT, self.init_notebook)
 
+
     def init_auto_consume_data(self):
         self.logger.debug('Post-init: init_auto_consume_data')
 
@@ -1453,10 +1454,7 @@ class GenericApp(QObject):
             self.config.updated.connect(self.autoconfig_rename)  # Auto-rename if it is set
 
         if self._is_auto_focusable: # Needs to occur after the above
-            for i in self.editorItem.scene().selectedItems():
-                if i != self.editorItem:
-                    i.setSelected(False)
-            self.editorItem.setSelected(True)
+            self._init_timer3 = QTimer.singleShot(PX_INIT_SHOT, self.init_autofocus)
 
 
     def init_notebook(self):
@@ -1486,6 +1484,14 @@ class GenericApp(QObject):
         self.autoconfig_rename()
 
         self.configPanels.addTab(self.notes_viewer, '&?')
+
+    def init_autofocus(self):
+        for i in self.editorItem.scene().selectedItems():
+            if i != self.editorItem:
+                i.setSelected(False)
+        self.editorItem.setSelected(True)
+
+
 
     def reload(self):
         self.load_notes()
@@ -1664,26 +1670,18 @@ class GenericApp(QObject):
 
     def set_name(self, name):
         self.name = name
-        #self.w.setWindowTitle(name)
         self.nameChanged.emit(name)
 
     def show(self):
         self._is_active = True
         self.parent().viewerDock.setWidget(self.views)
-        self.parent().viewerDock.show()
-
         self.parent().dataDock.setWidget(self.dataViews)
-        self.parent().dataDock.show()
-
         self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
         self._is_active = True
         self.parent().viewerDock.setWidget(self.views)
-        self.parent().viewerDock.raise_()
-
         self.parent().dataDock.setWidget(self.dataViews)
-        self.parent().dataDock.raise_()
 
 
     def hide(self):
@@ -2173,10 +2171,6 @@ class RegionConfigPanel(ConfigPanel):
         remfr = QPushButton('Remove')
         remfr.clicked.connect(self.onRegionRemove)
 
-        #remfr = QPushButton('Add')
-        #remfr.clicked.connect(self.onRegressionAdd)
-
-        #vboxh.addWidget(addfr)
         vboxh.addWidget(remfr)
         vbox.addLayout(vboxh)
 
