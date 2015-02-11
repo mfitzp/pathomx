@@ -7,6 +7,9 @@ import logging
 frozen = getattr(sys, 'frozen', False)
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
+# Used to enforce Qt version via matplotlib, etc.
+os.environ['QT_API'] = 'pyqt5'
+
 if sys.platform == 'win32' and sys.executable.split('\\')[-1] == 'pythonw.exe':
     # Dump all output when running without a console; otherwise will hang
     sys.stdout = open(os.devnull, 'w')
@@ -21,7 +24,6 @@ elif sys.version_info < (3, 0) and ON_RTD is False:  # Python 2 only; unicode ou
 
 if frozen:
     logging.basicConfig(level=logging.INFO)
-    os.environ['QT_API'] = 'pyqt5'
 else:
     logging.basicConfig(level=logging.DEBUG)
 

@@ -194,7 +194,7 @@ class ViewManager( QTabWidget ):
         del self.floating_views[name]
         t = self.addTab(widget, name)
         if color:
-            self.tabBar().setTabTextColor(t,color)
+            self.tabBar().setTabTextColor(t, color)
         self.setCurrentWidget(widget)
 
 

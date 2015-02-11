@@ -364,7 +364,7 @@ class ToolItem(BaseItem):
         if len(self.app.data.i) == 1:
 
             # Get the data manager for our sole parent
-            _, cs = self.app.data.i.items()[0]
+            _, cs = list( self.app.data.i.items() )[0]
             cm, ci = cs
 
             # If data manager of our parent only has one child, we can get closer

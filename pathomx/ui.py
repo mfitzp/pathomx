@@ -1284,6 +1284,46 @@ class QTabWidgetExtend(QTabWidget):
                         break
 
 
+class ToolConfigPanel(QMainWindow):
+
+    def __init__(self, parent, tool=None, *args, **kwargs):
+        super(ToolConfigPanel, self).__init__(parent, *args, **kwargs)
+
+        self.tool = tool
+
+        t = self.addToolBar('Control')
+        t.setIconSize(QSize(16, 16))
+        t.setFloatable(False)
+        t.setMovable(False)
+
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-source.png')), tr('Select a data source…'), self)
+        select_dataAction.setStatusTip('Select a compatible data source')
+        select_dataAction.triggered.connect(self.tool.onSelectDataSource)
+        t.addAction(select_dataAction)
+
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'play.png')), tr('Calculate'), self)
+        select_dataAction.setStatusTip('Recalculate')
+        select_dataAction.triggered.connect(self.tool.onRecalculate)
+        t.addAction(select_dataAction)
+
+        self.pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self)
+        self.pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
+        self.pause_analysisAction.setCheckable(True)
+        self.pause_analysisAction.setChecked(self.tool.default_pause_analysis)
+        self.pause_analysisAction.toggled.connect(self.tool.onAutoAnalysisToggle)
+        t.addAction(self.pause_analysisAction)
+        self.tool._pause_analysis_flag = self.tool.default_pause_analysis
+
+        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self)
+        select_dataAction.setStatusTip('View resulting data output from this plugin')
+        select_dataAction.triggered.connect(self.tool.onViewDataOutput)
+        t.addAction(select_dataAction)
+
+        self.tabs = QTabWidget()
+        self.setCentralWidget(self.tabs)
+
+
+
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
 class GenericApp(QObject):
     """
@@ -1378,7 +1418,7 @@ class GenericApp(QObject):
         self.file_watcher.fileChanged.connect(self.onFileChanged)
 
         self.toolbars = {}
-        self.configPanels = QTabWidget()
+        self.configPanels = ToolConfigPanel(None, tool=self)
         self.configpanels = {}
 
         self.logger.debug('Register internal url handler...')
@@ -1465,7 +1505,6 @@ class GenericApp(QObject):
         if self.code_editor.is_enhanced_editor:
             self.code_editor.detectSyntax(language='Python')
 
-        self.addDataToolBar()
         self.addEditorToolBar()
         self.addFigureToolBar()
 
@@ -1483,7 +1522,7 @@ class GenericApp(QObject):
         # Set the autoconfig name string
         self.autoconfig_rename()
 
-        self.configPanels.addTab(self.notes_viewer, '&?')
+        self.configPanels.tabs.addTab(self.notes_viewer, '&?')
 
     def init_autofocus(self):
         for i in self.editorItem.scene().selectedItems():
@@ -1697,44 +1736,12 @@ class GenericApp(QObject):
 
     def addConfigPanel(self, Panel, name):
         panel = Panel(self)
-        self.configPanels.addTab(panel, name)
+        self.configPanels.tabs.addTab(panel, name)
         self.configpanels[name] = panel
 
     def addSelfToolBar(self):
 
         pass
-
-    def addDataToolBar(self):
-        if 'data' in self.toolbars:
-            return False
-
-        t = self.w.addToolBar('Data')
-        t.setIconSize(QSize(16, 16))
-
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-source.png')), tr('Select a data source…'), self.w)
-        select_dataAction.setStatusTip('Select a compatible data source')
-        select_dataAction.triggered.connect(self.onSelectDataSource)
-        t.addAction(select_dataAction)
-
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'play.png')), tr('Calculate'), self.w)
-        select_dataAction.setStatusTip('Recalculate')
-        select_dataAction.triggered.connect(self.onRecalculate)
-        t.addAction(select_dataAction)
-
-        self.pause_analysisAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'control-pause.png')), tr('Pause automatic analysis'), self.w)
-        self.pause_analysisAction.setStatusTip('Do not automatically refresh analysis when source data updates')
-        self.pause_analysisAction.setCheckable(True)
-        self.pause_analysisAction.setChecked(self.default_pause_analysis)
-        self.pause_analysisAction.toggled.connect(self.onAutoAnalysisToggle)
-        t.addAction(self.pause_analysisAction)
-        self._pause_analysis_flag = self.default_pause_analysis
-
-        select_dataAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'data-output.png')), tr('View resulting data…'), self.w)
-        select_dataAction.setStatusTip('View resulting data output from this plugin')
-        select_dataAction.triggered.connect(self.onViewDataOutput)
-        t.addAction(select_dataAction)
-
-        self.toolbars['data'] = t
 
     def addEditorToolBar(self):
         if 'editor' in self.toolbars:
@@ -2389,7 +2396,6 @@ class RibbonSection( QGroupBox ):
 
         self.setAlignment( Qt.AlignHCenter )
 
-
         for r in range(self.maximum_rows):
             self.layout.setRowStretch(r, 1)
 
@@ -2411,6 +2417,7 @@ class RibbonSection( QGroupBox ):
         toolbuttonSizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         btn.setSizePolicy(toolbuttonSizePolicy)
         btn.setToolButtonStyle(self.mode)
+        # btn.setMaximumWidth(128)
 
         x, y = len(self.items) % self.maximum_rows, len(self.items) // self.maximum_rows
         self.layout.addWidget(btn, x, y)
@@ -2420,10 +2427,6 @@ class RibbonSection( QGroupBox ):
             self.mode = Qt.ToolButtonIconOnly
             for i in self.items:
                 i.setToolButtonStyle(self.mode)
-
-
-
-
 
 
 class RibbonPage( QWidget ):

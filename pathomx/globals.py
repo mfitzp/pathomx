@@ -70,6 +70,11 @@ if not ON_RTD:
                     'Darwin': 'Menlo'}
     mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
 
+
+    # Enforce Qt5
+    mpl.rcParams['backend'] = 'Qt5Agg'
+    mpl.rcParams['backend.qt5'] = 'PyQt5'
+
     # Set Matplotlib defaults for nice looking charts
     mpl.rcParams['figure.facecolor'] = 'white'
     mpl.rcParams['figure.autolayout'] = True
