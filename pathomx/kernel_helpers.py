@@ -47,10 +47,10 @@ class PathomxTool(object):
         self._name = name
 
 
-def pathomx_notebook_start(varsi, vars):
+def pathomx_notebook_start(vars):
 
-    for k, v in varsi.items():
-        vars[k] = v
+    #for k, v in varsi.items():
+    #    vars[k] = v
 
     # _keep_input_vars = ['styles']
     # vars['_pathomx_exclude_input_vars'] = [x for x in varsi.keys() if x not in _keep_input_vars]
@@ -63,15 +63,19 @@ def pathomx_notebook_start(varsi, vars):
             else:
                 vars[k] = None
 
-    if 'rcParams' in vars:
+    if '_rcParams' in vars:
         global rcParams
         from matplotlib import rcParams
 
         # Block warnings from deprecated rcParams here
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            for k, v in vars['rcParams'].items():
+            for k, v in vars['_rcParams'].items():
                 rcParams[k] = v
+
+    # Legacy shim
+    if '_styles' in vars:
+        vars['styles'] = vars['_styles']
 
 
 def pathomx_notebook_stop(vars):

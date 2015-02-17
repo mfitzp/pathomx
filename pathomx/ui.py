@@ -27,6 +27,7 @@ import tempfile
 from .views import StaticHTMLView, ViewViewManager, DataViewManager, NotebookView, IPyMplView, DataFrameWidget, SVGView, ImageView
 # Translation (@default context)
 from .translate import tr
+from .runqueue import ToolJob
 
 import requests
 
@@ -1384,6 +1385,8 @@ class GenericApp(QObject):
         self._latest_generator_result = None
         self._auto_consume_data = auto_consume_data
 
+        self.current_data_on_kernels = set([])
+
         # Set this to true to auto-start a new calculation after current (block multi-runs)
         self._is_job_active = False
         self._queued_start = False
@@ -1578,6 +1581,9 @@ class GenericApp(QObject):
             icon_path = os.path.join(self.plugin.path, 'icon.png')
         return QIcon(icon_path)
 
+    def get_parents(self):
+        return [s[0].v for i, s in self.data.i.items() if s is not None]
+
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
         if self._pause_analysis_flag:
@@ -1589,27 +1595,26 @@ class GenericApp(QObject):
         self.logger.info("Running tool %s" % self.name)
 
         strip_rcParams = ['tk.pythoninspect', 'savefig.extension']
-        varsi = {
-            'config': self.config.as_dict(),
-            'rcParams': {k: v for k, v in rcParams.items() if k not in strip_rcParams},
-            'styles': styles,
-            '_pathomx_tool_path': self.plugin.path,
+        global_varsi = {
+            '_rcParams': {k: v for k, v in rcParams.items() if k not in strip_rcParams},
+            '_styles': styles,
             '_pathomx_database_path': os.path.join(utils.scriptdir, 'database'),
         }
 
         self.status.emit('active')
         self.progress.emit(0.)
 
-        notebook_queue.add_job(self, varsi, progress_callback=self.progress.emit, result_callback=self._worker_result_callback)  # , error_callback=self._worker_error_callback)
+        notebook_queue.add( ToolJob(self, global_varsi) )
+
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)
 
         if 'stdout' in result:
-            self.logger.error(result['stdout'])
+            self.logger.info(result['stdout'])
 
         if result['status'] == 0:
-            self.logger.debug("Notebook complete %s" % self.name)
+            self.logger.debug("Execute complete: %s" % self.name)
             self.status.emit('done')
             varso = result['varso']
 
@@ -1617,13 +1622,15 @@ class GenericApp(QObject):
                 global styles
                 styles = varso['styles']
 
+            if 'kernel' in result:
+                # Only this kernel is now up to date
+                self.current_data_on_kernels = set([result['kernel']])
+
         elif result['status'] == -1:
-            self.logger.debug("Notebook error %s" % self.name)
+            self.logger.debug("Execute error: %s" % self.name)
             self.status.emit('error')
             self.logger.error(result['traceback'])
             varso = {}
-        #varso['_pathomx_result_notebook'] = result['notebook']
-        #self.nb = result['notebook']
 
         self.worker_cleanup(varso)
 
@@ -1648,7 +1655,7 @@ class GenericApp(QObject):
             #                             will be fixed by setting status through downstream network once proper queue in effect
 
         # Set into the workspace of user kernel
-        notebook_queue.in_process_runner.kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
+        # notebook_queue.in_process_runner.kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)

@@ -434,8 +434,6 @@ class MainWindow(QMainWindow):
         # IPython Widget for internal (user) console
         self.console = RichIPythonWidget()
         self.console._call_tip = lambda: None
-        self.console.kernel_manager = notebook_queue.in_process_runner.kernel_manager
-        self.console.kernel_client = notebook_queue.in_process_runner.kernel_client
 
         self.central = QTabWidget()
         self.central.setDocumentMode(True)
@@ -1208,7 +1206,6 @@ def main():
     app.installTranslator(translator_mp)
 
     # We've got a qApp instance going, set up timers
-    notebook_queue.create_user_kernel()
     notebook_queue.create_runners()
     notebook_queue.start_timers()
     '''
