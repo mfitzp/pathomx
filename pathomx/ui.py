@@ -1341,7 +1341,7 @@ class GenericApp(QObject):
         self._latest_generator_result = None
         self._auto_consume_data = auto_consume_data
 
-        self.current_data_on_kernels = []
+        self.current_data_on_kernels = set([])
 
         # Set this to true to auto-start a new calculation after current (block multi-runs)
         self._is_job_active = False
@@ -1433,7 +1433,7 @@ class GenericApp(QObject):
         if self._auto_consume_data:
             self._is_autoconsume_success = self.data.consume_any_app(current_tools[::-1])  # Try consume from any app; work backwards
 
-        # self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
+        self.data.source_updated.connect(self.autogenerate)  # Auto-regenerate if the source data is modified
         self.config.updated.connect(self.autoconfig)  # Auto-regenerate if the configuration changes
 
         if self.autoconfig_name:
@@ -1552,6 +1552,10 @@ class GenericApp(QObject):
             if 'styles' in varso:
                 global styles
                 styles = varso['styles']
+
+            if 'kernel' in result:
+                # Only this kernel is now up to date
+                self.current_data_on_kernels = set([result['kernel']])
 
         elif result['status'] == -1:
             self.logger.debug("Execute error: %s" % self.name)

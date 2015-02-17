@@ -234,7 +234,8 @@ class DataManager(QObject):
             # Update consumers / refresh views
             #self.o[interface].refresh_interfaces()
             #self.o[interface].previously_managed_by.append(self)
-            self.notify_watchers(interface)
+            #self.notify_watchers(interface)
+
             self.output_updated.emit(interface)
 
             return True
