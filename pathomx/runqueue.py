@@ -229,8 +229,9 @@ class Runner(QObject):
 
         # Check if all jobs have completed; then shutdown and exit
         if ars_waiting == False:
-            # Emit the task-complete signal (allow dependencies to run)
-            self.task.complete.emit()
+            if self.task:
+                # Emit the task-complete signal (allow dependencies to run)
+                self.task.complete.emit()
 
             # Reset this kernel, ready to go
             self._status = STATUS_READY
@@ -488,6 +489,9 @@ class ToolJob(Job):
         previous_tool = None
 
         while len(process_queue) > 0:
+
+            # Remove duplicates
+            process_queue = list(set(process_queue))
             t = process_queue.pop(0)  # From front
 
             # Check for what that this tool depends on
@@ -649,7 +653,7 @@ class ToolJob(Job):
         # Remove this task from the queue
         self.tasks_queued.remove(t)
         if set(t.dependencies) & set(self.tasks_errored):
-            # A dependency has errored, we can't run this task (ever); add to error
+            # A dependency has errored, we can't run this task (ever); add to error list and skip it
             self.tasks_errored.append(t)
             return False
 
@@ -664,30 +668,28 @@ class ToolJob(Job):
 
         # Check whether the parents of the head-of-queue were run on this kernel
         # Get the original tool; build a list of all parents + their respective kernels
-        tools_this_exec = set([self.exec_tool_lookup[e] for e in t.execute])
-        parents_this_exec = set([toolp for tool in tools_this_exec for toolp in tool.get_parents()])
-
-        # Find those that are parents, but not in this exec
-        non_exec_parents = parents_this_exec - tools_this_exec
 
         # Iterate each, find if it's current data is on *this* kernel, if so carry on
         # if not, we'll need to pass it in (can stuff it into the first Exec, or add a new one?)
         varsi = {}
-        for tool in non_exec_parents:
-
-            if kernel in tool.current_data_on_kernels:
-                continue
-
-            # Build the dict to send,
-            # will also want to build some kind of callback to track this
-            for i, sm in tool.data.i.items():
-                if sm:
-                    mo, mi = sm
-                    # We need to push the actual data; this should do it?
-                    varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
+        # Apply the dependencies to each task: we need to do this at the end to avoid missing due to order
+        if t.execute:
+            # We only need to get dependencies for the head Execution; as the branching logic means that >1 parent
+            # anywhere >1 parent == a new Task
+            e0 = t.execute[0]
+            tool = e0.metadata['tool']
+            if kernel not in tool.current_data_on_kernels:
+                # Build the dict to send,
+                # will also want to build some kind of callback to track this
+                for i, sm in tool.data.i.items():
+                    if sm:
+                        mo, mi = sm
+                        # We need to push the actual data; this should do it?
+                        varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
 
         # We've got something to send!
         if varsi:
+            print("!!!WE'RE SENDING DATA!!!", varsi)
             e = Execute(varsi=varsi)
             # FIXME: This will need a callback wrapped function to pass the extra data without some nasty shit
             e.complete.connect(self.complete_move_data_to_kernel)
@@ -737,7 +739,7 @@ class Queue(QObject):
     def start_timers(self):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
-        self._run_timer.start(1000)  # Auto-check for pending jobs every 1 second; this shouldn't be needed but some jobs get stuck(?)
+        self._run_timer.start(100)  # Auto-check for pending jobs every 0.1 second; this shouldn't be needed but some jobs get stuck(?)
 
         self._cluster_timer = QTimer()
         self._cluster_timer.timeout.connect(self.create_runners)
@@ -745,6 +747,8 @@ class Queue(QObject):
 
     def add(self, job):
         self.jobs.append(job)
+
+        # We fire an additional
         self.start.emit()
 
     @property
