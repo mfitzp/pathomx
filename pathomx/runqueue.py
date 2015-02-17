@@ -37,6 +37,8 @@ AR_PUSH = 1
 AR_EXECUTE = 2
 AR_PULL = 3
 
+PROGRESS_REGEXP = re.compile("____pathomx_execute_progress_(.*)____")
+
 # Job submitted as initiating tool
 # Pre-calculate the execution order and flow (save the round-trip execution) stopping at paused tools
 # - the set of this available on job object for mapping
@@ -205,6 +207,7 @@ class Runner(QObject):
 
                         # Emit the error via the Execute object (to the tool)
                         ex.result.emit(result)
+
                         self._status = STATUS_ERROR
                         # Interrupt and stop here
                         self.reset()
@@ -212,23 +215,26 @@ class Runner(QObject):
                     else:
                         # Success on retrieve
                         if ar_type == AR_PUSH:
-                            pass
+                            ex.complete.emit()
 
                         if ar_type == AR_EXECUTE:
                             # We should emit the complete notification here; but we have no way of
                             # knowing whether the AR relates the first, or 50th exec that was triggered?
                             self.stdout += ar.stdout
+                            ex.complete.emit()
 
                         if ar_type == AR_PULL:
                             result = {
                                 'status': 0,
                                 'varso': ar_result,
                                 'stdout': self.stdout + ar.stdout,
+                                'kernel': id(self.k)
                             }
+                            ex.complete.emit()
                             ex.result.emit(result)
 
         # Check if all jobs have completed; then shutdown and exit
-        if ars_waiting == False:
+        if not ars_waiting:
             if self.task:
                 # Emit the task-complete signal (allow dependencies to run)
                 self.task.complete.emit()
@@ -248,13 +254,13 @@ class Runner(QObject):
         if self.status != STATUS_RUNNING:
             return False
 
-        cre = re.compile("____pathomx_execute_progress_(.*)____")
+
 
         for ex, ars in self.ar_by_exec.items():
             for ar in ars:
                 lines = ar.stdout.split('\n')
                 for l in lines:
-                    m = cre.match(l)
+                    m = PROGRESS_REGEXP.match(l)
                     if m:
                         ex.progress.emit(float(m.group(1)))
 
@@ -396,7 +402,7 @@ class Job(QObject):
 
     def next(self, kernel=None):
         """
-        Return the next available Exec object (kernel is ignored)
+        Return the next available Task object (kernel is ignored)
         """
         try:
             e = self.tasks_queued.pop()
@@ -641,21 +647,24 @@ class ToolJob(Job):
 
         """
         if not self.tasks_queued:
+            self.complete()
             return None
 
-        for t in self.tasks_queued:
+        for t in self.tasks_queued[:]:
             if not t.dependencies or len( set(t.dependencies) - set(self.tasks_complete) ) == 0:
                 # We have an Exec not waiting on dependencies
+                # Remove this task from the queue then continue on
+                self.tasks_queued.remove(t)
                 break
+
+            if set(t.dependencies) & set(self.tasks_errored):
+                # A dependency has errored, we can't run this task (ever); add to error list and skip it
+                self.tasks_queued.remove(t)
+                self.tasks_errored.append(t)
+
         else:
             return False # Waiting
 
-        # Remove this task from the queue
-        self.tasks_queued.remove(t)
-        if set(t.dependencies) & set(self.tasks_errored):
-            # A dependency has errored, we can't run this task (ever); add to error list and skip it
-            self.tasks_errored.append(t)
-            return False
 
         # Handle the exec here
         # We receive the kernel identifier from the Queue, so here we can determine whether the parent(s)
@@ -672,27 +681,29 @@ class ToolJob(Job):
         # Iterate each, find if it's current data is on *this* kernel, if so carry on
         # if not, we'll need to pass it in (can stuff it into the first Exec, or add a new one?)
         varsi = {}
+        tools_to_move = []
         # Apply the dependencies to each task: we need to do this at the end to avoid missing due to order
         if t.execute:
             # We only need to get dependencies for the head Execution; as the branching logic means that >1 parent
             # anywhere >1 parent == a new Task
             e0 = t.execute[0]
             tool = e0.metadata['tool']
-            if kernel not in tool.current_data_on_kernels:
-                # Build the dict to send,
-                # will also want to build some kind of callback to track this
-                for i, sm in tool.data.i.items():
-                    if sm:
-                        mo, mi = sm
-                        # We need to push the actual data; this should do it?
-                        varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
+            # Build the dict to send,
+            # will also want to build some kind of callback to track this
+            for i, sm in tool.data.i.items():
+                if sm:
+                    mo, mi = sm
 
-        # We've got something to send!
+                    if id(kernel) not in mo.v.current_data_on_kernels:
+                        # We need to push the actual data; this should do it?
+                        varsi['_%s_%s' % (mi, id(mo.v)) ] = tool.data.get(i)
+                        tools_to_move.append( mo.v )
+
+        # We've got something to move between kernels
         if varsi:
-            print("!!!WE'RE SENDING DATA!!!", varsi)
             e = Execute(varsi=varsi)
             # FIXME: This will need a callback wrapped function to pass the extra data without some nasty shit
-            e.complete.connect(self.complete_move_data_to_kernel)
+            e.complete.connect(lambda: self.complete_move_data_to_kernel(kernel, tools_to_move))
             # Put this Execute instruction at the head of list
             t.execute.insert(0, e)
 
@@ -700,14 +711,16 @@ class ToolJob(Job):
         return t
 
 
-    def complete_move_data_to_kernel(self, tool_ids_kernel_ids):
-        pass
+    @staticmethod
+    def complete_move_data_to_kernel(kernel, tools):
+        for t in tools:
+            t.current_data_on_kernels.add(id(kernel))
 
-
-    def complete():
+    def complete(self):
         """
         Job complete
         """
+        pass
 
 
 
@@ -780,14 +793,14 @@ class Queue(QObject):
                 break
         else:
             # Can't run now, we'll have to wait
-            self.jobs.append(0, job)
+            self.jobs.insert(0, job)
             return False
 
         # Initialise the job (this is a no-op if already running)
         job.start()
 
         # Get the details for the next execution step
-        e = job.next()
+        e = job.next(kernel=runner.k)
 
         if e is False:
             # Job is waiting on something to complete; wait and trigger a post-poned fire of self.run()
