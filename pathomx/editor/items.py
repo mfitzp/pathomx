@@ -3,7 +3,7 @@ import os
 
 import math
 from .. import utils
-from ..globals import settings
+from ..globals import settings, STATUS_COLORS, STATUS_QCOLORS
 from ..qt import *
 
 from pyqtconfig import ConfigManager
@@ -30,23 +30,7 @@ INTERFACE_ACTIVE_COLOR = {
     False: QColor(100, 100, 100),
 }
 
-STATUS_COLORS = {
-    'active': 'green',
-    'error': 'red',
-    'waiting': 'yellow',
-    'paused': 'white',
-    'render': 'purple',
-    'done': 'blue'
-}
 
-STATUS_QCOLORS = {
-    'active': QColor(0, 255, 0),
-    'error': QColor(255, 0, 0),
-    'waiting': QColor(255, 255, 0),
-    'paused': QColor(63, 63, 63),
-    'render': QColor(128, 0, 128),
-    'done':  QColor(0, 0, 255),
-}
 
 ANNOTATION_MINIMUM_SIZE = 40
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
@@ -281,6 +265,7 @@ class ToolItem(BaseItem):
     def paint(self, painter, option, widget):
 
         color = QColor( STATUS_QCOLORS[self.status] if self.status in STATUS_QCOLORS else TOOL_BACKGROUND )
+        color.setAlpha(255)
 
         pen = QPen(color)
         pen.setWidthF(0.5)

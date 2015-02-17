@@ -468,12 +468,20 @@ class MainWindow(QMainWindow):
 
 
 
-        self.activetoolDock = QDockWidget(tr('Active'))
+        self.activetoolDock = QDockWidget(tr('Tool'))
         self.activetoolDock.setWidget(QWidget(None))
         self.activetoolDock.setMinimumHeight(300)
         self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
 
+        self.queuelist = ui.RunQueueListWidget(notebook_queue)
+        self.queueDock = QDockWidget(tr('Queue'))
+        self.queueDock.setWidget(self.queuelist)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.queueDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
+
+        self.tabifyDockWidget(self.toolDock, self.queueDock)
+        self.toolDock.raise_()
 
         self.dummy = QWidget()
         self.dummy.hide()

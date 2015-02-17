@@ -20,7 +20,7 @@ from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition, notebook_queue, \
                     current_tools, current_tools_by_id, installed_plugin_names, current_datasets, \
-                    mono_fontFamily, custom_pyqtconfig_hooks
+                    mono_fontFamily, custom_pyqtconfig_hooks, STATUS_COLORS, STATUS_QCOLORS
 
 import tempfile
 
@@ -42,7 +42,7 @@ from IPython.nbconvert.filters.markdown import markdown2html_mistune
 
 from IPython.qt.console.ansi_code_processor import QtAnsiCodeProcessor
 
-from .runqueue import STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
+from .runqueue import STATUS_READY, STATUS_ACTIVE, STATUS_COMPLETE, STATUS_ERROR, STATUS_BLOCKED
 from .kernel_helpers import PathomxTool
 
 
@@ -73,6 +73,8 @@ BLANK_DEFAULT_HTML = '''
 </style>
 <body>&nbsp;</body></html>
 '''
+
+
 
 
 class Logger(logging.Handler):
@@ -140,7 +142,7 @@ class KernelStatusWidget(QWidget):
 
             if k.status == STATUS_READY:
                 p.setColor(w.backgroundRole(), QColor(0, 0, 0, 63))
-            elif k.status == STATUS_RUNNING:
+            elif k.status == STATUS_ACTIVE:
                 p.setColor(w.backgroundRole(), QColor(0, 255, 0, 127))
             elif k.status == STATUS_COMPLETE:
                 p.setColor(w.backgroundRole(), QColor(0, 0, 255, 127))
@@ -1604,7 +1606,7 @@ class GenericApp(QObject):
         self.status.emit('active')
         self.progress.emit(0.)
 
-        notebook_queue.add( ToolJob(self, global_varsi) )
+        notebook_queue.add( ToolJob(self, global_varsi, name=self.name) )
 
 
     def _worker_result_callback(self, result):
@@ -1615,7 +1617,7 @@ class GenericApp(QObject):
 
         if result['status'] == 0:
             self.logger.debug("Execute complete: %s" % self.name)
-            self.status.emit('done')
+            self.status.emit('complete')
             varso = result['varso']
 
             if 'styles' in varso:
@@ -2505,3 +2507,103 @@ class RibbonWidget( QTabWidget ):
         s.addAction(action)
 
         # FIXME: Add hooks to track % active objects in tab; disable (hide) tabs where all widgets are disabled
+
+
+
+
+class RunQueueListDelegate(QAbstractItemDelegate):
+
+    def paint(self, painter, option, index):
+        r = option.rect
+
+        #item.setData(Qt.DisplayRole, "%s" % job.name)
+        #item.setData(Qt.UserRole, "%d/%d complete; %d error(s)" % (e_complete, e_total, e_errored))
+        #item.setData(Qt.UserRole + 3, job.status)
+        #item.setData(Qt.UserRole + 2, float(e_complete)/float(e_total))
+
+        # GET TITLE, DESCRIPTION
+        title = index.data(Qt.DisplayRole)  # .toString()
+        description = index.data(Qt.UserRole)  # .toString()
+        status = index.data(Qt.UserRole + 1)  # .toString()
+        progress = index.data(Qt.UserRole + 2)  # .toString()
+
+        if option.state & QStyle.State_Selected:
+            painter.setPen(QPalette().highlightedText().color())
+            painter.fillRect(r, QBrush(QPalette().highlight().color()))
+        else:
+            painter.setPen(QPalette().text().color())
+            # Define rectangle % of width from progress
+            if status == 'active':
+                progress_r = QRect(r.x(), r.y(), r.width() * progress, r.height() )
+            else:
+                progress_r = r
+
+            color = STATUS_QCOLORS[status]
+            color.setAlpha(30)
+            painter.fillRect(progress_r, QBrush(color))
+
+        font = painter.font()
+        font.setPointSize(10)
+
+        font.setWeight(QFont.Bold)
+        painter.setFont(font)
+
+        # TITLE
+        r = option.rect.adjusted(5, 5, 0, 0)
+        pen = QPen()
+        pen.setColor(QColor('black'))
+        painter.setPen(pen)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, title)
+
+        font.setWeight(QFont.Normal)
+        painter.setFont(font)
+
+        # DESCRIPTION
+        r = option.rect.adjusted(5, 18, 0, 0)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, description)
+
+
+    def sizeHint(self, option, index):
+        return QSize(200, 40)
+
+
+class RunQueueListWidget(QListWidget):
+
+    def __init__(self, queue, parent=None, **kwargs):
+        super(RunQueueListWidget, self).__init__(parent, **kwargs)
+
+        self.queue = queue
+
+        # self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setItemDelegate(RunQueueListDelegate(self))
+        self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+
+        self._refresh_timer = QTimer()
+        self._refresh_timer.timeout.connect(self.refresh)
+        self._refresh_timer.start(1000)  # Re-udpate timer every minute
+
+
+    def refresh(self):
+
+        notebook_queue
+
+        while self.count() > 0:  # Empty list
+            self.takeItem(0)
+
+        for job in self.queue.jobs_completed + self.queue.jobs:
+            item = QListWidgetItem()
+
+            # item.job = job
+            e_complete = len(job.executes_complete)
+            e_errored = len(job.executes_errored)
+            e_total = len(job.executes_all)
+
+            item.setData(Qt.DisplayRole, "%s" % job.name)
+            item.setData(Qt.UserRole, "%d/%d complete; %d error(s)" % (e_complete, e_total, e_errored))
+            item.setData(Qt.UserRole + 1, job.status)
+            item.setData(Qt.UserRole + 2, float(e_complete)/float(e_total))
+
+            self.addItem(item)
+
+        self.update()
+

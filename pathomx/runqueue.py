@@ -22,15 +22,16 @@ from IPython.parallel.apps import ipclusterapp
 from matplotlib import rcParams
 
 # Kernel is busy but not because of us
-STATUS_BLOCKED = -1
+STATUS_BLOCKED = 'blocked'
 
 # Normal statuses
-STATUS_READY = 0
-STATUS_RUNNING = 1
-STATUS_COMPLETE = 2
+STATUS_READY = 'ready'
+
+STATUS_ACTIVE = 'active'
+STATUS_COMPLETE = 'complete'
 
 # Error status
-STATUS_ERROR = 3
+STATUS_ERROR = 'error'
 
 
 AR_PUSH = 1
@@ -52,16 +53,6 @@ PROGRESS_REGEXP = re.compile("____pathomx_execute_progress_(.*)____")
 # - Each run-task should check run-flag before continuing
 #
 # Job complete; delete job from queue
-
-
-
-
-
-
-# from pkg_resources import load_entry_point
-# load_entry_point('ipython==3.0.0-dev', 'console_scripts', 'ipcluster')()
-# IPython.parallel.apps.ipclusterapp:launch_new_instance'
-
 
 
 
@@ -132,7 +123,7 @@ class Runner(QObject):
         self.reset()
 
         self._is_active = True
-        self._status = STATUS_RUNNING
+        self._status = STATUS_ACTIVE
 
         self.task = task
 
@@ -251,7 +242,7 @@ class Runner(QObject):
 
 
     def check_progress(self):
-        if self.status != STATUS_RUNNING:
+        if self.status != STATUS_ACTIVE:
             return False
 
 
@@ -375,8 +366,10 @@ class Job(QObject):
 
     """
 
-    def __init__(self):
+    def __init__(self, name='Untitled'):
         super(Job, self).__init__()
+
+        self.name = name
 
         self.status = STATUS_READY
         self.tasks_queued = []
@@ -391,14 +384,16 @@ class Job(QObject):
         Pre-run initialisation
         """
         self.is_active = True
-        self.status = STATUS_RUNNING
+        self.status = STATUS_ACTIVE
 
     def stop(self):
         """
         Post-run cleanup
         """
         self.is_active = False
-        self.status = STATUS_COMPLETE
+        # Don't replace error status
+        if self.status == STATUS_ACTIVE:
+            self.status = STATUS_COMPLETE
 
     def next(self, kernel=None):
         """
@@ -415,6 +410,29 @@ class Job(QObject):
             self.tasks_running.append(e)
             return e
 
+    @property
+    def executes_queued(self):
+        return [e for t in self.tasks_queued for e in t.execute]
+
+    @property
+    def executes_complete(self):
+        return [e for t in self.tasks_complete for e in t.execute]
+
+    @property
+    def executes_errored(self):
+        return [e for t in self.tasks_errored for e in t.execute]
+
+    @property
+    def executes_running(self):
+        return [e for t in self.tasks_running for e in t.execute]
+
+    @property
+    def executes_all(self):
+        return self.executes_queued + self.executes_complete + self.executes_errored + self.executes_running
+
+    @property
+    def is_complete(self):
+        return len(self.tasks_queued + self.tasks_running) == 0
 
 class CodeJob(Job):
 
@@ -647,7 +665,6 @@ class ToolJob(Job):
 
         """
         if not self.tasks_queued:
-            self.complete()
             return None
 
         for t in self.tasks_queued[:]:
@@ -715,11 +732,6 @@ class ToolJob(Job):
         for t in tools:
             t.current_data_on_kernels.add(id(kernel))
 
-    def complete(self):
-        """
-        Job complete
-        """
-        pass
 
 
 
@@ -736,12 +748,14 @@ class Queue(QObject):
     """
 
     start = pyqtSignal()
+    updated = pyqtSignal()
 
     def __init__(self):
         super(Queue, self).__init__()
 
         self.runners = []
         self.jobs = []  # Job queue a tuple of (notebook, success_callback, error_callback)
+        self.jobs_completed = []
 
         self.start.connect(self.run)
 
@@ -752,6 +766,10 @@ class Queue(QObject):
         self._run_timer = QTimer()
         self._run_timer.timeout.connect(self.run)
         self._run_timer.start(100)  # Auto-check for pending jobs every 0.1 second; this shouldn't be needed but some jobs get stuck(?)
+
+        self._cleanup_timer = QTimer()
+        self._cleanup_timer.timeout.connect(self.cleanup)
+        self._cleanup_timer.start(15000)  # Re-check runners every 15 second
 
         self._cluster_timer = QTimer()
         self._cluster_timer.timeout.connect(self.create_runners)
@@ -779,7 +797,7 @@ class Queue(QObject):
 
         logging.info('Currently %d jobs remaining' % len(self.jobs))
 
-        job = self.jobs.pop()  # Get the job at the front of the queue
+        job = self.jobs[0]  # Get the job at the front of the queue
         # (? can we be more intelligent about this is there are a lot of runners available)
 
         # Identify the best runner for the job
@@ -792,7 +810,6 @@ class Queue(QObject):
                 break
         else:
             # Can't run now, we'll have to wait
-            self.jobs.insert(0, job)
             return False
 
         # Initialise the job (this is a no-op if already running)
@@ -803,19 +820,23 @@ class Queue(QObject):
 
         if e is False:
             # Job is waiting on something to complete; wait and trigger a post-poned fire of self.run()
-            self.jobs.insert(0, job)
             return False
 
         elif e is None:
             # Job has completed; let it go
-            return
+            self.jobs.remove(job)
+            job.stop()
+            self.jobs_completed.append(job)
 
         else:
             # If we're here, we've got an Exec object in e, that is good to go on the current runner
             runner.run(e)
 
-            # Might not be finished yet
-            self.jobs.insert(0, job)
+    def cleanup(self):
+        for j in self.jobs_completed[:]:
+            if j.is_complete:
+                self.jobs_completed.remove(j)
+
 
     def restart(self):
         self.stop_cluster()

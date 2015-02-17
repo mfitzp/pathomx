@@ -34,6 +34,18 @@ url_handlers = defaultdict(list)
 
 logging.debug('Loading settings...')
 
+
+STATUS_COLORS = {
+    'ready': 'grey',
+    'active': 'green',
+    'error': 'red',
+    'waiting': 'yellow',
+    'paused': 'white',
+    'render': 'purple',
+    'complete': 'blue'
+}
+
+
 # ReadTheDocs
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 if not ON_RTD:
@@ -98,6 +110,18 @@ if not ON_RTD:
     plugin_metadata = {}
 
 
+    STATUS_QCOLORS = {
+        'ready': QColor(63, 63, 63),
+        'active': QColor(0, 255, 0),
+        'error': QColor(255, 0, 0),
+        'waiting': QColor(255, 255, 0),
+        'paused': QColor(63, 63, 63),
+        'render': QColor(128, 0, 128),
+        'complete': QColor(0, 0, 255),
+    }
+
+
+
     def _get_QLineEdit(self):
         return self._get_map(self.text())
 
@@ -117,6 +141,8 @@ if not ON_RTD:
 
 else:
 
+    # Shims for ReadTheDocs
+
     styles = None
     notebook_queue = None
 
@@ -130,3 +156,5 @@ else:
     plugin_manager = None
     plugin_objects = None
     plugin_metadata = None
+
+    STATUS_QCOLORS = STATUS_COLORS
