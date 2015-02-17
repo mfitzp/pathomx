@@ -60,8 +60,6 @@ def pathomx_notebook_start(vars):
             else:
                 vars[k] = None
 
-            print(k,v)
-
     if '_rcParams' in vars:
         global rcParams
         from matplotlib import rcParams
@@ -86,8 +84,6 @@ def pathomx_notebook_stop(vars):
                 vars[v] = vars[k]
             else:
                 vars[v] = None
-
-            print(k,v)
 
         for k, v in vars.items():
             # Check it's an accepted type for passing; and not private (starts with _)

@@ -132,6 +132,8 @@ class Runner(QObject):
         self._is_active = True
         self._status = STATUS_RUNNING
 
+        self.task = task
+
 
         for e in task.execute:
 
@@ -198,6 +200,10 @@ class Runner(QObject):
                             'stdout': self.stdout + ar.stdout,
                         }
 
+                        # Emit the task-error signal (cancel dependencies)
+                        self.task.error.emit()
+
+                        # Emit the error via the Execute object (to the tool)
                         ex.result.emit(result)
                         self._status = STATUS_ERROR
                         # Interrupt and stop here
@@ -223,6 +229,10 @@ class Runner(QObject):
 
         # Check if all jobs have completed; then shutdown and exit
         if ars_waiting == False:
+            # Emit the task-complete signal (allow dependencies to run)
+            self.task.complete.emit()
+
+            # Reset this kernel, ready to go
             self._status = STATUS_READY
             self.reset()
 
@@ -231,6 +241,7 @@ class Runner(QObject):
         self.ar_by_exec = {}
         self.ar_types = {}
         self.stdout = ""
+        self.task = None
 
     def check_progress(self):
         if self.status != STATUS_RUNNING:
@@ -289,6 +300,8 @@ class Task(QObject):
     """
 
     status = pyqtSignal()
+    error = pyqtSignal()
+
     traceback = pyqtSignal(dict)
 
     complete = pyqtSignal()
@@ -320,18 +333,20 @@ class Task(QObject):
 
         # Complete callback (default) others can be added
         self.complete.connect(self.completed)
+        self.error.connect(self.errored)
 
     def ready(self):
         pass
 
     def completed(self):
         # Remove this exec object from the running list
-        self.job.execs_running.remove(self)
+        self.job.tasks_running.remove(self)
         # Add ourselves to the complete list
-        self.job.execs_complete.append(self)
+        self.job.tasks_complete.append(self)
 
-    def error(self):
-        self.tool.status.emit(error)
+    def errored(self):
+        self.job.tasks_running.remove(self)
+        self.job.tasks_errored.append(self)
 
 
 
@@ -360,6 +375,7 @@ class Job(QObject):
         self.tasks_queued = []
         self.tasks_running = []
         self.tasks_complete = []
+        self.tasks_errored = []
 
         self.is_active = False
 
@@ -470,7 +486,6 @@ class ToolJob(Job):
         exec_list = []
 
         previous_tool = None
-        head_of_task_branch = None
 
         while len(process_queue) > 0:
             t = process_queue.pop(0)  # From front
@@ -517,7 +532,7 @@ class ToolJob(Job):
                     ],
                 varso=['varso'],
                 language=t.language,
-                metadata={'tool': t.name},
+                metadata={'name': t.name, 'tool': t },
             )
 
             e.progress.connect(t.progress.emit)
@@ -526,6 +541,7 @@ class ToolJob(Job):
             # Store the tool for this Exec object; for dispatch calculation
             self.exec_tool_lookup[e] = tool
 
+
             watchers = [w.v for k, v in t.data.watchers.items() for w in v]
             for w in watchers:
                 if w not in process_done and w not in process_queue:
@@ -533,50 +549,64 @@ class ToolJob(Job):
                     # down at least one path once started
                     process_queue.insert(0, w)
 
-            logging.debug("previous_tool: %s" % previous_tool)
-            logging.debug("parents: %s" % parents)
 
-            if previous_tool is not None and previous_tool not in parents or len(parents) > 1:
-                # We are not a direct descendant, or we've got >1 dependency so
-                # we're going to have to start a new Task.
-                # Assign the task-dependency data here, using the existing map
-                # this is simplified somewhat, since any >1 parent results in a new task. We know
-                # that we *only* need the dependencies for the head-of-list
+            # Determine the position of the object
+            # Is before fork; if there is more than 1 tool watching this one
+            is_before_fork = len(watchers) > 1
+            # Is the end of a fork (watchers have > 1 parent)
+            is_end_of_fork = len([p for w in watchers for p in w.get_parents()]) > 1
 
-                if head_of_task_branch:
-                    dependencies = [ tool_task_lookup[ti] for ti in head_of_task_branch.get_parents() if ti in tool_task_lookup ]
-                else:
-                    dependencies = None
 
-                task = Task(self, execute=exec_list, dependencies=dependencies )
-                self.tasks_queued.append( task )
-                logging.debug("task created and stored.")
+            if previous_tool is not None and previous_tool not in parents:
+                # We are not a direct descendant we're going to have to start a new Task.
+                # There should be more effort to mitigate this in ordering of the task-queue
+                task = Task(self, execute=exec_list)
+                self.tasks_queued.append(task)
 
                 for pt in tool_list:
                     tool_task_lookup[pt] = task
 
                 exec_list = []
-
-
-            logging.debug("task_queue: %s" % self.tasks_queued)
-            logging.debug("process_done: %s" % self.tasks_queued)
+                tool_list = []
 
             # If this is the first execute object in the queue (list is empty), update it with the global vars for run
-            # and store the head of branch for later dependencies
+            # and store the head of branch tool for later dependencies
             if not exec_list:
                 e.varsi.update( global_varsi )
-                head_of_task_branch = t
 
+            tool_list.append(t)
             exec_list.append(e)
+
+            if is_before_fork or is_end_of_fork:
+                # We've got >1 children, we need to create a split task again
+                task = Task(self, execute=exec_list)
+                self.tasks_queued.append(task)
+
+                for pt in tool_list:
+                    tool_task_lookup[pt] = task
+
+                exec_list = []
+                tool_list = []
 
             process_done.append(t)
             previous_tool = t
 
-
         if exec_list: # Remainders
-            self.tasks_queued.append( Task(self, execute=exec_list ) )
+            task = Task(self, execute=exec_list)
+            self.tasks_queued.append( task )
 
         logging.debug("task_queue: %s" % self.tasks_queued)
+
+
+        # Apply the dependencies to each task: we need to do this at the end to avoid missing due to order
+        for t in self.tasks_queued:
+            if t.execute:
+                e0 = t.execute[0]
+                dependencies = []
+                for ti in e0.metadata['tool'].get_parents():
+                    if ti in tool_task_lookup:
+                        dependencies.append( tool_task_lookup[ti] )
+                t.dependencies = dependencies
 
         self.tool_list = process_done
 
@@ -618,6 +648,10 @@ class ToolJob(Job):
 
         # Remove this task from the queue
         self.tasks_queued.remove(t)
+        if set(t.dependencies) & set(self.tasks_errored):
+            # A dependency has errored, we can't run this task (ever); add to error
+            self.tasks_errored.append(t)
+            return False
 
         # Handle the exec here
         # We receive the kernel identifier from the Queue, so here we can determine whether the parent(s)
@@ -660,6 +694,7 @@ class ToolJob(Job):
             # Put this Execute instruction at the head of list
             t.execute.insert(0, e)
 
+        self.tasks_running.append(t)
         return t
 
 
@@ -741,7 +776,7 @@ class Queue(QObject):
                 break
         else:
             # Can't run now, we'll have to wait
-            self.jobs.insert(0, job)
+            self.jobs.append(0, job)
             return False
 
         # Initialise the job (this is a no-op if already running)
@@ -809,9 +844,6 @@ class Queue(QObject):
             # note that these may already exist; we need to check
             if self.client is None:
                 self.client = Client(timeout=5)
-
-                # FIXME: Inline plots are fine as long as we don't do it on the cluster+the interactive kernel; this results
-                # in an image cache being generated that breaks the pickle
 
             for k in self.client:
                 found = False
