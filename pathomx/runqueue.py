@@ -665,7 +665,6 @@ class ToolJob(Job):
         else:
             return False # Waiting
 
-
         # Handle the exec here
         # We receive the kernel identifier from the Queue, so here we can determine whether the parent(s)
         # tools were run on the same kernel. There are two scenarios here:
