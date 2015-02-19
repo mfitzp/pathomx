@@ -1,24 +1,10 @@
 # -*- coding: utf-8 -*-
-
-import os
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-import zipfile
-import tempfile
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
-
+from pathomx.tools import ExportDataTool
 from pathomx.data import DataDefinition
 from pathomx.plugins import ExportPlugin
-from pathomx.qt import *
 
 
-class ExportDataframe(ui.ExportDataApp):
+class ExportDataframe(ExportDataTool):
 
     name = "Export dataframe"
     export_filename_filter = "Comma separated values (*.csv);;Hierarchical Data Format (*.hdf);;Pickle (*.pickle);;JavaScript Object Notation (*.json)"
@@ -47,9 +33,9 @@ class ExportDataframe(ui.ExportDataApp):
         )
 
 
-class PasteToClipboard(ui.ExportDataApp):
+class PasteToClipboard(ExportDataTool):
 
-    name = "Copy to clipboard"
+    name = "Export to clipboard"
     icon = 'clipboard.png'
 
     notebook = 'export_clipboard.ipynb'

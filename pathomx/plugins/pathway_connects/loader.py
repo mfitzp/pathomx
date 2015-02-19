@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-import os
-
-import pathomx.ui as ui
-import pathomx.utils as utils
-import pathomx.db as db
-
+from pathomx.tools import AnalysisTool
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataDefinition
 from pathomx.views import D3CircosView
 
 
-class PathwayConnectsApp(ui.AnalysisApp):
+class PathwayConnectsApp(AnalysisTool):
 
     def __init__(self, *args, **kwargs):
         super(PathwayConnectsApp, self).__init__(*args, **kwargs)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import pathomx.ui as ui
-
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel, RegionConfigPanel
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
 from pathomx.qt import *
@@ -16,7 +16,7 @@ def icoshift(xt,  xp,  inter='whole',  n='f', scale=None, coshift_preprocessing=
 
 
 # Dialog box for Metabohunter search options
-class IcoshiftConfigPanel(ui.ConfigPanel):
+class IcoshiftConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(IcoshiftConfigPanel, self).__init__(*args, **kwargs)
@@ -152,7 +152,7 @@ filling: NaN, previous point
 '''
 
 
-class IcoshiftApp(ui.IPythonApp):
+class IcoshiftApp(BaseTool):
 
     notebook = 'icoshift_.ipynb'
     shortname = 'icoshift_'
@@ -195,7 +195,7 @@ class IcoshiftApp(ui.IPythonApp):
         })
 
         self.addConfigPanel(IcoshiftConfigPanel, 'Settings')
-        self.addConfigPanel(ui.RegionConfigPanel, 'Regions')
+        self.addConfigPanel(RegionConfigPanel, 'Regions')
 
 
 class Icoshift(ProcessingPlugin):

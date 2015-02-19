@@ -1,29 +1,19 @@
 # -*- coding: utf-8 -*-
-import os
 
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
+from pathomx.ui import SimpleFileOpenConfigPanel
+from pathomx.tools import BaseTool
 
-import numpy as np
-
-import zipfile
-import tempfile
-
-import pathomx.utils as utils
-import pathomx.ui as ui
-import pathomx.db as db
 
 from pathomx.plugins import ImportPlugin
 
 
-class PRIDEConfigPanel(ui.SimpleFileOpenConfigPanel):
+class PRIDEConfigPanel(SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.zip);;Zipped PRIDE data files (*.*);;All files (*.*)"
     description = "Import experimental data from PRIDE experimental datasets"
 
 
-class ImportPRIDETool(ui.GenericTool):
+class ImportPRIDETool(BaseTool):
 
     shortname = 'pride'
     autoconfig_name = "{filename}"

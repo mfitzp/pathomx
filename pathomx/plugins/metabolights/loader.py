@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
-import os
 
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
 
-import numpy as np
-
-import pathomx.utils as utils
-import pathomx.ui as ui
-import pathomx.db as db
+from pathomx.tools import BaseTool
+from pathomx.ui import SimpleFileOpenConfigPanel
 
 from pathomx.plugins import ImportPlugin
 
 
-class MetabolightsConfigPanel(ui.SimpleFileOpenConfigPanel):
+class MetabolightsConfigPanel(SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.csv);;Comma Separated Values (*.csv);;All files (*.*)"
     description = "Open experimental data from Metabolights experimental datasets"
 
 
-class ImportMetabolightsApp(ui.GenericTool):
+class ImportMetabolightsApp(BaseTool):
 
     shortname = 'metabolights'
     autoconfig_name = "{filename}"

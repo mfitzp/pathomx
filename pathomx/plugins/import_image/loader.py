@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os
 
+from pathomx.tools import BaseTool
 from pathomx.plugins import ImportPlugin
-
-from PIL import Image
-
 from pathomx.qt import *
+from pathomx.ui import ConfigPanel
 
-import pathomx.ui as ui
-import pathomx.utils as utils
 
 COLORSPACES = {
     'None (use image default)': None,
@@ -27,7 +23,7 @@ COLORSPACES = {
 }
 
 
-class ImportImageConfigPanel(ui.ConfigPanel):
+class ImportImageConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ImportImageConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -66,7 +62,7 @@ X Bitmap (*.xbm);;X Pixmap (*.xpm);;All files (*.*)""", description="Open image 
         self.finalise()
 
 
-class ImportImageApp(ui.GenericTool):
+class ImportImageApp(BaseTool):
 
     shortname = 'import_image'
     autoconfig_name = "{filename}"

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import pathomx.ui as ui
+from pathomx.tools import BaseTool, ExportDataTool
+from pathomx.ui import ConfigPanel, QFolderLineEdit
 
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options
-class BrukerImportConfigPanel(ui.ConfigPanel):
+class BrukerImportConfigPanel(ConfigPanel):
 
     autophase_algorithms = {
         'None': False,
@@ -21,7 +22,7 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Search path')
         grid = QGridLayout()
-        self.filename = ui.QFolderLineEdit(description='Select parent folder to import Bruker spectra')
+        self.filename = QFolderLineEdit(description='Select parent folder to import Bruker spectra')
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
@@ -105,7 +106,7 @@ class BrukerImportConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class BrukerImport(ui.GenericTool):
+class BrukerImport(BaseTool):
 
     name = "Import Bruker"
     shortname = 'bruker_import'
@@ -155,7 +156,7 @@ class BrukerImport(ui.GenericTool):
             self.autogenerate()
 
 
-class BrukerExport(ui.ExportDataApp):
+class BrukerExport(ExportDataTool):
 
     name = "Export Bruker"
     export_description = "Export Bruker fid format spectra"

@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os
 
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel
 from pathomx.plugins import ProcessingPlugin
-
-from PIL import Image
-
 from pathomx.qt import *
 
-import pathomx.ui as ui
-import pathomx.utils as utils
 
 STAIN_TYPES = {
     'Hematoxylin + Eosin + DAB': 'hed_from_rgb',
@@ -26,7 +22,7 @@ STAIN_TYPES = {
 }
 
 
-class SeparateStainsConfigPanel(ui.ConfigPanel):
+class SeparateStainsConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(SeparateStainsConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -49,7 +45,7 @@ class SeparateStainsConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class SeperateStainsApp(ui.GenericTool):
+class SeperateStainsApp(BaseTool):
 
     name = "Separate Stains"
 

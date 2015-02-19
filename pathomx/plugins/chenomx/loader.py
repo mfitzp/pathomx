@@ -1,26 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-
-import pathomx.ui as ui
-
-import pathomx.utils as utils
-
+from pathomx.ui import SimpleFileOpenConfigPanel
+from pathomx.tools import BaseTool
 from pathomx.plugins import ImportPlugin
 
 
-class ChenomxConfigPanel(ui.SimpleFileOpenConfigPanel):
+class ChenomxConfigPanel(SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.csv *.txt *.tsv);;All files (*.*)"
     description = "Open a mapped metabolite file from Chenomx"
 
 
-class ChenomxApp(ui.GenericTool):
+class ChenomxApp(BaseTool):
 
     shortname = 'chenomx'
     autoconfig_name = "{filename}"

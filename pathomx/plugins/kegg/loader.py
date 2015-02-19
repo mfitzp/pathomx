@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-import os
-import re
 
-import pathomx.ui as ui
-import pathomx.utils as utils
+from pathomx.tools import AnalysisTool
+from pathomx.ui import remoteQueryDialog
 
 from pathomx.data import DataDefinition
-from pathomx.views import HTMLView
 from pathomx.plugins import VisualisationPlugin
 from pathomx.qt import *
-
-import numpy as np
 
 try:
     import xml.etree.cElementTree as et
@@ -20,7 +15,7 @@ except ImportError:
 
 # Class for data visualisations using KEGG formatted pathways
 # Supports loading from KEGG site
-class KEGGPathwayApp(ui.AnalysisApp):
+class KEGGPathwayApp(AnalysisTool):
 
     notebook = 'kegg_pathway.ipynb'
     shortname = 'kegg_pathway'
@@ -60,7 +55,7 @@ class KEGGPathwayApp(ui.AnalysisApp):
         self.config.add_handler('kegg_pathway_id', self.kegg_pathway_t)
 
 
-class dialogWikiPathways(ui.remoteQueryDialog):
+class dialogWikiPathways(remoteQueryDialog):
     def __init__(self, parent=None, query_target=None, **kwargs):
         super(dialogWikiPathways, self).__init__(parent, query_target, **kwargs)
 

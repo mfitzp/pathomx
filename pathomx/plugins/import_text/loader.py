@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os
 
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel
 from pathomx.plugins import ImportPlugin
 
 import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
 
 from pathomx.qt import *
 
 import pathomx.ui as ui
-import pathomx.db as db
-
-import pathomx.utils as utils
 
 
-class ImportAdvancedConfigPanel(ui.ConfigPanel):
+class ImportAdvancedConfigPanel(ConfigPanel):
 
     config_quote_types = {
         'All': csv.QUOTE_ALL,
@@ -63,7 +57,7 @@ class ImportAdvancedConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ImportTextConfigPanel(ui.ConfigPanel):
+class ImportTextConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ImportTextConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -144,7 +138,7 @@ class ImportTextConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ImportTextApp(ui.GenericTool):
+class ImportTextApp(BaseTool):
 
     shortname = 'import_text'
 

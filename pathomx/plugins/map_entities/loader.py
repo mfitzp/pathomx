@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
-#from __future__ import unicode_literals
 
-import os
-import copy
 
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel
 import pathomx.utils as utils
 
 from pathomx.data import DataDefinition
-from pathomx.views import TableView
-from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import IdentificationPlugin
 from pathomx.qt import *
 
@@ -54,7 +47,7 @@ def legacy_map_rev(x):
 
 
 # Dialog box for Metabohunter search options
-class MapEntityConfigPanel(ui.ConfigPanel):
+class MapEntityConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(MapEntityConfigPanel, self).__init__(*args, **kwargs)
@@ -70,7 +63,7 @@ class MapEntityConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MapEntityApp(ui.GenericTool):
+class MapEntityApp(BaseTool):
 
     name = "Map to Biocyc"
     notebook = 'map_to_biocyc.ipynb'

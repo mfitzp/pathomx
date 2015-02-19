@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
-import copy
 
-import numpy as np
-
+from pathomx.tools import BaseTool
 import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataDefinition
 
 
 # Graph data as a bar chart
-class BarTool(ui.AnalysisApp):
+class BarTool(BaseTool):
 
     name = "Bar"
     notebook = 'basic_plot_category_bar.ipynb'
@@ -39,7 +34,7 @@ class BarTool(ui.AnalysisApp):
 
 
 # Graph a spectra
-class SpectraTool(ui.IPythonApp):
+class SpectraTool(BaseTool):
 
     name = "Spectra"
     notebook = 'basic_plot_spectra.ipynb'
@@ -64,7 +59,7 @@ class SpectraTool(ui.IPythonApp):
 
 
 # Heatmap
-class HeatmapTool(ui.IPythonApp):
+class HeatmapTool(BaseTool):
 
     name = "Heatmap"
     notebook = 'basic_plot_heatmap.ipynb'
@@ -86,7 +81,7 @@ class HeatmapTool(ui.IPythonApp):
 
 
 # Graph a spectra
-class HistogramTool(ui.IPythonApp):
+class HistogramTool(BaseTool):
 
     name = "Histogram"
     notebook = 'basic_plot_histogram.ipynb'

@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
-
-from pathomx.ui import GenericTool
+from pathomx.tools import BaseTool
 from pathomx.plugins import ScriptingPlugin
 from pathomx.data import DataDefinition
-from pathomx.qt import *
 
 
-class CustomScriptTool(GenericTool):
+class CustomScriptTool(BaseTool):
     def __init__(self, *args, **kwargs):
         super(CustomScriptTool, self).__init__(*args, **kwargs)
 

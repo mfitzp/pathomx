@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import os
-import re
-import xml.etree.cElementTree as et
-from collections import defaultdict
 
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
+from pathomx.ui import ConfigPanel, GenericDialog
+from pathomx.tools import BaseTool
 import pathomx.utils as utils
 
 from pathomx.data import DataDefinition
@@ -17,7 +11,7 @@ from pathomx.plugins import FilterPlugin
 from pathomx.qt import *
 
 
-class FilterConfigPanel(ui.ConfigPanel):
+class FilterConfigPanel(ConfigPanel):
 
     def __init__(self, parent, *args, **kwargs):
         super(FilterConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -43,7 +37,7 @@ class FilterConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class FilterApp(ui.IPythonApp):
+class FilterApp(BaseTool):
 
     name = "Filter"
     shortname = 'filter'
@@ -72,7 +66,7 @@ class FilterApp(ui.IPythonApp):
 
 
 # Dialog box for Metabohunter search options
-class ReclassifyDialog(ui.GenericDialog):
+class ReclassifyDialog(GenericDialog):
 
     def __init__(self, parent=None, view=None, *args, **kwargs):
         super(ReclassifyDialog, self).__init__(parent=parent, *args, **kwargs)
@@ -102,7 +96,7 @@ class ReclassifyDialog(ui.GenericDialog):
 
 
 # Dialog box for Metabohunter search options
-class ReclassifyImportDialog(ui.GenericDialog):
+class ReclassifyImportDialog(GenericDialog):
 
     def __init__(self, parent=None, view=None, *args, **kwargs):
         super(ReclassifyImportDialog, self).__init__(parent=parent, *args, **kwargs)
@@ -122,7 +116,7 @@ class ReclassifyImportDialog(ui.GenericDialog):
 
 
 # Dialog box for Metabohunter search options
-class ReclassifyConfigPanel(ui.ConfigPanel):
+class ReclassifyConfigPanel(ConfigPanel):
 
     def __init__(self, parent, *args, **kwargs):
         super(ReclassifyConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -201,7 +195,7 @@ class ReclassifyConfigPanel(ui.ConfigPanel):
             return "\t\t"
 
         
-class ReclassifyTool(ui.IPythonApp):
+class ReclassifyTool(BaseTool):
 
     name = "Reclassify"
     notebook = 'reclassify.ipynb'

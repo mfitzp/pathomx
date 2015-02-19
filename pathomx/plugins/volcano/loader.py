@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from collections import defaultdict
-
-import os
-from copy import copy
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
+from pathomx.ui import ConfigPanel
+from pathomx.tools import BaseTool
 
 from pathomx.data import DataDefinition
 from pathomx.plugins import AnalysisPlugin
 from pathomx.qt import *
 
 
-class VolcanoConfigPanel(ui.ConfigPanel):
+class VolcanoConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(VolcanoConfigPanel, self).__init__(*args, **kwargs)
@@ -28,7 +21,7 @@ class VolcanoConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class VolcanoTool(ui.AnalysisApp):
+class VolcanoTool(BaseTool):
 
     name = "Volcano Plot"
     shortname = 'volcano'

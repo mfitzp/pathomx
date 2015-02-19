@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+
+from pathomx.tools import BaseTool
 from pathomx.plugins import ProcessingPlugin
-import pathomx.ui as ui
+from pathomx.ui import ConfigPanel, RegionConfigPanel
+
 
 from pathomx.data import DataDefinition, PandasDataDefinition
 from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options
-class SpectraNormConfigPanel(ui.ConfigPanel):
+class SpectraNormConfigPanel(ConfigPanel):
 
     algorithms = ['PQN', 'TSA']
 
@@ -26,7 +29,7 @@ class SpectraNormConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class SpectraNormApp(ui.IPythonApp):
+class SpectraNormApp(BaseTool):
 
     name = "Spectra normalisation"
     notebook = 'spectra_norm.ipynb'
@@ -59,7 +62,7 @@ class SpectraNormApp(ui.IPythonApp):
 
 
 # Dialog box for Metabohunter search options
-class PeakAdjConfigPanel(ui.ConfigPanel):
+class PeakAdjConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PeakAdjConfigPanel, self).__init__(*args, **kwargs)
@@ -133,7 +136,7 @@ class PeakAdjConfigPanel(ui.ConfigPanel):
             self._automated_update_config = False
 
 
-class PeakAdjApp(ui.IPythonApp):
+class PeakAdjApp(BaseTool):
 
     name = "Peak Scale & Shift"
     notebook = 'spectra_peakadj.ipynb'
@@ -174,7 +177,7 @@ class PeakAdjApp(ui.IPythonApp):
 
 
 # Dialog box for Metabohunter search options
-class PeakPickConfigPanel(ui.ConfigPanel):
+class PeakPickConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PeakPickConfigPanel, self).__init__(*args, **kwargs)
@@ -215,7 +218,7 @@ class PeakPickConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class PeakPickingApp(ui.IPythonApp):
+class PeakPickingApp(BaseTool):
 
     name = "Peak picking"
     notebook = 'spectra_peak_pick.ipynb'
@@ -250,7 +253,7 @@ class PeakPickingApp(ui.IPythonApp):
 
 
 # Dialog box for Metabohunter search options
-class BinningConfigPanel(ui.ConfigPanel):
+class BinningConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(BinningConfigPanel, self).__init__(*args, **kwargs)
@@ -278,7 +281,7 @@ class BinningConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class BinningApp(ui.IPythonApp):
+class BinningApp(BaseTool):
 
     name = "Spectra Binning (1D)"
     notebook = 'spectra_binning.ipynb'
@@ -312,7 +315,7 @@ class BinningApp(ui.IPythonApp):
 
 
 # Dialog box for Metabohunter search options
-class BaselineCorrectionConfigPanel(ui.ConfigPanel):
+class BaselineCorrectionConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(BaselineCorrectionConfigPanel, self).__init__(*args, **kwargs)
@@ -430,7 +433,7 @@ class BaselineCorrectionConfigPanel(ui.ConfigPanel):
                 v.hide()
 
 
-class BaselineCorrectionTool(ui.IPythonApp):
+class BaselineCorrectionTool(BaseTool):
 
     name = "Baseline correction"
     description = "Baseline correct NMR spectra"
@@ -477,7 +480,7 @@ class BaselineCorrectionTool(ui.IPythonApp):
         self.addConfigPanel(BaselineCorrectionConfigPanel, 'Settings')
 
 
-class SpectraExclusionTool(ui.IPythonApp):
+class SpectraExclusionTool(BaseTool):
 
     name = "Spectra Exclusion"
     description = "Exclude regions of an NMR spectra"
@@ -507,7 +510,7 @@ class SpectraExclusionTool(ui.IPythonApp):
             ],
         })
 
-        self.addConfigPanel(ui.RegionConfigPanel, 'Regions')
+        self.addConfigPanel(RegionConfigPanel, 'Regions')
 
 
 class Spectra(ProcessingPlugin):

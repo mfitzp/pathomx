@@ -1,17 +1,11 @@
-import os
-import copy
-import numpy as np
 
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
+from pathomx.tools import BaseTool
 
 from pathomx.data import DataDefinition
-from pathomx.utils import UnicodeReader, UnicodeWriter
 from pathomx.plugins import FilterPlugin
 
 
-class MergeApp(ui.IPythonApp):
+class MergeApp(BaseTool):
 
     notebook = 'merge.ipynb'
     shortname = 'merge'

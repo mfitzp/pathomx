@@ -2,13 +2,14 @@
 
 import os
 
-import pathomx.ui as ui
+from pathomx.tools import AnalysisTool
+from pathomx.ui import ConfigPanel
 from pathomx.plugins import AnalysisPlugin
 from pathomx.data import DataDefinition
 from pathomx.qt import *
 
 
-class TwoSampleConfigPanel(ui.ConfigPanel):
+class TwoSampleConfigPanel(ConfigPanel):
 
     def __init__(self, parent, *args, **kwargs):
         super(TwoSampleConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -41,7 +42,7 @@ class TwoSampleConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class TwoSampleT(ui.AnalysisApp):
+class TwoSampleT(AnalysisTool):
 
     name = "Two-sample t-test"
     shortname = 'two_sample_t'

@@ -1,23 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
-import copy
 
-import numpy as np
-import logging
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel
 
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
-from pathomx.views import D3SpectraView, D3DifferenceView, MplSpectraView, MplDifferenceView
 from pathomx.qt import *
-from pathomx.custom_exceptions import PathomxExternalResourceTimeoutException
 
 
-class NMRLabMetabolabTool(ui.IPythonApp):
+class NMRLabMetabolabTool(BaseTool):
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
@@ -44,7 +36,7 @@ class NMRLabMetabolabTool(ui.IPythonApp):
 
 
 # NMRLab BASELINE CORRECTION
-class BaselineConfigPanel(ui.ConfigPanel):
+class BaselineConfigPanel(ConfigPanel):
 
     baseline_alg = {
 #                 1: mean_bspts  & poly_bscorr (DEFAULT)
@@ -178,7 +170,7 @@ class BaselineMetabolabTool(NMRLabMetabolabTool):
 
 
 # NMRLab TMSP ALIGNMENT Tool
-class TMSPAlignConfigPanel(ui.ConfigPanel):
+class TMSPAlignConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(TMSPAlignConfigPanel, self).__init__(*args, **kwargs)
@@ -242,7 +234,7 @@ class TMSPAlignMetabolabTool(NMRLabMetabolabTool):
 
 
 # NMRLab Spectra ALIGNMENT Tool
-class SpectraAlignConfigPanel(ui.ConfigPanel):
+class SpectraAlignConfigPanel(ConfigPanel):
 
     algorithm = {
         'Min of differences ': 1,
@@ -323,7 +315,7 @@ class SpectraAlignMetabolabTool(NMRLabMetabolabTool):
 
 
 # NMRLab VARIANCE STABILISATION
-class VarianceStabilisationConfigPanel(ui.ConfigPanel):
+class VarianceStabilisationConfigPanel(ConfigPanel):
 
     algorithm = {
         'Auto scaling': 'autoscale',
@@ -418,7 +410,7 @@ class VarianceStabilisationMetabolabTool(NMRLabMetabolabTool):
 
 
 # NMRLab BINNING
-class BinningConfigPanel(ui.ConfigPanel):
+class BinningConfigPanel(ConfigPanel):
 
     algorithm = {
         'Auto scaling': 'autoscale',

@@ -4,15 +4,13 @@ from pathomx.plugins import AnalysisPlugin
 
 from collections import defaultdict
 
-import os
-import pathomx.ui as ui
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel, QBioCycPathwayTreeWidget
 import pathomx.utils as utils
 
 from pathomx.data import DataDefinition
-from pathomx.views import TableView
 from pathomx.qt import *
 
-import numpy as np
 from biocyc import biocyc
 biocyc.secondary_cache_paths.append(os.path.join(utils.scriptdir, 'database', 'biocyc'))
 
@@ -33,7 +31,7 @@ METAPATH_MINING_TARGETS = {
 
 
 # Dialog box for Metabohunter search options
-class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
+class PathwayMiningInExPathwayConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PathwayMiningInExPathwayConfigPanel, self).__init__(*args, **kwargs)
@@ -67,7 +65,7 @@ class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
         gb = QGroupBox(label)
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.label[label]['lw_pathways'] = ui.QBioCycPathwayTreeWidget([
+        self.label[label]['lw_pathways'] = QBioCycPathwayTreeWidget([
             'Biosynthesis',
             'Degradation',
             'Energy-Metabolism',
@@ -106,7 +104,7 @@ class PathwayMiningInExPathwayConfigPanel(ui.ConfigPanel):
 
 
 # Dialog box for Metabohunter search options
-class PathwayMiningConfigPanel(ui.ConfigPanel):
+class PathwayMiningConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PathwayMiningConfigPanel, self).__init__(*args, **kwargs)
@@ -138,7 +136,7 @@ class PathwayMiningConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class PathwayMiningApp(ui.AnalysisApp):
+class PathwayMiningApp(BaseTool):
 
     name = "Pathway Mining"
     legacy_inputs = {'input': 'input_1'}

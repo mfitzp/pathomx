@@ -1,29 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
-
-import pathomx.utils as utils
-
+from pathomx.ui import SimpleFileOpenConfigPanel
+from pathomx.tools import BaseTool
 from pathomx.plugins import ImportPlugin
-from pathomx.qt import *
-from pathomx.utils import UnicodeReader
 
 
-class GEOConfigPanel(ui.SimpleFileOpenConfigPanel):
+class GEOConfigPanel(SimpleFileOpenConfigPanel):
 
     filename_filter = "All compatible files (*.soft);;Simple Omnibus Format in Text (*.soft);;All files (*.*)"
     description = "Open experimental data from downloaded data"
 
 
-class GEOApp(ui.GenericTool):
+class GEOApp(BaseTool):
 
     shortname = 'geo'
     autoconfig_name = "{filename}"

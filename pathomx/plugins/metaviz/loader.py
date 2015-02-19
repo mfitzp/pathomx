@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
-from optparse import Values, OptionParser
 from collections import defaultdict
-import os
-import sys
-import re
-import math
-import pydot
-#import networkx as nx
-import numpy as np
-import copy
 
-import operator
-import pathomx.ui as ui
+from pathomx.ui import ConfigPanel, QBioCycPathwayTreeWidget
+from pathomx.tools import BaseTool
+
 import pathomx.utils as utils
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataDefinition, PandasDataDefinition
-from pathomx.views import SVGView
 from pathomx.qt import *
 
 from biocyc import biocyc
@@ -24,7 +15,7 @@ biocyc.secondary_cache_paths.append(os.path.join(utils.scriptdir, 'database', 'b
 
 
 # Dialog box for Metabohunter search options
-class MetaVizPathwayConfigPanel(ui.ConfigPanel):
+class MetaVizPathwayConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(MetaVizPathwayConfigPanel, self).__init__(*args, **kwargs)
@@ -63,7 +54,7 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
         gb = QGroupBox(label)
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.label[label]['lw_pathways'] = ui.QBioCycPathwayTreeWidget([
+        self.label[label]['lw_pathways'] = QBioCycPathwayTreeWidget([
             'Biosynthesis',
             'Degradation',
             'Energy-Metabolism',
@@ -102,7 +93,7 @@ class MetaVizPathwayConfigPanel(ui.ConfigPanel):
 
 
 # Dialog box for Metabohunter search options
-class MetaVizViewConfigPanel(ui.ConfigPanel):
+class MetaVizViewConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(MetaVizViewConfigPanel, self).__init__(*args, **kwargs)
@@ -175,7 +166,7 @@ class MetaVizViewConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MetaVizApp(ui.AnalysisApp):
+class MetaVizApp(BaseTool):
 
     name = "MetaboViz"
     notebook = 'metaviz.ipynb'

@@ -5,7 +5,8 @@ from pathomx.plugins import AnalysisPlugin
 from itertools import combinations
 import pandas as pd
 
-import pathomx.ui as ui
+from pathomx.tools import BaseTool
+from pathomx.ui import GenericDialog, ConfigPanel, QListWidgetAddRemove
 
 from pathomx.data import DataDefinition
 from pathomx.qt import *
@@ -15,8 +16,7 @@ def make_label_for_entry(*args):
     return '\t'.join(map(str, [s for s in args if s is not None]))
 
 
-# Dialog box for Metabohunter search options
-class RegressionDialog(ui.GenericDialog):
+class RegressionDialog(GenericDialog):
 
     def __init__(self, tool, *args, **kwargs):
         super(RegressionDialog, self).__init__(tool.w, *args, **kwargs)
@@ -90,7 +90,7 @@ class RegressionDialog(ui.GenericDialog):
 
 
 # Dialog box for Metabohunter search options
-class RegressionConfigPanel(ui.ConfigPanel):
+class RegressionConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(RegressionConfigPanel, self).__init__(*args, **kwargs)
@@ -102,7 +102,7 @@ class RegressionConfigPanel(ui.ConfigPanel):
         gb = QGroupBox('Regressions')
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.lw_variables = ui.QListWidgetAddRemove()
+        self.lw_variables = QListWidgetAddRemove()
         self.lw_variables.setSelectionMode(QAbstractItemView.ExtendedSelection)
         vbox.addWidget(self.lw_variables)
 
@@ -183,7 +183,7 @@ class RegressionConfigPanel(ui.ConfigPanel):
         return s
 
 
-class RegressionTool(ui.AnalysisApp):
+class RegressionTool(BaseTool):
 
     name = "Regression"
     legacy_inputs = {'input': 'input_data'}

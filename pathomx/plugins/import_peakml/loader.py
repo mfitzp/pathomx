@@ -1,28 +1,18 @@
 # -*- coding: utf-8 -*-
-import os
 
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import base64
-
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
+from pathomx.tools import BaseTool
+from pathomx.ui import SimpleFileOpenConfigPanel
 
 from pathomx.plugins import ImportPlugin
 
 
-class PeakMLConfigPanel(ui.SimpleFileOpenConfigPanel):
+class PeakMLConfigPanel(SimpleFileOpenConfigPanel):
 
     filename_filter = "PeakML (MzMatch) Data Files (*.peakml);;All files (*.*)"
     description = "Open experimental data from PeakML data files"
 
 
-class ImportPeakMLApp(ui.GenericTool):
+class ImportPeakMLApp(BaseTool):
 
     shortname = 'import_peakml'
     autoconfig_name = "{filename}"

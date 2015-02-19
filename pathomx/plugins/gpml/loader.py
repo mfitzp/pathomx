@@ -1,52 +1,20 @@
 # -*- coding: utf-8 -*-
 
-# Renderer for GPML as SVG
-from gpml2svg import gpml2svg
-
-import os
-
-import pathomx.ui as ui
-import pathomx.db as db
-
-import pathomx.utils as utils
+from pathomx.tools import BaseTool
+from pathomx.ui import remoteQueryDialog
 
 from pathomx.plugins import VisualisationPlugin
 from pathomx.data import DataDefinition
 from pathomx.views import HTMLView
 from pathomx.qt import *
 
-import numpy as np
-
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
-import logging
 
-
-class GPMLView(HTMLView):
-
-    def generate(self, gpml=None, node_colors=None):
-
-        # Add our urls to the defaults
-        xref_urls = {
-            'MetaCyc compound': 'pathomx://db/compound/%s/view',
-            'MetaCyc gene': 'pathomx://db/gene/%s/view',
-            'MetaCyc protein': 'pathomx://db/protein/%s/view',
-            'WikiPathways': 'pathomx://wikipathway/%s/import',
-        }
-        if gpml:
-            svg, metadata = gpml2svg.gpml2svg(gpml, xref_urls=xref_urls, xref_synonyms_fn=self.w.get_extended_xref_via_unification_list, node_colors=node_colors)  # Add Pathomx required customisations here
-            self.setHtml(svg, QUrl("~"))
-
-
-            #self.v.change_name.emit( metadata['Name'] )
-
-
-            # Class for data visualisations using GPML formatted pathways
-            # Supports loading from local file and WikiPathways
-class GPMLPathwayApp(ui.AnalysisApp):
+class GPMLPathwayApp(BaseTool):
 
     notebook = 'gpml.ipynb'
     shortname = 'gpml'
@@ -137,7 +105,7 @@ class GPMLPathwayApp(ui.AnalysisApp):
                 self.config.set('gpml_wikipathways_id', pathway_id)
 
 
-class dialogWikiPathways(ui.remoteQueryDialog):
+class dialogWikiPathways(remoteQueryDialog):
     def __init__(self, parent, request_url=None, request_key=None):
         super(dialogWikiPathways, self).__init__(parent, request_url, request_key)
 

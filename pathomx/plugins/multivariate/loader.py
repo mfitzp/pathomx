@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-
+from pathomx.tools import BaseTool
+from pathomx.ui import ConfigPanel
 from pathomx.plugins import AnalysisPlugin
-
-import pathomx.ui as ui
 
 from pathomx.data import DataDefinition
 from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options
-class PLSDAConfigPanel(ui.ConfigPanel):
+class PLSDAConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PLSDAConfigPanel, self).__init__(*args, **kwargs)
@@ -42,7 +41,7 @@ class PLSDAConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class PLSDATool(ui.AnalysisApp):
+class PLSDATool(BaseTool):
 
     name = "PLS-DA"
     notebook = 'pls_da.ipynb'
@@ -77,7 +76,7 @@ class PLSDATool(ui.AnalysisApp):
 
 
 # Dialog box for Metabohunter search options
-class PCAConfigPanel(ui.ConfigPanel):
+class PCAConfigPanel(ConfigPanel):
 
     def __init__(self, *args, **kwargs):
         super(PCAConfigPanel, self).__init__(*args, **kwargs)
@@ -102,7 +101,7 @@ class PCAConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class PCATool(ui.IPythonApp):
+class PCATool(BaseTool):
 
     name = "PCA"
     notebook = 'pca.ipynb'

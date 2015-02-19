@@ -1,28 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import os
-import csv
-import xml.etree.cElementTree as et
-from collections import defaultdict
-
-import numpy as np
-import zipfile
-import tempfile
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
-
+from pathomx.tools import BaseTool
 from pathomx.plugins import ImportPlugin
-from pathomx.qt import *
+from pathomx.ui import SimpleFileOpenConfigPanel
 
 
-class BMLNMRConfigPanel(ui.SimpleFileOpenConfigPanel):
+class BMLNMRConfigPanel(SimpleFileOpenConfigPanel):
     filename_filter = "Compressed Files (*.zip);;All files (*.*)"
     description = "Open BML-NMR FIMA .zip output"
 
 
-class BMLNMRApp(ui.GenericTool):
+class BMLNMRApp(BaseTool):
 
     shortname = 'bml_nmr'
     autoconfig_name = "{filename}"

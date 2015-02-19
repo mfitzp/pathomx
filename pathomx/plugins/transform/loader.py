@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import pathomx.ui as ui
 
+from pathomx.tools import BaseTool
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
 
 
-class TransformApp(ui.GenericTool):
+class TransformApp(BaseTool):
 
     legacy_inputs = {'input': 'input_data'}
     legacy_outputs = {'output': 'output_data'}
@@ -71,7 +72,7 @@ class TransformTranspose(TransformApp):
     shortname = 'transpose'
 
 
-class TransformSplitImaginary(ui.GenericTool):
+class TransformSplitImaginary(BaseTool):
     name = "Split real/imaginary numbers"
     notebook = 'split_imaginary.ipynb'
     shortname = 'split_imaginary'

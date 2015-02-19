@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 # Pathomx classes
 from . import utils
-from . import db
+#from . import ui
 
 import numpy as np
 import pandas as pd
@@ -85,7 +85,7 @@ class ViewDockWidget( QDockWidget ):
 
 # Handler for the views available for each app. Extended implementation of the QTabWidget
 # to provide extra features, e.g. refresh handling, auto focus-un-focus, status color-hinting
-class ViewManager( QTabWidget ):
+class ViewManager( QMainWindow ):
     """ 
     Manager class for the tool views.
     
@@ -104,16 +104,21 @@ class ViewManager( QTabWidget ):
         super(ViewManager, self).__init__()
         
         #self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding )
-            
-        self.setDocumentMode(True)
-        self.setTabsClosable(False)
-        self.setTabPosition( QTabWidget.North)
+
+        self.tw = QTabWidget()
+        self.toolbars = {}
+
+        self.setCentralWidget(self.tw)
+
+        self.tw.setDocumentMode(True)
+        self.tw.setTabsClosable(False)
+        self.tw.setTabPosition( QTabWidget.North)
 
         self.popoutbtn = QPushButton(QIcon(os.path.join(utils.scriptdir, 'icons', 'external-small.png')),"")
         self.popoutbtn.setFlat(True)
         self.popoutbtn.clicked.connect(self.float_current_view)
-        self.setCornerWidget(self.popoutbtn)
-        self.setMovable(True)
+        self.tw.setCornerWidget(self.popoutbtn)
+        self.tw.setMovable(True)
 
         self._auto_delete_on_no_data = auto_delete_on_no_data
         
@@ -126,15 +131,16 @@ class ViewManager( QTabWidget ):
         self.source_data_updated.connect(self.onRefreshAll)
         self.style_updated.connect(self.onRefreshAll)
 
+
         self.t = parent
 
     def float_current_view(self):
         # Convert the currently selected view (Tab) into a floating DockWidget
-        n = self.currentIndex()
-        k = self.tabText( n )
-        w = self.currentWidget()
+        n = self.tw.currentIndex()
+        k = self.tw.tabText( n )
+        w = self.tw.currentWidget()
 
-        dw = ViewDockWidget("%s (%s)" % (self.t.name, k), manager=self, name=k, color=self.tabBar().tabTextColor(n) )
+        dw = ViewDockWidget("%s (%s)" % (self.t.name, k), manager=self, name=k, color=self.tw.tabBar().tabTextColor(n) )
         dw.setMinimumWidth(300)
         dw.setMinimumHeight(300)
         dw.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
@@ -179,23 +185,23 @@ class ViewManager( QTabWidget ):
             else:
                 t = self.indexOf( self.views[name] )
                 self.views[name].deleteLater()
-                self.removeTab(t)
-                self.insertTab(t, widget, name, **kwargs)
+                self.tw.removeTab(t)
+                self.tw.insertTab(t, widget, name, **kwargs)
         else:
-            t = super(ViewManager, self).addTab(widget, name, **kwargs)
+            t = self.tw.addTab(widget, name, **kwargs)
         self.views[name] = widget
         
         if color and t:
-            self.tabBar().setTabTextColor(t, color)
+            self.tw.tabBar().setTabTextColor(t, color)
 
         return t
 
     def dock_floating_view(self, widget, name, color=None):
         del self.floating_views[name]
-        t = self.addTab(widget, name)
+        t = self.tw.addTab(widget, name)
         if color:
-            self.tabBar().setTabTextColor(t, color)
-        self.setCurrentWidget(widget)
+            self.tw.tabBar().setTabTextColor(t, color)
+        self.tw.setCurrentWidget(widget)
 
 
     def get_type(self, name):
@@ -220,7 +226,7 @@ class ViewManager( QTabWidget ):
 
                     # Failure; disable the tab or delete
                     if k not in self.floating_views:
-                        self.setTabEnabled( self.indexOf(w), False)
+                        self.tw.setTabEnabled( self.tw.indexOf(w), False)
 
                     if self._auto_delete_on_no_data:
                         to_delete.append( k )
@@ -228,7 +234,7 @@ class ViewManager( QTabWidget ):
                 else:
                     # Success; enable the tab
                     if k not in self.floating_views:
-                        self.setTabEnabled( self.indexOf(w), True)
+                        self.tw.setTabEnabled( self.tw.indexOf(w), True)
 
         # Do after so don't upset ordering on loop
         for k in to_delete:
@@ -238,12 +244,12 @@ class ViewManager( QTabWidget ):
 
             else:
                 w = self.views[k]
-                n = self.indexOf(w)
+                n = self.tw.indexOf(w)
 
                 del self.views[k]
                 w.deleteLater()
 
-                self.removeTab(n)
+                self.tw.removeTab(n)
 
 
         self.updated.emit()
@@ -254,6 +260,9 @@ class ViewManager( QTabWidget ):
 
     def process(self, **kwargs):
         pass
+
+
+
 
 
 class DataViewManager(ViewManager):
@@ -327,6 +336,111 @@ class ViewViewManager(ViewManager):
         self.data = result
 
         return unprocessed
+
+
+    def addFigureToolBar(self):
+        t = self.addToolBar('Figure')
+        t.tool = self
+        t.setIconSize(QSize(16, 16))
+
+        export_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Export current figure as image…'), self)
+        export_imageAction.setStatusTip(tr('Export figure to image'))
+        export_imageAction.triggered.connect(self.onSaveImage)
+        t.addAction(export_imageAction)
+
+        t.addSeparator()
+        toolitems = (
+            ('Home', 'Reset original view', 'home.png', 'home'),
+            ('Back', 'Back to  previous view', 'back.png', 'back'),
+            ('Forward', 'Forward to next view', 'forward.png', 'forward'),
+            ('Pan', 'Pan axes with left mouse, zoom with right', 'move.png', 'pan'),
+            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect.png', 'zoom'),
+        )
+
+        t._mpl_specific_actions = []
+        t._checkable_actions = {}
+        t.modeActionGroup = QActionGroup(t)
+
+        for text, tooltip_text, image_file, callback in toolitems:
+            act = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', image_file)), text, self)
+
+            def make_callback(callback):
+                return lambda e: self.dispatchMplEvent(e, callback)
+            act.triggered.connect(make_callback(callback))
+
+            t._mpl_specific_actions.append(act)
+
+            if callback in ['zoom', 'pan']:
+                act.setCheckable(True)
+                t._checkable_actions[callback] = act
+                act.setActionGroup(t.modeActionGroup)
+
+            if tooltip_text is not None:
+                act.setToolTip(tooltip_text)
+
+            act.setEnabled(False)  # Disable by default; nonstandard
+            t.addAction(act)
+
+        # Add custom toolbar option for selecting regions of matplotlib plots
+        select_regionAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'zone-select.png')), tr('Select regions from plot…'), self)
+        select_regionAction.setCheckable(True)
+        select_regionAction.setStatusTip(tr('Select regions in current plot'))
+        select_regionAction.triggered.connect(make_callback('select_region'))
+        t.addAction(select_regionAction)
+        t._checkable_actions['select_region'] = select_regionAction
+        select_regionAction.setActionGroup(t.modeActionGroup)
+        select_regionAction.setEnabled(False)
+
+        t._mpl_selection_region_action = select_regionAction
+
+        self.tw.currentChanged.connect(self.onMplToolBarCanvasChanged)
+
+        self.toolbars['figure'] = t
+
+    def dispatchMplEvent(self, e, callback):
+        selected_view = self.tw.widget(self.tw.currentIndex())
+        if selected_view.is_mpl_toolbar_enabled:
+            getattr(selected_view.navigation, callback)(e)
+
+    def onMplToolBarCanvasChanged(self, w):
+        selected_view = self.tw.widget(w)
+        if selected_view and hasattr(selected_view, 'is_mpl_toolbar_enabled') and selected_view.is_mpl_toolbar_enabled:
+            # Reset buttons to current view state for the selected tabs' Canvas
+            for c, m in [('zoom', 'ZOOM'), ('pan', 'PAN')]:
+                self.toolbars['figure']._checkable_actions[c].setChecked(selected_view.navigation._active == m)
+
+            for act in self.toolbars['figure']._mpl_specific_actions:
+                act.setEnabled(True)
+
+            if self.t.config.get('selected_data_regions') is not None:
+                self.toolbars['figure']._mpl_selection_region_action.setEnabled(True)
+
+            selected_view.navigation.add_region_callback = self.onAddRegion
+            # Pass these values for the region selection
+        else:
+            for act in self.toolbars['figure']._mpl_specific_actions:
+                act.setEnabled(False)
+            self.toolbars['figure']._mpl_selection_region_action.setEnabled(False)
+
+    def onAddRegion(self, *args):
+        selected_view = self.tw.widget(self.tw.currentIndex())
+        if selected_view and self.t.config.get('selected_data_regions') is not None:
+            # FIXME: Copy; list mutable will fudge config - fix in pyqtconfig
+            current_regions = self.t.config.get('selected_data_regions')[:]
+            current_regions.append(tuple([selected_view.name] + list(args)))
+            self.t.config.set('selected_data_regions', current_regions)
+
+    def onSaveImage(self):
+        # Get currently selected webview
+        cw = self.tw.currentWidget()
+
+        # Load dialog for image export dimensions and resolution
+        # TODO: dialog!
+        sizedialog = ui.ExportImageDialog(self, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save)
+        ok = sizedialog.exec_()
+        if ok:
+            cw.saveAsImage(sizedialog)
+
 
 
 class BaseView(object):

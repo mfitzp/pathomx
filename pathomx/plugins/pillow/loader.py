@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os
 
 from pathomx.plugins import ProcessingPlugin
 
-from PIL import Image
-
 from pathomx.qt import *
+from pathomx.ui import ConfigPanel, QColorButton
+from pathomx.tools import BaseTool
 
-import pathomx.ui as ui
-import pathomx.utils as utils
 from pathomx.data import ImageDataDefinition
 
 COLORSPACES = {
@@ -28,7 +25,7 @@ COLORSPACES = {
 }
 
 
-class EnhanceConfigPanel(ui.ConfigPanel):
+class EnhanceConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(EnhanceConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -77,7 +74,7 @@ class EnhanceConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class AdjustApp(ui.GenericTool):
+class AdjustApp(BaseTool):
 
     name = "Image Adjust"
     shortname = 'adjust'
@@ -107,7 +104,7 @@ class AdjustApp(ui.GenericTool):
         )
 
 
-class ChopsConfigPanel(ui.ConfigPanel):
+class ChopsConfigPanel(ConfigPanel):
     operation_types = {
         'Add (Modulo)': 'add_modulo',
         'Darker': 'darker',
@@ -140,7 +137,7 @@ class ChopsConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ChopsApp(ui.GenericTool):
+class ChopsApp(BaseTool):
 
     name = "Channel Operations"
     shortname = 'chops'
@@ -163,7 +160,7 @@ class ChopsApp(ui.GenericTool):
         self.data.add_output('output_image')
 
 
-class InvertApp(ui.GenericTool):
+class InvertApp(BaseTool):
 
     name = "Invert Image"
     shortname = 'invert'
@@ -185,7 +182,7 @@ class InvertApp(ui.GenericTool):
         )
 
 
-class FilterConfigPanel(ui.ConfigPanel):
+class FilterConfigPanel(ConfigPanel):
     filter_types = {
         'Contour': 'contour',
         'Detail': 'detail',
@@ -218,7 +215,7 @@ class FilterConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class FilterApp(ui.GenericTool):
+class FilterApp(BaseTool):
 
     name = "Basic Filter"
     shortname = 'filter'
@@ -246,7 +243,7 @@ class FilterApp(ui.GenericTool):
 
 
 # Dialog box for Metabohunter search options
-class ColorspaceConfigPanel(ui.ConfigPanel):
+class ColorspaceConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ColorspaceConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -269,7 +266,7 @@ class ColorspaceConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ColorspaceApp(ui.GenericTool):
+class ColorspaceApp(BaseTool):
 
     name = "Convert Colorspace"
     shortname = 'colorspace'
@@ -297,7 +294,7 @@ class ColorspaceApp(ui.GenericTool):
         )
 
 
-class HistogramApp(ui.GenericTool):
+class HistogramApp(BaseTool):
 
     name = "Image Histogram"
     shortname = 'histogram'
@@ -320,7 +317,7 @@ class HistogramApp(ui.GenericTool):
         )
 
 
-class ColorizeConfigPanel(ui.ConfigPanel):
+class ColorizeConfigPanel(ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ColorizeConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -330,12 +327,12 @@ class ColorizeConfigPanel(ui.ConfigPanel):
         gb = QGroupBox('Colorize')
         grid = QGridLayout()
 
-        self.cb_black = ui.QColorButton()
+        self.cb_black = QColorButton()
         grid.addWidget(QLabel('Black'), 0, 0)
         grid.addWidget(self.cb_black, 0, 1)
         self.config.add_handler('black', self.cb_black)
 
-        self.cb_white = ui.QColorButton()
+        self.cb_white = QColorButton()
         grid.addWidget(QLabel('White'), 1, 0)
         grid.addWidget(self.cb_white, 1, 1)
         self.config.add_handler('white', self.cb_white)
@@ -347,7 +344,7 @@ class ColorizeConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class ColorizeApp(ui.GenericTool):
+class ColorizeApp(BaseTool):
 
     name = "Colorize"
     shortname = 'colorize'

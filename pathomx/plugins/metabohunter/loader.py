@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import pathomx.ui as ui
+from pathomx.ui import ConfigPanel
+from pathomx.tools import BaseTool
 
 from pathomx.plugins import IdentificationPlugin
 from pathomx.data import DataDefinition
@@ -8,7 +9,7 @@ from pathomx.qt import *
 
 
 # Dialog box for Metabohunter search options
-class MetaboHunterConfigPanel(ui.ConfigPanel):
+class MetaboHunterConfigPanel(ConfigPanel):
 
     options = {
     'Metabotype': {
@@ -90,7 +91,7 @@ class MetaboHunterConfigPanel(ui.ConfigPanel):
         self.finalise()
 
 
-class MetaboHunterApp(ui.GenericTool):
+class MetaboHunterApp(BaseTool):
 
     name = "MetaboHunter"
     shortname = 'metabohunter'

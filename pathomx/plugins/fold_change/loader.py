@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from collections import defaultdict
-
-import os
-from copy import copy
-import numpy as np
-
-import pathomx.ui as ui
-import pathomx.db as db
-import pathomx.utils as utils
-
+from pathomx.tools import BaseTool
 from pathomx.data import DataDefinition
 from pathomx.plugins import AnalysisPlugin
 from pathomx.qt import *
 
 
-class FoldChangeApp(ui.AnalysisApp):
+class FoldChangeApp(BaseTool):
 
     name = "Fold Change"
     notebook = 'fold_change.ipynb'

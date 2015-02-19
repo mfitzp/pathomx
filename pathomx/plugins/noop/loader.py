@@ -2,13 +2,12 @@
 
 import os
 
-import pathomx.ui as ui
+from pathomx.tools import BaseTool
 from pathomx.plugins import FilterPlugin
 from pathomx.data import DataDefinition
-from pathomx.qt import *
 
 
-class NOOPApp(ui.IPythonApp):
+class NOOPApp(BaseTool):
 
     name = "NOOP"
     notebook = 'noop.ipynb'
