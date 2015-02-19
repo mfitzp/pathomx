@@ -3,7 +3,6 @@
 from pathomx.ui import SimpleFileOpenConfigPanel
 from pathomx.tools import BaseTool
 
-
 from pathomx.plugins import ImportPlugin
 
 

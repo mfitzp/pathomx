@@ -147,7 +147,6 @@ class BaseTool(QObject):
 
         self.logger.debug('Register internal url handler...')
         self.register_url_handler(self.default_url_handler)
-
         #self.w.setCentralWidget(self.views)
 
         self.logger.debug('Setup config manager...')
@@ -540,8 +539,6 @@ class BaseTool(QObject):
         t.addAction(watch_fileAction)
         self._autoload_source_files_on_change = False
 
-
-
     def onWatchSourceDataToggle(self, checked):
         self._autoload_source_files_on_change = checked
 
@@ -552,7 +549,6 @@ class BaseTool(QObject):
     def onFileChanged(self, file):
         if self._autoload_source_files_on_change:
             self.load_datafile(file)
-
 
     def onRecalculate(self):
         self.generate()  # Bypass
@@ -578,7 +574,6 @@ class BaseTool(QObject):
         if self._previous_size:
             return self._previous_size
         return QSize(600 + 300, 400 + 100)
-
 
 
 class ExportDataTool(BaseTool):
@@ -665,4 +660,3 @@ class AnalysisTool(BaseTool):
 
     def onDefineExperiment(self):
         pass
-

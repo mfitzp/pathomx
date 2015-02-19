@@ -6,7 +6,6 @@ from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
 from pathomx.ui import ConfigPanel
 
-
 COLORSPACES = {
     'None (use image default)': None,
     'I (1-bit pixels, black and white, stored with one pixel per byte)': 'I',

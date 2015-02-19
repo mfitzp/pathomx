@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from pathomx.tools import BaseTool
 from pathomx.ui import ConfigPanel
 import pathomx.utils as utils

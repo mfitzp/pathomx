@@ -6,7 +6,6 @@ from pathomx.ui import ConfigPanel
 from pathomx.plugins import ProcessingPlugin
 from pathomx.qt import *
 
-
 STAIN_TYPES = {
     'Hematoxylin + Eosin + DAB': 'hed_from_rgb',
     'Hematoxylin + DAB': 'hdx_from_rgb',

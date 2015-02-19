@@ -17,7 +17,7 @@ from . import utils
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
                     MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
                     StyleDefinition, ClassMatchDefinition, notebook_queue, \
-                    current_tools,current_datasets, \
+                    current_tools, current_datasets, \
                     STATUS_QCOLORS
 
 # Translation (@default context)
@@ -38,7 +38,6 @@ try:
     unicode
 except:
     unicode = str
-
 
 # Web views default HTML
 BLANK_DEFAULT_HTML = '''
@@ -1739,7 +1738,6 @@ class RibbonWidget(QTabWidget):
         s.addAction(action)
 
         # FIXME: Add hooks to track % active objects in tab; disable (hide) tabs where all widgets are disabled
-
 
 class RunQueueListDelegate(QAbstractItemDelegate):
 

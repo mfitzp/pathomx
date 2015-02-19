@@ -4,7 +4,6 @@ from pathomx.tools import BaseTool
 from pathomx.plugins import ProcessingPlugin
 from pathomx.ui import ConfigPanel, RegionConfigPanel
 
-
 from pathomx.data import DataDefinition, PandasDataDefinition
 from pathomx.qt import *
 
