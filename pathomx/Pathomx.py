@@ -173,7 +173,6 @@ class MainWindow(QMainWindow):
         logging.getLogger().addHandler(logHandler)
         logging.info('Welcome to Pathomx v%s' % (__version__))
 
-
         self.ribbon = ui.RibbonWidget()
         t = self.addToolBar('Ribbon')
         t.addWidget(self.ribbon)
@@ -444,13 +443,11 @@ class MainWindow(QMainWindow):
         self.central.addTab(self.console, '&Console')
         self.central.addTab(self.logView, '&Log')
 
-
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
         self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
-
 
         self.viewerDock = QDockWidget(tr('Viewer'))
         self.viewerDock.setWidget(QWidget(None))
@@ -465,8 +462,6 @@ class MainWindow(QMainWindow):
         self.dataDock.setMinimumHeight(300)
         self.dataDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
-
-
 
         self.activetoolDock = QDockWidget(tr('Tool'))
         self.activetoolDock.setWidget(QWidget(None))
@@ -486,7 +481,6 @@ class MainWindow(QMainWindow):
         self.dummy = QWidget()
         self.dummy.hide()
         self.setCentralWidget(self.central)
-
 
         self.addFileToolBar()
 
@@ -541,11 +535,10 @@ class MainWindow(QMainWindow):
                 def make_callback(i):
                     return lambda n: self.editor.createApp(i)
 
-                act = QAction(tool['icon'], getattr(tool['app'], 'name', tool['plugin'].name), self )
-                act.setToolTip("%s\n%s" % (getattr(tool['app'], 'name', tool['plugin'].name), tool['plugin'].metadata['description']) )
+                act = QAction(tool['icon'], getattr(tool['app'], 'name', tool['plugin'].name), self)
+                act.setToolTip("%s\n%s" % (getattr(tool['app'], 'name', tool['plugin'].name), tool['plugin'].metadata['description']))
                 act.triggered.connect(make_callback(tool['id']))
                 self.ribbon.addAction(act, category, tool['subcategory'])
-
 
     def addFileToolBar(self):
 
@@ -557,13 +550,12 @@ class MainWindow(QMainWindow):
         open_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--arrow.png')), 'Open workflow…', self)
         open_workflowAction.setStatusTip('Open a saved workflow')
         open_workflowAction.triggered.connect(self.onOpenWorkflow)
-        self.ribbon.addAction(open_workflowAction, 'Home','File')
+        self.ribbon.addAction(open_workflowAction, 'Home', 'File')
 
         save_workflowAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'disk--pencil.png')), 'Save workflow As…', self)
         save_workflowAction.setStatusTip('Save workflow for future re-use')
         save_workflowAction.triggered.connect(self.onSaveWorkflowAs)
         self.ribbon.addAction(save_workflowAction, 'Home', 'File')
-
 
     def addExportToolBar(self):
 
@@ -583,7 +575,6 @@ class MainWindow(QMainWindow):
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
         self.ribbon.addAction(export_reportAction, 'Home', 'Reports')
-
 
     def addAdvancedToolBar(self):
 
@@ -612,7 +603,6 @@ class MainWindow(QMainWindow):
         auto_placementAction.setCheckable(True)
         settings.add_handler('Editor/Auto_position', auto_placementAction)
         self.ribbon.addAction(auto_placementAction, 'Home', 'Editor')
-
 
     def addEditModeToolBar(self):
         editormodeag = QActionGroup(self)
@@ -664,7 +654,6 @@ class MainWindow(QMainWindow):
         section.layout.addWidget(text_colorcb, 1, 0)
         self.styletoolbarwidgets['text-color'] = text_colorcb
 
-
         text_boldAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'edit-bold.png')), tr('Bold'), self)
         text_boldAction.setStatusTip('Set text bold')
         text_boldAction.setCheckable(True)
@@ -691,7 +680,6 @@ class MainWindow(QMainWindow):
         self.editor.config.add_handler('text-underline', text_underlineAction)
         section.layout.addWidget(btn, 1, 3)
         self.styletoolbarwidgets['text-underline'] = text_underlineAction
-
 
         border_colorcb = ui.QColorButton()
         self.editor.config.add_handler('color-border', border_colorcb)
@@ -789,7 +777,7 @@ class MainWindow(QMainWindow):
 
             if app == 'db':
                 kind, id, action = url.path().strip('/').split('/')
-                            # View an object
+                # View an object
                 if action == 'view':
                     if kind == 'pathway' and db.dbm.pathway(id) is not None:
                         pathway = db.dbm.pathway(id)
@@ -1174,19 +1162,19 @@ class MainWindow(QMainWindow):
         notebook_queue.restart()
 
 #class QApplicationExtend(QApplication):
-    #def event(self, e):
-    #    if e.type() == QEvent.FileOpen:
-    #        fn, fe = os.path.splitext(e.file())
-    #        formats = {  # Run specific loading function for different source data types
-    #                '.ipynb': self.openIPythonNotebook,
-    #            }
-    #        if fe in list(formats.keys()):
-    #            formats[fe](e.file())
-    #
-    #        return True
-    #
-    #    else:
-    #        return super(QApplicationExtend, self).event(e)
+#def event(self, e):
+#    if e.type() == QEvent.FileOpen:
+#        fn, fe = os.path.splitext(e.file())
+#        formats = {  # Run specific loading function for different source data types
+#                '.ipynb': self.openIPythonNotebook,
+#            }
+#        if fe in list(formats.keys()):
+#            formats[fe](e.file())
+#
+#        return True
+#
+#    else:
+#        return super(QApplicationExtend, self).event(e)
 
 def main():
 
@@ -1232,14 +1220,11 @@ def main():
         'mplstyler',
         'pyqtconfig',
         "pygments",
-        'pydot',
-
-        'jinja2']:
+        'pydot']:
         pip.main(['install', pkg, '--upgrade'])
     """)
     notebook_queue.add_job(exc, {})
     '''
-
 
     MainWindow()
     logging.info('Ready.')

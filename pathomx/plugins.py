@@ -83,7 +83,7 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
             resource_list = []
 
         try:
-            required_packages = plugin.details.get('Documentation','Packages').split(',')
+            required_packages = plugin.details.get('Documentation', 'Packages').split(',')
         except:
             required_packages = []
 
@@ -113,7 +113,6 @@ def get_available_plugins(plugin_places=None, include_deactivated=False):
     # Check and import all packages
     # for pkg_ver in required_packages_all:
     #    pip.main(['install', pkg_ver, '--upgrade'])
-
 
 class pluginListDelegate(QAbstractItemDelegate):
 
@@ -364,7 +363,7 @@ class BasePlugin(IPlugin):
             category = getattr(tool, 'category', self.default_category)
 
         if subcategory is None:
-            subcategory = getattr(tool, 'subcategory', type(self).__name__ )
+            subcategory = getattr(tool, 'subcategory', type(self).__name__)
 
         available_tools_by_category[category].append({
             'id': key,
@@ -376,7 +375,6 @@ class BasePlugin(IPlugin):
         # Support legacy app launchers (so moving apps between plugins doesn't kill them)
         for lkey in tool.legacy_launchers:
             app_launchers[lkey] = tool
-
 
     def register_file_handler(self, app, ext):
         file_handlers[ext] = app

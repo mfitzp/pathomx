@@ -13,5 +13,4 @@ mplstyler
 ipython[all]
 dill
 mistune
-biocyc
 jsonschema

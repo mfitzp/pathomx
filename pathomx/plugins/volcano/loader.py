@@ -15,6 +15,7 @@ from pathomx.data import DataDefinition
 from pathomx.plugins import AnalysisPlugin
 from pathomx.qt import *
 
+
 class VolcanoConfigPanel(ui.ConfigPanel):
 
     def __init__(self, *args, **kwargs):

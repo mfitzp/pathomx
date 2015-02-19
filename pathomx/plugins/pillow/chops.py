@@ -1,5 +1,4 @@
 from PIL import ImageChops
-
 # Currently supported modes include:
 # add_modulo, darker, difference, lighter, logical_and, logical_or, multiple, screen, subtract_modulo
 
@@ -31,4 +30,3 @@ elif op == 'screen':
 
 elif op == 'subtract_modulo':
     output_image = ImageChops.subtract_modulo(image1, image2)
-

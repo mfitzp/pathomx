@@ -32,7 +32,6 @@ class KEGGPathwayApp(ui.AnalysisApp):
     category = "Visualisation"
     subcategory = "Pathways"
 
-
     def __init__(self, *args, **kwargs):
         super(KEGGPathwayApp, self).__init__(*args, **kwargs)
 

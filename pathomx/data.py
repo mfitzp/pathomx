@@ -18,6 +18,7 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
+
 class DataTreeItem(object):
     '''
     a python object used to return row/column data, and keep note of
@@ -490,6 +491,7 @@ class NumpyArrayDataDefinition(DataDefinition):
                 return False
 
         return True
+
 
 class PandasDataDefinition(NumpyArrayDataDefinition):
     ''' Custom matching definition for pandas dataframes '''

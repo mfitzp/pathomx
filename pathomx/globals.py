@@ -34,7 +34,6 @@ url_handlers = defaultdict(list)
 
 logging.debug('Loading settings...')
 
-
 STATUS_COLORS = {
     'ready': 'grey',
     'active': 'green',
@@ -44,7 +43,6 @@ STATUS_COLORS = {
     'render': 'purple',
     'complete': 'blue'
 }
-
 
 # ReadTheDocs
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -82,7 +80,6 @@ if not ON_RTD:
                     'Darwin': 'Menlo'}
     mono_fontFamily = mono_fontFamilies.get(platform.system(), 'Monospace')
 
-
     # Enforce Qt5
     mpl.rcParams['backend'] = 'Qt5Agg'
     mpl.rcParams['backend.qt5'] = 'PyQt5'
@@ -109,7 +106,6 @@ if not ON_RTD:
     plugin_objects = {}
     plugin_metadata = {}
 
-
     STATUS_QCOLORS = {
         'ready': QColor(63, 63, 63),
         'active': QColor(0, 255, 0),
@@ -119,7 +115,6 @@ if not ON_RTD:
         'render': QColor(128, 0, 128),
         'complete': QColor(0, 0, 255),
     }
-
 
 
     def _get_QLineEdit(self):
@@ -140,7 +135,6 @@ if not ON_RTD:
     }
 
 else:
-
     # Shims for ReadTheDocs
 
     styles = None

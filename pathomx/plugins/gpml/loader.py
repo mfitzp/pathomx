@@ -44,8 +44,8 @@ class GPMLView(HTMLView):
             #self.v.change_name.emit( metadata['Name'] )
 
 
-# Class for data visualisations using GPML formatted pathways
-# Supports loading from local file and WikiPathways
+            # Class for data visualisations using GPML formatted pathways
+            # Supports loading from local file and WikiPathways
 class GPMLPathwayApp(ui.AnalysisApp):
 
     notebook = 'gpml.ipynb'

@@ -62,8 +62,8 @@ class ImportAdvancedConfigPanel(ui.ConfigPanel):
 
         self.finalise()
 
-class ImportTextConfigPanel(ui.ConfigPanel):
 
+class ImportTextConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
         super(ImportTextConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -141,10 +141,7 @@ class ImportTextConfigPanel(ui.ConfigPanel):
         gb.setLayout(grid)
         self.layout.addWidget(gb)
 
-
         self.finalise()
-
-
 
 
 class ImportTextApp(ui.GenericTool):
@@ -156,7 +153,6 @@ class ImportTextApp(ui.GenericTool):
 
     category = "Import"
     subcategory = "Generic"
-
 
     def __init__(self, *args, **kwargs):
         super(ImportTextApp, self).__init__(*args, **kwargs)

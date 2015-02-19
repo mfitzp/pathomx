@@ -71,15 +71,7 @@ setup(
             'markupsafe',
             'wheezy.template',
             'pydot',
-            'jinja2',
             'six',
-            'gpml2svg',
-            'biocyc',
-            'metaviz',
-            'mplstyler',
-            'icoshift',
-
-            'nmrglue',
             ],
 
 

@@ -5,4 +5,3 @@ output_image.load()
 
 if config.get('colorspace'):
     output_image = output_image.convert(mode=config.get('colorspace'))
-

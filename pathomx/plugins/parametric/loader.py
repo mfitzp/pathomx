@@ -48,7 +48,6 @@ class TwoSampleT(ui.AnalysisApp):
 
     autoconfig_name = "{experiment_control} vs. {experiment_test} ({related_or_independent})"
 
-
     def __init__(self, *args, **kwargs):
         super(TwoSampleT, self).__init__(*args, **kwargs)
 

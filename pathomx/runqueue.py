@@ -33,7 +33,6 @@ STATUS_COMPLETE = 'complete'
 # Error status
 STATUS_ERROR = 'error'
 
-
 AR_PUSH = 1
 AR_EXECUTE = 2
 AR_PULL = 3
@@ -53,9 +52,6 @@ PROGRESS_REGEXP = re.compile("____pathomx_execute_progress_(.*)____")
 # - Each run-task should check run-flag before continuing
 #
 # Job complete; delete job from queue
-
-
-
 
 class Runner(QObject):
     """
@@ -137,7 +133,7 @@ class Runner(QObject):
             ars = []
 
             if e.varsi:
-                ar = self.k.push( e.varsi, block=False)
+                ar = self.k.push(e.varsi, block=False)
                 ars.append(ar)
                 self.ar_types[ar] = AR_PUSH
 
@@ -155,7 +151,6 @@ class Runner(QObject):
 
             self.ar_by_exec[e] = ars
 
-
     def check_status(self):
         """
         Automatically check for progress on the executing Execute objects.
@@ -172,56 +167,56 @@ class Runner(QObject):
         ars_waiting = False
 
         for ex, ars in self.ar_by_exec.items():
-            # e is the original Exec object (for callbacks)
-            # ars is a list of ASyncResult objects originating from it
+        # e is the original Exec object (for callbacks)
+        # ars is a list of ASyncResult objects originating from it
 
-                # Finally iterate each object
-                for ar in ars:
-                    ar_type = self.ar_types[ar]
-                    try:
-                        ar_result = ar.get(0)
+        # Finally iterate each object
+            for ar in ars:
+                ar_type = self.ar_types[ar]
+                try:
+                    ar_result = ar.get(0)
 
-                    except TimeoutError:
-                        ars_waiting = True
+                except TimeoutError:
+                    ars_waiting = True
 
-                    except RemoteError as e:
-                        # Handle all code exceptions and pass back the exception
-                        result = {
+                except RemoteError as e:
+                    # Handle all code exceptions and pass back the exception
+                    result = {
                             'status': -1,
                             'traceback': '\n'.join(e.render_traceback()),
                             'stdout': self.stdout + ar.stdout,
-                        }
+                    }
 
-                        # Emit the task-error signal (cancel dependencies)
-                        self.task.error.emit()
+                    # Emit the task-error signal (cancel dependencies)
+                    self.task.error.emit()
 
-                        # Emit the error via the Execute object (to the tool)
-                        ex.result.emit(result)
+                    # Emit the error via the Execute object (to the tool)
+                    ex.result.emit(result)
 
-                        self._status = STATUS_ERROR
-                        # Interrupt and stop here
-                        self.reset()
+                    self._status = STATUS_ERROR
+                    # Interrupt and stop here
+                    self.reset()
 
-                    else:
-                        # Success on retrieve
-                        if ar_type == AR_PUSH:
-                            ex.complete.emit()
+                else:
+                    # Success on retrieve
+                    if ar_type == AR_PUSH:
+                        ex.complete.emit()
 
-                        if ar_type == AR_EXECUTE:
-                            # We should emit the complete notification here; but we have no way of
-                            # knowing whether the AR relates the first, or 50th exec that was triggered?
-                            self.stdout += ar.stdout
-                            ex.complete.emit()
+                    if ar_type == AR_EXECUTE:
+                        # We should emit the complete notification here; but we have no way of
+                        # knowing whether the AR relates the first, or 50th exec that was triggered?
+                        self.stdout += ar.stdout
+                        ex.complete.emit()
 
-                        if ar_type == AR_PULL:
-                            result = {
+                    if ar_type == AR_PULL:
+                        result = {
                                 'status': 0,
                                 'varso': ar_result,
                                 'stdout': self.stdout + ar.stdout,
                                 'kernel': id(self.k)
-                            }
-                            ex.complete.emit()
-                            ex.result.emit(result)
+                        }
+                        ex.complete.emit()
+                        ex.result.emit(result)
 
         # Check if all jobs have completed; then shutdown and exit
         if not ars_waiting:
@@ -240,7 +235,6 @@ class Runner(QObject):
         self.stdout = ""
         self.task = None
 
-
     def check_progress(self):
         if self.status != STATUS_ACTIVE:
             return False
@@ -254,7 +248,6 @@ class Runner(QObject):
                     m = PROGRESS_REGEXP.match(l)
                     if m:
                         ex.progress.emit(float(m.group(1)))
-
 
 
 class Execute(QObject):
@@ -311,7 +304,6 @@ class Task(QObject):
                 s += "%s\n" % e.metadata
         return s
 
-
     def __init__(self, job, execute=None, dependencies=None):
         super(Task, self).__init__()
 
@@ -347,7 +339,6 @@ class Task(QObject):
         self.job.tasks_errored.append(self)
 
 
-
 class Job(QObject):
     """
     A Job to be executed on the available kernels.
@@ -378,6 +369,24 @@ class Job(QObject):
         self.tasks_errored = []
 
         self.is_active = False
+
+        # We compare by sets by default (to support tool-wise comparison in ToolJobs)
+        # setting identity to a set of self id ensures will always fail the test for comparison with another job
+        self.identity = set([id(self)])
+
+    def __gt__(self, other):
+        if isinstance(other, Job):
+            if self.identity.issuperset(other.identity):
+                return True
+        else:
+            return super(Job, self).__gt__(other)
+
+    def __ge__(self, other):
+        if isinstance(other, Job):
+            if self.identity == other.identity or self.identity.issubset(other.identity):
+                return True
+        else:
+            return super(Job, self).__gt__(other)
 
     def start(self):
         """
@@ -434,6 +443,7 @@ class Job(QObject):
     def is_complete(self):
         return len(self.tasks_queued + self.tasks_running) == 0
 
+
 class CodeJob(Job):
 
     def __init__(self, code, language='python'):
@@ -487,7 +497,6 @@ class ToolJob(Job):
         and allow superset or == jobs to delete this job.
         """
         super(ToolJob, self).__init__(*args, **kwargs)
-
         # Global varsi must be passed at the start of each Exec job as may not be present otherwise
         # otherwise. Stored here for re-use. n.b. within a Job these should not change (persistance)
         # may need to account for this by taking a copy of styles here?
@@ -522,7 +531,7 @@ class ToolJob(Job):
             parents = t.get_parents()
 
             if len(parents) > 0 \
-                and len( set(parents) & set(process_queue) ) > 0:
+                and len(set(parents) & set(process_queue)) > 0:
                 # waiting on something here, push to the back of the list for later
                 process_queue.append(t)
                 continue
@@ -534,7 +543,7 @@ class ToolJob(Job):
             varsi = {
                     'config': t.config.as_dict(),
                     '_pathomx_tool_path': t.plugin.path,
-                    '_pathomx_expected_output_vars': list( t.data.o.keys() ),
+                    '_pathomx_expected_output_vars': list(t.data.o.keys()),
                     }
 
             # Build the IO magic
@@ -550,7 +559,6 @@ class ToolJob(Job):
                 io['output'][o] = "_%s_%s" % (o, id(t))
             varsi['_io'] = io
 
-
             e = Execute(
                 varsi=varsi,
                 code=[
@@ -560,7 +568,7 @@ class ToolJob(Job):
                     ],
                 varso=['varso'],
                 language=t.language,
-                metadata={'name': t.name, 'tool': t },
+                metadata={'name': t.name, 'tool': t},
             )
 
             e.progress.connect(t.progress.emit)
@@ -569,14 +577,12 @@ class ToolJob(Job):
             # Store the tool for this Exec object; for dispatch calculation
             self.exec_tool_lookup[e] = tool
 
-
             watchers = [w.v for k, v in t.data.watchers.items() for w in v]
             for w in watchers:
                 if w not in process_done and w not in process_queue:
                     # Put all watchers at the front of the list, this will iteratively ensure we can straight-line
                     # down at least one path once started
                     process_queue.insert(0, w)
-
 
             # Determine the position of the object
             # Is before fork; if there is more than 1 tool watching this one
@@ -600,7 +606,7 @@ class ToolJob(Job):
             # If this is the first execute object in the queue (list is empty), update it with the global vars for run
             # and store the head of branch tool for later dependencies
             if not exec_list:
-                e.varsi.update( global_varsi )
+                e.varsi.update(global_varsi)
 
             tool_list.append(t)
             exec_list.append(e)
@@ -619,9 +625,9 @@ class ToolJob(Job):
             process_done.append(t)
             previous_tool = t
 
-        if exec_list: # Remainders
+        if exec_list:  # Remainders
             task = Task(self, execute=exec_list)
-            self.tasks_queued.append( task )
+            self.tasks_queued.append(task)
 
         logging.debug("task_queue: %s" % self.tasks_queued)
 
@@ -633,10 +639,13 @@ class ToolJob(Job):
                 dependencies = []
                 for ti in e0.metadata['tool'].get_parents():
                     if ti in tool_task_lookup:
-                        dependencies.append( tool_task_lookup[ti] )
+                        dependencies.append(tool_task_lookup[ti])
                 t.dependencies = dependencies
 
         self.tool_list = process_done
+
+        # Store an identity for this job; we can use subset set matching to compare subsequent jobs
+        self.identity = set([id(t) for t in self.tool_list])
 
     def start(self):
         if not self.is_active:
@@ -668,7 +677,7 @@ class ToolJob(Job):
             return None
 
         for t in self.tasks_queued[:]:
-            if not t.dependencies or len( set(t.dependencies) - set(self.tasks_complete) ) == 0:
+            if not t.dependencies or len(set(t.dependencies) - set(self.tasks_complete)) == 0:
                 # We have an Exec not waiting on dependencies
                 # Remove this task from the queue then continue on
                 self.tasks_queued.remove(t)
@@ -680,7 +689,7 @@ class ToolJob(Job):
                 self.tasks_errored.append(t)
 
         else:
-            return False # Waiting
+            return False  # Waiting
 
         # Handle the exec here
         # We receive the kernel identifier from the Queue, so here we can determine whether the parent(s)
@@ -712,8 +721,8 @@ class ToolJob(Job):
 
                     if id(kernel) not in mo.v.current_data_on_kernels:
                         # We need to push the actual data; this should do it?
-                        varsi['_%s_%s' % (mi, id(mo.v)) ] = tool.data.get(i)
-                        tools_to_move.append( mo.v )
+                        varsi['_%s_%s' % (mi, id(mo.v))] = tool.data.get(i)
+                        tools_to_move.append(mo.v)
 
         # We've got something to move between kernels
         if varsi:
@@ -726,15 +735,10 @@ class ToolJob(Job):
         self.tasks_running.append(t)
         return t
 
-
     @staticmethod
     def complete_move_data_to_kernel(kernel, tools):
         for t in tools:
             t.current_data_on_kernels.add(id(kernel))
-
-
-
-
 
 
 class Queue(QObject):
@@ -776,6 +780,18 @@ class Queue(QObject):
         self._cluster_timer.start(5000)  # Re-check runners every 5 seconds
 
     def add(self, job):
+        """
+        Add a job to the queue.
+
+        Add a created job to the queue. A test is first performed to remove all equivalent (or lesser) jobs from
+        the queue, to improve responsiveness of UI twiddling.
+        :param job:
+        :return:
+        """
+        for j in self.jobs[:]:
+            if (not j.is_active) and job >= j:
+                self.jobs.remove(j)
+
         self.jobs.append(job)
 
         # We fire an additional
@@ -837,14 +853,13 @@ class Queue(QObject):
             if j.is_complete:
                 self.jobs_completed.remove(j)
 
-
     def restart(self):
         self.stop_cluster()
         self.create_runners()
 
     def interrupt(self):
         self.runner.interrupt_kernel()
-        
+
     def start_cluster(self):
         # Start IPython ipcluster with 4 engines
         self.p = Popen([sys.executable, ipclusterapp.__file__, 'start', '--n=4'], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
@@ -909,4 +924,3 @@ class ExecuteOnly(object):
 
     def __init__(self, code):
         self.code = code
-

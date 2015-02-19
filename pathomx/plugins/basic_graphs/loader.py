@@ -85,7 +85,6 @@ class HeatmapTool(ui.IPythonApp):
         )
 
 
-
 # Graph a spectra
 class HistogramTool(ui.IPythonApp):
 

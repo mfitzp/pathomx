@@ -48,17 +48,17 @@ Tagged Image File Format (*.tif *.tiff);;
 Silicon Graphics Image (*.sgi);;
 SPIDER Format (*.spi);;
 WebP Format (*.webp);;
-X Bitmap (*.xbm);;X Pixmap (*.xpm);;All files (*.*)""",description="Open image file")
+X Bitmap (*.xbm);;X Pixmap (*.xpm);;All files (*.*)""", description="Open image file")
         grid.addWidget(QLabel('Path'), 0, 0)
         grid.addWidget(self.filename, 0, 1)
         self.config.add_handler('filename', self.filename)
-        
+
         self.cb_color = QComboBox()
         self.cb_color.addItems(list(COLORSPACES.keys()))
         grid.addWidget(QLabel('Mode'), 2, 0)
         grid.addWidget(self.cb_color, 2, 1)
         self.config.add_handler('colorspace', self.cb_color, COLORSPACES)
-        
+
         gb.setLayout(grid)
 
         self.layout.addWidget(gb)
@@ -87,14 +87,12 @@ class ImportImageApp(ui.GenericTool):
         self.data.add_output('output_image')  # Add output slot
 
 
-
-
 class ImportImage(ImportPlugin):
 
     def __init__(self, *args, **kwargs):
         super(ImportImage, self).__init__(*args, **kwargs)
         self.register_app_launcher(ImportImageApp)
-        
+
         self.register_file_handler(ImportImageApp, 'png')
         self.register_file_handler(ImportImageApp, 'tif')
         self.register_file_handler(ImportImageApp, 'tiff')

@@ -30,7 +30,6 @@ class BMLNMRApp(ui.GenericTool):
     category = "Import"
     subcategory = "Metabolomics"
 
-
     def __init__(self, *args, **kwargs):
         super(BMLNMRApp, self).__init__(*args, **kwargs)
 

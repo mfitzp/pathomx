@@ -33,7 +33,6 @@ class ImportPRIDETool(ui.GenericTool):
     category = "Import"
     subcategory = "Proteomics"
 
-
     def __init__(self, *args, **kwargs):
         super(ImportPRIDETool, self).__init__(*args, **kwargs)
 

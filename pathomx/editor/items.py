@@ -30,8 +30,6 @@ INTERFACE_ACTIVE_COLOR = {
     False: QColor(100, 100, 100),
 }
 
-
-
 ANNOTATION_MINIMUM_SIZE = 40
 ANNOTATION_MINIMUM_QSIZE = QSize(ANNOTATION_MINIMUM_SIZE, ANNOTATION_MINIMUM_SIZE)
 
@@ -128,6 +126,7 @@ class QGraphicsSingleLineTextItem(QGraphicsTextItem):
     Modified QGraphicsTextItem that restricts itself to a single line
     by cropping the middle of the text and placing an ellipsis.
     """
+
     def __init__(self, *args, **kwargs):
         super(QGraphicsSingleLineTextItem, self).__init__(*args, **kwargs)
 
@@ -142,12 +141,11 @@ class QGraphicsSingleLineTextItem(QGraphicsTextItem):
         r = t.replace('\n', '')
 
         if self.document().size().width() > self.document().textWidth():
-            to_remove = int( (self.document().size().width() - self.document().textWidth()) / 7. ) # Should calculate this somehow
-            r = '…' + r[to_remove+1:]
+            to_remove = int((self.document().size().width() - self.document().textWidth()) / 7.)  # Should calculate this somehow
+            r = '…' + r[to_remove + 1:]
 
         if t != r:
             self.setPlainText(r)
-
 
 
 class ToolItem(BaseItem):
@@ -172,8 +170,6 @@ class ToolItem(BaseItem):
         self.app.pause_status_changed.connect(self.onPauseChange)
 
         self._links = {}
-
-
 
         self.size = QSize(200, 40)
 
@@ -219,7 +215,6 @@ class ToolItem(BaseItem):
         self.status = None
         self.app.status.connect(self.updateStatus)
 
-
         self.status_icon = QGraphicsPixmapItem(self)
         self.status_icon.setPos(40, 40)
 
@@ -242,7 +237,6 @@ class ToolItem(BaseItem):
         else:
             return ""
 
-
     def getName(self):
         # FIXME: This feels a bit hacky
         self.label.setPlainText(self.name)
@@ -250,7 +244,6 @@ class ToolItem(BaseItem):
     def getConfigName(self):
         # FIXME: This feels a bit hacky
         self.configlabel.setPlainText(self.configname)
-
 
     def updateStatus(self, status):
         self.status = status
@@ -260,11 +253,9 @@ class ToolItem(BaseItem):
         for v in self.scene().views():
             v.centerOn(self)
 
-
-
     def paint(self, painter, option, widget):
 
-        color = QColor( STATUS_QCOLORS[self.status] if self.status in STATUS_QCOLORS else TOOL_BACKGROUND )
+        color = QColor(STATUS_QCOLORS[self.status] if self.status in STATUS_QCOLORS else TOOL_BACKGROUND)
         color.setAlpha(255)
 
         pen = QPen(color)
@@ -300,7 +291,6 @@ class ToolItem(BaseItem):
 
         datao[0].v.editorItem.auto_position_children()
 
-
     def removeDataLink(self, datao, datai):
         # (data_manager, interface)
         o = datao[0].v.editorItem.output.interface_items[datao[1]]
@@ -319,21 +309,20 @@ class ToolItem(BaseItem):
 
         datao[0].v.editorItem.auto_position_children()
 
-
     def auto_position_children(self):
         if settings.get('Editor/Auto_position'):
             # Iterate over the child data tools and distribute at least +200 in x, and evenly in y
             items = []
             for _, cs in self.app.data.watchers.items():
                 for c in cs:
-                    item = c.v.editorItem # Blimey
+                    item = c.v.editorItem  # Blimey
                     items.append(item)
 
             n = len(items)
-            center_x = float(n-1) * 200 / 2
+            center_x = float(n - 1) * 200 / 2
 
             for n, i in enumerate(items):
-                i.setPos( self.x() + (n * 200) - center_x, i.calculate_auto_position_y())
+                i.setPos(self.x() + (n * 200) - center_x, i.calculate_auto_position_y())
                 i.auto_position_children()
 
     def calculate_auto_position_y(self):
@@ -349,7 +338,7 @@ class ToolItem(BaseItem):
         if len(self.app.data.i) == 1:
 
             # Get the data manager for our sole parent
-            _, cs = list( self.app.data.i.items() )[0]
+            _, cs = list(self.app.data.i.items())[0]
             cm, ci = cs
 
             # If data manager of our parent only has one child, we can get closer
@@ -360,13 +349,12 @@ class ToolItem(BaseItem):
         for _, cs in self.app.data.i.items():
             if cs:
                 cm, ci = cs
-                y.append( cm.v.editorItem.y() )
+                y.append(cm.v.editorItem.y())
 
         if max:
             return max(y) + 100
         else:
             return self.y()
-
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
@@ -501,8 +489,8 @@ class ToolInterfaceHandler(BaseItem):
         self.setAcceptDrops(True)
 
         self.defaults = {
-            'input': (-8,), #(180, QPointF(0, 44), (-18, -12), 40),
-            'output': (40,), #(0, QPointF(44, 44), (+32, -12), 0),
+            'input': (-8, ),  # (180, QPointF(0, 44), (-18, -12), 40),
+            'output': (40, ),        # (0, QPointF(44, 44), (+32, -12), 0),
         }
 
         self.setup = self.defaults[interface_type]
@@ -514,7 +502,6 @@ class ToolInterfaceHandler(BaseItem):
         app.data.source_updated.connect(self.update_interface_status)
         app.data.output_updated.connect(self.update_interface_status)
         app.data.interfaces_changed.connect(self.update_interfaces)
-
         #transform = QTransform()
         #transform.translate(*self.setup[2])
         #self.setTransform(transform)
@@ -532,14 +519,13 @@ class ToolInterfaceHandler(BaseItem):
         self.scene().removeItem(self)
 
     def update_interfaces(self):
-
         #x0, y0 = self.setup[3], 44
         #r = 44
 
         items = len(self.interfaces.keys())
 
         for n, interface in enumerate(sorted(self.interfaces.keys())):
-            x = float(self.width)/2 - ( float(items-1) / 2)*16 + n*16 -8
+            x = float(self.width) / 2 - (float(items - 1) / 2) * 16 + n * 16 - 8
             y = self.setup[0]
 
             if interface not in self.interface_items:
@@ -600,7 +586,7 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         self.interface = interface
         self.interface_name = interface_name
-        self.size = QSize(16,8)
+        self.size = QSize(16, 8)
         self.interface_type = interface_type
         self.setToolTip(interface_name)
         self._links = []
@@ -618,15 +604,15 @@ class ToolInterface(BaseInteractiveItem):  # QGraphicsPolygonItem):
 
         tri = QPolygonF()
         if self.interface_type == 'input':
-            tri.append(QPointF(0,8))
-            tri.append(QPointF(8,0))
-            tri.append(QPointF(16,8))
-            tri.append(QPointF(0,8))
+            tri.append(QPointF(0, 8))
+            tri.append(QPointF(8, 0))
+            tri.append(QPointF(16, 8))
+            tri.append(QPointF(0, 8))
         elif self.interface_type == 'output':
-            tri.append(QPointF(0,0))
-            tri.append(QPointF(8,8))
-            tri.append(QPointF(16,0))
-            tri.append(QPointF(0,0))
+            tri.append(QPointF(0, 0))
+            tri.append(QPointF(8, 8))
+            tri.append(QPointF(16, 0))
+            tri.append(QPointF(0, 0))
         self.path = tri
 
     def update_interface_color(self, color=None):
@@ -875,7 +861,6 @@ class ToolProgressItem(BaseItem):
         self.status = status
         self.update()
 
-
     def paint(self, painter, option, widget):
         """
         Paint the tool object
@@ -889,9 +874,9 @@ class ToolProgressItem(BaseItem):
             painter.drawRect(0, 0, progressSize, self.thick)
             #painter.drawArc( QRect(0,0,40-self.thick,40-self.thick), 90*16, -self.progress * 5760)
 
-        #else:
-        #    painter.setBrush( QBrush( QColor( Qt.gray ) ) )
-        #    painter.drawRect(0,0,*self.size)
+            #else:
+            #    painter.setBrush( QBrush( QColor( Qt.gray ) ) )
+            #    painter.drawRect(0,0,*self.size)
 
 
 class ToolViewItem(BaseInteractiveItem):

@@ -67,10 +67,10 @@ class BaselineConfigPanel(ui.ConfigPanel):
 
         'Remove average of first or last n points': 5,
 
-        #'Mean base, spline baseline':6,
-        #'FLATT base, spline baseline':7,
+    #'Mean base, spline baseline':6,
+    #'FLATT base, spline baseline':7,
 
-        #'Remove using spline through predefined baseline':8,
+    #'Remove using spline through predefined baseline':8,
     }
 
     def __init__(self, *args, **kwargs):
@@ -126,10 +126,10 @@ class BaselineConfigPanel(ui.ConfigPanel):
         self.finalise()
 
     #def onBaselineMode(self):
-        #if self.config.get('baseline_alg') == 1:
-        #    self.spgb.show()
-        #else:
-        #    self.spgb.hide()
+    #if self.config.get('baseline_alg') == 1:
+    #    self.spgb.show()
+    #else:
+    #    self.spgb.hide()
 
 class BaselineMetabolabTool(NMRLabMetabolabTool):
     name = "Baseline correction"

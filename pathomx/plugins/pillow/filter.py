@@ -10,4 +10,4 @@ output_image = input_image.filter({
     'smooth': ImageFilter.SMOOTH,
     'smooth_more': ImageFilter.SMOOTH_MORE,
     'sharpen': ImageFilter.SHARPEN,
-}[ config.get('filter') ])
+}[config.get('filter')])

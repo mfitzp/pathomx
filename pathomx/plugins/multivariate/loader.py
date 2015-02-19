@@ -110,7 +110,6 @@ class PCATool(ui.IPythonApp):
 
     autoconfig_name = "{number_of_components} component(s)"
 
-
     legacy_launchers = ['PCAPlugin.PCAApp']
     legacy_inputs = {'input_data': 'input_data'}
 

@@ -28,7 +28,6 @@ COLORSPACES = {
 }
 
 
-
 class EnhanceConfigPanel(ui.ConfigPanel):
 
     def __init__(self, parent, filename=None, *args, **kwargs):
@@ -62,7 +61,7 @@ class EnhanceConfigPanel(ui.ConfigPanel):
         grid.addWidget(QLabel('Color'), 2, 0)
         grid.addWidget(self.color, 2, 1)
         self.config.add_handler('color', self.color)
-        
+
         self.sharp = QSlider(Qt.Horizontal)
         self.sharp.setRange(0, 200)
         self.sharp.setSingleStep(10)
@@ -70,7 +69,7 @@ class EnhanceConfigPanel(ui.ConfigPanel):
         grid.addWidget(QLabel('Sharp'), 3, 0)
         grid.addWidget(self.sharp, 3, 1)
         self.config.add_handler('sharpness', self.sharp)
-        
+
         gb.setLayout(grid)
 
         self.layout.addWidget(gb)
@@ -108,8 +107,6 @@ class AdjustApp(ui.GenericTool):
         )
 
 
-
-
 class ChopsConfigPanel(ui.ConfigPanel):
     operation_types = {
         'Add (Modulo)': 'add_modulo',
@@ -122,7 +119,6 @@ class ChopsConfigPanel(ui.ConfigPanel):
         'Screen': 'screen',
         'Subtract (Modulo)': 'subtract_modulo',
     }
-
 
     def __init__(self, parent, *args, **kwargs):
         super(ChopsConfigPanel, self).__init__(parent, *args, **kwargs)
@@ -153,7 +149,6 @@ class ChopsApp(ui.GenericTool):
 
     autoconfig_name = "{operation}"
 
-
     def __init__(self, *args, **kwargs):
         super(ChopsApp, self).__init__(*args, **kwargs)
 
@@ -183,12 +178,11 @@ class InvertApp(ui.GenericTool):
 
         self.data.add_input('input_image')
         self.data.add_output('output_image')
-        
+
         self.data.consumer_defs.append(
             ImageDataDefinition('input_image', {
             })
         )
-        
 
 
 class FilterConfigPanel(ui.ConfigPanel):
@@ -233,7 +227,6 @@ class FilterApp(ui.GenericTool):
 
     autoconfig_name = "{filter}"
 
-
     def __init__(self, *args, **kwargs):
         super(FilterApp, self).__init__(*args, **kwargs)
 
@@ -252,9 +245,6 @@ class FilterApp(ui.GenericTool):
         )
 
 
-
-
-
 # Dialog box for Metabohunter search options
 class ColorspaceConfigPanel(ui.ConfigPanel):
 
@@ -271,7 +261,7 @@ class ColorspaceConfigPanel(ui.ConfigPanel):
         grid.addWidget(QLabel('Colorspace'), 1, 0)
         grid.addWidget(self.cb_color, 1, 1)
         self.config.add_handler('colorspace', self.cb_color, COLORSPACES)
-        
+
         gb.setLayout(grid)
 
         self.layout.addWidget(gb)
@@ -280,7 +270,7 @@ class ColorspaceConfigPanel(ui.ConfigPanel):
 
 
 class ColorspaceApp(ui.GenericTool):
-    
+
     name = "Convert Colorspace"
     shortname = 'colorspace'
     icon = 'colorspace.png'
@@ -288,7 +278,6 @@ class ColorspaceApp(ui.GenericTool):
     subcategory = "Image"
 
     autoconfig_name = "{colorspace}"
-
 
     def __init__(self, *args, **kwargs):
         super(ColorspaceApp, self).__init__(*args, **kwargs)
@@ -306,16 +295,15 @@ class ColorspaceApp(ui.GenericTool):
             ImageDataDefinition('input_image', {
             })
         )
-    
+
 
 class HistogramApp(ui.GenericTool):
-    
+
     name = "Image Histogram"
     shortname = 'histogram'
 
     category = "Analysis"
     subcategory = "Image"
-
 
     def __init__(self, *args, **kwargs):
         super(HistogramApp, self).__init__(*args, **kwargs)
@@ -330,8 +318,6 @@ class HistogramApp(ui.GenericTool):
             ImageDataDefinition('input_image', {
             })
         )
-
-
 
 
 class ColorizeConfigPanel(ui.ConfigPanel):
@@ -371,7 +357,6 @@ class ColorizeApp(ui.GenericTool):
 
     autoconfig_name = "{black}…{white}"
 
-
     def __init__(self, *args, **kwargs):
         super(ColorizeApp, self).__init__(*args, **kwargs)
 
@@ -391,8 +376,6 @@ class ColorizeApp(ui.GenericTool):
         )
 
 
-
-
 class Pillow(ProcessingPlugin):
 
     def __init__(self, *args, **kwargs):
@@ -404,4 +387,3 @@ class Pillow(ProcessingPlugin):
         self.register_app_launcher(ColorspaceApp)
         self.register_app_launcher(HistogramApp)
         self.register_app_launcher(ColorizeApp)
-

@@ -243,7 +243,6 @@ class WorkspaceEditorView(QGraphicsView):
         self.scene = QGraphicsSceneExtend(self)
         self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
         self.setScene(self.scene)
-
         # self.scale(1.0, 1.0)
 
         self.resetScene()

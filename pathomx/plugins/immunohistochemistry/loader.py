@@ -11,7 +11,6 @@ from pathomx.qt import *
 import pathomx.ui as ui
 import pathomx.utils as utils
 
-
 STAIN_TYPES = {
     'Hematoxylin + Eosin + DAB': 'hed_from_rgb',
     'Hematoxylin + DAB': 'hdx_from_rgb',
@@ -25,8 +24,6 @@ STAIN_TYPES = {
     'Alcian Blue + Hematoxylin': 'ahx_from_rgb',
     'Hematoxylin + PAS': 'hpx_from_rgb',
 }
-
-
 
 
 class SeparateStainsConfigPanel(ui.ConfigPanel):
@@ -44,7 +41,7 @@ class SeparateStainsConfigPanel(ui.ConfigPanel):
         grid.addWidget(QLabel('Stain'), 2, 0)
         grid.addWidget(self.cb_stain, 2, 1)
         self.config.add_handler('stain', self.cb_stain, STAIN_TYPES)
-        
+
         gb.setLayout(grid)
 
         self.layout.addWidget(gb)
@@ -76,9 +73,7 @@ class SeperateStainsApp(ui.GenericTool):
                     'FastRed', 'FastBlue', 'MethylGreen', 'Hematoxylin', 'AEC',
                     'AnillineBlue', 'Azocarmine', 'OrangeG', 'MethylBlue',
                     'PonceauFuchsin', 'AlcianBlue', 'Hematoxylin', 'PAS'):
-            self.data.add_output(o) # FIXME: Auto-hide some outputs (auto-delete; only if unconnected; etc. ? needs modifications in the editor)
-
-
+            self.data.add_output(o)  # FIXME: Auto-hide some outputs (auto-delete; only if unconnected; etc. ? needs modifications in the editor)
 
 
 class Immunohistochemistry(ProcessingPlugin):

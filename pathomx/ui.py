@@ -75,8 +75,6 @@ BLANK_DEFAULT_HTML = '''
 '''
 
 
-
-
 class Logger(logging.Handler):
     def __init__(self, parent, widget, out=None, color=None):
         super(Logger, self).__init__()
@@ -1326,7 +1324,6 @@ class ToolConfigPanel(QMainWindow):
         self.setCentralWidget(self.tabs)
 
 
-
 #### View Object Prototypes (Data, Assignment, Processing, Analysis, Visualisation) e.g. used by plugins
 class GenericApp(QObject):
     """
@@ -1435,7 +1432,7 @@ class GenericApp(QObject):
         self.config = ConfigManager()  # Configuration manager object; handle all get/setting, defaults etc.
 
         # Add hooks for custom widgets
-        self.config.hooks.update( custom_pyqtconfig_hooks.items() )
+        self.config.hooks.update(custom_pyqtconfig_hooks.items())
 
         self.logger.debug('Create editor icon...')
         self.editorItem = self.parent().editor.addApp(self, position=position)
@@ -1476,7 +1473,6 @@ class GenericApp(QObject):
         self._init_timer1 = QTimer.singleShot(PX_INIT_SHOT, self.init_auto_consume_data)
         self._init_timer2 = QTimer.singleShot(PX_INIT_SHOT, self.init_notebook)
 
-
     def init_auto_consume_data(self):
         self.logger.debug('Post-init: init_auto_consume_data')
 
@@ -1498,9 +1494,8 @@ class GenericApp(QObject):
         if self.autoconfig_name:
             self.config.updated.connect(self.autoconfig_rename)  # Auto-rename if it is set
 
-        if self._is_auto_focusable: # Needs to occur after the above
+        if self._is_auto_focusable:  # Needs to occur after the above
             self._init_timer3 = QTimer.singleShot(PX_INIT_SHOT, self.init_autofocus)
-
 
     def init_notebook(self):
         self.logger.debug('Post-init: init_notebook')
@@ -1535,8 +1530,6 @@ class GenericApp(QObject):
                 i.setSelected(False)
         self.editorItem.setSelected(True)
 
-
-
     def reload(self):
         self.load_notes()
         self.load_source()
@@ -1558,7 +1551,6 @@ class GenericApp(QObject):
 </div>
         </body>
         </html>'''.format(**{'baseurl': 'file:///' + os.path.join(utils.scriptdir), 'css': 'file:///' + css, 'html': markdown2html_mistune(self.notes)})
-
 
     def load_source(self):
         with open(os.path.join(self.plugin.path, "%s.py" % self.shortname), 'rb') as f:
@@ -1606,8 +1598,7 @@ class GenericApp(QObject):
         self.status.emit('active')
         self.progress.emit(0.)
 
-        notebook_queue.add( ToolJob(self, global_varsi, name=self.name) )
-
+        notebook_queue.add(ToolJob(self, global_varsi, name=self.name))
 
     def _worker_result_callback(self, result):
         self.progress.emit(1.)
@@ -1656,8 +1647,8 @@ class GenericApp(QObject):
             #    self.data.put(o, None) # Clear up; but this triggers wasteful autogenerate 'firing' ?
             #                             will be fixed by setting status through downstream network once proper queue in effect
 
-        # Set into the workspace of user kernel
-        # notebook_queue.in_process_runner.kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
+            # Set into the workspace of user kernel
+            # notebook_queue.in_process_runner.kernel_manager.kernel.shell.push({'t%s' % self.id: PathomxTool(self.name, **kwargs)})
 
     def autoprerender(self, kwargs_dict):
         self.logger.debug("autoprerender %s" % self.name)
@@ -1670,7 +1661,6 @@ class GenericApp(QObject):
         # FIXME: when we've got a better runner system
         QTimer.singleShot(PX_RENDER_SHOT, self.views.source_data_updated.emit)
         QTimer.singleShot(PX_RENDER_SHOT, self.dataViews.source_data_updated.emit)
-
 
     def onReloadScript(self):
         self.reload()
@@ -2389,10 +2379,7 @@ class QBioCycPathwayTreeWidget(QCheckTreeWidget):
         self.sortItems(0, Qt.AscendingOrder)
 
 
-
-
-
-class RibbonSection( QGroupBox ):
+class RibbonSection(QGroupBox):
 
     maximum_rows = 3
     maximum_items_before_icon_only = 9
@@ -2403,7 +2390,7 @@ class RibbonSection( QGroupBox ):
         self.layout.setSpacing(1)
         self.setLayout(self.layout)
 
-        self.setAlignment( Qt.AlignHCenter )
+        self.setAlignment(Qt.AlignHCenter)
 
         for r in range(self.maximum_rows):
             self.layout.setRowStretch(r, 1)
@@ -2415,8 +2402,7 @@ class RibbonSection( QGroupBox ):
         self.items = []
         self.mode = Qt.ToolButtonTextBesideIcon
 
-        self.layout.setContentsMargins( QMargins(0,20,5,0) )
-
+        self.layout.setContentsMargins(QMargins(0, 20, 5, 0))
 
     def addAction(self, action):
 
@@ -2438,29 +2424,30 @@ class RibbonSection( QGroupBox ):
                 i.setToolButtonStyle(self.mode)
 
 
-class RibbonPage( QWidget ):
+class RibbonPage(QWidget):
 
     def __init__(self, *args, **kwargs):
         super(RibbonPage, self).__init__(*args, **kwargs)
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.layout.addStretch(100)
-        self.layout.setContentsMargins( QMargins(5,5,5,5) )
+        self.layout.setContentsMargins(QMargins(5, 5, 5, 5))
 
         self.current_sections = {}
 
-        self.setStyleSheet("QGroupBox { border:none; border-right: 1px solid rgba(0,0,0,0.1); }");
+        self.setStyleSheet("QGroupBox { border:none; border-right: 1px solid rgba(0,0,0,0.1); }")
 
     def addSection(self, section):
         if section not in self.current_sections.keys():
             s = RibbonSection(section)
-            self.layout.insertWidget( len(self.current_sections), s) # So we come to the left of Stretch
+            self.layout.insertWidget(len(self.current_sections), s)  # So we come to the left of Stretch
             self.current_sections[section] = s
             return s
         else:
             return self.current_sections[section]
 
-class RibbonWidget( QTabWidget ):
+
+class RibbonWidget(QTabWidget):
 
     default_tabs = ['Home', 'Import', 'Processing', 'Filter', 'Identification', 'Analysis', 'Visualisation', 'Export', 'Scripting']
     tab_icons = {
@@ -2478,7 +2465,7 @@ class RibbonWidget( QTabWidget ):
         super(RibbonWidget, self).__init__(*args, **kwargs)
 
         self.setDocumentMode(True)
-        self.setTabPosition( QTabWidget.North )
+        self.setTabPosition(QTabWidget.North)
 
         self.pages = {}
         for t in self.default_tabs:
@@ -2486,11 +2473,10 @@ class RibbonWidget( QTabWidget ):
             if t in self.tab_icons:
                 self.setTabIcon(p.index, self.tab_icons[t])
 
-
     def addPage(self, page):
         if page not in self.pages:
             w = RibbonPage()
-            i = self.addTab( w, page )
+            i = self.addTab(w, page)
             w.index = i
             self.pages[page] = w
             return w
@@ -2507,9 +2493,6 @@ class RibbonWidget( QTabWidget ):
         s.addAction(action)
 
         # FIXME: Add hooks to track % active objects in tab; disable (hide) tabs where all widgets are disabled
-
-
-
 
 class RunQueueListDelegate(QAbstractItemDelegate):
 
@@ -2534,7 +2517,7 @@ class RunQueueListDelegate(QAbstractItemDelegate):
             painter.setPen(QPalette().text().color())
             # Define rectangle % of width from progress
             if status == 'active':
-                progress_r = QRect(r.x(), r.y(), r.width() * progress, r.height() )
+                progress_r = QRect(r.x(), r.y(), r.width() * progress, r.height())
             else:
                 progress_r = r
 
@@ -2562,7 +2545,6 @@ class RunQueueListDelegate(QAbstractItemDelegate):
         r = option.rect.adjusted(5, 18, 0, 0)
         painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, description)
 
-
     def sizeHint(self, option, index):
         return QSize(200, 40)
 
@@ -2582,7 +2564,6 @@ class RunQueueListWidget(QListWidget):
         self._refresh_timer.timeout.connect(self.refresh)
         self._refresh_timer.start(1000)  # Re-udpate timer every minute
 
-
     def refresh(self):
 
         notebook_queue
@@ -2601,9 +2582,8 @@ class RunQueueListWidget(QListWidget):
             item.setData(Qt.DisplayRole, "%s" % job.name)
             item.setData(Qt.UserRole, "%d/%d complete; %d error(s)" % (e_complete, e_total, e_errored))
             item.setData(Qt.UserRole + 1, job.status)
-            item.setData(Qt.UserRole + 2, float(e_complete)/float(e_total))
+            item.setData(Qt.UserRole + 2, float(e_complete) / float(e_total))
 
             self.addItem(item)
 
         self.update()
-
