@@ -384,9 +384,11 @@ class MainWindow(QMainWindow):
         # be available for loading
         plugin_manager.m = self
 
-        self.queue = QWidget()
-
         self.buildToolbox()
+
+        self.queue = ui.RunQueueListWidget(notebook_queue)
+        self.queueDock = QDockWidget(tr('Queue'))
+        self.queueDock.setWidget(self.queue)
 
         self.toolDock = QDockWidget(tr('Toolbox'))
         self.toolDock.setWidget(self.queue)
@@ -468,15 +470,9 @@ class MainWindow(QMainWindow):
         self.activetoolDock.setMinimumHeight(300)
         self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
 
-        self.queuelist = ui.RunQueueListWidget(notebook_queue)
-        self.queueDock = QDockWidget(tr('Queue'))
-        self.queueDock.setWidget(self.queuelist)
 
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.queueDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
 
-        self.tabifyDockWidget(self.toolDock, self.queueDock)
-        self.toolDock.raise_()
 
         self.dummy = QWidget()
         self.dummy.hide()

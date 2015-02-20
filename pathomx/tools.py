@@ -11,7 +11,7 @@ from .qt import *
 from pyqtconfig import ConfigManager, RECALCULATE_VIEW, RECALCULATE_ALL
 from . import utils
 from . import data
-from .ui import Logger, ToolConfigPanel
+from .ui import Logger, ToolConfigPanel, ExperimentConfigPanel
 
 from .globals import styles, notebook_queue, \
                     current_tools, current_tools_by_id, installed_plugin_names, \
@@ -245,10 +245,14 @@ class BaseTool(QObject):
         self.configPanels.tabs.addTab(self.notes_viewer, '&?')
 
     def init_autofocus(self):
+        self.activate()
+
+    def activate(self):
         for i in self.editorItem.scene().selectedItems():
             if i != self.editorItem:
                 i.setSelected(False)
         self.editorItem.setSelected(True)
+        self.editorItem.setFocus()
 
     def reload(self):
         self.load_notes()
@@ -297,6 +301,9 @@ class BaseTool(QObject):
 
     def get_parents(self):
         return [s[0].v for i, s in self.data.i.items() if s is not None]
+
+    def get_children(self):
+        return [d.v for i, ld in self.data.watchers.items() for d in ld]
 
     def autogenerate(self, *args, **kwargs):
         self.logger.debug("autogenerate %s" % self.name)
@@ -434,6 +441,7 @@ class BaseTool(QObject):
         self._is_active = True
         self.parent().viewerDock.setWidget(self.views)
         self.parent().dataDock.setWidget(self.dataViews)
+
         self.parent().toolDock.setWidget(self.configPanels)
 
     def raise_(self):
@@ -446,6 +454,7 @@ class BaseTool(QObject):
         self.parent().toolDock.setWidget(self.parent().queue)
         self.parent().viewerDock.setWidget(QWidget())  # Empty
         self.parent().dataDock.setWidget(QWidget())  # Empty
+
 
     def addToolBar(self, *args, **kwargs):
         return self.w.addToolBar(*args, **kwargs)

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from pathomx.tools import BaseTool
 from pathomx.plugins import ImportPlugin
 from pathomx.qt import *
-from pathomx.ui import ConfigPanel
+from pathomx.ui import ConfigPanel, QFileOpenLineEdit
 
 COLORSPACES = {
     'None (use image default)': None,
@@ -31,7 +31,7 @@ class ImportImageConfigPanel(ConfigPanel):
         self.config = parent.config
         gb = QGroupBox('Open file')
         grid = QGridLayout()
-        self.filename = ui.QFileOpenLineEdit(filename_filter="""All compatible files 
+        self.filename = QFileOpenLineEdit(filename_filter="""All compatible files
 (*.bmp *.dib *.eps *.gif *.im *.jpg *.jpe *.jpeg *.pcx *.pcd *.psd *.png *.pbm *.pgm *.ppm *.spi *.sgi *.tif *.tiff *.xbm *.xpm);;
 Bitmap Image File (*.bmp *.dib);;Encapsulated PostScript (*.eps);;
 Graphics Interchange Format (*.gif);;IM (LabEye) Format (*.im);;

@@ -8,16 +8,14 @@ logging.debug('Loading views.py')
 from .qt import *
 
 import os, re, sys, logging, traceback
-from collections import OrderedDict
 
 # Pathomx classes
 from . import utils
-#from . import ui
+from .ui import ExportImageDialog
 
 import numpy as np
 import pandas as pd
 
-from .globals import styles
 
 # Translation (@default context)
 from .translate import tr
@@ -25,7 +23,6 @@ from .translate import tr
 # View object types
 from . import displayobjects
 from IPython.core import display
-from PIL import Image
 
 from .qt import USE_QT_PY, PYQT4, PYQT5
 
@@ -50,7 +47,7 @@ from IPython.nbconvert.exporters import export as IPyexport
 from IPython.nbconvert.exporters.export import exporter_map as IPyexporter_map
 
 
-from PIL import Image, ImageQt
+from PIL import Image
 
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
@@ -436,7 +433,7 @@ class ViewViewManager(ViewManager):
 
         # Load dialog for image export dimensions and resolution
         # TODO: dialog!
-        sizedialog = ui.ExportImageDialog(self, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save)
+        sizedialog = ExportImageDialog(self, size=cw.size(), show_rerender_options=cw._offers_rerender_on_save)
         ok = sizedialog.exec_()
         if ok:
             cw.saveAsImage(sizedialog)

@@ -359,8 +359,84 @@ class ToolItem(BaseItem):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Backspace and e.modifiers() == Qt.ControlModifier:
             self.app.delete()
-        else:
-            return super(ToolItem, self).keyPressEvent(e)
+
+        elif e.key() == Qt.Key_Up:
+            # Navigate to first parent of self
+            parents = self.app.get_parents()
+            if parents:
+                parents[0].activate()
+
+            return  # Ignore otherwise
+
+        elif e.key() == Qt.Key_Down:
+            # Navigate to first child of self
+            children = self.app.get_children()
+            if children:
+                children[0].activate()
+
+            return  # Ignore otherwise
+
+        elif e.key() == Qt.Key_Left:
+            # Navigate to previous child of parent
+            # (or) previous parent of child
+            parents = self.app.get_parents()
+            if parents:
+                for p in parents:
+                    c = p.get_children()
+                    i = c.index(self.app) - 1
+                    try:
+                        c[i].activate()
+                    except IndexError:
+                        pass
+                    else:
+                        return
+
+            # If we're here, we couldn't find the next by parent; use the children
+            children = self.app.get_children()
+            if children:
+                for c in children:
+                    p = c.get_parents()
+                    i = p.index(self.app) - 1
+                    try:
+                        p[i].activate()
+                    except IndexError:
+                        pass
+                    else:
+                        return
+
+            return  # Ignore otherwise
+
+        elif e.key() == Qt.Key_Right:
+            # Navigate to next child of parent
+            # (or) next parent of child
+            parents = self.app.get_parents()
+            if parents:
+                for p in parents:
+                    c = p.get_children()
+                    i = c.index(self.app) + 1
+                    try:
+                        c[i].activate()
+                    except IndexError:
+                        pass
+                    else:
+                        return
+
+            # If we're here, we couldn't find the next by parent; use the children
+            children = self.app.get_children()
+            if children:
+                for c in children:
+                    p = c.get_parents()
+                    i = p.index(self.app) + 1
+                    try:
+                        p[i].activate()
+                    except IndexError:
+                        pass
+                    else:
+                        return
+
+            return  # Ignore otherwise
+
+        return super(ToolItem, self).keyPressEvent(e)
 
     def contextMenuEvent(self, e):
         e.accept()

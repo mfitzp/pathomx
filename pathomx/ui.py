@@ -15,10 +15,7 @@ from pyqtconfig import ConfigManager
 from . import utils
 
 from .globals import styles, MATCH_EXACT, MATCH_CONTAINS, MATCH_START, MATCH_END, \
-                    MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, \
-                    StyleDefinition, ClassMatchDefinition, notebook_queue, \
-                    current_tools, current_datasets, \
-                    STATUS_QCOLORS
+    MATCH_REGEXP, MARKERS, LINESTYLES, FILLSTYLES, HATCHSTYLES, STATUS_QCOLORS
 
 # Translation (@default context)
 from .translate import tr
@@ -245,7 +242,7 @@ class QListWidgetAddRemove(QListWidget):
         return r
 
     def removeItemAt(self, row, *args, **kwargs):
-        super(QListWidgetAddRemove, self).takeItem(row)
+        r = super(QListWidgetAddRemove, self).takeItem(row)
         self.itemAddedOrRemoved.emit()
         return r
 
@@ -1810,8 +1807,6 @@ class RunQueueListWidget(QListWidget):
         self._refresh_timer.start(1000)  # Re-udpate timer every minute
 
     def refresh(self):
-
-        notebook_queue
 
         while self.count() > 0:  # Empty list
             self.takeItem(0)

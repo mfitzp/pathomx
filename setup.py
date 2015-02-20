@@ -72,6 +72,8 @@ setup(
             'wheezy.template',
             'pydot',
             'six',
+
+            'pillow',
             ],
 
 

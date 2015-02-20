@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pathomx.tools import BaseTool
+from pathomx.tools import BaseTool, AnalysisTool
 from pathomx.ui import ConfigPanel
 from pathomx.plugins import AnalysisPlugin
 
@@ -41,7 +41,7 @@ class PLSDAConfigPanel(ConfigPanel):
         self.finalise()
 
 
-class PLSDATool(BaseTool):
+class PLSDATool(AnalysisTool):
 
     name = "PLS-DA"
     notebook = 'pls_da.ipynb'
