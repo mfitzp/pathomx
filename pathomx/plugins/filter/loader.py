@@ -2,7 +2,7 @@
 
 import csv
 
-from pathomx.ui import ConfigPanel, GenericDialog
+from pathomx.ui import ConfigPanel, GenericDialog, QListWidgetAddRemove
 from pathomx.tools import BaseTool
 import pathomx.utils as utils
 
@@ -126,7 +126,7 @@ class ReclassifyConfigPanel(ConfigPanel):
         gb = QGroupBox('Reclassifications')
         vbox = QVBoxLayout()
         # Populate the list boxes
-        self.lw_filters = ui.QListWidgetAddRemove()
+        self.lw_filters = QListWidgetAddRemove()
         self.lw_filters.setSelectionMode(QAbstractItemView.ExtendedSelection)
         vbox.addWidget(self.lw_filters)
 

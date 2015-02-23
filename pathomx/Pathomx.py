@@ -391,11 +391,12 @@ class MainWindow(QMainWindow):
         self.queueDock.setWidget(self.queue)
 
         self.toolDock = QDockWidget(tr('Toolbox'))
-        self.toolDock.setWidget(self.queue)
+        l = QLabel("No toolbox available")
+        l.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.toolDock.setWidget(l)
         self.toolDock.setMinimumWidth(300)
         self.toolDock.setMaximumWidth(300)
 
-        self.toolDock.raise_()
         #self.dbtool = ui.DbApp(self)
         #self.dbBrowser = self.dbtool.dbBrowser
 
@@ -436,14 +437,14 @@ class MainWindow(QMainWindow):
         self.console = RichIPythonWidget()
         self.console._call_tip = lambda: None
 
-        self.central = QTabWidget()
-        self.central.setDocumentMode(True)
-        self.central.setTabPosition(QTabWidget.South)
-        self.central.setMinimumWidth(500)
+        #self.central = QTabWidget()
+        #self.central.setDocumentMode(True)
+        #self.central.setTabPosition(QTabWidget.South)
+        #self.central.setMinimumWidth(500)
 
-        self.central.addTab(self.editView, '&Editor')
-        self.central.addTab(self.console, '&Console')
-        self.central.addTab(self.logView, '&Log')
+        #self.central.addTab(self.editView, '&Editor')
+        #self.central.addTab(self.console, '&Console')
+        #self.central.addTab(self.logView, '&Log')
 
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
@@ -452,31 +453,30 @@ class MainWindow(QMainWindow):
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
 
         self.viewerDock = QDockWidget(tr('Viewer'))
-        self.viewerDock.setWidget(QWidget(None))
+        l = QLabel("No view available")
+        l.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.viewerDock.setWidget(l)
         self.viewerDock.setMinimumWidth(300)
         self.viewerDock.setMinimumHeight(300)
         self.viewerDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.addDockWidget(Qt.RightDockWidgetArea, self.viewerDock)
 
         self.dataDock = QDockWidget(tr('Data'))
-        self.dataDock.setWidget(QWidget(None))
+        l = QLabel("No data available")
+        l.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.dataDock.setWidget(l)
         self.dataDock.setMinimumWidth(300)
         self.dataDock.setMinimumHeight(300)
         self.dataDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dataDock)
 
-        self.activetoolDock = QDockWidget(tr('Tool'))
-        self.activetoolDock.setWidget(QWidget(None))
-        self.activetoolDock.setMinimumHeight(300)
-        self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
-
+        #self.activetoolDock = QDockWidget(tr('Tool'))
+        #self.activetoolDock.setWidget(QWidget(None))
+        #self.activetoolDock.setMinimumHeight(300)
+        #self.activetoolDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolDock)
-
-
-        self.dummy = QWidget()
-        self.dummy.hide()
-        self.setCentralWidget(self.central)
+        self.setCentralWidget(self.editView)
 
         self.addFileToolBar()
 
@@ -558,7 +558,7 @@ class MainWindow(QMainWindow):
         export_ipythonnbAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'ipython.png')), 'Export to Notebook…', self)
         export_ipythonnbAction.setStatusTip('Export workflow as IPython notebook')
         export_ipythonnbAction.triggered.connect(self.onExportIPyNotebook)
-        self.ribbon.addAction(export_ipythonnbAction, 'Home', 'Export')
+        #self.ribbon.addAction(export_ipythonnbAction, 'Home', 'Export')
 
         save_imageAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'image-export.png')), tr('Save workflow image…'), self)
         save_imageAction.setStatusTip('Show grid in workspace editor')
@@ -570,7 +570,7 @@ class MainWindow(QMainWindow):
         export_reportAction = QAction(QIcon(os.path.join(utils.scriptdir, 'icons', 'report--pencil.png')), 'Save report…', self)
         export_reportAction.setStatusTip('Export workflow as report')
         export_reportAction.triggered.connect(self.onExportReport)
-        self.ribbon.addAction(export_reportAction, 'Home', 'Reports')
+        #self.ribbon.addAction(export_reportAction, 'Home', 'Reports')
 
     def addAdvancedToolBar(self):
 

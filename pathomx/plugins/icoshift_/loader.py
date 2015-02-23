@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pathomx.tools import BaseTool
-from pathomx.ui import ConfigPanel, RegionConfigPanel
+from pathomx.ui import ConfigPanel, RegionConfigPanel, QNoneDoubleSpinBox
 from pathomx.plugins import ProcessingPlugin
 from pathomx.data import DataDefinition
 from pathomx.qt import *
@@ -99,7 +99,7 @@ class IcoshiftConfigPanel(ConfigPanel):
         self.config.add_handler('coshift_preprocessing', self.coshift_btn)
         gd.addWidget(self.coshift_btn, 0, 0)
 
-        self.coshift_max_cb = ui.QNoneDoubleSpinBox()
+        self.coshift_max_cb = QNoneDoubleSpinBox()
         self.config.add_handler('coshift_preprocessing_max_shift', self.coshift_max_cb)
         gd.addWidget(QLabel('Maximum shift'), 1, 0)
         gd.addWidget(self.coshift_max_cb, 1, 1)

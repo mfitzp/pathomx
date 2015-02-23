@@ -311,7 +311,7 @@ class ToolItem(BaseItem):
 
     def auto_position_children(self):
         if settings.get('Editor/Auto_position'):
-            # Iterate over the child data tools and distribute at least +200 in x, and evenly in y
+            # Iterate over the child data tools and distribute at least +200 in y, and evenly in x
             items = []
             for _, cs in self.app.data.watchers.items():
                 for c in cs:
@@ -334,16 +334,18 @@ class ToolItem(BaseItem):
         safely shift to just +40.
         """
 
-        # Check we only have one parent
-        if len(self.app.data.i) == 1:
+        # Check we only have one input (one parent)
+        # Parent has only one output
+        # Parent has only one child
+        if len(self.app.data.i) == 1 and \
+           len([o for a in self.app.get_parents() for o in a.data.o]) == 1 and \
+           len([wi for a in self.app.get_parents() for i, w in a.data.watchers.items() for wi in w]) == 1:
 
             # Get the data manager for our sole parent
             _, cs = list(self.app.data.i.items())[0]
             cm, ci = cs
 
-            # If data manager of our parent only has one child, we can get closer
-            if len(cm.watchers[ci]) == 1:
-                return cm.v.editorItem.y() + 50
+            return cm.v.editorItem.y() + 50
 
         y = []
         for _, cs in self.app.data.i.items():
@@ -366,15 +368,11 @@ class ToolItem(BaseItem):
             if parents:
                 parents[0].activate()
 
-            return  # Ignore otherwise
-
         elif e.key() == Qt.Key_Down:
             # Navigate to first child of self
             children = self.app.get_children()
             if children:
                 children[0].activate()
-
-            return  # Ignore otherwise
 
         elif e.key() == Qt.Key_Left:
             # Navigate to previous child of parent
@@ -404,8 +402,6 @@ class ToolItem(BaseItem):
                     else:
                         return
 
-            return  # Ignore otherwise
-
         elif e.key() == Qt.Key_Right:
             # Navigate to next child of parent
             # (or) next parent of child
@@ -434,9 +430,8 @@ class ToolItem(BaseItem):
                     else:
                         return
 
-            return  # Ignore otherwise
-
-        return super(ToolItem, self).keyPressEvent(e)
+        else:
+            return super(ToolItem, self).keyPressEvent(e)
 
     def contextMenuEvent(self, e):
         e.accept()
