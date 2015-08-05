@@ -1,5 +1,7 @@
 # Pathomx
 
+[![Join the chat at https://gitter.im/pathomx/pathomx](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pathomx/pathomx?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 *Latest stable release v3.0.2 (24th October 2014).*
 
 Pathomx is an interactive tool for the analysis and visualisation of scientific data.
